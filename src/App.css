@@ -1,0 +1,344 @@
+.App {
+  text-align: center;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 50px; /* Set the desired fixed width for the sidebar */
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #000 !important;
+}
+
+.sidebar .nav-link {
+  color: #fff;
+  padding: 10px 10px;
+  text-align: center;
+  font-size: 24px;
+  transition: background-color 0.3s;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #000;
+  font-weight: bold !important;
+}
+
+.profile-icon {
+  padding: 15px 0;
+  font-size: 24px;
+}
+/* End of Sidebar */
+
+.main-content {
+  margin-left: 50px; /* Ensure the main content area doesn't overlap with the sidebar */
+  padding: 5px;
+  width: calc(100% - 50px);
+  transition: width 0.3s;
+}
+
+body {
+  background-color: #282c34;
+  color: azure;
+}
+
+.tabs-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pipeline-overview {
+  height: 100%;
+  width: 100%;
+  background-color: #1f2327;
+  border-radius: 10px;
+}
+
+.data-overview {
+  height: 100%;
+}
+.edge-descriptor {
+  max-width: 500px;
+}
+.scenario-mapping {
+  flex: 2;
+  background-color: #2f3337;
+  border-radius: 10px;
+}
+::-webkit-scrollbar {
+  background-color: #282c34;
+  color: #1f2327;
+}
+.pipeline-graph {
+  height: 450px;
+}
+
+.form-select {
+  height: 48px;
+}
+
+.react-flow__node-custom {
+  width: 120px;
+  text-align: center;
+}
+
+.react-flow__node-group {
+  width: auto;
+  max-width: 100%;
+}
+
+.react-flow__handle {
+  opacity: 50;
+}
+
+.metadata {
+  display: flex;
+  height: 100%;
+  background-color: #1f2327;
+  border-radius: 10px;
+}
+
+.data {
+  height: 100%;
+  background-color: #1f2327;
+  border-radius: 10px;
+}
+
+.project-lists {
+  overflow: auto;
+}
+
+.schedule {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.container {
+  max-width: 2000px;
+  max-height: 2000px;
+}
+
+._25P-K {
+  /* timeline tooltip div style */
+  color: #2f3337;
+}
+._34SS0 {
+  background-color: #2f3337;
+}
+
+._34SS0:nth-of-type(even) {
+  background-color: #1f2327;
+}
+
+._3ZbQT:nth-child(even) {
+  fill: #1f2327;
+}
+
+._2dZTy {
+  fill: #1f2327;
+}
+
+._2dZTy:nth-child(even) {
+  fill: #1f2327;
+}
+
+._35nLX {
+  fill: #1f2327;
+}
+
+._9w8d5 {
+  fill: azure;
+}
+
+._2q1Kt {
+  fill: azure;
+}
+
+._3rUKi {
+  stroke: #313640;
+}
+
+._RuwuK {
+  stroke: #313640;
+}
+
+.timeline {
+  background-color: #1f2327;
+  border-radius: 10px;
+}
+
+.arrow {
+  stroke: #93a2bf;
+  fill: #93a2bf;
+}
+
+.list-group {
+  height: 400px;
+  overflow-y: scroll;
+}
+
+.projectoverviewdiv {
+  overflow: scroll;
+  height: 100%;
+}
+
+.accordion {
+  overflow-y: scroll;
+  --bs-accordion-color: azure;
+  --bs-accordion-btn-color: azure;
+  --bs-accordion-bg: #1f2327;
+  --bs-accordion-transition: color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out, border-radius 0.15s ease;
+  --bs-accordion-btn-focus-border-color: #93a2bf;
+  --bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem #313640;
+  --bs-accordion-active-color: azure;
+  --bs-accordion-active-bg: #626c80;
+}
+
+.complete {
+  font: 9px sans-serif;
+  fill: white;
+}
+
+.form-select {
+  width: 150px;
+  color: azure;
+  background-color: #1f2327;
+}
+
+.nav {
+  --bs-nav-link-color: #93a2bf;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+#pipelinetooltip {
+  position: fixed;
+  display: none;
+  padding: 12px 6px;
+  background: #222;
+  border: 1px solid #999;
+  border-radius: 2px;
+  pointer-events: none;
+  color: #fff;
+  z-index: 20;
+}
+
+.checkin {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.checkin_location {
+  width: 100%;
+  display: flex;
+  color: lightblue;
+  border-color: white;
+  padding: 3px;
+  border: 1px solid;
+}
+
+.checkin_url {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  color: lightblue;
+  padding: 3px;
+}
+
+.checkin_footer {
+  display: flex;
+  flex-direction: row wrap;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px;
+}
+
+.checkin_details {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex_start;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.checkin_detail {
+  padding: 5px;
+  margin-top: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 1em;
+  text-align: center;
+}
+
+.checkin_description {
+  font-weight: bold;
+}
+
+.checkin_comments {
+  font-size: small;
+  margin-bottom: 10px;
+}
+.data_validated {
+  background: grey;
+  padding: 3px;
+  padding-right: 10px;
+  padding-left: 10px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+}
+.data_unvalidated {
+  background: red;
+  padding: 3px;
+  padding-right: 10px;
+  padding-left: 10px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+}
+.checkin_handoff {
+  background: green;
+  padding: 3px;
+  padding-right: 10px;
+  padding-left: 10px;
+  color: white;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+:global(.gridRow) {
+  fill: #ff0000 !important;
+  stroke: #e0e0e0;
+  stroke-width: 1.4;
+}
+.MuiTableSortLabel-root {
+  color: azure !important;
+}
+.MuiTableSortLabel-root.Mui-active {
+  color: azure !important;
+}
+.MuiTableSortLabel-icon {
+  color: azure !important;
+}
