@@ -12,7 +12,7 @@ import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
-
+import env from "../stupidEnv"
 
 export default function SetContextPage() {
   const projectStore = useProjectStore();
@@ -32,17 +32,20 @@ export default function SetContextPage() {
   // make function to response = fetch("http://0.0.0.0:8080/api/projects"); and return list of json objects
   const [projects, setProjects] = useState([]);
   useEffect(() => {
-    fetch("http://0.0.0.0:8080/api/projects/basic", {
+    console.log(env);
+    console.log(env.env.REACT_APP_BASE_URL);
+    console.log(env.env.TOKEN + " BASE_URL" );
+    console.log(env.env.REACT_APP_BASE_URL + "/api/projects/basics");
+    fetch(env.env.REACT_APP_BASE_URL + "/api/projects/basics", {
       method: "GET",
       headers: {
         accept: "application/json",
         Authorization:
-          "Bearer eyJraWQiOiJ1YjJhazR0am8zWjROM25UUjk3XC93aVBJUlwvdmxqYmtQZ2pcL0tVZ2o5bnpJPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJhOTY5YjZjNS02NzI4LTQ2NGUtYmRkNS0xNjYyMWRjMDMwMDUiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtd2VzdC0yLmFtYXpvbmF3cy5jb21cL3VzLXdlc3QtMl9UdkVKMWJpejAiLCJjbGllbnRfaWQiOiI2bjVjbzllaDdiYWI0YTIxZWdyOTVkczNyOCIsIm9yaWdpbl9qdGkiOiI4OGRiZGU2My1iYTBiLTQxZTQtOGRkNS03Y2VhYjE3NjA2MmUiLCJldmVudF9pZCI6IjRkMTBhYTQzLWRhOGYtNDljNC05YzhmLTM5NmVjNjk5MmE5NCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3MDk5MzA4NzcsImV4cCI6MTcwOTk3NDA3NywiaWF0IjoxNzA5OTMwODc3LCJqdGkiOiJkYjg1MGU4ZC1mMGVmLTQ2NjEtYmY0ZC04ODA1Yzg4NDQyYTUiLCJ1c2VybmFtZSI6ImE5NjliNmM1LTY3MjgtNDY0ZS1iZGQ1LTE2NjIxZGMwMzAwNSJ9.piur_IUoaq6hB9cea61yC81gm58ysMJPcn4tvYeerrFcwD8SUH_PQrem6r9-p7qgLR-yHWSye174NaCwvLBr0q4DypE9Xmi443b7SJ0dCJh4rgZpCVyJp54srIx5y-zfG2F2B1HrmQ1T4FNleKP8emLJuintHf8mSRdMXT0WSDXEm57XHQvW_UneTplYhV6Z1s55M0Ieuk6P6tzU4YeyKED1JAI9LY9GsKKxXtmEzAT9yqsyBCJ6UqwNuvDqAv6PuqBeRpEkA7g9_vwDM75bNxhYmsjCHzL67jHSxWgR36B6IwJf9pPfLC5kGFk9epp8dQjCQR8_9EjQD117CoO5yA",
+          `Bearer ${env.env.TOKEN}`,
       },
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(process.env.TOKEN);
         if (data.length == 0) {
           setProjects([]);
         }
@@ -52,8 +55,7 @@ export default function SetContextPage() {
       .catch((error) => console.log(error));
   }, []);
 
-  function fetchProject(e) {
-    let rawProjectName = document.getElementById("form_projectname").value;
+  function fetchProject(rawProjectName) {
     console.log(rawProjectName);
     projectStore.reset();
     projectRunStore.reset();
@@ -105,7 +107,10 @@ export default function SetContextPage() {
                 bsStyle="danger"
                 bsSize="small"
                 variant="outline-light"
-                onClick={fetchProject}
+                onClick={(e) => {
+                  e.preventDefault();
+                  fetchProject(project.name);
+                }}
               >
                 To Overview
               </Button>
