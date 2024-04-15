@@ -12,7 +12,6 @@ import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
-import env from "../stupidEnv"
 
 export default function SetContextPage() {
   const projectStore = useProjectStore();
@@ -29,19 +28,16 @@ export default function SetContextPage() {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  // make function to response = fetch("http://0.0.0.0:8080/api/projects"); and return list of json objects
+  // make function to response = fetch("http://0.0.0.0:8080/api/projects/basics"); and return list of json objects
   const [projects, setProjects] = useState([]);
   useEffect(() => {
-    console.log(env);
-    console.log(env.env.REACT_APP_BASE_URL);
-    console.log(env.env.TOKEN + " BASE_URL" );
-    console.log(env.env.REACT_APP_BASE_URL + "/api/projects/basics");
-    fetch(env.env.REACT_APP_BASE_URL + "/api/projects/basics", {
+    console.log(localStorage.getItem("REACT_APP_BASE_URL") + "api/projects/basics");
+    fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projects/basics", {
       method: "GET",
       headers: {
         accept: "application/json",
         Authorization:
-          `Bearer ${env.env.TOKEN}`,
+          `Bearer ${localStorage.getItem("accessToken")}`,
       },
     })
       .then((response) => response.json())
@@ -49,8 +45,10 @@ export default function SetContextPage() {
         if (data.length == 0) {
           setProjects([]);
         }
-        setProjects(data);
-        console.log("Data", data);
+        else {
+          setProjects(data);
+          console.log("Data", data);
+        }
       })
       .catch((error) => console.log(error));
   }, []);
@@ -98,14 +96,12 @@ export default function SetContextPage() {
 
       <ul>
         {projects.map((project, index) => (
-          <Card style={{ width: "18rem", margin: "10px" }}>
+          <Card key={project.name} style={{ width: "18rem", margin: "10px" }}>
             <Card.Body className="bg-dark text-light">
               <Card.Title>{project.name}</Card.Title>
               <Card.Text>{project.description}</Card.Text>
               <Button
                 className="bg-dark text-light "
-                bsStyle="danger"
-                bsSize="small"
                 variant="outline-light"
                 onClick={(e) => {
                   e.preventDefault();
@@ -170,8 +166,6 @@ export default function SetContextPage() {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* Display the welcome message if it exists */}
-      {/* {welcomeMessage && <h1>{welcomeMessage}</h1>} */}
     </Container>
   );
 }

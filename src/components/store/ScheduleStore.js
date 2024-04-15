@@ -42,41 +42,39 @@ export const useScheduleStore = create((set, get) => ({
     context.setProjectName(projectName);
     let request = new GetProjectScheduleRequest();
     request.setProjectContext(context);
+    // Get project includes everything... Validate that getProjectSchedule is the same as api/projects
+    // pipesClient.getProjectSchedule(request, requestMetadata, (_, response) => {
+    //   console.log(response);
+    //   if (
+    //     response.getCode() === 200
+    //   ) {
+    //     let data = JSON.parse(response.getProjectSchedule());
 
-    pipesClient.getProjectSchedule(request, requestMetadata, (_, response) => {
-      if (
-        response.getCode() !== "NOT_FOUND" &&
-        response.getCode() !== "INVALID_ARGUMENT" &&
-        response.getCode() !== "VALUE_ERROR" &&
-        response.getCode() !== "UNKNOWN"
-      ) {
-        let data = JSON.parse(response.getProjectSchedule());
+    //     for (let i = 0; i < data.project_runs.length; i++) {
+    //       let pr = data.project_runs[i];
+    //       let models = pr.models;
+    //       models.sort((a, b) => {
+    //         let adate = new Date(a.start + "T00:00:00");
+    //         let bdate = new Date(b.start + "T00:00:00");
+    //         return adate === bdate ? 0 : adate > bdate ? 1 : -1;
+    //       });
+    //     }
+    //     data.project_runs.sort((a, b) => {
+    //       let adate = new Date(a.start + "T00:00:00");
+    //       let bdate = new Date(b.start + "T00:00:00");
+    //       return adate === bdate ? 0 : adate > bdate ? 1 : -1;
+    //     });
 
-        for (let i = 0; i < data.project_runs.length; i++) {
-          let pr = data.project_runs[i];
-          let models = pr.models;
-          models.sort((a, b) => {
-            let adate = new Date(a.start + "T00:00:00");
-            let bdate = new Date(b.start + "T00:00:00");
-            return adate === bdate ? 0 : adate > bdate ? 1 : -1;
-          });
-        }
-        data.project_runs.sort((a, b) => {
-          let adate = new Date(a.start + "T00:00:00");
-          let bdate = new Date(b.start + "T00:00:00");
-          return adate === bdate ? 0 : adate > bdate ? 1 : -1;
-        });
-
-        set({
-          project: {
-            start: data.project.start,
-            end: data.project.end,
-            milestones: [],
-          },
-          project_runs: data.project_runs,
-        });
-      }
-    });
+    //     set({
+    //       project: {
+    //         start: data.project.start,
+    //         end: data.project.end,
+    //         milestones: [],
+    //       },
+    //       project_runs: data.project_runs,
+    //     });
+    //   }
+    // });
   },
 }));
 export const useScheduleStoreV1 = create((set) => ({

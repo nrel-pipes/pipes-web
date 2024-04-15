@@ -23,11 +23,19 @@ export const useProjectStore = create((set) => ({
     });
   },
   fetch: (projectName, setProjectExists, setServerError) => {
-    console.log("http://0.0.0.0:8080/api/overview_dropdowns?project=${projectName}");
-      fetch("http://0.0.0.0:8080/api/overview_dropdowns?project=${projectName}")
+      fetch(`${localStorage.getItem("REACT_APP_BASE_URL")}api/projects/?project=${projectName}`,{
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
       .then(response => {
+        
         if (response.status === 200) {
           response.json().then(data => {
+            console.log(data);
             set({project: data});
             document.getElementById("c2c-tab-overview").click();
           })

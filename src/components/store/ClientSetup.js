@@ -19,8 +19,9 @@ switch (process.env.REACT_APP_ENV) {
     URL = "https://pipes-proxy-dev.stratus.nrel.gov";
 
   // URL = "http://localhost:8080";
-}
+} 
 
+localStorage.setItem("REACT_APP_BASE_URL", "http://0.0.0.0:8080/");
 export const pipesClient = new PIPESClient(URL);
 
 

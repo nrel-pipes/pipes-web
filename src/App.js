@@ -4,9 +4,6 @@ import "./App.css";
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
-import { pipesClient } from "./components/store/ClientSetup";
-import { PingRequest } from "./_proto/api_pb";
-
 import GenericError from "./components/GenericError";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
@@ -36,16 +33,22 @@ const App = () => {
 
   useEffect(() => {
     // Check PIPE server connection
-    let request = new PingRequest();
-    pipesClient.ping(request, {}, (error, response) => {
-      // check if app is connected to server
-      if (error) {
-        setIsConnected(false);
-      } else {
-        setIsConnected(response.getIsHappy());
-      }
-    });
 
+    fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/", {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization:
+          `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }).then((response) => {
+      console.log(response.status);
+      if (response.satus == 200) {
+        setIsConnected(response.getIsHappy());
+      } else {
+        setIsConnected(false);
+      }
+    })
     // Check if it is authenticated user
     const idToken = localStorage.getItem("idToken");
     if (!idToken) {

@@ -17,36 +17,35 @@ export const useProjectRunStore = create((set) => ({
     let context = new ProjectContext();
     context.setProjectName(projectName);
     let request = new ListProjectRunsRequest();
-
+    console.log("Request: " + request);
     request.setProjectContext(context);
-    pipesClient.listProjectRuns(request, requestMetadata, (_, response) => {
-      if (
-        response.getCode() !== "NOT_FOUND" &&
-        response.getCode() !== "INVALID_ARGUMENT" &&
-        response.getCode() !== "VALUE_ERROR" &&
-        response.getCode() !== "UNKNOWN"
-      ) {
-        let data = JSON.parse(response.getProjectRuns());
-        console.log(data);
-        data.sort((a, b) => {
-          let adate = new Date(a.schedule.start + "T00:00:00");
-          let bdate = new Date(b.schedule.start + "T00:00:00");
-          return adate === bdate ? 0 : adate > bdate ? 1 : -1;
-        });
-        const modelNames = new Set(
-          data
-            .map((run) => {
-              return [...run.models.map((model) => model.model_name)];
-            })
-            .flat()
-        );
-        modelNodeColors.domain(modelNames);
 
-        set({ runs: data });
-        set({ currentProjectRun: data[0].name });
-      } else {
-        console.log(response);
-      }
-    });
+    fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projectruns/?project=" + projectName, {
+      headers: {
+        accept: "application/json",
+        Authorization:
+          `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }).then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      data.sort((a, b) => {
+        let adate = new Date(a.scheduled_start);
+        let bdate = new Date(b.scheduled_end);
+        return adate === bdate ? 0 : adate > bdate ? 1 : -1;
+      });
+      const modelNames = new Set(
+        data
+          .map((run) => {
+            return [...run.models.map((model) => model.model_name)];
+          })
+          .flat()
+      );
+      modelNodeColors.domain(modelNames);
+      console.log(data);
+      set({ runs: data });
+      set({ currentProjectRun: data[0].name });
+      console.log(modelNames);
+    }).catch((error) => console.log(error));
   },
 }));

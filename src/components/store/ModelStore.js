@@ -21,7 +21,7 @@ export const useModelStore = create((set, get) => ({
       numCheckInsByScenario: {},
       completedHandoffs: {},
     });
-  },
+ },
 
   resetRuns: () => {
     set({ runs: {} });
@@ -34,81 +34,82 @@ export const useModelStore = create((set, get) => ({
     modelContext.setModelName(modelName);
     let progressRequest = new GetModelProgressRequest();
     progressRequest.setModelContext(modelContext);
-    pipesClient.getModelProgress(
-      progressRequest,
-      requestMetadata,
-      (_, response) => {
-        if (
-          response.getCode() !== "NOT_FOUND" &&
-          response.getCode() !== "INVALID_ARGUMENT" &&
-          response.getCode() !== "VALUE_ERROR" &&
-          response.getCode() !== "UNKNOWN"
-        ) {
-          let runData = JSON.parse(response.getModelProgress());
-          console.log(runData);
-          let numCheckIns = 0;
-          let checkInsByScenario = {};
-          let lastCheckin = new Date("1999-01-01T00:00:00");
-          let hasCheckin = false;
-          if (runData.length > 0) {
-            runData.forEach((run) => {
-              numCheckIns = numCheckIns + run.datasets.length;
+    // Disable this feature... Need more logic...
+    // pipesClient.getModelProgress(
+    //   progressRequest,
+    //   requestMetadata,
+    //   (_, response) => {
+    //     if (
+    //       response.getCode() !== "NOT_FOUND" &&
+    //       response.getCode() !== "INVALID_ARGUMENT" &&
+    //       response.getCode() !== "VALUE_ERROR" &&
+    //       response.getCode() !== "UNKNOWN"
+    //     ) {
+    //       let runData = JSON.parse(response.getModelProgress());
+    //       console.log(runData);
+    //       let numCheckIns = 0;
+    //       let checkInsByScenario = {};
+    //       let lastCheckin = new Date("1999-01-01T00:00:00");
+    //       let hasCheckin = false;
+    //       if (runData.length > 0) {
+    //         runData.forEach((run) => {
+    //           numCheckIns = numCheckIns + run.datasets.length;
 
-              run.datasets.forEach((dataset) => {
-                let datasetCheckInDate = new Date(dataset.created);
-                hasCheckin = true;
-                if (datasetCheckInDate > lastCheckin) {
-                  lastCheckin = datasetCheckInDate;
-                }
-                if (Array.isArray(dataset.scenarios)) {
-                  dataset.scenarios.forEach((scenario) => {
-                    if (scenario in checkInsByScenario) {
-                      checkInsByScenario[scenario] =
-                        checkInsByScenario[scenario] + 1;
-                    } else {
-                      checkInsByScenario[scenario] = 1;
-                    }
-                  });
-                } else {
-                  if (dataset.scenarios in checkInsByScenario) {
-                    checkInsByScenario[dataset.scenarios] += 1;
-                  } else {
-                    checkInsByScenario[dataset.scenarios] = 1;
-                  }
-                }
-              });
-            });
+    //           run.datasets.forEach((dataset) => {
+    //             let datasetCheckInDate = new Date(dataset.created);
+    //             hasCheckin = true;
+    //             if (datasetCheckInDate > lastCheckin) {
+    //               lastCheckin = datasetCheckInDate;
+    //             }
+    //             if (Array.isArray(dataset.scenarios)) {
+    //               dataset.scenarios.forEach((scenario) => {
+    //                 if (scenario in checkInsByScenario) {
+    //                   checkInsByScenario[scenario] =
+    //                     checkInsByScenario[scenario] + 1;
+    //                 } else {
+    //                   checkInsByScenario[scenario] = 1;
+    //                 }
+    //               });
+    //             } else {
+    //               if (dataset.scenarios in checkInsByScenario) {
+    //                 checkInsByScenario[dataset.scenarios] += 1;
+    //               } else {
+    //                 checkInsByScenario[dataset.scenarios] = 1;
+    //               }
+    //             }
+    //           });
+    //         });
 
-            runData = Object.fromEntries(
-              runData.map((run) => {
-                return [run.model_run_props.name, run];
-              })
-            );
+    //         runData = Object.fromEntries(
+    //           runData.map((run) => {
+    //             return [run.model_run_props.name, run];
+    //           })
+    //         );
 
-            set((state) => ({
-              runs: {
-                ...state.runs,
-                [modelName]: runData,
-              },
-            }));
-          }
-          set((state) => ({
-            numCheckIns: {
-              ...state.numCheckIns,
-              [modelName]: numCheckIns,
-            },
-            numCheckInsByScenario: {
-              ...state.numCheckInsByScenario,
-              [modelName]: checkInsByScenario,
-            },
-            lastCheckIn: {
-              ...state.lastCheckIn,
-              [modelName]: hasCheckin ? lastCheckin : null,
-            },
-          }));
-        }
-      }
-    );
+    //         set((state) => ({
+    //           runs: {
+    //             ...state.runs,
+    //             [modelName]: runData,
+    //           },
+    //         }));
+    //       }
+    //       set((state) => ({
+    //         numCheckIns: {
+    //           ...state.numCheckIns,
+    //           [modelName]: numCheckIns,
+    //         },
+    //         numCheckInsByScenario: {
+    //           ...state.numCheckInsByScenario,
+    //           [modelName]: checkInsByScenario,
+    //         },
+    //         lastCheckIn: {
+    //           ...state.lastCheckIn,
+    //           [modelName]: hasCheckin ? lastCheckin : null,
+    //         },
+    //       }));
+    //     }
+    //   }
+    // );
   },
   fetch: (projectName, projectRunName) => {
     if (projectName !== "" && projectRunName !== "") {
@@ -117,10 +118,24 @@ export const useModelStore = create((set, get) => ({
       context.setProjectRunName(projectRunName);
       let request = new ListModelsRequest();
       request.setProjectRunContext(context);
+      // Fix this... Get the models
+      fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projectruns/?project=" + projectName, {
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }).then((response) => response.json())
+      .then((data) => {
+        set({models: data.scenarios});
+        console.log("set scenarios " + data.scenarios);
+      })
+
       pipesClient.listModels(request, requestMetadata, (_, response) => {
         console.log("fetching model data...");
         const data = JSON.parse(response.getModels());
         console.log("fetch model data");
+        console.log("Data models" + data);
 
         set({ models: data });
       });
