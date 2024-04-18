@@ -2,7 +2,7 @@
 import { create } from "zustand";
 
 // Internal imports
-import { pipesClient, requestMetadata } from "./ClientSetup";
+// import { pipesClient, requestMetadata } from "./ClientSetup";
 import { ProjectContext } from "../../_proto/types_pb.js";
 import { GetProjectScheduleRequest } from "../../_proto/api_pb.js";
 

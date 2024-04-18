@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { pipesClient, requestMetadata } from "./ClientSetup";
+// import { pipesClient, requestMetadata } from "./ClientSetup";
 import { ProjectContext } from "../../_proto/types_pb.js";
 import { ListProjectRunsRequest } from "../../_proto/api_pb.js";
 import { modelNodeColors } from "./store";

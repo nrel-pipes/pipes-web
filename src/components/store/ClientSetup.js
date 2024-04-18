@@ -1,6 +1,6 @@
 import jwtDecode from "jwt-decode";
 import { CognitoRefreshToken, CognitoUserPool, CognitoUser } from "amazon-cognito-identity-js";
-import { PIPESClient } from "../../_proto/pipes_grpc_web_pb";
+// import { PIPESClient } from "../../_proto/pipes_grpc_web_pb";
 import { COGNITO_CLIENT_ID, COGNITO_USER_POOL_ID } from "../CognitoConfig";
 
 let URL;
@@ -22,7 +22,7 @@ switch (process.env.REACT_APP_ENV) {
 } 
 
 localStorage.setItem("REACT_APP_BASE_URL", "http://0.0.0.0:8080/");
-export const pipesClient = new PIPESClient(URL);
+// export const pipesClient = new PIPESClient(URL);
 
 
 function getCognitoToken (tokenName) {

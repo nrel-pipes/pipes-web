@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { pipesClient, requestMetadata } from "./ClientSetup";
+// import { pipesClient, requestMetadata } from "./ClientSetup";
 import {
   ListModelsRequest,
   GetModelProgressRequest,
@@ -131,14 +131,14 @@ export const useModelStore = create((set, get) => ({
         console.log("set scenarios " + data.scenarios);
       })
 
-      pipesClient.listModels(request, requestMetadata, (_, response) => {
-        console.log("fetching model data...");
-        const data = JSON.parse(response.getModels());
-        console.log("fetch model data");
-        console.log("Data models" + data);
+      // pipesClient.listModels(request, requestMetadata, (_, response) => {
+      //   console.log("fetching model data...");
+      //   const data = JSON.parse(response.getModels());
+      //   console.log("fetch model data");
+      //   console.log("Data models" + data);
 
-        set({ models: data });
-      });
+      //   set({ models: data });
+      // });
     }
   },
 }));
