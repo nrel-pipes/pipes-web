@@ -1,3 +1,0 @@
-[submodule "pipes-protobufs"]
-	path = pipes-protobufs
-	url = https://github.com/nrel-pipes/pipes-protobufs.git

@@ -1,11 +1,11 @@
-version: "3.3"
 services:
-  pipes-ui:
+
+  web:
     build:
       context: .
       dockerfile: Dockerfile
-    image: harbor.nrel.gov/dav-data-library/pipes-ui-prototype:0.1.12
+    image: pipes-web
     environment:
       NODE_ENV: "development"
     ports:
-      - "3005:80" # launch the web app at localhost:3005
+      - "3030:80"
