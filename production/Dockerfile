@@ -13,14 +13,6 @@ COPY package.json package-lock.json ./
 COPY public/ /app/public/
 copy src/ /app/src/
 
-# Create a file with the name of the ENV_CONFIG variable
-RUN echo "ENV_CONFIG value is: ${ENV_CONFIG}" && \
-    apk add protoc protobuf protobuf-dev grpc git && \
-    apk add protoc-gen-js --repository https://dl-cdn.alpinelinux.org/alpine/edge/testing && \
-    npm i -g protoc-gen-grpc-web && \
-    npm install --omit=dev && cd /app/src/_proto && \
-   /usr/bin/protoc -I=/app/src/_proto /app/src/_proto/*.proto --js_out=import_style=commonjs:/app/src/_proto --grpc-web_out=import_style=commonjs,mode=grpcwebtext:/app/src/_proto
-
 RUN echo "REACT_APP_ENV value is: ${REACT_APP_ENV}" && \
     if [ "$VERBOSE" = "true" ]; then \
     npm ls --depth=0 && npm run build --loglevel verbose; \
