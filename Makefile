@@ -52,7 +52,7 @@ build:
 		--build-arg BASE_IMAGE_TAG=$(BASE_IMAGE_TAG) \
 		--build-arg AWS_ACCOUNT_ID=$(REGISTRY-IDS) \
     --build-arg ENV_CONFIG=${ENVIRONMENT} \
-	  -f Dockerfile.prod \
+	  -f production/Dockerfile \
 		./
 
 push:
