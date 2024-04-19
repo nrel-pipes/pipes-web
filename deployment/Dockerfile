@@ -1,6 +1,6 @@
 ARG BASE_IMAGE_TAG AWS_ACCOUNT_ID ENV_CONFIG VERBOSE
 # Build the node app
-FROM node:16-alpine AS build
+FROM node:21-alpine AS build
 
 ARG BASE_IMAGE_TAG AWS_ACCOUNT_ID ENV_CONFIG VERBOSE
 
@@ -10,7 +10,6 @@ WORKDIR /app
 
 # COPY package.json package-lock.json ./
 COPY package.json package-lock.json ./
-COPY pipes-protobufs/ /app/src/_proto/
 COPY public/ /app/public/
 copy src/ /app/src/
 

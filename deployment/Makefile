@@ -1,6 +1,6 @@
 -include env_make
 
-BASE_IMAGE_TAG ?= 1.25.1
+BASE_IMAGE_TAG ?= 1.25.3.1
 
 PROJECT_NAME=pipes-web
 
