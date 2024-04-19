@@ -3,8 +3,8 @@ import { create } from "zustand";
 
 // Internal imports
 // import { pipesClient, requestMetadata } from "./ClientSetup";
-import { ProjectContext } from "../../_proto/types_pb.js";
-import { GetProjectScheduleRequest } from "../../_proto/api_pb.js";
+// import { ProjectContext } from "../../_proto/types_pb.js";
+// import { GetProjectScheduleRequest } from "../../_proto/api_pb.js";
 
 export const useScheduleStore = create((set, get) => ({
   project: { start: "", end: "", milestones: [] },
@@ -38,10 +38,10 @@ export const useScheduleStore = create((set, get) => ({
   },
 
   fetch: (projectName) => {
-    let context = new ProjectContext();
-    context.setProjectName(projectName);
-    let request = new GetProjectScheduleRequest();
-    request.setProjectContext(context);
+    // let context = new ProjectContext();
+    // context.setProjectName(projectName);
+    // let request = new GetProjectScheduleRequest();
+    // request.setProjectContext(context);
     // Get project includes everything... Validate that getProjectSchedule is the same as api/projects
     // pipesClient.getProjectSchedule(request, requestMetadata, (_, response) => {
     //   console.log(response);

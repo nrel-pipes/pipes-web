@@ -1,7 +1,7 @@
 import { create } from "zustand";
 // import { pipesClient, requestMetadata } from "./ClientSetup";
-import { ProjectContext } from "../../_proto/types_pb.js";
-import { ListProjectRunsRequest } from "../../_proto/api_pb.js";
+// import { ProjectContext } from "../../_proto/types_pb.js";
+// import { ListProjectRunsRequest } from "../../_proto/api_pb.js";
 import { modelNodeColors } from "./store";
 
 export const useProjectRunStore = create((set) => ({
@@ -14,11 +14,11 @@ export const useProjectRunStore = create((set) => ({
     set({ currentProjectRun: runName });
   },
   fetch: (projectName) => {
-    let context = new ProjectContext();
-    context.setProjectName(projectName);
-    let request = new ListProjectRunsRequest();
-    console.log("Request: " + request);
-    request.setProjectContext(context);
+    // let context = new ProjectContext();
+    // context.setProjectName(projectName);
+    // let request = new ListProjectRunsRequest();
+    // console.log("Request: " + request);
+    // request.setProjectContext(context);
 
     fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projectruns/?project=" + projectName, {
       headers: {

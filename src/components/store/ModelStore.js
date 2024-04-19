@@ -1,10 +1,10 @@
 import { create } from "zustand";
 // import { pipesClient, requestMetadata } from "./ClientSetup";
-import {
-  ListModelsRequest,
-  GetModelProgressRequest,
-} from "../../_proto/api_pb";
-import { ProjectRunContext, ModelContext } from "../../_proto/types_pb";
+// import {
+//   ListModelsRequest,
+//   GetModelProgressRequest,
+// } from "../../_proto/api_pb";
+// import { ProjectRunContext, ModelContext } from "../../_proto/types_pb";
 export const useModelStore = create((set, get) => ({
   models: [],
   runs: {},
@@ -28,12 +28,12 @@ export const useModelStore = create((set, get) => ({
   },
 
   fetchModelRuns: (projectName, projectRunName, modelName) => {
-    let modelContext = new ModelContext();
-    modelContext.setProjectName(projectName);
-    modelContext.setProjectRunName(projectRunName);
-    modelContext.setModelName(modelName);
-    let progressRequest = new GetModelProgressRequest();
-    progressRequest.setModelContext(modelContext);
+    // let modelContext = new ModelContext();
+    // modelContext.setProjectName(projectName);
+    // modelContext.setProjectRunName(projectRunName);
+    // modelContext.setModelName(modelName);
+    // let progressRequest = new GetModelProgressRequest();
+    // progressRequest.setModelContext(modelContext);
     // Disable this feature... Need more logic...
     // pipesClient.getModelProgress(
     //   progressRequest,
@@ -112,24 +112,24 @@ export const useModelStore = create((set, get) => ({
     // );
   },
   fetch: (projectName, projectRunName) => {
-    if (projectName !== "" && projectRunName !== "") {
-      let context = new ProjectRunContext();
-      context.setProjectName(projectName);
-      context.setProjectRunName(projectRunName);
-      let request = new ListModelsRequest();
-      request.setProjectRunContext(context);
+    // if (projectName !== "" && projectRunName !== "") {
+      // let context = new ProjectRunContext();
+      // context.setProjectName(projectName);
+      // context.setProjectRunName(projectRunName);
+      // let request = new ListModelsRequest();
+      // request.setProjectRunContext(context);
       // Fix this... Get the models
-      fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projectruns/?project=" + projectName, {
-        headers: {
-          accept: "application/json",
-          Authorization:
-            `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      }).then((response) => response.json())
-      .then((data) => {
-        set({models: data.scenarios});
-        console.log("set scenarios " + data.scenarios);
-      })
+      // fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projectruns/?project=" + projectName, {
+      //   headers: {
+      //     accept: "application/json",
+      //     Authorization:
+      //       `Bearer ${localStorage.getItem("accessToken")}`,
+      //   },
+      // }).then((response) => response.json())
+      // .then((data) => {
+      //   set({models: data.scenarios});
+      //   console.log("set scenarios " + data.scenarios);
+      // })
 
       // pipesClient.listModels(request, requestMetadata, (_, response) => {
       //   console.log("fetching model data...");
@@ -139,7 +139,7 @@ export const useModelStore = create((set, get) => ({
 
       //   set({ models: data });
       // });
-    }
+    // }
   },
 }));
 
