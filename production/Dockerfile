@@ -13,9 +13,10 @@ COPY package.json package-lock.json ./
 COPY public/ /app/public/
 copy src/ /app/src/
 
-RUN echo "REACT_APP_ENV value is: ${REACT_APP_ENV}" && \
-    if [ "$VERBOSE" = "true" ]; then \
-    npm install && npm run build --loglevel verbose; \
+RUN echo "REACT_APP_ENV value is: ${REACT_APP_ENV}"
+RUN npm install --omit=dev
+RUN if [ "$VERBOSE" = "true" ]; then \
+    npm run build --loglevel verbose; \
 else \
     npm run build; \
 fi
