@@ -15,7 +15,7 @@ copy src/ /app/src/
 
 RUN echo "REACT_APP_ENV value is: ${REACT_APP_ENV}" && \
     if [ "$VERBOSE" = "true" ]; then \
-    npm ls --depth=0 && npm run build --loglevel verbose; \
+    npm install && npm run build --loglevel verbose; \
 else \
     npm run build; \
 fi
