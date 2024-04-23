@@ -3,6 +3,7 @@ import { useProjectStore } from "../components/store/ProjectStore";
 import { useProjectRunStore } from "../components/store/ProjectRunStore";
 import { useModelStore } from "../components/store/ModelStore";
 import { useScheduleStore } from "../components/store/ScheduleStore";
+import { Row } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Overlay from "react-bootstrap/Overlay";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -31,7 +32,6 @@ export default function SetContextPage() {
   // make function to response = fetch("http://0.0.0.0:8080/api/projects/basics"); and return list of json objects
   const [projects, setProjects] = useState([]);
   useEffect(() => {
-    console.log(localStorage.getItem("REACT_APP_BASE_URL") + "api/projects/basics");
     fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projects/basics", {
       method: "GET",
       headers: {
@@ -47,14 +47,12 @@ export default function SetContextPage() {
         }
         else {
           setProjects(data);
-          console.log("Data", data);
         }
       })
       .catch((error) => console.log(error));
   }, []);
 
   function fetchProject(rawProjectName) {
-    console.log(rawProjectName);
     projectStore.reset();
     projectRunStore.reset();
     modelStore.reset();
@@ -65,7 +63,6 @@ export default function SetContextPage() {
     projectRunStore.fetch(rawProjectName);
     scheduleStore.fetch(rawProjectName);
     setShowInfoPopup(false);
-    console.log(setProjectName);
   }
 
   return (
@@ -94,29 +91,27 @@ export default function SetContextPage() {
       </div>
       <h1>Choose Your Project</h1>
 
-      <ul>
-        {projects.map((project, index) => (
-          <Card key={project.name} style={{ width: "18rem", margin: "10px" }}>
-            <Card.Body className="bg-dark text-light">
-              <Card.Title>{project.name}</Card.Title>
-              <Card.Text>{project.description}</Card.Text>
-              <Button
-                className="bg-dark text-light "
-                variant="outline-light"
-                onClick={(e) => {
-                  e.preventDefault();
-                  fetchProject(project.name);
-                }}
-              >
-                To Overview
-              </Button>
-            </Card.Body>
-          </Card>
-        ))}
-      </ul>
-      <Button variant="outline-light" onClick={handleShow}>
-        Create Project
-      </Button>
+      <Row>
+      {projects.map((project, index) => (
+        <Card key={project.name} style={{ width: "25%", margin: "10px"}}>
+          <Card.Body className="bg-dark text-light">
+            <Card.Title>{project.name}</Card.Title>
+            <Card.Text>{project.description}</Card.Text>
+            <Button
+              className="bg-dark text-light "
+              variant="outline-light"
+              onClick={(e) => {
+                e.preventDefault();
+                fetchProject(project.name);
+              }}
+            >
+              To Overview
+            </Button>
+          </Card.Body>
+        </Card>
+      ))}
+      </Row>
+
       <Modal className="text-dark" show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>New Project</Modal.Title>

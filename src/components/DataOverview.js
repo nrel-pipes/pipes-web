@@ -31,7 +31,6 @@ export default function DataOverview({ selected, flexHeight }) {
   const data = useMemo(() => {
     if (selected) {
       if (selected.id in modelRuns) {
-        console.log("im in here");
         let datasets = [];
 
         Object.values(modelRuns[selected.id]).forEach((run) => {

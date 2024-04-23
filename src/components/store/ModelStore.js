@@ -46,7 +46,6 @@ export const useModelStore = create((set, get) => ({
     //       response.getCode() !== "UNKNOWN"
     //     ) {
     //       let runData = JSON.parse(response.getModelProgress());
-    //       console.log(runData);
     //       let numCheckIns = 0;
     //       let checkInsByScenario = {};
     //       let lastCheckin = new Date("1999-01-01T00:00:00");

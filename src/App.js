@@ -4,7 +4,6 @@ import "./App.css";
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
-import GenericError from "./components/GenericError";
 import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
 import AccountPage from "./pages/AccountPage";
@@ -32,9 +31,27 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState();
 
   useEffect(() => {
-    // Check PIPE server connection
+    let URL;
 
-    fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/", {
+    switch (process.env.REACT_APP_ENV) {
+      case "prod":
+        URL = "https://pipes-api.nrel.gov";
+        break;
+      case "stage":
+        URL = "https://pipes-api-stage.stratus.nrel.gov/";
+        break;
+      case "dev":
+        URL = "https://pipes-api-dev.stratus.nrel.gov/";
+        break;
+      default:
+        URL = "http://0.0.0.0:8080/";
+    }
+
+    localStorage.setItem("REACT_APP_BASE_URL", URL);
+
+    // Check PIPE server connection
+    let healthchek =  localStorage.getItem("REACT_APP_BASE_URL") + "api/ping";
+    fetch(healthchek, {
       method: "GET",
       headers: {
         accept: "application/json",
@@ -42,8 +59,7 @@ const App = () => {
           `Bearer ${localStorage.getItem("accessToken")}`,
       },
     }).then((response) => {
-      console.log(response.status);
-      if (response.satus == 200) {
+      if (response.satus === 200) {
         setIsConnected(response.getIsHappy());
       } else {
         setIsConnected(false);
@@ -60,11 +76,6 @@ const App = () => {
 
   return (
     <>
-      <GenericError
-        show={!isConnected}
-        setShow={setIsConnected}
-        header="Could not connect to PIPES server"
-      />
       <BrowserRouter>
         <InitialAuthProvider>
           <Routes>

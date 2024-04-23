@@ -10,7 +10,6 @@ export const useProjectStore = create((set) => ({
     milestones: [],
   },
   reset: () => {
-    
     set({
       project: {
         full_name: "",
@@ -32,12 +31,12 @@ export const useProjectStore = create((set) => ({
         },
       })
       .then(response => {
-        
         if (response.status === 200) {
           response.json().then(data => {
+            console.log("--------------------------------");
             console.log(data);
             set({project: data});
-            document.getElementById("c2c-tab-overview").click();
+            // document.getElementById("c2c-tab-overview").click();
           })
         } else if (response.getDetails().includes("closed")) {
             setServerError(true);
@@ -45,6 +44,6 @@ export const useProjectStore = create((set) => ({
           setProjectExists(false);
         }
       })
-      .catch(error => console.log(error))  
+      .catch(error => console.log(error))
   },
 }));

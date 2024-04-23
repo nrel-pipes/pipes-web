@@ -70,7 +70,6 @@ export function createNodesOverview(models, modelRuns, lastCheckIns, edges) {
     : models.map((model) => model.name);
 
   let nodePos = getLayout(names, edges);
-  console.log(nodePos);
 
   // Subset the models based on ones that currently in the edge network
 
@@ -291,7 +290,6 @@ function getLayout(models, edges) {
       }
     });
   }
-  console.log(g);
   layout(g);
 
   return g._nodes;

@@ -20,7 +20,9 @@ export const useProjectRunStore = create((set) => ({
     // console.log("Request: " + request);
     // request.setProjectContext(context);
 
-    fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projectruns/?project=" + projectName, {
+    const projectContext = new URLSearchParams({project: projectName});
+    const prUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projectruns/?${projectContext}`;
+    fetch(prUrl, {
       headers: {
         accept: "application/json",
         Authorization:
@@ -28,24 +30,41 @@ export const useProjectRunStore = create((set) => ({
       },
     }).then((response) => response.json())
     .then((data) => {
-      console.log(data);
       data.sort((a, b) => {
         let adate = new Date(a.scheduled_start);
         let bdate = new Date(b.scheduled_end);
         return adate === bdate ? 0 : adate > bdate ? 1 : -1;
       });
+
+      // DELTE later
+      return;
+
       const modelNames = new Set(
         data
           .map((run) => {
-            return [...run.models.map((model) => model.model_name)];
+            const projectRunContext = new URLSearchParams({
+              project: projectName,
+              projectrun: run.name
+            })
+            const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+            fetch(mUrl, {
+              headers: {
+                accept: "application/json",
+                Authorization:
+                  `Bearer ${localStorage.getItem("accessToken")}`,
+              },
+            }).then((response) => response.json()).then((models) => {
+              //console.log(data);
+              // console.log(models);
+              return models.map((model) => model.model_name)
+            });
+            // return [...run.models.map((model) => model.model_name)];
           })
           .flat()
       );
       modelNodeColors.domain(modelNames);
-      console.log(data);
       set({ runs: data });
       set({ currentProjectRun: data[0].name });
-      console.log(modelNames);
     }).catch((error) => console.log(error));
   },
 }));

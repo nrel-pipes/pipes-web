@@ -169,13 +169,9 @@ export default function RequirementsTable({ projectRunName, modelName }) {
               .map((req, i) => {
                 const reqName = req[0];
                 const reqVal = req[1];
-                console.log("addedReqs: ");
-                console.log(addedProjectRunRequirements);
                 if (addedProjectRunRequirements.includes(reqName)) {
                   return null;
                 } else {
-                  console.log("project run reqs...");
-                  console.log(req);
                   const modelHasReq = modelRequirements
                     ? reqName in modelRequirements
                     : false;

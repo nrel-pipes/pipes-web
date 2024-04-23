@@ -49,7 +49,6 @@ export default function PipelineOverview({ data, selected, setSelected }) {
       lastCheckIns,
       data.edges
     );
-    console.log(nds);
 
     setNodes(nds);
     setEdges(createEdgesOverview(data.edges));

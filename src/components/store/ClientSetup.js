@@ -3,28 +3,6 @@ import { CognitoRefreshToken, CognitoUserPool, CognitoUser } from "amazon-cognit
 // import { PIPESClient } from "../../_proto/pipes_grpc_web_pb";
 import { COGNITO_CLIENT_ID, COGNITO_USER_POOL_ID } from "../CognitoConfig";
 
-let URL;
-
-switch (process.env.REACT_APP_ENV) {
-  case "prod":
-    URL = "https://pipes-proxy.stratus.nrel.gov";
-    break;
-  case "stage":
-    URL = "https://pipes-proxy-stage.stratus.nrel.gov";
-    break;
-  case "dev":
-    URL = "https://pipes-proxy-dev.stratus.nrel.gov";
-    break;
-  default:
-    URL = "https://pipes-proxy-dev.stratus.nrel.gov";
-
-  // URL = "http://localhost:8080";
-} 
-
-localStorage.setItem("REACT_APP_BASE_URL", "http://0.0.0.0:8080/");
-// export const pipesClient = new PIPESClient(URL);
-
-
 function getCognitoToken (tokenName) {
   const idToken = localStorage.getItem("idToken");
   const accessToken = localStorage.getItem("accessToken");

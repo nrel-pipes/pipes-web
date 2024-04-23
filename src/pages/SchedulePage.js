@@ -20,7 +20,6 @@ export default function SchedulePage() {
   const [sidebar, setSidebar] = useState(true);
 
   const handlePeriodSelect = (event) => {
-    console.log(event);
     setPeriod(event);
   };
 

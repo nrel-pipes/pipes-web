@@ -155,12 +155,11 @@ export default function EventStream() {
 
   projectRuns.forEach((run) => {
     const numDaysStart = getDaysBetweenDates(
-      todaysDate,
-      getDate(run.schedule.start)
+      getDate(run.scheduled_start)
     );
     const numDaysEnd = getDaysBetweenDates(
       todaysDate,
-      getDate(run.schedule.end)
+      getDate(run.scheduled_end)
     );
 
     // check if project run is near start
@@ -169,7 +168,7 @@ export default function EventStream() {
         "Project run will start in " + Math.floor(numDaysStart) + " days";
       addWarning(
         msg,
-        getDate(run.schedule.start),
+        getDate(run.scheduled_start),
         numDaysStart,
         null,
         run.name,
@@ -184,7 +183,7 @@ export default function EventStream() {
       let msg = "Project run ends in " + Math.floor(numDaysEnd) + " days";
       addWarning(
         msg,
-        getDate(run.schedule.end),
+        getDate(run.scheduled_end),
         numDaysEnd,
         null,
         run.name,
@@ -195,7 +194,26 @@ export default function EventStream() {
     }
 
     // check if models are starting or ending soon
-    run.models.forEach((model) => {
+    let models = null;
+    const projectRunContext = new URLSearchParams({
+      project: project.name,
+      projectrun: run.name
+    })
+    const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+    console.log(mUrl);
+    fetch(mUrl, {
+      headers: {
+        accept: "application/json",
+        Authorization:
+          `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }).then((response) => response.json()).then((result) => {
+      models = result;
+    });
+    console.log(project);
+    console.log("================================")
+    console.log(models);
+    models.forEach((model) => {
       const modelStartDate = getDate(model.schedule.start);
       const numDaysModelStart = getDaysBetweenDates(todaysDate, modelStartDate);
       const modelEndDate = getDate(model.schedule.end);
@@ -518,7 +536,9 @@ function EventTable({ rows, handleHeaderClick, order, orderBy }) {
   );
 }
 function getDaysBetweenDates(date1, date2) {
-  return (date2.getTime() - date1.getTime()) / (1000 * 3600 * 24);
+  let d1 = new Date(date1);
+  let d2 = new Date(date2);
+  return (d2.getTime() - d1.getTime()) / (1000 * 3600 * 24);
 }
 
 function getDate(stringDate) {
