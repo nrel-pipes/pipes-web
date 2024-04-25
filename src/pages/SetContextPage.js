@@ -23,6 +23,7 @@ export default function SetContextPage() {
   const [projectExists, setProjectExists] = useState(true);
   const [serverError, setServerError] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(true);
+  const [projectMessage, setProjectMessage] = useState("Choose a Project");
 
   const [show, setShow] = useState(false);
 
@@ -44,6 +45,7 @@ export default function SetContextPage() {
       .then((data) => {
         if (data.length == 0) {
           setProjects([]);
+          setProjectMessage("You Have No Projects");
         }
         else {
           setProjects(data);
@@ -79,19 +81,11 @@ export default function SetContextPage() {
         show={serverError}
         setShow={setServerError}
       />
-      <div style={{ padding: 10 }}>
-        For more information about PIPES, visit{" "}
-        <a
-          href="https://nrel-pipes.github.io/pipes-core/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          the docs
-        </a>
-      </div>
-      <h1>Choose Your Project</h1>
+      {/* Currently no projects */}
+      <h1>{projectMessage}</h1>
 
       <Row>
+        {/* Fix in case of no projects */}
       {projects.map((project, index) => (
         <Card key={project.name} style={{ width: "25%", margin: "10px"}}>
           <Card.Body className="bg-dark text-light">
@@ -111,6 +105,17 @@ export default function SetContextPage() {
         </Card>
       ))}
       </Row>
+      <div style={{ padding: 10 }}>
+        For more information about PIPES, visit{" "}
+        <a
+          href="https://nrel-pipes.github.io/pipes-core/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          the docs
+        </a>
+      </div>
+
 
       <Modal className="text-dark" show={show} onHide={handleClose}>
         <Modal.Header closeButton>
