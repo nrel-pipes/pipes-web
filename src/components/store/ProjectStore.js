@@ -30,13 +30,14 @@ export const useProjectStore = create((set) => ({
             `Bearer ${localStorage.getItem("accessToken")}`,
         },
       })
+      // TODO: let's fix this error
       .then(response => {
         if (response.status === 200) {
           response.json().then(data => {
             console.log("--------------------------------");
             console.log(data);
             set({project: data});
-            // document.getElementById("c2c-tab-overview").click();
+            document.getElementById("c2c-tab-overview").click();
           })
         } else if (response.getDetails().includes("closed")) {
             setServerError(true);

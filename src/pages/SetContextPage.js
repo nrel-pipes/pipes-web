@@ -24,14 +24,13 @@ export default function SetContextPage() {
   const [serverError, setServerError] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(true);
   const [projectMessage, setProjectMessage] = useState("Choose a Project");
-
+  const [projects, setProjects] = useState([]);
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
   // make function to response = fetch("http://0.0.0.0:8080/api/projects/basics"); and return list of json objects
-  const [projects, setProjects] = useState([]);
   useEffect(() => {
     fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projects/basics", {
       method: "GET",
@@ -48,7 +47,10 @@ export default function SetContextPage() {
           setProjectMessage("You Have No Projects");
         }
         else {
+          console.log(`data ${data}`);
           setProjects(data);
+          console.log("New State");
+          console.log(projects);
         }
       })
       .catch((error) => console.log(error));
@@ -60,11 +62,12 @@ export default function SetContextPage() {
     modelStore.reset();
     scheduleStore.reset();
     setProjectName(rawProjectName);
-    setProjectName(rawProjectName);
     projectStore.fetch(rawProjectName, setProjectExists, setServerError);
     projectRunStore.fetch(rawProjectName);
     scheduleStore.fetch(rawProjectName);
     setShowInfoPopup(false);
+    console.log(`Project ${JSON.stringify(projects)}`);
+    
   }
 
   return (
@@ -97,6 +100,7 @@ export default function SetContextPage() {
               onClick={(e) => {
                 e.preventDefault();
                 fetchProject(project.name);
+                
               }}
             >
               To Overview
