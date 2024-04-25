@@ -84,31 +84,32 @@ export default function SetContextPage() {
         show={serverError}
         setShow={setServerError}
       />
-      {/* Currently no projects */}
       <h1>{projectMessage}</h1>
 
       <Row>
-        {/* Fix in case of no projects */}
-      {projects.map((project, index) => (
-        <Card key={project.name} style={{ width: "25%", margin: "10px"}}>
-          <Card.Body className="bg-dark text-light">
-            <Card.Title>{project.name}</Card.Title>
-            <Card.Text>{project.description}</Card.Text>
-            <Button
-              className="bg-dark text-light "
-              variant="outline-light"
-              onClick={(e) => {
-                e.preventDefault();
-                fetchProject(project.name);
-                
-              }}
-            >
-              To Overview
-            </Button>
-          </Card.Body>
-        </Card>
-      ))}
-      </Row>
+      {projects.length == 0 ? (
+        projects.map((project, index) => (
+          <Card key={project.name} style={{ width: "25%", margin: "10px" }}>
+            <Card.Body className="bg-dark text-light">
+              <Card.Title>{project.name}</Card.Title>
+              <Card.Text>{project.description}</Card.Text>
+              <Button
+                className="bg-dark text-light"
+                variant="outline-light"
+                onClick={(e) => {
+                  e.preventDefault();
+                  fetchProject(project.name);
+                }}
+              >
+                To Overview
+              </Button>
+            </Card.Body>
+          </Card>
+        ))
+      ) : (
+        <p></p>
+      )}
+    </Row>
       <div style={{ padding: 10 }}>
         For more information about PIPES, visit{" "}
         <a
