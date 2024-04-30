@@ -51,7 +51,6 @@ export default function PipelineOverview({ projectName, data, selected, setSelec
         projectrun: data.name,
       })
       const hUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/handoffs/?${projectRunContext}`;
-      console.log(hUrl);
       const response = await fetch(hUrl,{
         method: "GET",
         headers: {
@@ -61,7 +60,6 @@ export default function PipelineOverview({ projectName, data, selected, setSelec
         },
       });
       const edges = await response.json();
-      console.log(edges);
 
       const nds = createNodesOverview(
         models,

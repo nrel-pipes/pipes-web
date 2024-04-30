@@ -15,8 +15,6 @@ import Paper from "@mui/material/Paper";
 
 export default function EventStream() {
   const project = useProjectStore((state) => state.project);
-  //console.log("================================================1");
-  // console.log(project);
   const projectRuns = useProjectRunStore((state) => state.runs);
   const currentProjectRun = useProjectRunStore(
     (state) => state.currentProjectRun

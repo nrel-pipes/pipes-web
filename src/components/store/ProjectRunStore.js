@@ -48,9 +48,6 @@ export const useProjectRunStore = create((set) => ({
         return model.name;
       })
     )
-    console.log("--===-0====")
-    console.log(mData);
-    console.log(modelNames)
 
     // const modelNames = new Set(
     //   data.map((run) => {
