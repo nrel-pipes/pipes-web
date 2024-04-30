@@ -1,11 +1,6 @@
 //External imports
 import { create } from "zustand";
 
-// Internal imports
-// import { pipesClient, requestMetadata } from "./ClientSetup";
-// import { ProjectContext } from "../../_proto/types_pb.js";
-// import { GetProjectScheduleRequest } from "../../_proto/api_pb.js";
-
 export const useScheduleStore = create((set, get) => ({
   project: { start: "", end: "", milestones: [] },
   project_runs: [{ name: "", start: "", end: "", models: [], handoffs: [] }],
@@ -30,53 +25,70 @@ export const useScheduleStore = create((set, get) => ({
   setMilestones: (data) => {
     set((state) => ({
       project: {
-        start: state.project.start,
-        end: state.project.end,
+        start: state.project.scheduled_start,
+        end: state.project.scheduled_end,
         milestones: data,
       },
     }));
   },
 
-  fetch: (projectName) => {
-    // let context = new ProjectContext();
-    // context.setProjectName(projectName);
-    // let request = new GetProjectScheduleRequest();
-    // request.setProjectContext(context);
-    // Get project includes everything... Validate that getProjectSchedule is the same as api/projects
-    // pipesClient.getProjectSchedule(request, requestMetadata, (_, response) => {
-    //   console.log(response);
-    //   if (
-    //     response.getCode() === 200
-    //   ) {
-    //     let data = JSON.parse(response.getProjectSchedule());
+  fetch: async (projectName) => {
 
-    //     for (let i = 0; i < data.project_runs.length; i++) {
-    //       let pr = data.project_runs[i];
-    //       let models = pr.models;
-    //       models.sort((a, b) => {
-    //         let adate = new Date(a.start + "T00:00:00");
-    //         let bdate = new Date(b.start + "T00:00:00");
-    //         return adate === bdate ? 0 : adate > bdate ? 1 : -1;
-    //       });
-    //     }
-    //     data.project_runs.sort((a, b) => {
-    //       let adate = new Date(a.start + "T00:00:00");
-    //       let bdate = new Date(b.start + "T00:00:00");
-    //       return adate === bdate ? 0 : adate > bdate ? 1 : -1;
-    //     });
+    // Fetch Project
+    const projectContext = new URLSearchParams({
+      project: projectName,
+    })
+    const pUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projects/?${projectContext}`;
+    const pResponse = await fetch(pUrl,{
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization:
+          `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
+    const pData = await pResponse.json();
 
-    //     set({
-    //       project: {
-    //         start: data.project.start,
-    //         end: data.project.end,
-    //         milestones: [],
-    //       },
-    //       project_runs: data.project_runs,
-    //     });
-    //   }
-    // });
-  },
+    // Fetch project runs
+    const prUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projectruns/?${projectContext}`;
+    const prResponse = await fetch(prUrl, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization:
+          `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
+    const prData = await prResponse.json();
+
+    // TODO: old gRPC API data sort models within project runs
+    // for (let i = 0; i < prData.length; i++) {
+    //   let pr = prData[i];
+    //   let models = pr.models;
+    //   models.sort((a, b) => {
+    //     let adate = new Date(a.start + "T00:00:00");
+    //     let bdate = new Date(b.start + "T00:00:00");
+    //     return adate === bdate ? 0 : adate > bdate ? 1 : -1;
+    //   });
+    // }
+    prData.sort((a, b) => {
+      let adate = new Date(a.scheduled_start + "T00:00:00");
+      let bdate = new Date(b.scheduled_start + "T00:00:00");
+      return adate === bdate ? 0 : adate > bdate ? 1 : -1;
+    });
+
+    set({
+      project: {
+        start: pData.scheduled_start,
+        end: pData.scheduled_end,
+        milestones: [],
+      },
+      project_runs: prData,
+    });
+  }
 }));
+
+
 export const useScheduleStoreV1 = create((set) => ({
   project: {
     start: new Date(2022, 10, 1),

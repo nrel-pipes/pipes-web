@@ -12,8 +12,9 @@ import { useModelStore } from "../components/store/ModelStore";
 import * as d3 from "d3";
 import Tooltip from "./Tooltip";
 import { useUIStore } from "./store/store";
+import { width } from "@fortawesome/free-regular-svg-icons/faAddressBook";
 
-export default function PipelineOverview({ data, selected, setSelected }) {
+export default function PipelineOverview({ projectName, data, selected, setSelected }) {
   //
   // References
   //
@@ -43,16 +44,37 @@ export default function PipelineOverview({ data, selected, setSelected }) {
   useEffect(() => {
     const div = d3.select(tooltipDiv.current);
     tooltip.current = new Tooltip(div);
-    const nds = createNodesOverview(
-      models,
-      modelRuns,
-      lastCheckIns,
-      data.edges
-    );
 
-    setNodes(nds);
-    setEdges(createEdgesOverview(data.edges));
+    const fetchData = async () => {
+      const projectRunContext = new URLSearchParams({
+        project: projectName,
+        projectrun: data.name,
+      })
+      const hUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/handoffs/?${projectRunContext}`;
+      const response = await fetch(hUrl,{
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      const edges = await response.json();
+
+      const nds = createNodesOverview(
+        models,
+        modelRuns,
+        lastCheckIns,
+        edges
+      );
+
+      setNodes(nds);
+      setEdges(createEdgesOverview(edges));
+    }
+
+    fetchData().catch(console.error);
   }, [
+    projectName,
     data,
     models,
     lastCheckIns,
@@ -121,7 +143,7 @@ export default function PipelineOverview({ data, selected, setSelected }) {
   return (
     <div
       className="pipeline-overview"
-      style={{ overflow: "auto", resize: "both" }}
+      style={{ overflow: "auto", resize: "both"}}
     >
       <ReactFlowProvider>
         <ReactFlow

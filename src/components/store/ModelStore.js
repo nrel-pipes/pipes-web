@@ -1,10 +1,5 @@
 import { create } from "zustand";
-// import { pipesClient, requestMetadata } from "./ClientSetup";
-// import {
-//   ListModelsRequest,
-//   GetModelProgressRequest,
-// } from "../../_proto/api_pb";
-// import { ProjectRunContext, ModelContext } from "../../_proto/types_pb";
+
 export const useModelStore = create((set, get) => ({
   models: [],
   runs: {},
@@ -27,118 +22,52 @@ export const useModelStore = create((set, get) => ({
     set({ runs: {} });
   },
 
-  fetchModelRuns: (projectName, projectRunName, modelName) => {
-    // let modelContext = new ModelContext();
-    // modelContext.setProjectName(projectName);
-    // modelContext.setProjectRunName(projectRunName);
-    // modelContext.setModelName(modelName);
-    // let progressRequest = new GetModelProgressRequest();
-    // progressRequest.setModelContext(modelContext);
-    // Disable this feature... Need more logic...
-    // pipesClient.getModelProgress(
-    //   progressRequest,
-    //   requestMetadata,
-    //   (_, response) => {
-    //     if (
-    //       response.getCode() !== "NOT_FOUND" &&
-    //       response.getCode() !== "INVALID_ARGUMENT" &&
-    //       response.getCode() !== "VALUE_ERROR" &&
-    //       response.getCode() !== "UNKNOWN"
-    //     ) {
-    //       let runData = JSON.parse(response.getModelProgress());
-    //       let numCheckIns = 0;
-    //       let checkInsByScenario = {};
-    //       let lastCheckin = new Date("1999-01-01T00:00:00");
-    //       let hasCheckin = false;
-    //       if (runData.length > 0) {
-    //         runData.forEach((run) => {
-    //           numCheckIns = numCheckIns + run.datasets.length;
-
-    //           run.datasets.forEach((dataset) => {
-    //             let datasetCheckInDate = new Date(dataset.created);
-    //             hasCheckin = true;
-    //             if (datasetCheckInDate > lastCheckin) {
-    //               lastCheckin = datasetCheckInDate;
-    //             }
-    //             if (Array.isArray(dataset.scenarios)) {
-    //               dataset.scenarios.forEach((scenario) => {
-    //                 if (scenario in checkInsByScenario) {
-    //                   checkInsByScenario[scenario] =
-    //                     checkInsByScenario[scenario] + 1;
-    //                 } else {
-    //                   checkInsByScenario[scenario] = 1;
-    //                 }
-    //               });
-    //             } else {
-    //               if (dataset.scenarios in checkInsByScenario) {
-    //                 checkInsByScenario[dataset.scenarios] += 1;
-    //               } else {
-    //                 checkInsByScenario[dataset.scenarios] = 1;
-    //               }
-    //             }
-    //           });
-    //         });
-
-    //         runData = Object.fromEntries(
-    //           runData.map((run) => {
-    //             return [run.model_run_props.name, run];
-    //           })
-    //         );
-
-    //         set((state) => ({
-    //           runs: {
-    //             ...state.runs,
-    //             [modelName]: runData,
-    //           },
-    //         }));
-    //       }
-    //       set((state) => ({
-    //         numCheckIns: {
-    //           ...state.numCheckIns,
-    //           [modelName]: numCheckIns,
-    //         },
-    //         numCheckInsByScenario: {
-    //           ...state.numCheckInsByScenario,
-    //           [modelName]: checkInsByScenario,
-    //         },
-    //         lastCheckIn: {
-    //           ...state.lastCheckIn,
-    //           [modelName]: hasCheckin ? lastCheckin : null,
-    //         },
-    //       }));
-    //     }
-    //   }
-    // );
+  fetchModelRuns: async (projectName, projectRunName, modelName) => {
+    try {
+      const modelContext = new URLSearchParams({
+        project: projectName,
+        projectrun: projectRunName,
+        model: modelName
+      })
+      const mrUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/modelruns/?${modelContext}`;
+      const response = await fetch(mrUrl,{
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        set({runs: data});
+      }
+    } catch (error) {
+      console.log("Failed to fetch projects from the server.")
+    }
   },
-  fetch: (projectName, projectRunName) => {
-    // if (projectName !== "" && projectRunName !== "") {
-      // let context = new ProjectRunContext();
-      // context.setProjectName(projectName);
-      // context.setProjectRunName(projectRunName);
-      // let request = new ListModelsRequest();
-      // request.setProjectRunContext(context);
-      // Fix this... Get the models
-      // fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projectruns/?project=" + projectName, {
-      //   headers: {
-      //     accept: "application/json",
-      //     Authorization:
-      //       `Bearer ${localStorage.getItem("accessToken")}`,
-      //   },
-      // }).then((response) => response.json())
-      // .then((data) => {
-      //   set({models: data.scenarios});
-      //   console.log("set scenarios " + data.scenarios);
-      // })
-
-      // pipesClient.listModels(request, requestMetadata, (_, response) => {
-      //   console.log("fetching model data...");
-      //   const data = JSON.parse(response.getModels());
-      //   console.log("fetch model data");
-      //   console.log("Data models" + data);
-
-      //   set({ models: data });
-      // });
-    // }
+  fetch: async (projectName, projectRunName) => {
+    try {
+      const projectRunContext = new URLSearchParams({
+        project: projectName,
+        projectrun: projectRunName
+      })
+      const mUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+      const response = await fetch(mUrl,{
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        set({models: data});
+      }
+    } catch (error) {
+      console.log("Failed to fetch projects from the server.")
+    }
   },
 }));
 
