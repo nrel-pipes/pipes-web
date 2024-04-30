@@ -27,11 +27,11 @@ export default function OverviewPage() {
   const projectRuns = useProjectRunStore((state) => state.runs);
 
   const projectName = useProjectStore((state) => state.project.name);
-  const projectFullName = useProjectStore((state) => state.project.full_name);
+  const projectFullName = useProjectStore((state) => state.project.title);
   const scenarios = useProjectStore((state) => state.project.scenarios);
   const scenarioColors = useUIStore((state) => state.scenarios);
   const models = useModelStore((state) => state.models);
-  
+
 
   const setScenarioProperty = useUIStore((state) => state.setScenarioProperty);
   const [projectRun, setProjectRun] = useState(0);
@@ -176,6 +176,7 @@ export default function OverviewPage() {
             <></>
           ) : (
             <PipelineOverview
+              projectName={projectName}
               data={projectRuns[projectRun]}
               selected={selectedModel}
               setSelected={setSelectedModel}

@@ -15,6 +15,8 @@ import Paper from "@mui/material/Paper";
 
 export default function EventStream() {
   const project = useProjectStore((state) => state.project);
+  //console.log("================================================1");
+  // console.log(project);
   const projectRuns = useProjectRunStore((state) => state.runs);
   const currentProjectRun = useProjectRunStore(
     (state) => state.currentProjectRun
@@ -118,7 +120,7 @@ export default function EventStream() {
     //check if project is near end
     let msg =
       "Project " +
-      project.full_name +
+      project.title +
       " ends in " +
       Math.floor(daysProjectEnds) +
       " days";
@@ -153,7 +155,7 @@ export default function EventStream() {
     }
   });
 
-  projectRuns.forEach((run) => {
+  projectRuns.forEach(async (run) => {
     const numDaysStart = getDaysBetweenDates(
       getDate(run.scheduled_start)
     );
@@ -195,28 +197,30 @@ export default function EventStream() {
 
     // check if models are starting or ending soon
     let models = null;
-    const projectRunContext = new URLSearchParams({
-      project: project.name,
-      projectrun: run.name
-    })
-    const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
-    console.log(mUrl);
-    fetch(mUrl, {
-      headers: {
-        accept: "application/json",
-        Authorization:
-          `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-    }).then((response) => response.json()).then((result) => {
-      models = result;
-    });
-    console.log(project);
-    console.log("================================")
-    console.log(models);
+    try {
+      const projectRunContext = new URLSearchParams({
+        project: project.name,
+        projectrun: run.name
+      })
+      const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+      const response = await fetch(mUrl, {
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (response.ok) {
+        models = await response.json();
+      }
+    } catch (error) {
+      console.log("Failed to fetch project models.")
+    }
+
     models.forEach((model) => {
-      const modelStartDate = getDate(model.schedule.start);
+      const modelStartDate = getDate(model.scheduled_start);
       const numDaysModelStart = getDaysBetweenDates(todaysDate, modelStartDate);
-      const modelEndDate = getDate(model.schedule.end);
+      const modelEndDate = getDate(model.scheduled_end);
       const numDaysModelEnd = getDaysBetweenDates(todaysDate, modelEndDate);
       if (numDaysModelStart > 1 && numDaysModelStart < 8) {
         let msg =

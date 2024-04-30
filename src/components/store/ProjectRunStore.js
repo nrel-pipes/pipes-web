@@ -13,58 +13,68 @@ export const useProjectRunStore = create((set) => ({
   setCurrentProjectRun: (runName) => {
     set({ currentProjectRun: runName });
   },
-  fetch: (projectName) => {
-    // let context = new ProjectContext();
-    // context.setProjectName(projectName);
-    // let request = new ListProjectRunsRequest();
-    // console.log("Request: " + request);
-    // request.setProjectContext(context);
+  fetch: async (projectName) => {
 
+    // Fetch project run
     const projectContext = new URLSearchParams({project: projectName});
     const prUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projectruns/?${projectContext}`;
-    fetch(prUrl, {
+    const response = await fetch(prUrl, {
       headers: {
         accept: "application/json",
         Authorization:
           `Bearer ${localStorage.getItem("accessToken")}`,
       },
-    }).then((response) => response.json())
-    .then((data) => {
-      data.sort((a, b) => {
-        let adate = new Date(a.scheduled_start);
-        let bdate = new Date(b.scheduled_end);
-        return adate === bdate ? 0 : adate > bdate ? 1 : -1;
-      });
+    });
+    const data = await response.json();
+    data.sort((a, b) => {
+      let adate = new Date(a.scheduled_start);
+      let bdate = new Date(b.scheduled_end);
+      return adate === bdate ? 0 : adate > bdate ? 1 : -1;
+    });
 
-      // DELTE later
-      return;
+    // Fetch models under project run
+    const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectContext}`;
+    const mResponse = await fetch(mUrl, {
+      headers: {
+        accept: "application/json",
+        Authorization:
+          `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
+    const mData = await mResponse.json();
 
-      const modelNames = new Set(
-        data
-          .map((run) => {
-            const projectRunContext = new URLSearchParams({
-              project: projectName,
-              projectrun: run.name
-            })
-            const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
-            fetch(mUrl, {
-              headers: {
-                accept: "application/json",
-                Authorization:
-                  `Bearer ${localStorage.getItem("accessToken")}`,
-              },
-            }).then((response) => response.json()).then((models) => {
-              //console.log(data);
-              // console.log(models);
-              return models.map((model) => model.model_name)
-            });
-            // return [...run.models.map((model) => model.model_name)];
-          })
-          .flat()
-      );
-      modelNodeColors.domain(modelNames);
-      set({ runs: data });
-      set({ currentProjectRun: data[0].name });
-    }).catch((error) => console.log(error));
+    const modelNames = new Set(
+      mData.map((model) => {
+        return model.name;
+      })
+    )
+    console.log("--===-0====")
+    console.log(mData);
+    console.log(modelNames)
+
+    // const modelNames = new Set(
+    //   data.map((run) => {
+    //     const projectRunContext = new URLSearchParams({
+    //       project: projectName,
+    //       projectrun: run.name
+    //     })
+    //     const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+    //     fetch(mUrl, {
+    //       headers: {
+    //         accept: "application/json",
+    //         Authorization:
+    //           `Bearer ${localStorage.getItem("accessToken")}`,
+    //       },
+    //     }).then((response) => response.json()).then((models) => {
+    //       return models.map((model) => model.model_name)
+    //     });
+    //   })
+    //   .flat()
+    // );
+
+    modelNodeColors.domain(modelNames);
+    set({ runs: data });
+    set({ currentProjectRun: data[0].name });
+
   },
 }));

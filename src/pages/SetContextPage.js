@@ -42,7 +42,7 @@ export default function SetContextPage() {
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.length == 0) {
+        if (data.length === 0) {
           setProjects([]);
         }
         else {
@@ -52,14 +52,14 @@ export default function SetContextPage() {
       .catch((error) => console.log(error));
   }, []);
 
-  function fetchProject(rawProjectName) {
+  async function fetchProject(rawProjectName) {
     projectStore.reset();
     projectRunStore.reset();
     modelStore.reset();
     scheduleStore.reset();
     setProjectName(rawProjectName);
     setProjectName(rawProjectName);
-    projectStore.fetch(rawProjectName, setProjectExists, setServerError);
+    await projectStore.fetch(rawProjectName, setProjectExists, setServerError);
     projectRunStore.fetch(rawProjectName);
     scheduleStore.fetch(rawProjectName);
     setShowInfoPopup(false);
@@ -103,6 +103,7 @@ export default function SetContextPage() {
               onClick={(e) => {
                 e.preventDefault();
                 fetchProject(project.name);
+                document.getElementById("c2c-tab-overview").click();
               }}
             >
               To Overview

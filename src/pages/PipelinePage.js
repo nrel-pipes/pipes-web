@@ -108,10 +108,11 @@ export default function PipelinePage() {
         addEdge({ source: currentProjectRun, target: model.model_name });
       });
     }
+    // TODO: no project run edges
     if (projectRun) {
-      projectRun.edges.forEach((edge) => {
-        addEdge({ source: edge.from_model, target: edge.to_model });
-      });
+      // projectRun.edges.forEach((edge) => {
+      //   addEdge({ source: edge.from_model, target: edge.to_model });
+      // });
     }
     if (modelRuns) {
       Object.entries(modelRuns).forEach((o) => {
