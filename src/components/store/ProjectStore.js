@@ -21,7 +21,7 @@ export const useProjectStore = create((set) => ({
       },
     });
   },
-  fetch: (projectName, setProjectExists, setServerError) => {
+  fetch: async (projectName, setProjectExists, setServerError) => {
       fetch(`${localStorage.getItem("REACT_APP_BASE_URL")}api/projects/?project=${projectName}`,{
         method: "GET",
         headers: {

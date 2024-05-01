@@ -49,8 +49,6 @@ export default function SetContextPage() {
         else {
           console.log(`data ${data}`);
           setProjects(data);
-          console.log("New State");
-          console.log(projects);
         }
       })
       .catch((error) => console.log(error));
@@ -87,7 +85,7 @@ export default function SetContextPage() {
       <h1>{projectMessage}</h1>
 
       <Row>
-      {projects.length == 0 ? (
+      {projects.length > 0 ? (
         projects.map((project, index) => (
           <Card key={project.name} style={{ width: "25%", margin: "10px" }}>
             <Card.Body className="bg-dark text-light">
