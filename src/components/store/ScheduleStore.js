@@ -1,6 +1,6 @@
 //External imports
 import { create } from "zustand";
-import origin from "./OriginSetup";
+import getUrl from "./OriginSetup";
 
 
 export const useScheduleStore = create((set, get) => ({
@@ -40,7 +40,7 @@ export const useScheduleStore = create((set, get) => ({
     const projectContext = new URLSearchParams({
       project: projectName,
     })
-    const pUrl = new URL(`api/projects/?${projectContext}`, origin).href;
+    const pUrl = getUrl(`api/projects/?${projectContext}`);
     const pResponse = await fetch(pUrl,{
       method: "GET",
       headers: {
@@ -52,7 +52,7 @@ export const useScheduleStore = create((set, get) => ({
     const pData = await pResponse.json();
 
     // Fetch project runs
-    const prUrl = new URL(`api/projectruns/?${projectContext}`, origin).href;
+    const prUrl = getUrl(`api/projectruns/?${projectContext}`);
     const prResponse = await fetch(prUrl, {
       method: "GET",
       headers: {

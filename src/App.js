@@ -14,7 +14,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { InitialAuthProvider } from './context/AuthContext';
 
 import CognitoAuth from "./components/CognitoAuth";
-import origin from "./components/store/OriginSetup";
+import getUrl from "./components/store/OriginSetup";
 
 const LoginRequiredPage = ({element, ...props}) => {
   const isAuthenticated = CognitoAuth.isAuthenticated();
@@ -41,7 +41,7 @@ const App = () => {
       }
     }
 
-    const pingUrl =  new URL("/api/ping", origin).href;
+    const pingUrl =  getUrl("/api/ping");
     healthcheck(pingUrl).catch(console.error);
 
     // Check if it is authenticated user

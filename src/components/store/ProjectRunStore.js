@@ -3,7 +3,7 @@ import { create } from "zustand";
 // import { ProjectContext } from "../../_proto/types_pb.js";
 // import { ListProjectRunsRequest } from "../../_proto/api_pb.js";
 import { modelNodeColors } from "./store";
-import origin from "./OriginSetup";
+import getUrl from "./OriginSetup";
 
 
 export const useProjectRunStore = create((set) => ({
@@ -19,7 +19,7 @@ export const useProjectRunStore = create((set) => ({
 
     // Fetch project run
     const projectContext = new URLSearchParams({project: projectName});
-    const prUrl = new URL(`api/projectruns/?${projectContext}`, origin).href;
+    const prUrl = getUrl(`api/projectruns/?${projectContext}`);
     const response = await fetch(prUrl, {
       headers: {
         accept: "application/json",
@@ -35,7 +35,7 @@ export const useProjectRunStore = create((set) => ({
     });
 
     // Fetch models under project run
-    const mUrl= new URL(`api/models/?${projectContext}`, origin).href;
+    const mUrl= getUrl(`api/models/?${projectContext}`);
     const mResponse = await fetch(mUrl, {
       headers: {
         accept: "application/json",
@@ -57,7 +57,7 @@ export const useProjectRunStore = create((set) => ({
     //       project: projectName,
     //       projectrun: run.name
     //     })
-    //     const mUrl= new URL(`api/models/?${projectRunContext}`, origin).href;
+    //     const mUrl= getUrl(`api/models/?${projectRunContext}`);
     //     fetch(mUrl, {
     //       headers: {
     //         accept: "application/json",

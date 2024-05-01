@@ -14,7 +14,7 @@ import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 
-import origin from "../components/store/OriginSetup"
+import getUrl from "../components/store/OriginSetup"
 
 
 export default function SetContextPage() {
@@ -37,7 +37,7 @@ export default function SetContextPage() {
   useEffect(() => {
 
     const fetchProjects = async function() {
-      const bUrl = new URL("api/projects/basics", origin).href;
+      const bUrl = getUrl("api/projects/basics");
       const response = await fetch(bUrl, {
         method: "GET",
         headers: {
