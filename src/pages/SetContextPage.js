@@ -14,7 +14,7 @@ import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 
-import getUrl from "../components/store/OriginSetup"
+import getUrl from "../components/store/OriginUrl"
 
 
 export default function SetContextPage() {

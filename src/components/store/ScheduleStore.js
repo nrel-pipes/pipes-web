@@ -1,6 +1,6 @@
 //External imports
 import { create } from "zustand";
-import getUrl from "./OriginSetup";
+import getUrl from "./OriginUrl";
 
 
 export const useScheduleStore = create((set, get) => ({

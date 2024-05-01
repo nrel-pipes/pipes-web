@@ -20,7 +20,9 @@ function getUrl(pathname) {
     pathname = "/" + pathname;
   }
 
-  return origin + pathname
+  let url = origin + pathname;
+  console.log("This URL is: " + url);
+  return url;
 }
 
 export default getUrl;

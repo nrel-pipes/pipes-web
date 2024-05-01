@@ -14,7 +14,7 @@ import Tooltip from "./Tooltip";
 import { useUIStore } from "./store/store";
 import { width } from "@fortawesome/free-regular-svg-icons/faAddressBook";
 
-import getUrl from "./store/OriginSetup";
+import getUrl from "./store/OriginUrl";
 
 
 export default function PipelineOverview({ projectName, data, selected, setSelected }) {

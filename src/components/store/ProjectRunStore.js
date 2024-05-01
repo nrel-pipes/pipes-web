@@ -3,7 +3,7 @@ import { create } from "zustand";
 // import { ProjectContext } from "../../_proto/types_pb.js";
 // import { ListProjectRunsRequest } from "../../_proto/api_pb.js";
 import { modelNodeColors } from "./store";
-import getUrl from "./OriginSetup";
+import getUrl from "./OriginUrl";
 
 
 export const useProjectRunStore = create((set) => ({

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import getUrl from "./OriginSetup";
+import getUrl from "./OriginUrl";
 
 
 export const useModelStore = create((set, get) => ({

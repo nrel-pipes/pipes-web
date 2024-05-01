@@ -14,7 +14,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { InitialAuthProvider } from './context/AuthContext';
 
 import CognitoAuth from "./components/CognitoAuth";
-import getUrl from "./components/store/OriginSetup";
+import getUrl from "./components/store/OriginUrl";
 
 const LoginRequiredPage = ({element, ...props}) => {
   const isAuthenticated = CognitoAuth.isAuthenticated();
@@ -32,7 +32,8 @@ const App = () => {
 
   useEffect(() => {
     // Check PIPE server connection
-    const healthcheck = async function(pingUrl) {
+    const runHealthcheck = async function() {
+      const pingUrl =  getUrl("/api/ping");
       const response = await fetch(pingUrl);
       if (response.ok) {
         setIsConnected(true);
@@ -41,8 +42,7 @@ const App = () => {
       }
     }
 
-    const pingUrl =  getUrl("/api/ping");
-    healthcheck(pingUrl).catch(console.error);
+    runHealthcheck().catch(console.error);
 
     // Check if it is authenticated user
     const idToken = localStorage.getItem("idToken");
