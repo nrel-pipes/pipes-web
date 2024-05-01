@@ -72,7 +72,7 @@ export default function DataOverview({ selected, flexHeight }) {
               <Accordion.Body>
                 <ModelInfo
                   type={model.type}
-                  users={model.users}
+                  users={model.modeling_team.members}
                   requirements={model.requirements}
                   scenarioMappings={model.scenario_mappings}
                   other={model.other}

@@ -18,7 +18,7 @@ export default function PipelineTimeline({ viewMode, showSidebar, divId }) {
     (state) => state.currentProjectRun
   );
   const milestones = useProjectStore((state) => state.project.milestones);
-  const projectName = useProjectStore((state) => state.project.full_name);
+  const projectName = useProjectStore((state) => state.project.title);
   const projectSchedule = useScheduleStore((state) => state.project);
   const models = useModelStore((state) => state.models);
 
@@ -63,49 +63,48 @@ export default function PipelineTimeline({ viewMode, showSidebar, divId }) {
       });
     });
 
-    if (models.length > 0) {
-      currentProjectRunSchedule.models.forEach((modelSched, index) => {
-        const model = models.find((model) => model.name === modelSched.id);
+    models.forEach((modelSched, index) => {
+      const model = models.find((model) => model.name === modelSched.id);
 
-        let modelDependencies = [];
-        let inEdges =
-          projectRun && model
-            ? projectRun.edges.filter((edge) => edge.to_model === model.name)
-            : [];
-        if (inEdges.length > 0) {
-          modelDependencies = inEdges.map((edge) => edge.from_model);
-        }
+      let modelDependencies = [];
+      let inEdges =
+        projectRun && model
+          ? projectRun.edges.filter((edge) => edge.to_model === model.name)
+          : [];
+      if (inEdges.length > 0) {
+        modelDependencies = inEdges.map((edge) => edge.from_model);
+      }
 
-        if (model) {
-          const startDate = new Date(modelSched.start);
-          const endDate = new Date(modelSched.end);
-          ganttTasks.push({
-            start: startDate,
-            end: endDate,
-            name: model.display_name,
-            id: model.name,
-            type: "task",
-            isDisabled: true,
-            dependencies: modelDependencies,
-            progress: getProgress(startDate, endDate),
-            styles: {
-              progressColor: nodeColors(modelTypeMap(model.name)),
-              progressSelectedColor: "lightgrey",
-            },
-          });
-        }
-      });
-    }
+      if (model) {
+        const startDate = new Date(modelSched.start);
+        const endDate = new Date(modelSched.end);
+        ganttTasks.push({
+          start: startDate,
+          end: endDate,
+          name: model.display_name,
+          id: model.name,
+          type: "task",
+          isDisabled: true,
+          dependencies: modelDependencies,
+          progress: getProgress(startDate, endDate),
+          styles: {
+            progressColor: nodeColors(modelTypeMap(model.name)),
+            progressSelectedColor: "lightgrey",
+          },
+        });
+      }
+    });
   }
-  //   function setSelected(selected, isSelected) {
-  //     if (
-  //       isSelected &&
-  //       selected.id !== "project" &&
-  //       selected.type !== "milestone"
-  //     ) {
-  //       setSelectedModel({ id: selected.name });
-  //     }
+
+  // function setSelected(selected, isSelected) {
+  //   if (
+  //     isSelected &&
+  //     selected.id !== "project" &&
+  //     selected.type !== "milestone"
+  //   ) {
+  //     setSelectedModel({ id: selected.name });
   //   }
+  // }
   return (
     <div
       id={divId}
