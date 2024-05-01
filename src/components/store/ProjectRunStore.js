@@ -3,6 +3,8 @@ import { create } from "zustand";
 // import { ProjectContext } from "../../_proto/types_pb.js";
 // import { ListProjectRunsRequest } from "../../_proto/api_pb.js";
 import { modelNodeColors } from "./store";
+import origin from "./OriginSetup";
+
 
 export const useProjectRunStore = create((set) => ({
   runs: [],
@@ -17,7 +19,7 @@ export const useProjectRunStore = create((set) => ({
 
     // Fetch project run
     const projectContext = new URLSearchParams({project: projectName});
-    const prUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projectruns/?${projectContext}`;
+    const prUrl = new URL(`api/projectruns/?${projectContext}`, origin).href;
     const response = await fetch(prUrl, {
       headers: {
         accept: "application/json",
@@ -33,7 +35,7 @@ export const useProjectRunStore = create((set) => ({
     });
 
     // Fetch models under project run
-    const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectContext}`;
+    const mUrl= new URL(`api/models/?${projectContext}`, origin).href;
     const mResponse = await fetch(mUrl, {
       headers: {
         accept: "application/json",
@@ -55,7 +57,7 @@ export const useProjectRunStore = create((set) => ({
     //       project: projectName,
     //       projectrun: run.name
     //     })
-    //     const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+    //     const mUrl= new URL(`api/models/?${projectRunContext}`, origin).href;
     //     fetch(mUrl, {
     //       headers: {
     //         accept: "application/json",

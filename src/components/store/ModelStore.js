@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import origin from "./OriginSetup";
+
 
 export const useModelStore = create((set, get) => ({
   models: [],
@@ -29,7 +31,7 @@ export const useModelStore = create((set, get) => ({
         projectrun: projectRunName,
         model: modelName
       })
-      const mrUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/modelruns/?${modelContext}`;
+      const mrUrl = new URL(`api/modelruns/?${modelContext}`, origin).href;
       const response = await fetch(mrUrl,{
         method: "GET",
         headers: {
@@ -52,7 +54,7 @@ export const useModelStore = create((set, get) => ({
         project: projectName,
         projectrun: projectRunName
       })
-      const mUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+      const mUrl = new URL(`api/models/?${projectRunContext}`, origin).href;
       const response = await fetch(mUrl,{
         method: "GET",
         headers: {

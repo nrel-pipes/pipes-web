@@ -13,6 +13,9 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Paper from "@mui/material/Paper";
 
+import origin from "./store/OriginSetup";
+
+
 export default function EventStream() {
   const project = useProjectStore((state) => state.project);
   const projectRuns = useProjectRunStore((state) => state.runs);
@@ -200,7 +203,7 @@ export default function EventStream() {
         project: project.name,
         projectrun: run.name
       })
-      const mUrl= localStorage.getItem("REACT_APP_BASE_URL") + `api/models/?${projectRunContext}`;
+      const mUrl=  new URL(`api/models/?${projectRunContext}`, origin).href;
       const response = await fetch(mUrl, {
         headers: {
           accept: "application/json",

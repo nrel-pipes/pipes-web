@@ -14,6 +14,9 @@ import Tooltip from "./Tooltip";
 import { useUIStore } from "./store/store";
 import { width } from "@fortawesome/free-regular-svg-icons/faAddressBook";
 
+import origin from "./store/OriginSetup";
+
+
 export default function PipelineOverview({ projectName, data, selected, setSelected }) {
   //
   // References
@@ -50,7 +53,7 @@ export default function PipelineOverview({ projectName, data, selected, setSelec
         project: projectName,
         projectrun: data.name,
       })
-      const hUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/handoffs/?${projectRunContext}`;
+      const hUrl = new URL(`api/handoffs/?${projectRunContext}`, origin).href;
       const response = await fetch(hUrl,{
         method: "GET",
         headers: {

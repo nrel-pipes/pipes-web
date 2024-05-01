@@ -1,5 +1,7 @@
 //External imports
 import { create } from "zustand";
+import origin from "./OriginSetup";
+
 
 export const useScheduleStore = create((set, get) => ({
   project: { start: "", end: "", milestones: [] },
@@ -38,7 +40,7 @@ export const useScheduleStore = create((set, get) => ({
     const projectContext = new URLSearchParams({
       project: projectName,
     })
-    const pUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projects/?${projectContext}`;
+    const pUrl = new URL(`api/projects/?${projectContext}`, origin).href;
     const pResponse = await fetch(pUrl,{
       method: "GET",
       headers: {
@@ -50,7 +52,7 @@ export const useScheduleStore = create((set, get) => ({
     const pData = await pResponse.json();
 
     // Fetch project runs
-    const prUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projectruns/?${projectContext}`;
+    const prUrl = new URL(`api/projectruns/?${projectContext}`, origin).href;
     const prResponse = await fetch(prUrl, {
       method: "GET",
       headers: {

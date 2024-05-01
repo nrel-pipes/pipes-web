@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import origin from "./OriginSetup";
 
 export const useProjectStore = create((set) => ({
   project: {
@@ -26,7 +27,7 @@ export const useProjectStore = create((set) => ({
       const projectContext = new URLSearchParams({
         project: projectName,
       })
-      const pUrl = localStorage.getItem("REACT_APP_BASE_URL") + `api/projects/?${projectContext}`;
+      const pUrl = new URL(`api/projects/?${projectContext}`, origin).href;
       const response = await fetch(pUrl,{
         method: "GET",
         headers: {

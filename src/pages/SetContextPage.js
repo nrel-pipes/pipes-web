@@ -14,6 +14,9 @@ import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 
+import origin from "../components/store/OriginSetup"
+
+
 export default function SetContextPage() {
   const projectStore = useProjectStore();
   const projectRunStore = useProjectRunStore();
@@ -32,24 +35,27 @@ export default function SetContextPage() {
   // make function to response = fetch("http://0.0.0.0:8080/api/projects/basics"); and return list of json objects
   const [projects, setProjects] = useState([]);
   useEffect(() => {
-    fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projects/basics", {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization:
-          `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.length === 0) {
-          setProjects([]);
-        }
-        else {
-          setProjects(data);
-        }
-      })
-      .catch((error) => console.log(error));
+
+    const fetchProjects = async function() {
+      const bUrl = new URL("api/projects/basics", origin).href;
+      const response = await fetch(bUrl, {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (response.ok) {
+        const pBasics = await response.json();
+        setProjects(pBasics);
+      } else {
+        setProjects([]);
+      }
+    }
+
+    fetchProjects()
+
   }, []);
 
   async function fetchProject(rawProjectName) {
