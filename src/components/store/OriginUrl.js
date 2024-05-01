@@ -21,7 +21,6 @@ function getUrl(pathname) {
   }
 
   let url = origin + pathname;
-  console.log("This URL is: " + url);
   return url;
 }
 
