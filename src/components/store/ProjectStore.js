@@ -1,8 +1,9 @@
 import { create } from "zustand";
+import getUrl from "./OriginUrl";
 
 export const useProjectStore = create((set) => ({
   project: {
-    full_name: "",
+    title: "",
     name: "",
     requirements: {},
     assumptions: [],
@@ -12,7 +13,7 @@ export const useProjectStore = create((set) => ({
   reset: () => {
     set({
       project: {
-        full_name: "",
+        title: "",
         name: "",
         requirements: {},
         assumptions: [],
@@ -22,29 +23,25 @@ export const useProjectStore = create((set) => ({
     });
   },
   fetch: async (projectName, setProjectExists, setServerError) => {
-      fetch(`${localStorage.getItem("REACT_APP_BASE_URL")}api/projects/?project=${projectName}`,{
+    try {
+      const projectContext = new URLSearchParams({
+        project: projectName,
+      })
+      const pUrl = getUrl(`api/projects/?${projectContext}`);
+      const response = await fetch(pUrl,{
         method: "GET",
         headers: {
           accept: "application/json",
           Authorization:
             `Bearer ${localStorage.getItem("accessToken")}`,
         },
-      })
-      // TODO: let's fix this error
-      .then(response => {
-        if (response.status === 200) {
-          response.json().then(data => {
-            console.log("--------------------------------");
-            console.log(data);
-            set({project: data});
-            document.getElementById("c2c-tab-overview").click();
-          })
-        } else if (response.getDetails().includes("closed")) {
-            setServerError(true);
-        } else {
-          setProjectExists(false);
-        }
-      })
-      .catch(error => console.log(error))
+      });
+      if (response.ok) {
+        const data = await response.json();
+        set({project: data});
+      }
+    } catch (error) {
+      console.log("Failed to fetch projects from the server.")
+    }
   },
 }));

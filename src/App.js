@@ -14,7 +14,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { InitialAuthProvider } from './context/AuthContext';
 
 import CognitoAuth from "./components/CognitoAuth";
-
+import getUrl from "./components/store/OriginUrl";
 
 const LoginRequiredPage = ({element, ...props}) => {
   const isAuthenticated = CognitoAuth.isAuthenticated();
@@ -31,40 +31,19 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState();
 
   useEffect(() => {
-    let URL;
-
-    switch (process.env.REACT_APP_ENV) {
-      case "prod":
-        URL = "https://pipes-api.nrel.gov";
-        break;
-      case "stage":
-        URL = "https://pipes-api-stage.stratus.nrel.gov/";
-        break;
-      case "dev":
-        URL = "https://pipes-api-dev.stratus.nrel.gov/";
-        break;
-      default:
-        URL = "http://0.0.0.0:8080/";
-    }
-
-    localStorage.setItem("REACT_APP_BASE_URL", URL);
-
     // Check PIPE server connection
-    let healthchek =  localStorage.getItem("REACT_APP_BASE_URL") + "api/ping";
-    fetch(healthchek, {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization:
-          `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-    }).then((response) => {
-      if (response.satus === 200) {
-        setIsConnected(response.getIsHappy());
+    const runHealthcheck = async function() {
+      const pingUrl =  getUrl("/api/ping");
+      const response = await fetch(pingUrl);
+      if (response.ok) {
+        setIsConnected(true);
       } else {
         setIsConnected(false);
       }
-    })
+    }
+
+    runHealthcheck().catch(console.error);
+
     // Check if it is authenticated user
     const idToken = localStorage.getItem("idToken");
     if (!idToken) {

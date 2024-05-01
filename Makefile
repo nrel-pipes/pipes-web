@@ -10,16 +10,18 @@ else
   $(error AWS_ACCOUNT_ID is not set)
 endif
 
-# Check if ENVIRONMENT is set and its value is either 'stage' or 'dev'. If so, append its value to REPO.
-ifeq ($(ENVIRONMENT), stage)
-  REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)-$(ENVIRONMENT)
-else ifeq ($(ENVIRONMENT), dev)
-  REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)-$(ENVIRONMENT)
-else
-  REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
-  # If ENVIRONMENT is neither 'stage' nor 'dev', set it to 'production'.
-#   ENVIRONMENT=production
-endif
+# # Check if ENVIRONMENT is set and its value is either 'stage' or 'dev'. If so, append its value to REPO.
+# ifeq ($(ENVIRONMENT), stage)
+#   REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)-$(ENVIRONMENT)
+# else ifeq ($(ENVIRONMENT), dev)
+#   REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)-$(ENVIRONMENT)
+# else
+#   REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
+#   # If ENVIRONMENT is neither 'stage' nor 'dev', set it to 'prod'.
+# #   ENVIRONMENT=prod
+# endif
+
+REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
 
 ifdef RELEASE_SHA2
   HEAD_VER=$(RELEASE_SHA2)
@@ -43,7 +45,7 @@ $(info BRANCH_NAME="$(BRANCH_NAME)")
 
 # git release version - use for rollbacks
 
-TAG ?= $(BASE_IMAGE_TAG)-$(BRANCH_NAME)-$(HEAD_VER)-$(ENVIRONMENT)
+TAG ?= $(CODEBUILD_BUILD_NUMBER)-$(BASE_IMAGE_TAG)-$(BRANCH_NAME)-$(HEAD_VER)-$(ENVIRONMENT)
 
 .PHONY: build push
 

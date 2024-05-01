@@ -14,6 +14,9 @@ import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 
+import getUrl from "../components/store/OriginUrl"
+
+
 export default function SetContextPage() {
   const projectStore = useProjectStore();
   const projectRunStore = useProjectRunStore();
@@ -32,40 +35,42 @@ export default function SetContextPage() {
 
   // make function to response = fetch("http://0.0.0.0:8080/api/projects/basics"); and return list of json objects
   useEffect(() => {
-    fetch(localStorage.getItem("REACT_APP_BASE_URL") + "api/projects/basics", {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization:
-          `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.length == 0) {
-          setProjects([]);
-          setProjectMessage("You Have No Projects");
-        }
-        else {
-          console.log(`data ${data}`);
-          setProjects(data);
-        }
-      })
-      .catch((error) => console.log(error));
+
+    const fetchProjects = async function() {
+      const bUrl = getUrl("api/projects/basics");
+      const response = await fetch(bUrl, {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (response.ok) {
+        const pBasics = await response.json();
+        setProjects(pBasics);
+      } else {
+        setProjects([]);
+      }
+    }
+
+    fetchProjects()
+
   }, []);
 
-  function fetchProject(rawProjectName) {
+  async function fetchProject(rawProjectName) {
     projectStore.reset();
     projectRunStore.reset();
     modelStore.reset();
     scheduleStore.reset();
     setProjectName(rawProjectName);
-    projectStore.fetch(rawProjectName, setProjectExists, setServerError);
+    setProjectName(rawProjectName);
+    await projectStore.fetch(rawProjectName, setProjectExists, setServerError);
     projectRunStore.fetch(rawProjectName);
     scheduleStore.fetch(rawProjectName);
     setShowInfoPopup(false);
     console.log(`Project ${JSON.stringify(projects)}`);
-    
+
   }
 
   return (
@@ -119,6 +124,27 @@ export default function SetContextPage() {
         </a>
       </div>
 
+      <Row>
+      {projects.map((project, index) => (
+        <Card key={project.name} style={{ width: "25%", margin: "10px"}}>
+          <Card.Body className="bg-dark text-light">
+            <Card.Title>{project.name}</Card.Title>
+            <Card.Text>{project.description}</Card.Text>
+            <Button
+              className="bg-dark text-light "
+              variant="outline-light"
+              onClick={(e) => {
+                e.preventDefault();
+                fetchProject(project.name);
+                document.getElementById("c2c-tab-overview").click();
+              }}
+            >
+              To Overview
+            </Button>
+          </Card.Body>
+        </Card>
+      ))}
+      </Row>
 
       <Modal className="text-dark" show={show} onHide={handleClose}>
         <Modal.Header closeButton>
