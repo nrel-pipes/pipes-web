@@ -6,7 +6,7 @@ let COGNITO_CLIENT_ID;
 if (process.env.REACT_APP_ENV === "prod") {
   COGNITO_USER_POOL_ID = "us-west-2_QIFK6524E";
 } else if (process.env.REACT_APP_ENV === "stage"){
-  COGNITO_USER_POOL_ID = ""; // No stage setup
+  COGNITO_USER_POOL_ID = "us-west-2_RzEL2COOq"; // Stage is same as dev
 } else if (process.env.REACT_APP_ENV === "dev") {
   COGNITO_USER_POOL_ID = "us-west-2_RzEL2COOq";
 } else {
@@ -16,12 +16,11 @@ if (process.env.REACT_APP_ENV === "prod") {
 if (process.env.REACT_APP_ENV === "prod") {
   COGNITO_CLIENT_ID = "539o71b6rh0ua124ro8q3bv39s";
 } else if (process.env.REACT_APP_ENV === "stage"){
-  COGNITO_CLIENT_ID = "";// No stage setup
+  COGNITO_CLIENT_ID = "clfpli1avt6eil03ovr11qdpi";
 } else if (process.env.REACT_APP_ENV === "dev") {
   COGNITO_CLIENT_ID = "clfpli1avt6eil03ovr11qdpi";
 } else {
   COGNITO_CLIENT_ID = "6n5co9eh7bab4a21egr95ds3r8";
 }
 
-export { COGNITO_USER_POOL_ID };
-export { COGNITO_CLIENT_ID };
+export { COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID };
