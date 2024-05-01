@@ -124,28 +124,6 @@ export default function SetContextPage() {
         </a>
       </div>
 
-      <Row>
-      {projects.map((project, index) => (
-        <Card key={project.name} style={{ width: "25%", margin: "10px"}}>
-          <Card.Body className="bg-dark text-light">
-            <Card.Title>{project.name}</Card.Title>
-            <Card.Text>{project.description}</Card.Text>
-            <Button
-              className="bg-dark text-light "
-              variant="outline-light"
-              onClick={(e) => {
-                e.preventDefault();
-                fetchProject(project.name);
-                document.getElementById("c2c-tab-overview").click();
-              }}
-            >
-              To Overview
-            </Button>
-          </Card.Body>
-        </Card>
-      ))}
-      </Row>
-
       <Modal className="text-dark" show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>New Project</Modal.Title>
