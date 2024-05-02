@@ -113,36 +113,39 @@ export default function PipelinePage() {
       //   addEdge({ source: edge.from_model, target: edge.to_model });
       // });
     }
-    if (modelRuns) {
-      Object.entries(modelRuns).forEach((o) => {
-        const model = o[0];
-        const runs = o[1];
-        Object.values(runs).forEach((run) => {
-          addNode(
-            { id: run.model_run_props.name },
-            "modelRun",
-            Object.fromEntries(
-              Object.entries(run.model_run_props).filter(
-                (entry) => entry[0] !== "datasets" && entry[0] !== "handoffs"
-              )
-            )
-          );
+    // if (modelRuns) {
+    //   Object.entries(modelRuns).forEach((o) => {
+    //     // const model = o[0];
+    //     // const runs = o[1];
+    //     // Object.values(runs).forEach((run) => {
 
-          addEdge({ source: model, target: run.model_run_props.name });
-          run.datasets.forEach((dataset) => {
-            addNode({ id: dataset.dataset_id }, "dataset", dataset);
-            addEdge({
-              source: run.model_run_props.name,
-              target: dataset.dataset_id,
-            });
-          });
-          run.tasks.forEach((task) => {
-            addNode({ id: task.task_name }, "task", task);
-            addEdge({ target: task.task_name, source: task.dataset_ids });
-          });
-        });
-      });
-    }
+    //       const run = o[1];
+    //       const model = run.context.model;
+    //       addNode(
+    //         { id: run.name },
+    //         "modelRun",
+    //         Object.fromEntries(
+    //           Object.entries(run.model_run_props).filter(
+    //             (entry) => entry[0] !== "datasets" && entry[0] !== "handoffs"
+    //           )
+    //         )
+    //       );
+
+    //       addEdge({ source: model, target: run.name });
+    //       run.datasets.forEach((dataset) => {
+    //         addNode({ id: dataset.dataset_id }, "dataset", dataset);
+    //         addEdge({
+    //           source: run.name,
+    //           target: dataset.dataset_id,
+    //         });
+    //       });
+    //       run.tasks.forEach((task) => {
+    //         addNode({ id: task.task_name }, "task", task);
+    //         addEdge({ target: task.task_name, source: task.dataset_ids });
+    //       });
+    //     // });
+    //   });
+    // }
     if (nodes.length > 1) {
       const layout = getLayout(nodes, edges);
       nodes.forEach((node) => {

@@ -238,19 +238,15 @@ export default function EventStream() {
   Object.entries(modelRuns).forEach((entry) => {
     //check model runs
     const model = entry[0];
-    console.log("================================================mm==")
-    console.log(model);
-
     const runs = entry[1];
-    console.log("================================================runs==")
-    console.log(runs);
 
-
-    const modelEndDate = getDate(
-      schedule.project_runs
-        .find((run) => run.name === currentProjectRun)
-        .models.find((m) => m.id === model).end
-    );
+    let endDate;
+    theModels.forEach((curModel) => {
+      if (curModel.context.projectrun === currentProjectRun) {
+        endDate = curModel.scheduled_end;
+      }
+    })
+    const modelEndDate = getDate(endDate);
     if (runs.length > 0) {
       runs.forEach((run) => {
         run.tasks.forEach((task) => {
