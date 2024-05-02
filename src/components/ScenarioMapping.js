@@ -3,7 +3,7 @@ import ReactFlow, {
   ReactFlowProvider,
   useNodesState,
   useEdgesState,
-} from "reactflow";
+} from "react-flow-renderer";
 
 import { ScenarioNode } from "./GraphProps";
 import { createScenarioNodes, createScenarioEdges } from "./PipelineUtils";

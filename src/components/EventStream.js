@@ -23,6 +23,7 @@ export default function EventStream() {
     (state) => state.currentProjectRun
   );
 
+  const theModels = useModelStore((state) => state.models);
   const theModelRuns = useModelStore((state) => state.runs);
 
   const setNumWarnings = useScheduleStore((state) => state.setNumWarnings);
@@ -196,29 +197,7 @@ export default function EventStream() {
       );
     }
 
-    // check if models are starting or ending soon
-    let models = null;
-    try {
-      const projectRunContext = new URLSearchParams({
-        project: project.name,
-        projectrun: run.name
-      })
-      const mUrl=  getUrl(`api/models?${projectRunContext}`);
-      const response = await fetch(mUrl, {
-        headers: {
-          accept: "application/json",
-          Authorization:
-            `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-      if (response.ok) {
-        models = await response.json();
-      }
-    } catch (error) {
-      console.log("Failed to fetch project models.")
-    }
-
-    models.forEach((model) => {
+    theModels.forEach((model) => {
       const modelStartDate = getDate(model.scheduled_start);
       const numDaysModelStart = getDaysBetweenDates(todaysDate, modelStartDate);
       const modelEndDate = getDate(model.scheduled_end);
@@ -259,8 +238,14 @@ export default function EventStream() {
   Object.entries(modelRuns).forEach((entry) => {
     //check model runs
     const model = entry[0];
+    console.log("================================================mm==")
+    console.log(model);
 
     const runs = entry[1];
+    console.log("================================================runs==")
+    console.log(runs);
+
+
     const modelEndDate = getDate(
       schedule.project_runs
         .find((run) => run.name === currentProjectRun)

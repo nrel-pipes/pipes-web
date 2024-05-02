@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { graphlib, layout } from "dagre";
-import { MarkerType } from "reactflow";
+import { MarkerType } from "react-flow-renderer";
 
 import { useProjectStore } from "../components/store/ProjectStore";
 import { useProjectRunStore } from "../components/store/ProjectRunStore";

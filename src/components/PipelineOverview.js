@@ -3,7 +3,7 @@ import ReactFlow, {
   ReactFlowProvider,
   useNodesState,
   useEdgesState,
-} from "reactflow";
+} from "react-flow-renderer";
 
 import { DecoratedNode } from "./GraphProps";
 import { createNodesOverview, createEdgesOverview } from "./PipelineUtils";

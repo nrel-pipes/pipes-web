@@ -1,5 +1,5 @@
 import React from "react";
-import { Position, Handle, useUpdateNodeInternals } from "reactflow";
+import { Position, Handle, useUpdateNodeInternals } from "react-flow-renderer";
 import * as d3 from "d3";
 
 export const nodeColors = d3

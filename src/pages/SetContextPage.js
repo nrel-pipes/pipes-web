@@ -66,8 +66,8 @@ export default function SetContextPage() {
     setProjectName(rawProjectName);
     setProjectName(rawProjectName);
     await projectStore.fetch(rawProjectName, setProjectExists, setServerError);
-    projectRunStore.fetch(rawProjectName);
-    scheduleStore.fetch(rawProjectName);
+    await projectRunStore.fetch(rawProjectName);
+    await scheduleStore.fetch(rawProjectName);
     setShowInfoPopup(false);
   }
 

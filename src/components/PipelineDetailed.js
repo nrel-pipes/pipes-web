@@ -5,7 +5,7 @@ import ReactFlow, {
   useEdgesState,
   Controls,
   Background,
-} from "reactflow";
+} from "react-flow-renderer";
 import { Switch } from "@mui/material";
 import * as d3 from "d3";
 import Tooltip from "./Tooltip";

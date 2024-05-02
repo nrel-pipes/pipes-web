@@ -1,4 +1,4 @@
-import { MarkerType } from "reactflow";
+import { MarkerType } from "react-flow-renderer";
 import { graphlib, layout } from "dagre";
 
 import * as d3 from "d3";
