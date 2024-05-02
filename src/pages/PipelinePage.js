@@ -24,6 +24,7 @@ const nodeHeight = 80;
 export default function PipelinePage() {
   const project = useProjectStore((state) => state.project);
   const projectRuns = useProjectRunStore((state) => state.runs);
+  const models = useModelStore((state) => state.models);
   const modelRuns = useModelStore((state) => state.runs);
   const [hoveredData, setHoveredData] = useState({});
   const updateHoveredData = (d) => {
@@ -35,8 +36,6 @@ export default function PipelinePage() {
   const projectRun = useMemo(() => {
     return projectRuns.find((pr) => pr.name === currentProjectRun);
   }, [projectRuns, currentProjectRun]);
-
-  const models = projectRun ? projectRun.models : null;
 
   const graph = useMemo(() => {
     var nodes = [];
@@ -104,8 +103,8 @@ export default function PipelinePage() {
     addEdge({ source: project.name, target: currentProjectRun });
     if (models) {
       models.forEach((model) => {
-        addNode({ id: model.model_name }, "model", model);
-        addEdge({ source: currentProjectRun, target: model.model_name });
+        addNode({ id: model.name }, "model", model);
+        addEdge({ source: currentProjectRun, target: model.name });
       });
     }
     // TODO: no project run edges

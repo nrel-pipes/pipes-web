@@ -37,10 +37,8 @@ export const useScheduleStore = create((set, get) => ({
   fetch: async (projectName) => {
 
     // Fetch Project
-    const projectContext = new URLSearchParams({
-      project: projectName,
-    })
-    const pUrl = getUrl(`api/projects/?${projectContext}`);
+    const projectContext = new URLSearchParams({project: projectName});
+    const pUrl = getUrl(`api/projects?${projectContext}`);
     const pResponse = await fetch(pUrl,{
       method: "GET",
       headers: {
@@ -52,7 +50,7 @@ export const useScheduleStore = create((set, get) => ({
     const pData = await pResponse.json();
 
     // Fetch project runs
-    const prUrl = getUrl(`api/projectruns/?${projectContext}`);
+    const prUrl = getUrl(`api/projectruns?${projectContext}`);
     const prResponse = await fetch(prUrl, {
       method: "GET",
       headers: {

@@ -27,7 +27,7 @@ export const useProjectStore = create((set) => ({
       const projectContext = new URLSearchParams({
         project: projectName,
       })
-      const pUrl = getUrl(`api/projects/?${projectContext}`);
+      const pUrl = getUrl(`api/projects?${projectContext}`);
       const response = await fetch(pUrl,{
         method: "GET",
         headers: {
@@ -39,8 +39,13 @@ export const useProjectStore = create((set) => ({
       if (response.ok) {
         const data = await response.json();
         set({project: data});
+        setProjectExists(true);
+        setServerError(false);
+      } else {
+        setProjectExists(false);
       }
     } catch (error) {
+      setServerError(true);
       console.log("Failed to fetch projects from the server.")
     }
   },

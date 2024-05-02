@@ -203,7 +203,7 @@ export default function EventStream() {
         project: project.name,
         projectrun: run.name
       })
-      const mUrl=  getUrl(`api/models/?${projectRunContext}`);
+      const mUrl=  getUrl(`api/models?${projectRunContext}`);
       const response = await fetch(mUrl, {
         headers: {
           accept: "application/json",
@@ -234,7 +234,7 @@ export default function EventStream() {
           numDaysModelStart,
           null,
           run.name,
-          model.model_name,
+          model.name,
           null,
           null
         );
@@ -248,7 +248,7 @@ export default function EventStream() {
           numDaysModelEnd,
           null,
           run.name,
-          model.model_name,
+          model.name,
           null,
           null
         );

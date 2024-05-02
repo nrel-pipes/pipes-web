@@ -48,12 +48,12 @@ export default function PipelineOverview({ projectName, data, selected, setSelec
     const div = d3.select(tooltipDiv.current);
     tooltip.current = new Tooltip(div);
 
-    const fetchData = async () => {
+    const fetchHandoffs = async () => {
       const projectRunContext = new URLSearchParams({
         project: projectName,
         projectrun: data.name,
       })
-      const hUrl = getUrl(`api/handoffs/?${projectRunContext}`);
+      const hUrl = getUrl(`api/handoffs?${projectRunContext}`);
       const response = await fetch(hUrl,{
         method: "GET",
         headers: {
@@ -70,12 +70,11 @@ export default function PipelineOverview({ projectName, data, selected, setSelec
         lastCheckIns,
         edges
       );
-
       setNodes(nds);
       setEdges(createEdgesOverview(edges));
     }
 
-    fetchData().catch(console.error);
+    fetchHandoffs().catch(console.error);
   }, [
     projectName,
     data,

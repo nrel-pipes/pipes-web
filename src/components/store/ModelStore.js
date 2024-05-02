@@ -31,8 +31,8 @@ export const useModelStore = create((set, get) => ({
         projectrun: projectRunName,
         model: modelName
       })
-      const mrUrl = getUrl(`api/modelruns/?${modelContext}`);
-      const response = await fetch(mrUrl,{
+      const mrUrl = getUrl(`api/modelruns?${modelContext}`);
+      const mrResponse = await fetch(mrUrl,{
         method: "GET",
         headers: {
           accept: "application/json",
@@ -40,8 +40,8 @@ export const useModelStore = create((set, get) => ({
             `Bearer ${localStorage.getItem("accessToken")}`,
         },
       });
-      if (response.ok) {
-        const data = await response.json();
+      if (mrResponse.ok) {
+        const data = await mrResponse.json();
         set({runs: data});
       }
     } catch (error) {
@@ -54,8 +54,8 @@ export const useModelStore = create((set, get) => ({
         project: projectName,
         projectrun: projectRunName
       })
-      const mUrl = getUrl(`api/models/?${projectRunContext}`);
-      const response = await fetch(mUrl,{
+      const mUrl = getUrl(`api/models?${projectRunContext}`);
+      const mResponse = await fetch(mUrl,{
         method: "GET",
         headers: {
           accept: "application/json",
@@ -63,9 +63,9 @@ export const useModelStore = create((set, get) => ({
             `Bearer ${localStorage.getItem("accessToken")}`,
         },
       });
-      if (response.ok) {
-        const data = await response.json();
-        set({models: data});
+      if (mResponse.ok) {
+        const mData = await mResponse.json();
+        set({models: mData});
       }
     } catch (error) {
       console.log("Failed to fetch projects from the server.")

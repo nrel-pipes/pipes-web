@@ -69,8 +69,6 @@ export default function SetContextPage() {
     projectRunStore.fetch(rawProjectName);
     scheduleStore.fetch(rawProjectName);
     setShowInfoPopup(false);
-    console.log(`Project ${JSON.stringify(projects)}`);
-
   }
 
   return (
@@ -102,6 +100,7 @@ export default function SetContextPage() {
                 onClick={(e) => {
                   e.preventDefault();
                   fetchProject(project.name);
+                  document.getElementById("c2c-tab-overview").click();
                 }}
               >
                 To Overview

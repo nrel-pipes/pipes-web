@@ -14,7 +14,6 @@ const LogoutPage = () => {
   useEffect(() =>{
     // if (!("email" in userAttributes)) {
     //   let attributes = getCognitoUserAttributes()
-    //   console.log(attributes, "hi")
     //   if (attributes == null) {
     //     return;
     //   };
