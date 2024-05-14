@@ -1,0 +1,34 @@
+.banner {
+  height: 142px;
+  width: 100%;
+}
+
+.banner-pipes-name {
+  margin-top: 20px;
+  font-size: 38px;
+  color: #4B545A;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  font-weight: bold;
+  text-align: left
+}
+
+.banner-pipes-container {
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+
+.banner-pipes-image {
+  max-height: 100px;
+}
+
+.banner-nrel-container {
+  text-align: right;
+  display: flex;
+  align-items: center;
+}
+
+.banner-nrel-image {
+  margin-right: -20px;
+}

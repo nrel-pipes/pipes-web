@@ -1,0 +1,10 @@
+
+.image-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  background-color: rgb(105, 105, 105);
+  border-radius: 5px;
+}
+
