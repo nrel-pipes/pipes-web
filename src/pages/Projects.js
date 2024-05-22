@@ -1,19 +1,25 @@
-import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import useAuthStore from "./stores/authStore";
 
 
 const Projects = () => {
-  const isLoggedIn = useAuthStore(state => state.isLoggedIn);
+  const navigate = useNavigate();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+  }, [isLoggedIn, navigate]);
 
   if (!isLoggedIn) {
-    return (
-      <Navigate to='/login' />
-    );
+    return null;
   }
 
   return (
-    <div>Projects</div>
+    <div>Projects Listing</div>
   );
 };
 

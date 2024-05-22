@@ -22,3 +22,9 @@
   font-weight: bold;
 }
 
+.divider {
+  border-left: 1px solid #a0a2a3;
+  height: 25px;
+  align-self: center;
+  margin: 0 10px;
+}

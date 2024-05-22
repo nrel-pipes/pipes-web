@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 
 import Alert from 'react-bootstrap/Alert';
@@ -13,13 +13,10 @@ import useConfigStore from './stores/configStore';
 
 
 const Login = () => {
-  const { login, loginError, isLoggedIn } = useAuthStore(state => ({
-    login: state.login,
-    loginError: state.loginError,
-    isLoggedIn: state.isLoggedIn
-  }));
-
-  // Cognito configuration
+  const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const loginError = useAuthStore((state) => state.loginError);
   const poolData = useConfigStore((state) => state.poolData);
 
   // State for username and password
@@ -27,26 +24,26 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate(-1);
+    }
+  }, [isLoggedIn, navigate]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = (event) => {
+    event.preventDefault();  // Prevent the default form submission
 
     if (!username || !password) {
       setError('Username and password are required.');
       return;
     }
-
-    console.log("===1", loginError);
-
-    // Handle login logic here
-    await login(username, password, poolData);
-
-    console.log("===2", loginError);
-
-    if (loginError != null) {
-      setError(loginError);
+    try {
+      login(username, password, poolData);
+    } catch (e) {
+      console.log(e.message);
+      setError(e.message);
     }
+
     // .then((result) => {
     //   if (
     //     result.hasOwnProperty('new_password_challenge') &&
@@ -62,17 +59,17 @@ const Login = () => {
     // });
   };
 
-  if (isLoggedIn) {
-    return (
-      <Container fluid>
-        <Row>
-          <Col className='mx-auto mt-5'>
-            <p>You are already logged in.</p>
-          </Col>
-        </Row>
-      </Container>
-    );
-  }
+  // if (isLoggedIn) {
+  //   return (
+  //     <Container fluid>
+  //       <Row>
+  //         <Col className='mx-auto mt-5'>
+  //           <p>You are already logged in.</p>
+  //         </Col>
+  //       </Row>
+  //     </Container>
+  //   );
+  // }
 
   return (
     <Container fluid>

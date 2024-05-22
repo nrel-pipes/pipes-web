@@ -1,29 +1,17 @@
-import { useState } from 'react'
-
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCog, faUser, faKey } from '@fortawesome/free-solid-svg-icons';
+
 import "./Navbar.css"
+import useAuthStore from '../pages/stores/authStore';
 
 
 const SiteNavbar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
-
-  const handleLogin = () => {
-    const userData = {
-      username: 'test.user@example.com',
-    }
-    setUser(userData);
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-  };
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   return (
     <Navbar expand="lg" className="navbar-instance">
@@ -36,11 +24,12 @@ const SiteNavbar = () => {
           </Nav>
           {isLoggedIn ? (
           <Nav className="ms-auto">
-            <NavDropdown title="Settings" id="collasible-nav-dropdown">
-              <NavDropdown.Item href="#web/3.1"> Profile </NavDropdown.Item>
-              <NavDropdown.Item href="#web/3.2"> Tokens </NavDropdown.Item>
+            <NavDropdown title={<FontAwesomeIcon icon={faCog} size="lg" />} id="collasible-nav-dropdown">
+              <NavDropdown.Item href="/tokens"><FontAwesomeIcon icon={faKey} size='sm' />&nbsp;&nbsp;Tokens</NavDropdown.Item>
+              <NavDropdown.Item href="/profile"><FontAwesomeIcon icon={faUser} size='sm' />&nbsp;&nbsp;User Profile </NavDropdown.Item>
             </NavDropdown>
-            <Nav.Link href="#logout">Logout</Nav.Link>
+            <div className="divider"></div>
+            <Nav.Link href="/logout">Logout</Nav.Link>
           </Nav>
           ) : (
           <Nav className="ms-auto">
