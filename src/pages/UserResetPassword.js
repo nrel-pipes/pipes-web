@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { Link } from "react-router-dom"
 
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
@@ -13,7 +13,6 @@ import useAuthStore from './stores/authStore';
 
 
 const ResetPassword = () => {
-  const navigate = useNavigate();
   const poolData = useConfigStore((state) => state.poolData);
   const resetPassword = useAuthStore((state) => state.resetPassword);
   const passwordResetUsername = useAuthStore((state) => state.passwordResetUsername);
