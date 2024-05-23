@@ -23,7 +23,7 @@ const Logout = () => {
   };
 
   return (
-    <Container className="text-center mt-5 mainContent">
+    <Container className="text-center mainContent">
       <h3 style={{"paddingTop": "30px", "paddingBottom": "30px"}}>Are you sure you want to logout?</h3>
       <div className="mt-3">
         <Button variant="danger" onClick={handleLogout} className="me-2">
