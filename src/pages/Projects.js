@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useAuthStore from "./stores/authStore";
 
 
-const ProjectList = () => {
+const Projects = () => {
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
@@ -24,4 +24,4 @@ const ProjectList = () => {
 };
 
 
-export default ProjectList;
+export default Projects;

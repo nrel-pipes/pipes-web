@@ -6,7 +6,7 @@ import SiteBanner from './layouts/Banner';
 import SiteNavbar from './layouts/Navbar';
 import SiteFooter from './layouts/Footer';
 import Home from './pages/Home';
-import ProjectList from './pages/ProjectList';
+import Projects from './pages/Projects';
 import Login from './pages/UserLogin';
 import Logout from './pages/UserLogout';
 import CognitoTokens from './pages/UserTokens';
@@ -30,7 +30,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route exact path='/' element={<Home />} />
-            <Route path='/projects' element={isLoggedIn? <ProjectList />: <Navigate to='/login' />} />
+            <Route path='/projects' element={isLoggedIn? <Projects />: <Navigate to='/login' />} />
             {/* User auth routes */}
             <Route path='/login' element={isLoggedIn? <Navigate to='/projects' />:<Login />} />
             <Route path='/logout' element={<Logout />} />
