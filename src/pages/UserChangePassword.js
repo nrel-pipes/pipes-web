@@ -57,7 +57,7 @@ const ChangePassword = () => {
 
   if (changeSuccess) {
     return (
-      <div className="main-content text-center" style={{marginTop: "50px"}}>
+      <div className="text-center" style={{marginTop: "50px"}}>
         <h2>Password changed</h2>
         <p>
           Your password was successfully changed.
