@@ -6,11 +6,15 @@
 .banner-pipes-name {
   margin-top: 20px;
   font-size: 38px;
-  color: #4B545A;
   padding-top: 20px;
   padding-bottom: 20px;
   font-weight: bold;
   text-align: left
+}
+
+.banner-pipes-name a {
+  text-decoration: none;
+  color: #4B545A;
 }
 
 .banner-pipes-container {
