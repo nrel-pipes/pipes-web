@@ -1,5 +1,5 @@
 
-.image-col {
+.imageCol {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,3 +8,6 @@
   border-radius: 5px;
 }
 
+.mainContent {
+  min-height: calc(100vh - 455px);
+}

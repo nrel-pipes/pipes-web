@@ -10,6 +10,8 @@ import Tabs from 'react-bootstrap/Tabs';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 
+import "./PageStyles.css"
+
 import useAuthStore from './stores/authStore';
 
 
@@ -55,7 +57,7 @@ const CognitoTokens = () => {
   }, [isLoggedIn, navigate, accessToken, idToken]);
 
   return (
-    <Container>
+    <Container className="mainContent">
         <Row>
           <Col className='mx-auto mt-5'>
             <h3 style={{"paddingTop": "30px", "paddingBottom": "30px"}}>Run the Following Commands in Terminal</h3>

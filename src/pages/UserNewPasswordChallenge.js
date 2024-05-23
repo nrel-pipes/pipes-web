@@ -8,6 +8,8 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 
+import "./PageStyles.css"
+
 import useAuthStore from './stores/authStore';
 import useConfigStore from './stores/configStore';
 
@@ -63,7 +65,7 @@ const NewPasswordChallenge = () => {
   }
 
   return (
-    <Container>
+    <Container class="mainContent">
       <Row>
         {errorMessage && <Alert variant="danger" className="text-center">{errorMessage}</Alert>}
       </Row>

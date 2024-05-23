@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 
+import "./PageStyles.css"
+
 import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
@@ -21,7 +23,7 @@ const Logout = () => {
   };
 
   return (
-    <Container className="text-center mt-5">
+    <Container className="text-center mt-5 mainContent">
       <h3 style={{"paddingTop": "30px", "paddingBottom": "30px"}}>Are you sure you want to logout?</h3>
       <div className="mt-3">
         <Button variant="danger" onClick={handleLogout} className="me-2">

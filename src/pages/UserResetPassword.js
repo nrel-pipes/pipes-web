@@ -8,6 +8,8 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 
+import "./PageStyles.css"
+
 import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
@@ -55,7 +57,7 @@ const ResetPassword = () => {
   }
 
   return (
-    <Container className="vh-100">
+    <Container className="mainContent">
       <Row>
         {errorMessage && <Alert variant="danger" className="text-center">{errorMessage}</Alert>}
       </Row>

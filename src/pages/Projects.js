@@ -1,5 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Container from 'react-bootstrap/Container';
+
+import "./PageStyles.css"
 
 import useAuthStore from "./stores/authStore";
 
@@ -19,7 +22,9 @@ const Projects = () => {
   }
 
   return (
-    <div>Projects Listing</div>
+    <Container className="mainContent">
+      My Projects
+    </Container>
   );
 };
 

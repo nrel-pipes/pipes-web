@@ -7,7 +7,7 @@ import Col from "react-bootstrap/Col";
 import Image from "react-bootstrap/Image";
 import Card from 'react-bootstrap/Card';
 
-import "./Home.css"
+import "./PageStyles.css"
 
 
 const Home = () => {
@@ -20,7 +20,7 @@ const Home = () => {
   return (
     <Container>
       <Row>
-        <Col className="image-col">
+        <Col className="imageCol">
           <Image
             className="rounded"
             src="/images/pipes-transparent-ui-splash.png"
@@ -42,7 +42,7 @@ const Home = () => {
 
           <Row className="text-center mt-5 mb-5">
             <Button variant="success" onClick={handleClick} size="lg">
-              <b>Check your Projects &gt;&gt;</b>
+              <b>View your Projects &gt;&gt;</b>
             </Button>
           </Row>
 

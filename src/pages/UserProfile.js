@@ -6,6 +6,8 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 
+import "./PageStyles.css"
+
 import useAuthStore from './stores/authStore';
 
 
@@ -31,7 +33,7 @@ const UserProfile = () => {
   const username = userAttributes.email;
 
   return (
-    <Container>
+    <Container className="mainContent">
         <Row>
           <Col className='mx-auto mt-5'>
             <h3 style={{"paddingTop": "30px", "paddingBottom": "30px"}}>User Information</h3>

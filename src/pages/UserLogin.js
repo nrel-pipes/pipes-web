@@ -8,6 +8,8 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 
+import "./PageStyles.css"
+
 import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
@@ -63,7 +65,7 @@ const Login = () => {
   }
 
   return (
-    <Container>
+    <Container className='mainContent'>
       <Row>
         {errorMessage && (
           <Alert variant='danger' className='text-center'>
