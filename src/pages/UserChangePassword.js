@@ -11,13 +11,11 @@ import Row from 'react-bootstrap/Row';
 
 import "./PageStyles.css"
 
-import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
 
 const ChangePassword = () => {
   const navigate = useNavigate();
-  const poolData = useConfigStore((state) => state.poolData);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const changePassword = useAuthStore((state) => state.changePassword);
   const idToken = useAuthStore((state) => state.idToken);
@@ -49,7 +47,7 @@ const ChangePassword = () => {
     }
 
     try {
-      await changePassword(userAttributes.email, oldPassword, newPassword2, poolData)
+      await changePassword(userAttributes.email, oldPassword, newPassword2)
       setChangeSuccess(true);
     } catch (error) {
       setChangeSuccess(false);

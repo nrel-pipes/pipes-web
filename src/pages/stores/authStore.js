@@ -3,6 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 import { CognitoUser, CognitoUserPool, AuthenticationDetails} from "amazon-cognito-identity-js"
 
+import pipesConfig from './configStore'
+
 
 const useAuthStore = create(
   persist((set) => ({
@@ -16,8 +18,8 @@ const useAuthStore = create(
     idToken: null,
 
     // login method
-    login: async (username, password, poolData) => {
-      const userPool = new CognitoUserPool(poolData);
+    login: async (username, password) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
       const authenticationData = {
         Username: username,
         Password: password
@@ -56,8 +58,8 @@ const useAuthStore = create(
     },
 
     // lougout method
-    logout: (poolData) => {
-      const userPool = new CognitoUserPool(poolData);
+    logout: () => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
       const currentUser = userPool.getCurrentUser();
       if (currentUser !== null) {
         currentUser.signOut();
@@ -74,8 +76,8 @@ const useAuthStore = create(
     },
 
     // complete new password challenge
-    completeNewPasswordChallenge: async (username, tempPassword, newPassword, poolData) => {
-      const userPool = new CognitoUserPool(poolData);
+    completeNewPasswordChallenge: async (username, tempPassword, newPassword) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
       const userData = {
         Username: username,
         Pool: userPool,
@@ -107,13 +109,13 @@ const useAuthStore = create(
     },
 
     // change password
-    changePassword: async (username, oldPassword, newPassword, poolData) => {
+    changePassword: async (username, oldPassword, newPassword) => {
       const authenticationData = {
         Username: username,
         Password: oldPassword
       };
       const authenticationDetails = new AuthenticationDetails(authenticationData);
-      const userPool = new CognitoUserPool(poolData);
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
       const userData = {
         Username: username,
         Pool: userPool
@@ -135,8 +137,8 @@ const useAuthStore = create(
     },
 
     // forget password
-    forgotPassword: async (username, poolData) => {
-      const userPool = new CognitoUserPool(poolData);
+    forgotPassword: async (username) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
       const userData = {
         Username: username,
         Pool: userPool
@@ -156,8 +158,8 @@ const useAuthStore = create(
     },
 
     // reset password
-    resetPassword: async (username, verificationCode, newPassword, poolData) => {
-      const userPool = new CognitoUserPool(poolData);
+    resetPassword: async (username, verificationCode, newPassword) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
       const userData = {
         Username: username,
         Pool: userPool
@@ -173,7 +175,7 @@ const useAuthStore = create(
 
   }),
   {
-    name: 'auth-store',
+    name: 'authStore',
     storage: createJSONStorage(() => localStorage)
   }
 ));

@@ -5,16 +5,14 @@ import Container from 'react-bootstrap/Container';
 
 import "./PageStyles.css"
 
-import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
 const Logout = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
-  const poolData = useConfigStore((state) => state.poolData);
 
   const handleLogout = () => {
-    logout(poolData);
+    logout();
     navigate('/login');
   };
 

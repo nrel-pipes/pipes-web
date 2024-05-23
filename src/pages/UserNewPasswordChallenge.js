@@ -11,7 +11,6 @@ import Row from 'react-bootstrap/Row';
 import "./PageStyles.css"
 
 import useAuthStore from './stores/authStore';
-import useConfigStore from './stores/configStore';
 
 
 const NewPasswordChallenge = () => {
@@ -21,9 +20,8 @@ const NewPasswordChallenge = () => {
   const [challengeSuccess, setChallengeSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const poolData = useConfigStore((state) => state.poolData);
-  const completeNewPasswordChallenge = useAuthStore((state) => state.completeNewPasswordChallenge);
   const challengeUsername = useAuthStore((state) => state.challengeUsername);
+  const completeNewPasswordChallenge = useAuthStore((state) => state.completeNewPasswordChallenge);
   const tempPassword = useAuthStore((state) => state.tempPassword);
 
   useEffect(() => {
@@ -41,7 +39,7 @@ const NewPasswordChallenge = () => {
     }
 
     try {
-      await completeNewPasswordChallenge(challengeUsername, tempPassword, newPassword2, poolData)
+      await completeNewPasswordChallenge(challengeUsername, tempPassword, newPassword2)
       setChallengeSuccess(true);
       setErrorMessage("");
     } catch (error) {

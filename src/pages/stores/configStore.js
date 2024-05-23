@@ -1,49 +1,51 @@
-import { create } from 'zustand';
-
 
 const devConfig = {
   env: 'dev',
-  cognito_user_pool_id: 'us-west-2_RzEL2COOq',
-  cognito_client_id: 'clfpli1avt6eil03ovr11qdpi'
+  poolData: {
+    UserPoolId: 'us-west-2_RzEL2COOq',
+    ClientId: 'clfpli1avt6eil03ovr11qdpi',
+  },
+  apiOrigin: 'https://pipes-api-dev.nrel.gov'
 }
 
 const stageConfig = {
   env: 'stage',
-  cognito_user_pool_id: 'us-west-2_RzEL2COOq',
-  cognito_client_id: 'clfpli1avt6eil03ovr11qdpi'
+  poolData: {
+    UserPoolId: 'us-west-2_RzEL2COOq',
+    ClientId: 'clfpli1avt6eil03ovr11qdpi',
+  },
+  apiOrigin: 'https://pipes-api-stage.nrel.gov'
 }
 
 const prodConfig = {
   env: 'prod',
-  cognito_user_pool_id: 'us-west-2_QIFK6524E',
-  cognito_client_id: '539o71b6rh0ua124ro8q3bv39s'
+  pollData: {
+    UserPoolId: 'us-west-2_QIFK6524E',
+    ClientId: '539o71b6rh0ua124ro8q3bv39s',
+  },
+  apiOrigin: 'https://pipes-api.nrel.gov'
 }
 
 const otherConfig = {
   env: 'other',
-  cognito_user_pool_id: 'us-west-2_TvEJ1biz0',
-  cognito_client_id: '6n5co9eh7bab4a21egr95ds3r8'
-}
-
-
-let config;
-if (process.env.REACT_APP_ENV === 'prod') {
-  config = prodConfig;
-} else if (process.env.REACT_APP_ENV === 'stage') {
-  config = stageConfig;
-} else if (process.env.REACT_APP_ENV === 'dev') {
-  config = devConfig;
-} else {
-  config = otherConfig;
-}
-
-
-const useConfigStore = create(() => ({
-  env: config.env,
   poolData: {
-    UserPoolId: config.cognito_user_pool_id,
-    ClientId: config.cognito_client_id
-  }
-}));
+    UserPoolId: 'us-west-2_TvEJ1biz0',
+    ClientId: '6n5co9eh7bab4a21egr95ds3r8',
+  },
+  apiOrigin: 'http://127.0.0.1:8080'
+}
 
-export default useConfigStore;
+
+var pipesConfig;
+
+if (process.env.REACT_APP_ENV === 'prod') {
+  pipesConfig = prodConfig;
+} else if (process.env.REACT_APP_ENV === 'stage') {
+  pipesConfig = stageConfig;
+} else if (process.env.REACT_APP_ENV === 'dev') {
+  pipesConfig = devConfig;
+} else {
+  pipesConfig = otherConfig;
+}
+
+export default pipesConfig;

@@ -10,7 +10,6 @@ import Row from 'react-bootstrap/Row';
 
 import "./PageStyles.css"
 
-import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
 
@@ -19,7 +18,6 @@ const Login = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const poolData = useConfigStore((state) => state.poolData);
 
   // State for username and password
   const [username, setUsername] = useState('');
@@ -41,7 +39,7 @@ const Login = () => {
     }
 
     try {
-      const response = await login(username, password, poolData);
+      const response = await login(username, password);
 
       if (response.hasOwnProperty("newPasswordChallenge") && response.newPasswordChallenge === true) {
         navigate('/new-password-challenge');

@@ -10,12 +10,10 @@ import Row from 'react-bootstrap/Row';
 
 import "./PageStyles.css"
 
-import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
 
 const ResetPassword = () => {
-  const poolData = useConfigStore((state) => state.poolData);
   const resetPassword = useAuthStore((state) => state.resetPassword);
   const passwordResetUsername = useAuthStore((state) => state.passwordResetUsername);
 
@@ -34,7 +32,7 @@ const ResetPassword = () => {
     }
 
     try {
-      await resetPassword(passwordResetUsername, verificationCode, newPassword2, poolData);
+      await resetPassword(passwordResetUsername, verificationCode, newPassword2);
       setResetSuccess(true);
     } catch (error) {
       setResetSuccess(false);

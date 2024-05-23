@@ -10,14 +10,12 @@ import Row from 'react-bootstrap/Row';
 
 import "./PageStyles.css"
 
-import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const forgotPassword = useAuthStore((state) => state.forgotPassword);
-  const poolData = useConfigStore((state) => state.poolData);
 
   const [username, setUsername] = useState("");
   const [codeRequestSuccess, setCodeRequestSuccess] = useState(false);
@@ -33,7 +31,7 @@ const ForgotPassword = () => {
     event.preventDefault()
 
     try {
-      await forgotPassword(username, poolData);
+      await forgotPassword(username);
       setCodeRequestSuccess(true);
     } catch (error) {
       setErrorMessage(error.message);
