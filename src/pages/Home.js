@@ -1,3 +1,6 @@
+import { useNavigate } from "react-router-dom";
+
+import Button from 'react-bootstrap/Button';
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -8,6 +11,12 @@ import "./Home.css"
 
 
 const Home = () => {
+  const navigate = useNavigate()
+
+  function handleClick() {
+    navigate('/projects')
+  }
+
   return (
     <Container>
       <Row>
@@ -30,6 +39,12 @@ const Home = () => {
           <p>
             Inspired by the complex data management challenges of the LA100 Study, PIPES was designed to help scale large integrated modeling projects at the laboratory (and beyond).
           </p>
+
+          <Row className="text-center mt-5 mb-5">
+            <Button variant="success" onClick={handleClick} size="lg">
+              <b>Check your Projects &gt;&gt;</b>
+            </Button>
+          </Row>
 
           <h3>Metadata Management</h3>
           <p>
