@@ -56,8 +56,21 @@ const useAuthStore = create(
     },
 
     // lougout method
-    logout: () => {
-      set({ currentUser: null, isLoggedIn: false, accessToken: null, idToken: null});
+    logout: (poolData) => {
+      const userPool = new CognitoUserPool(poolData);
+      const currentUser = userPool.getCurrentUser();
+      if (currentUser !== null) {
+        currentUser.signOut();
+        set({
+          currentUser: null,
+          isLoggedIn: false,
+          accessToken: null,
+          idToken: null,
+          challengeUsername: null,
+          tempPassword: null,
+          passwordResetUsername: null
+        });
+      }
     },
 
     // complete new password challenge

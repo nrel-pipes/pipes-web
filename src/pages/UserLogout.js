@@ -1,19 +1,38 @@
-// src/pages/LogoutPage.js
-import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+
+import useConfigStore from './stores/configStore';
 import useAuthStore from './stores/authStore';
 
 const Logout = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
+  const poolData = useConfigStore((state) => state.poolData);
 
-  useEffect(() => {
-    logout();
-    navigate('/');
-  }, [logout, navigate]);
+  const handleLogout = () => {
+    logout(poolData);
+    navigate('/login');
+  };
 
-  // Optionally render a message or a loading indicator
-  return <div>Logging out...</div>;
+  const handleCancel = () => {
+    navigate(-1); // Go back to the previous page
+  };
+
+  return (
+    <Container className="text-center mt-5">
+      <h3 style={{"paddingTop": "30px", "paddingBottom": "30px"}}>Are you sure you want to logout?</h3>
+      <div className="mt-3">
+        <Button variant="danger" onClick={handleLogout} className="me-2">
+          Yes, Logout
+        </Button>
+        <Button variant="secondary" onClick={handleCancel}>
+          No, Go Back
+        </Button>
+      </div>
+    </Container>
+  );
 };
 
 export default Logout;
