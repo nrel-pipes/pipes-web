@@ -8,21 +8,21 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 
-import useAuthStore from './stores/authStore';
 import useConfigStore from './stores/configStore';
+import useAuthStore from './stores/authStore';
+
 
 
 const Login = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const loginError = useAuthStore((state) => state.loginError);
   const poolData = useConfigStore((state) => state.poolData);
 
   // State for username and password
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -30,53 +30,44 @@ const Login = () => {
     }
   }, [isLoggedIn, navigate]);
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();  // Prevent the default form submission
 
     if (!username || !password) {
-      setError('Username and password are required.');
+      setErrorMessage('Username and password are required.');
       return;
     }
+
     try {
-      login(username, password, poolData);
-    } catch (e) {
-      console.log(e.message);
-      setError(e.message);
+      const response = await login(username, password, poolData);
+
+      if (response.hasOwnProperty("newPasswordChallenge") && response.newPasswordChallenge === true) {
+        navigate('/new-password-challenge');
+      }
+    } catch (error) {
+      setErrorMessage(error);
     }
 
-    // .then((result) => {
-    //   if (
-    //     result.hasOwnProperty('new_password_challenge') &&
-    //     result.new_password_challenge === true
-    //   ) {
-    //     navigate(`/setup-new-password/${username}`);
-    //   } else {
-    //     navigate('/');
-    //   }
-    // })
-    // .catch((error) => {
-    //   setError(error);
-    // });
   };
 
-  // if (isLoggedIn) {
-  //   return (
-  //     <Container fluid>
-  //       <Row>
-  //         <Col className='mx-auto mt-5'>
-  //           <p>You are already logged in.</p>
-  //         </Col>
-  //       </Row>
-  //     </Container>
-  //   );
-  // }
+  if (isLoggedIn) {
+    return (
+      <Container>
+        <Row>
+          <Col className='mx-auto mt-5'>
+            <p>You are already logged in.</p>
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
 
   return (
-    <Container fluid>
+    <Container>
       <Row>
-        {error && (
+        {errorMessage && (
           <Alert variant='danger' className='text-center'>
-            {error}
+            {errorMessage}
           </Alert>
         )}
       </Row>

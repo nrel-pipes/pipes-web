@@ -6,66 +6,157 @@ import { CognitoUser, CognitoUserPool, AuthenticationDetails} from "amazon-cogni
 
 const useAuthStore = create(
   persist((set) => ({
+    // Attributes
     currentUser: null,
     isLoggedIn: false,
-    loginError: null,
-    newPasswordChallenge: false,
-    login: (username, password, pooldata) => {
-      try {
-        const userPool = new CognitoUserPool(pooldata);
-        const authenticationData = {
-          Username: username,
-          Password: password
-        };
-        set({ isLoggedIn: true, loginError: null});
-      } catch (error) {
-        console.log(error);
-        set({ isLoggedIn: false, loginError: error.message });
+    challengeUsername: null,
+    tempPassword: null,
+    passwordResetUsername: null,
+    accessToken: null,
+    idToken: null,
+
+    // login method
+    login: async (username, password, poolData) => {
+      const userPool = new CognitoUserPool(poolData);
+      const authenticationData = {
+        Username: username,
+        Password: password
+      };
+      const authenticationDetails = new AuthenticationDetails(authenticationData);
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+      const cognitoUser = new CognitoUser(userData);
+
+      const response = await new Promise((resolve, reject) => {
+        cognitoUser.authenticateUser(authenticationDetails, {
+          onSuccess: (session) => {
+            set({accessToken: session.getAccessToken().getJwtToken()});
+            set({idToken: session.getIdToken().getJwtToken()});
+            set({isLoggedIn: true});
+            set({currentUser: cognitoUser});
+            resolve(session);
+          },
+          onFailure: () => {
+            reject('Incorrect username or password, please try again.');
+          },
+          newPasswordRequired: (userAttributes) => {
+            userAttributes.newPasswordChallenge = true;
+            resolve(userAttributes);
+          }
+        });
+      });
+
+      if (response.hasOwnProperty("newPasswordChallenge") && response.newPasswordChallenge === true) {
+        set({challengeUsername: username, tempPassword: password});
       }
 
-      // const authenticationDetails = new AuthenticationDetails(authenticationData);
-      // const userData = {
-      //   Username: username,
-      //   Pool: userPool
-      // };
-      // const cognitoUser = new CognitoUser(userData);
-      // const promise = new Promise((resolve, reject) => {
-      //   cognitoUser.authenticateUser(authenticationDetails, {
-      //     onSuccess: (session) => {
-      //       localStorage.setItem('accessToken', session.getAccessToken().getJwtToken());
-      //       localStorage.setItem('idToken', session.getIdToken().getJwtToken());
-
-      //       // TODO: Move it to backend server
-      //       localStorage.setItem('refreshToken', session.getRefreshToken().getToken());
-      //       resolve(session);
-      //     },
-      //     onFailure: (e) => {
-      //       reject('Incorrect username or password, please try again.');
-      //     },
-      //     newPasswordRequired: (userAttributes) => {
-      //       userAttributes.new_password_challenge = true;
-      //       resolve(userAttributes);
-      //     }
-      //   });
-      // });
-
-      // promise.then((result) => {
-      //   if (
-      //     result.hasOwnProperty("new_password_challenge") &&
-      //     result.new_password_challenge === true
-      //   ) {
-      //     set({newPasswordChallenge: true});
-      //   } else {
-      //     set({isLoggedIn: true});
-      //   }
-      // })
-      // .catch((e) => {
-      //   set({error: e.message});
-      // });
+      return response;
     },
+
+    // lougout method
     logout: () => {
-      set({ currentUser: null, isLoggedIn: false, loginError: null})
+      set({ currentUser: null, isLoggedIn: false, accessToken: null, idToken: null});
     },
+
+    // complete new password challenge
+    completeNewPasswordChallenge: async (username, tempPassword, newPassword, poolData) => {
+      const userPool = new CognitoUserPool(poolData);
+      const userData = {
+        Username: username,
+        Pool: userPool,
+      };
+      const cognitoUser = new CognitoUser(userData);
+      const authenticationDetails = new AuthenticationDetails({
+        Username: username,
+        Password: tempPassword,
+      });
+
+      await new Promise((resolve, reject) => {
+        cognitoUser.authenticateUser(authenticationDetails, {
+          newPasswordRequired: (userAttributes) => {
+            cognitoUser.completeNewPasswordChallenge(newPassword, {}, {
+              onSuccess: (session) => {
+                set({challengeUsername: null, tempPassword: null});
+                resolve(session);
+              },
+              onFailure: (error) => {
+                reject(error);
+              },
+            });
+          },
+          onSuccess: resolve,
+          onFailure: reject
+        });
+      });
+
+    },
+
+    // change password
+    changePassword: async (username, oldPassword, newPassword, poolData) => {
+      const authenticationData = {
+        Username: username,
+        Password: oldPassword
+      };
+      const authenticationDetails = new AuthenticationDetails(authenticationData);
+      const userPool = new CognitoUserPool(poolData);
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+      const cognitoUser = new CognitoUser(userData);
+      await new Promise((resolve, reject) => {
+        cognitoUser.authenticateUser(authenticationDetails, {
+          onSuccess: resolve,
+          onFailure: reject
+        });
+      });
+
+      await new Promise((resolve, reject) => {
+        cognitoUser.changePassword(oldPassword, newPassword, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        });
+      });
+    },
+
+    // forget password
+    forgotPassword: async (username, poolData) => {
+      const userPool = new CognitoUserPool(poolData);
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+      const cognitoUser = new CognitoUser(userData);
+
+      return new Promise(
+        (resolve, reject) => {
+          cognitoUser.forgotPassword({
+          onSuccess: (session) => {
+            set({passwordResetUsername: username});
+            resolve(session);
+          },
+          onFailure: reject
+        });
+      });
+    },
+
+    // reset password
+    resetPassword: async (username, verificationCode, newPassword, poolData) => {
+      const userPool = new CognitoUserPool(poolData);
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+      const cognitoUser = new CognitoUser(userData);
+      return new Promise((resolve, reject) => {
+        cognitoUser.confirmPassword(verificationCode, newPassword, {
+          onSuccess: resolve,
+          onFailure: reject
+        });
+      });
+    }
 
   }),
   {
