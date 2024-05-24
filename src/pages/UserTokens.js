@@ -12,7 +12,7 @@ import FormControl from 'react-bootstrap/FormControl';
 
 import "./PageStyles.css"
 
-import useAuthStore from './stores/authStore';
+import useAuthStore from './stores/AuthStore';
 
 
 const CognitoTokens = () => {

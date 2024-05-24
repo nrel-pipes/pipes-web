@@ -10,7 +10,7 @@ import Row from 'react-bootstrap/Row';
 
 import "./PageStyles.css"
 
-import useAuthStore from './stores/authStore';
+import useAuthStore from './stores/AuthStore';
 
 
 const ResetPassword = () => {

@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 
 import "./PageStyles.css"
 
-import useAuthStore from './stores/authStore';
+import useAuthStore from './stores/AuthStore';
 
 const Logout = () => {
   const navigate = useNavigate();
