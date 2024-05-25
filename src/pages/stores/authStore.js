@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 import { CognitoUser, CognitoUserPool, AuthenticationDetails} from "amazon-cognito-identity-js"
 
-import pipesConfig from '../PipesConfig'
+import pipesConfig from '../configs/PipesConfig'
 
 
 const useAuthStore = create(
@@ -175,7 +175,7 @@ const useAuthStore = create(
 
   }),
   {
-    name: 'authStore',
+    name: 'AuthStore',
     storage: createJSONStorage(() => localStorage)
   }
 ));

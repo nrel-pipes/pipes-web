@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUser, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
 
 import "./Navbar.css"
-import useAuthStore from '../pages/stores/authStore';
+import useAuthStore from '../pages/stores/AuthStore';
 
 
 const SiteNavbar = () => {

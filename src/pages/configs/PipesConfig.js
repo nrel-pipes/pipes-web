@@ -32,7 +32,7 @@ const otherConfig = {
     UserPoolId: 'us-west-2_TvEJ1biz0',
     ClientId: '6n5co9eh7bab4a21egr95ds3r8',
   },
-  apiOrigin: 'http://127.0.0.1:8080'
+  apiOrigin: 'http://0.0.0.0:8080'
 }
 
 
