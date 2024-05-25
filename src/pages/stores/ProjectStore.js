@@ -7,26 +7,32 @@ import fetchData from '../utilities/FetchData';
 const useProjectStore = create(
   persist((set) => ({
     isLoading: false,
-    error: null,
     projects: [],
+    gpbError: null,
     currentProject: null,
+    gpError: null,
 
     // All projects
-    getAllProjects: async (accessToken) => {
-      set({ isLoading: true, error: null});
+    getProjectBasics: async (accessToken) => {
+      set({ isLoading: true, gpbError: null});
       try {
         const data = await fetchData('/api/projects/basics', null, accessToken);
         set({projects: data, isLoading: false});
       } catch (error) {
-        set({error: error, isLoading: false});
+        set({gpbError: error, isLoading: false});
       }
     },
 
     // Single project
-    getProject: (projectName, accessToken) => {
-      const params = new URLSearchParams({project: projectName}).toString();
-      const project = fetchData('/api/projects', params, accessToken);
-      set({currentProject: project});
+    getProject: async (projectName, accessToken) => {
+      set({ isLoading: true, gpError: null});
+      try {
+        const params = new URLSearchParams({project: projectName});
+        const data = await fetchData('/api/projects', params, accessToken);
+        set({currentProject: data, isLoading: false});
+      } catch (error) {
+        set({gpError: error, isLoading: false});
+      }
     }
   }),
   {

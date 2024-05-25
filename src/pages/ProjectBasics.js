@@ -16,19 +16,26 @@ import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 
 
-const AllProjects = () => {
+const ProjectBasics = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
-  const { projects, error, isLoading, getAllProjects, getProject } = useProjectStore();
+  const { projects, gpbError, isLoading, getProjectBasics, getProject } = useProjectStore();
+
+  const handleClick = (event, project) =>{
+    event.preventDefault();
+
+    getProject(project.name, accessToken);
+    navigate(`/projects/${project.name}`);
+  }
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login');
     }
     if (projects.length === 0) {
-      getAllProjects(accessToken);
+      getProjectBasics(accessToken);
     }
-  }, [isLoggedIn, navigate, projects, getAllProjects, accessToken]);
+  }, [isLoggedIn, navigate, projects, getProjectBasics, accessToken]);
 
   if (isLoading) {
     return (
@@ -42,12 +49,12 @@ const AllProjects = () => {
     )
   }
 
-  if (error) {
+  if (gpbError) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p style={{color: "red"}}>{error.message}</p>
+            <p style={{color: "red"}}>{gpbError.message}</p>
           </Col>
         </Row>
       </Container>
@@ -80,11 +87,7 @@ const AllProjects = () => {
                 <Card.Text>{project.description}</Card.Text>
                 <Button
                   variant="outline-success"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    getProject(project.name);
-                    // document.getElementById("c2c-tab-overview").click();
-                  }}
+                  onClick={(e) => handleClick(e, project)}
                 >
                   Go to Project &gt;&gt;
                 </Button>
@@ -98,4 +101,4 @@ const AllProjects = () => {
 };
 
 
-export default AllProjects;
+export default ProjectBasics;
