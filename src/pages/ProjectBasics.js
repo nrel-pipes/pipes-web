@@ -19,7 +19,7 @@ import useProjectStore from "./stores/ProjectStore";
 const ProjectBasics = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
-  const { projects, gpbError, isLoading, getProjectBasics, getProject } = useProjectStore();
+  const { getProjectBasics, projectBasicsInFetching, projectBasics, projectBasicsGetError, getProject } = useProjectStore();
 
   const handleClick = (event, project) =>{
     event.preventDefault();
@@ -32,12 +32,10 @@ const ProjectBasics = () => {
     if (!isLoggedIn) {
       navigate('/login');
     }
-    if (projects.length === 0) {
-      getProjectBasics(accessToken);
-    }
-  }, [isLoggedIn, navigate, projects, getProjectBasics, accessToken]);
+    getProjectBasics(accessToken);
+  }, [isLoggedIn, navigate, getProjectBasics, accessToken]);
 
-  if (isLoading) {
+  if (projectBasicsInFetching) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -49,19 +47,19 @@ const ProjectBasics = () => {
     )
   }
 
-  if (gpbError) {
+  if (projectBasicsGetError) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p style={{color: "red"}}>{gpbError.message}</p>
+            <p style={{color: "red"}}>{projectBasicsGetError.message}</p>
           </Col>
         </Row>
       </Container>
     )
   }
 
-  if ( !projects || projects.length === 0 ) {
+  if ( !projectBasics || projectBasics.length === 0 ) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -79,7 +77,7 @@ const ProjectBasics = () => {
         <h2 className="mt-4 mb-4">Your Available Projects</h2>
       </Row>
       <Row>
-        {projects.map((project) => (
+        {projectBasics.map((project) => (
           <Col sm={6} key={project.name} >
             <Card style={{ margin: "20px" }}>
               <Card.Body className="bg-light text-start">

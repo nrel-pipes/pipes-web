@@ -4,8 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import Button from "react-bootstrap/Button";
-import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
@@ -14,13 +12,15 @@ import "./PageStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
-
+import useProjectRunStore from "./stores/ProjectRunStore";
+import ProjectAssumptions from "./components/ProjectAssumptions";
 
 const ProjectDetail = () => {
   const { projectName } = useParams();
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
-  const { currentProject, gpError, isLoading, getProject } = useProjectStore();
+  const { getProject, isGettingProject, projectGetError, currentProject} = useProjectStore();
+  const { getProjectRuns, projectRuns, isGettingProjectRuns} = useProjectRunStore();
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -29,10 +29,21 @@ const ProjectDetail = () => {
 
     if (currentProject === null || currentProject.name !== projectName) {
       getProject(projectName, accessToken);
+      getProjectRuns(projectName, accessToken);
     }
-  }, [isLoggedIn, navigate, projectName, currentProject, getProject, accessToken]);
 
-  if (isLoading) {
+  }, [
+    isLoggedIn,
+    navigate,
+    accessToken,
+    getProject,
+    projectName,
+    currentProject,
+    projectRuns,
+    getProjectRuns,
+  ]);
+
+  if (isGettingProject || isGettingProjectRuns) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -44,12 +55,12 @@ const ProjectDetail = () => {
     )
   }
 
-  if (gpError) {
+  if (projectGetError) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p style={{color: "red"}}>{gpError.message}</p>
+            <p style={{color: "red"}}>{projectGetError.message}</p>
           </Col>
         </Row>
       </Container>
@@ -70,11 +81,17 @@ const ProjectDetail = () => {
 
   return (
     <Container className="mainContent">
-      <Row>
-        <h2 className="mt-4 mb-4 text-start">{currentProject.name}</h2>
+      <Row className="text-start mt-4 mb-4">
+        <h1 className='mt-3'>{currentProject.name}</h1>
+        <h2 className='display-3 mt-4 mb-4'>{currentProject.title}</h2>
+        <p className='mt-3'>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</p>
       </Row>
-      <Row>
-        {currentProject.assumptions}
+
+      <hr></hr>
+
+      <Row className="text-start mt-4">
+        <h3 className="mb-4">Assumptions</h3>
+        <ProjectAssumptions assumptions={currentProject.assumptions} />
       </Row>
     </Container>
   );
