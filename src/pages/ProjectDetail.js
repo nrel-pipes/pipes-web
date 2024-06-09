@@ -82,9 +82,8 @@ const ProjectDetail = () => {
   return (
     <Container className="mainContent">
       <Row className="text-start mt-4 mb-4">
-        <h1 className='mt-3'>{currentProject.name}</h1>
-        <h2 className='display-3 mt-4 mb-4'>{currentProject.title}</h2>
-        <p className='mt-3'>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</p>
+        <h2 className='display-3 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
+        <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>
       </Row>
 
       <hr></hr>
