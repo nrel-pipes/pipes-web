@@ -13,7 +13,11 @@ import "./PageStyles.css"
 import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 import useProjectRunStore from "./stores/ProjectRunStore";
-import ProjectAssumptions from "./components/ProjectAssumptions";
+
+import ProjectAssumptions from "./ProjectAssumptions";
+import ProjectRequirements from "./ProjectRequirements";
+import ProjectScenarios from "./ProjectScenarios";
+
 
 const ProjectDetail = () => {
   const { projectName } = useParams();
@@ -88,10 +92,34 @@ const ProjectDetail = () => {
 
       <hr></hr>
 
-      <Row className="text-start mt-4">
-        <h3 className="mb-4">Assumptions</h3>
-        <ProjectAssumptions assumptions={currentProject.assumptions} />
+      <Row className="text-start mt-5">
+        <h3 className="mb-4">Description</h3>
+        <Col>
+          <p>{currentProject.description}</p>
+        </Col>
       </Row>
+
+      <Row className="text-start mt-5">
+        <h3 className="mb-4">Assumptions</h3>
+        <Col>
+          <ProjectAssumptions assumptions={currentProject.assumptions} />
+        </Col>
+      </Row>
+
+      <Row className="text-start mt-5">
+        <h3 className="mb-4">Requirements</h3>
+        <Col>
+          <ProjectRequirements requirements={currentProject.requirements} />
+        </Col>
+      </Row>
+
+      <Row className="text-start mt-5">
+        <h3 className="mb-4">Scenarios</h3>
+        <Col>
+          <ProjectScenarios scenarios={currentProject.scenarios} />
+        </Col>
+      </Row>
+
     </Container>
   );
 };
