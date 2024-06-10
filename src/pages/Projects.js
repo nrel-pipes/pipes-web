@@ -16,7 +16,7 @@ import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 
 
-const ProjectBasics = () => {
+const Projects = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
   const { getProjectBasics, projectBasicsInFetching, projectBasics, projectBasicsGetError, getProject } = useProjectStore();
@@ -25,7 +25,7 @@ const ProjectBasics = () => {
     event.preventDefault();
 
     getProject(project.name, accessToken);
-    navigate(`/projects/${project.name}`);
+    navigate(`/overview`);
   }
 
   useEffect(() => {
@@ -99,4 +99,4 @@ const ProjectBasics = () => {
 };
 
 
-export default ProjectBasics;
+export default Projects;

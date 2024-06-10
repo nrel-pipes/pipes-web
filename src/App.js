@@ -7,7 +7,7 @@ import SiteNavbar from './layouts/Navbar';
 import SiteNavbarFluid from './layouts/NavbarFluid';
 import SiteFooter from './layouts/Footer';
 import Home from './pages/Home';
-import ProjectBasics from './pages/ProjectBasics';
+import Projects from './pages/Projects';
 import ProjectOverview from './pages/ProjectOverview';
 import Login from './pages/UserLogin';
 import Logout from './pages/UserLogout';
@@ -34,8 +34,8 @@ function App() {
             {/* Home route */}
             <Route exact path='/' element={<Home />} />
             {/* Project routes*/}
-            <Route path='/projects'  exact element={isLoggedIn? <ProjectBasics />: <Navigate to='/login' />} />
-            <Route path='/projects/:projectName'  exact element={isLoggedIn? <ProjectOverview />: <Navigate to='/login' />} />
+            <Route path='/projects'  exact element={isLoggedIn? <Projects />: <Navigate to='/login' />} />
+            <Route path='/overview'  exact element={isLoggedIn? <ProjectOverview />: <Navigate to='/login' />} />
             {/* User auth routes */}
             <Route path='/login' element={isLoggedIn? <Navigate to='/projects' />:<Login />} />
             <Route path='/logout' element={<Logout />} />

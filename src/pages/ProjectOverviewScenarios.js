@@ -31,7 +31,7 @@ const ScenarioRow = ({ name, description, other }) => {
   );
 };
 
-const ProjectScenarios = ({scenarios}) => {
+const ProjectOverviewScenarios = ({scenarios}) => {
   return (
     <Table striped bordered hover>
         <thead>
@@ -49,4 +49,4 @@ const ProjectScenarios = ({scenarios}) => {
   );
 }
 
-export default ProjectScenarios;
+export default ProjectOverviewScenarios;

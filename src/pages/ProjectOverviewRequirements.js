@@ -1,7 +1,7 @@
 import React from "react";
 import Table from "react-bootstrap/Table";
 
-const ProjectRequirements = ({requirements}) => {
+const ProjectOverviewRequirements = ({requirements}) => {
   return (
     <Table striped bordered hover>
         <thead>
@@ -22,4 +22,4 @@ const ProjectRequirements = ({requirements}) => {
   );
 }
 
-export default ProjectRequirements;
+export default ProjectOverviewRequirements;

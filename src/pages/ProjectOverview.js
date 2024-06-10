@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,17 +14,18 @@ import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 import useProjectRunStore from "./stores/ProjectRunStore";
 
-import ProjectAssumptions from "./ProjectAssumptions";
-import ProjectRequirements from "./ProjectRequirements";
-import ProjectScenarios from "./ProjectScenarios";
+import ProjectOverviewAssumptions from "./ProjectOverviewAssumptions";
+import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
+import ProjectOverviewScenarios from "./ProjectOverviewScenarios";
 
 
 const ProjectOverview = () => {
-  const { projectName } = useParams();
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
   const { getProject, isGettingProject, projectGetError, currentProject} = useProjectStore();
   const { getProjectRuns, projectRuns, isGettingProjectRuns} = useProjectRunStore();
+
+  const projectName = currentProject.name;
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -84,7 +85,7 @@ const ProjectOverview = () => {
   }
 
   return (
-    <Container className="mainContent">
+    <Container className="mainContent" fluid>
       <Row className="text-start mt-4 mb-4">
         <h2 className='display-3 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
         <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>
@@ -102,21 +103,21 @@ const ProjectOverview = () => {
       <Row className="text-start mt-5">
         <h3 className="mb-4">Assumptions</h3>
         <Col>
-          <ProjectAssumptions assumptions={currentProject.assumptions} />
+          <ProjectOverviewAssumptions assumptions={currentProject.assumptions} />
         </Col>
       </Row>
 
       <Row className="text-start mt-5">
         <h3 className="mb-4">Requirements</h3>
         <Col>
-          <ProjectRequirements requirements={currentProject.requirements} />
+          <ProjectOverviewRequirements requirements={currentProject.requirements} />
         </Col>
       </Row>
 
       <Row className="text-start mt-5">
         <h3 className="mb-4">Scenarios</h3>
         <Col>
-          <ProjectScenarios scenarios={currentProject.scenarios} />
+          <ProjectOverviewScenarios scenarios={currentProject.scenarios} />
         </Col>
       </Row>
 

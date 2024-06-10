@@ -3,7 +3,7 @@ const webRegex = // eslint-disable-next-line
 /([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#\.]?[\w-]+){1,}\/?/gm;
 
 
-export default function ProjectAssumptions({ assumptions }) {
+export default function ProjectOverviewAssumptions({ assumptions }) {
   if (Array.isArray(assumptions)) {
     return (
       <>

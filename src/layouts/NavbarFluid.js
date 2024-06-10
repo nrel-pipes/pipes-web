@@ -22,6 +22,12 @@ const SiteNavbarFluid = () => {
         <Navbar.Collapse>
           <Nav className="me-auto">
             <Nav.Link href="/projects">Projects</Nav.Link>
+            {isLoggedIn ? (
+            <Nav className="ms-auto">
+              <div className="divider"></div>
+              <Nav.Link href="/overview">Overview &nbsp;&nbsp;</Nav.Link>
+            </Nav>
+            ) : ("")}
           </Nav>
           {isLoggedIn ? (
           <Nav className="ms-auto">
