@@ -28,3 +28,8 @@
   align-self: center;
   margin: 0 10px;
 }
+
+.fluid-image {
+  height: 65px;
+  width: '100%';
+}

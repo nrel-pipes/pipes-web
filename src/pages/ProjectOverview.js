@@ -19,7 +19,7 @@ import ProjectRequirements from "./ProjectRequirements";
 import ProjectScenarios from "./ProjectScenarios";
 
 
-const ProjectDetail = () => {
+const ProjectOverview = () => {
   const { projectName } = useParams();
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
@@ -125,4 +125,4 @@ const ProjectDetail = () => {
 };
 
 
-export default ProjectDetail;
+export default ProjectOverview;

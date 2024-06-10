@@ -4,10 +4,11 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 
 import SiteBanner from './layouts/Banner';
 import SiteNavbar from './layouts/Navbar';
+import SiteNavbarFluid from './layouts/NavbarFluid';
 import SiteFooter from './layouts/Footer';
 import Home from './pages/Home';
 import ProjectBasics from './pages/ProjectBasics';
-import ProjectDetail from './pages/ProjectDetail';
+import ProjectOverview from './pages/ProjectOverview';
 import Login from './pages/UserLogin';
 import Logout from './pages/UserLogout';
 import CognitoTokens from './pages/UserTokens';
@@ -25,8 +26,8 @@ function App() {
 
   return (
     <div className='App'>
-      <SiteBanner />
-      <SiteNavbar />
+      {isLoggedIn ? "": <SiteBanner />}
+      {isLoggedIn ? <SiteNavbarFluid />: <SiteNavbar />}
       <div className='Content'>
         <BrowserRouter>
           <Routes>
@@ -34,7 +35,7 @@ function App() {
             <Route exact path='/' element={<Home />} />
             {/* Project routes*/}
             <Route path='/projects'  exact element={isLoggedIn? <ProjectBasics />: <Navigate to='/login' />} />
-            <Route path='/projects/:projectName'  exact element={isLoggedIn? <ProjectDetail />: <Navigate to='/login' />} />
+            <Route path='/projects/:projectName'  exact element={isLoggedIn? <ProjectOverview />: <Navigate to='/login' />} />
             {/* User auth routes */}
             <Route path='/login' element={isLoggedIn? <Navigate to='/projects' />:<Login />} />
             <Route path='/logout' element={<Logout />} />
@@ -47,7 +48,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
-      <SiteFooter />
+      {isLoggedIn ? "": <SiteFooter />}
     </div>
   );
 }
