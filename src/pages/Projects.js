@@ -19,7 +19,7 @@ import useProjectStore from "./stores/ProjectStore";
 const Projects = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
-  const { getProjectBasics, projectBasicsInFetching, projectBasics, projectBasicsGetError, getProject } = useProjectStore();
+  const { projectBasics, getProjectBasics, isGettingProjectBasics, projectBasicsGetError, getProject } = useProjectStore();
 
   const handleClick = (event, project) =>{
     event.preventDefault();
@@ -35,7 +35,7 @@ const Projects = () => {
     getProjectBasics(accessToken);
   }, [isLoggedIn, navigate, getProjectBasics, accessToken]);
 
-  if (projectBasicsInFetching) {
+  if (isGettingProjectBasics) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
