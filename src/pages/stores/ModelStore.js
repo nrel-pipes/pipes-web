@@ -14,9 +14,11 @@ const useModelStore = create(
     getModels: async (projectName, projectRunName, accessToken) => {
       set({ isGettingModels: true, modelsGetError: null});
       try {
-        const params = new URLSearchParams({project: projectName, projectrun: projectRunName});
+        let params = new URLSearchParams({project: projectName, projectrun: projectRunName});
+        if (!projectRunName || projectRunName === null) {
+          params = new URLSearchParams({project: projectName});
+        }
         const data = await fetchData('/api/models', params, accessToken);
-        console.log("models ==== ", data)
         set({models: data, isGettingModels: false});
       } catch (error) {
         set({models: [], modelsGetError: error, isGettingModels: false});

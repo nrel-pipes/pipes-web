@@ -16,7 +16,7 @@ import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 
 
-const Projects = () => {
+const AllProjects = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
   const { projectBasics, getProjectBasics, isGettingProjectBasics, projectBasicsGetError, getProject } = useProjectStore();
@@ -99,4 +99,4 @@ const Projects = () => {
 };
 
 
-export default Projects;
+export default AllProjects;
