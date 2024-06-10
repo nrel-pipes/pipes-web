@@ -25,7 +25,9 @@ const SiteNavbarFluid = () => {
             {isLoggedIn ? (
             <Nav className="ms-auto">
               <div className="divider"></div>
-              <Nav.Link href="/overview">Overview &nbsp;&nbsp;</Nav.Link>
+              <Nav.Link href="/overview">Overview</Nav.Link>
+              <Nav.Link href="/schedule">Schedule</Nav.Link>
+              <Nav.Link href="/pipeline">Pipeline</Nav.Link>
             </Nav>
             ) : ("")}
           </Nav>
