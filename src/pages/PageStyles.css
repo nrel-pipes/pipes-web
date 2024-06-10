@@ -11,3 +11,7 @@
 .mainContent {
   min-height: calc(100vh - 455px);
 }
+
+.smallCaps {
+  font-variant: small-caps;
+}

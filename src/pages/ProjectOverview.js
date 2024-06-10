@@ -17,6 +17,8 @@ import useProjectRunStore from "./stores/ProjectRunStore";
 import ProjectOverviewAssumptions from "./ProjectOverviewAssumptions";
 import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
 import ProjectOverviewScenarios from "./ProjectOverviewScenarios";
+import ProjectOverviewSchedule from "./ProjectOverviewSchedule";
+import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
 
 
 const ProjectOverview = () => {
@@ -87,40 +89,54 @@ const ProjectOverview = () => {
   return (
     <Container className="mainContent" fluid>
       <Row className="text-start mt-4 mb-4">
-        <h2 className='display-3 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
-        <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>
-      </Row>
-
-      <hr></hr>
-
-      <Row className="text-start mt-5">
-        <h3 className="mb-4">Description</h3>
         <Col>
-          <p>{currentProject.description}</p>
+          <h2 className='display-3 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
+          <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>
+
+          <p className="mt-4">{currentProject.description}</p>
+          <hr></hr>
         </Col>
       </Row>
+      <Row>
+        <Col md={8}>
+          <Row className="text-start mt-4">
+            <h3 className="mb-4">Assumptions</h3>
+            <Col>
+              <ProjectOverviewAssumptions assumptions={currentProject.assumptions} />
+            </Col>
+          </Row>
 
-      <Row className="text-start mt-5">
-        <h3 className="mb-4">Assumptions</h3>
-        <Col>
-          <ProjectOverviewAssumptions assumptions={currentProject.assumptions} />
+          <Row className="text-start mt-5">
+            <h3 className="mb-4">Requirements</h3>
+            <Col>
+              <ProjectOverviewRequirements requirements={currentProject.requirements} />
+            </Col>
+          </Row>
+
+          <Row className="text-start mt-5">
+            <h3 className="mb-4">Scenarios</h3>
+            <Col>
+              <ProjectOverviewScenarios scenarios={currentProject.scenarios} />
+            </Col>
+          </Row>
+
+          <Row className="text-start mt-5">
+            <h3 className="mb-4">Schedule</h3>
+            <Col>
+              <ProjectOverviewSchedule scheduled_start={currentProject.scheduled_start} scheduled_end={currentProject.scheduled_end} />
+            </Col>
+          </Row>
+        </Col>
+
+        <Col md={4} className="border-start">
+          <Row className="text-start mt-4">
+            <h3 className="mb-4">Available Project Runs</h3>
+            <Col>
+              <ProjectOverviewProjectRuns projectRuns={projectRuns} />
+            </Col>
+          </Row>
         </Col>
       </Row>
-
-      <Row className="text-start mt-5">
-        <h3 className="mb-4">Requirements</h3>
-        <Col>
-          <ProjectOverviewRequirements requirements={currentProject.requirements} />
-        </Col>
-      </Row>
-
-      <Row className="text-start mt-5">
-        <h3 className="mb-4">Scenarios</h3>
-        <Col>
-          <ProjectOverviewScenarios scenarios={currentProject.scenarios} />
-        </Col>
-      </Row>
-
     </Container>
   );
 };
