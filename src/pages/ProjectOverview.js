@@ -94,7 +94,7 @@ const ProjectOverview = () => {
     <Container className="mainContent" fluid>
       <Row className="text-start mt-4 mb-4">
         <Col>
-          <h2 className='display-3 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
+          <h2 className='display-5 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
           <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>
 
           <p className="mt-4">{currentProject.description}</p>
@@ -104,28 +104,28 @@ const ProjectOverview = () => {
       <Row>
         <Col md={8}>
           <Row className="text-start mt-4">
-            <h3 className="mb-4">Assumptions</h3>
+            <h3 className="mb-4 smallCaps">Assumptions</h3>
             <Col>
               <ProjectOverviewAssumptions assumptions={currentProject.assumptions} />
             </Col>
           </Row>
 
           <Row className="text-start mt-5">
-            <h3 className="mb-4">Requirements</h3>
+            <h3 className="mb-4 smallCaps">Requirements</h3>
             <Col>
               <ProjectOverviewRequirements requirements={currentProject.requirements} />
             </Col>
           </Row>
 
           <Row className="text-start mt-5">
-            <h3 className="mb-4">Scenarios</h3>
+            <h3 className="mb-4 smallCaps">Scenarios</h3>
             <Col>
               <ProjectOverviewScenarios scenarios={currentProject.scenarios} />
             </Col>
           </Row>
 
           <Row className="text-start mt-5">
-            <h3 className="mb-4">Schedule</h3>
+            <h3 className="mb-4 smallCaps">Schedule</h3>
             <Col>
               <ProjectOverviewSchedule scheduled_start={currentProject.scheduled_start} scheduled_end={currentProject.scheduled_end} />
             </Col>
@@ -134,7 +134,7 @@ const ProjectOverview = () => {
 
         <Col md={4} className="border-start">
           <Row className="text-start mt-4">
-            <h3 className="mb-4">Available Project Runs</h3>
+            <h3 className="mb-4 smallCaps">Available Project Runs</h3>
             <Col>
               <ProjectOverviewProjectRuns projectRuns={projectRuns} />
             </Col>
