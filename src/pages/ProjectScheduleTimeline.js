@@ -8,7 +8,7 @@ import useModelStore from "./stores/ModelStore";
 import "./PageStyles.css"
 
 
-const ProjectScheduleGantt = ({ viewMode, showSidebar, divId }) => {
+const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
   const { currentProject } = useProjectStore();
   const { projectRuns } = useProjectRunStore();
   const { models } = useModelStore();
@@ -125,4 +125,4 @@ function getGanttTaskProgress(startDate, endDate) {
 }
 
 
-export default ProjectScheduleGantt;
+export default ProjectScheduleTimeline;

@@ -10,6 +10,8 @@ const useProjectStore = create(
     projectBasics: [],
     projectBasicsGetError: null,
 
+    selectedProjectName: null,
+
     isGettingProject: false,
     currentProject: null,
     projectGetError: null,
@@ -27,7 +29,7 @@ const useProjectStore = create(
 
     // Single project
     getProject: async (projectName, accessToken) => {
-      set({ isGettingProject: true, projectGetError: null});
+      set({ isGettingProject: true, projectGetError: null, selectedProjectName: projectName});
       try {
         const params = new URLSearchParams({project: projectName});
         const data = await fetchData('/api/projects', params, accessToken);

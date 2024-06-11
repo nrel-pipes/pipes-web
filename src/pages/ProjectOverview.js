@@ -24,27 +24,31 @@ import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
 const ProjectOverview = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken } = useAuthStore();
-  const { getProject, isGettingProject, projectGetError, currentProject} = useProjectStore();
+  const { selectedProjectName, currentProject, getProject, isGettingProject, projectGetError} = useProjectStore();
   const { getProjectRuns, projectRuns, isGettingProjectRuns} = useProjectRunStore();
-
-  const projectName = currentProject.name;
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login');
+      return;
     }
 
-    if (currentProject === null || currentProject.name !== projectName) {
-      getProject(projectName, accessToken);
-      getProjectRuns(projectName, accessToken);
+    if (!selectedProjectName || selectedProjectName === null) {
+      navigate('/projects');
+      return;
+    }
+
+    if (!currentProject || currentProject === null) {
+      getProject(selectedProjectName, accessToken);
+      getProjectRuns(selectedProjectName, accessToken);
     }
 
   }, [
     isLoggedIn,
     navigate,
     accessToken,
+    selectedProjectName,
     getProject,
-    projectName,
     currentProject,
     projectRuns,
     getProjectRuns,

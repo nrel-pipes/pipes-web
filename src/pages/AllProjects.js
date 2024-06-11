@@ -21,7 +21,7 @@ const AllProjects = () => {
   const { isLoggedIn, accessToken } = useAuthStore();
   const { projectBasics, getProjectBasics, isGettingProjectBasics, projectBasicsGetError, getProject } = useProjectStore();
 
-  const handleClick = (event, project) =>{
+  const handleProjectClick = (event, project) =>{
     event.preventDefault();
 
     getProject(project.name, accessToken);
@@ -85,7 +85,7 @@ const AllProjects = () => {
                 <Card.Text>{project.description}</Card.Text>
                 <Button
                   variant="outline-success"
-                  onClick={(e) => handleClick(e, project)}
+                  onClick={(e) => handleProjectClick(e, project)}
                 >
                   Go to Project &gt;&gt;
                 </Button>
