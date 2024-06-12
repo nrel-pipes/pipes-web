@@ -92,7 +92,7 @@ const ProjectOverview = () => {
 
   return (
     <Container className="mainContent" fluid>
-      <Row className="text-start mt-4 mb-4">
+      <Row className="text-start">
         <Col>
           <h2 className='display-5 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
           <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>

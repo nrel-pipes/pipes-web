@@ -18,7 +18,7 @@ import "./ReactflowStyles.css"
 import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 import useModelStore from "./stores/ModelStore";
-import useModelRunStore from "./stores/ModelRunStore";
+// import useModelRunStore from "./stores/ModelRunStore";
 
 import ProjectPipelineGraphView from "./ProjectPipelineGraphView";
 import ProjectPipelineDataView from "./ProjectPipelineDataView";
@@ -42,7 +42,7 @@ const ProjectPipeline = () => {
   const { selectedProjectName, currentProject} = useProjectStore();
   const { projectRuns } = useProjectRunStore();
   const { models, getModels, isGettingModels} = useModelStore();
-  const { modelRuns } = useModelRunStore();
+  // const { modelRuns } = useModelRunStore();
 
   const [clickedElementData, setClickedElementedData] = useState({});
 

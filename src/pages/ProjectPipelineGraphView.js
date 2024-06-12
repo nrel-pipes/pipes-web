@@ -1,9 +1,8 @@
-import React, { useCallback } from "react";
+import React from "react";
 import ReactFlow, {
   ReactFlowProvider,
   useNodesState,
   useEdgesState,
-  addEdge,
   Controls,
   Background,
   MiniMap
@@ -31,12 +30,8 @@ const edgeTypes = {
 
 
 const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData}) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(graphNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(graphEdges);
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [],
-  );
+  const [nodes, onNodesChange] = useNodesState(graphNodes);
+  const [edges, onEdgesChange] = useEdgesState(graphEdges);
 
   function onNodeClick(event, node) {
     setClickedElementData(node.data);
@@ -51,7 +46,6 @@ const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
           fitView
           attributionPosition="top-right"
           nodeTypes={nodeTypes}
