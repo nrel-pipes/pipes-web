@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import AllProjects from './pages/AllProjects';
 import ProjectOverview from './pages/ProjectOverview';
 import ProjectSchedule from './pages/ProjectSchedule';
+import ProjectPipeline from './pages/ProjectPipeline';
 import Login from './pages/UserLogin';
 import Logout from './pages/UserLogout';
 import CognitoTokens from './pages/UserTokens';
@@ -38,6 +39,7 @@ function App() {
             <Route path='/projects'  exact element={isLoggedIn? <AllProjects />: <Navigate to='/login' />} />
             <Route path='/overview'  exact element={isLoggedIn? <ProjectOverview />: <Navigate to='/login' />} />
             <Route path='/schedule'  exact element={isLoggedIn? <ProjectSchedule />: <Navigate to='/login' />} />
+            <Route path='/pipeline'  exact element={isLoggedIn? <ProjectPipeline />: <Navigate to='/login' />} />
 
             {/* User auth routes */}
             <Route path='/login' element={isLoggedIn? <Navigate to='/projects' />:<Login />} />
