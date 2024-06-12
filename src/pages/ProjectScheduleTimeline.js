@@ -24,6 +24,7 @@ const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
       end: projectEndDate,
       name: "Project: " + currentProject.name,
       id: "project",
+      styles: {progressColor: '#2D8AED', progressSelectedColor: '#2980B9'},
       progress: getGanttTaskProgress(projectStartDate, projectEndDate),
       hideChildren: false,
       type: "project"
@@ -59,7 +60,7 @@ const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
       type: "task",
       progress: getGanttTaskProgress(projectRunStartDate, projectRunEndDate),
       project: currentProject.name,
-      styles: { progressColor: '#5DADE2', progressSelectedColor: '#2874A6' },
+      styles: { progressColor: '#8CCFF2', progressSelectedColor: '#5DADE2' },
       hideChildren: false
     });
 
@@ -75,6 +76,7 @@ const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
           name: "Model: " + model.name,
           id: model.name + index,
           type: "task",
+          styles: {progressColor: '#00A69F', progressSelectedColor: '#117A65' },
           progress: getGanttTaskProgress(modelStartDate, modelEndDate),
           project: projectRun.name,
         });
