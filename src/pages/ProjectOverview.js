@@ -23,11 +23,12 @@ import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
 
 const ProjectOverview = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken } = useAuthStore();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { selectedProjectName, currentProject, getProject, isGettingProject, projectGetError} = useProjectStore();
   const { getProjectRuns, projectRuns, isGettingProjectRuns} = useProjectRunStore();
 
   useEffect(() => {
+    validateToken(accessToken);
     if (!isLoggedIn) {
       navigate('/login');
       return;
@@ -44,6 +45,7 @@ const ProjectOverview = () => {
     }
 
   }, [
+    validateToken,
     isLoggedIn,
     navigate,
     accessToken,

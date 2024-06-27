@@ -23,7 +23,7 @@ import ProjectScheduleEvents from "./ProjectScheduleEvents";
 
 const ProjectSchedule = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken } = useAuthStore();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { selectedProjectName, currentProject} = useProjectStore();
   const { models, getModels, isGettingModels} = useModelStore();
 
@@ -40,6 +40,7 @@ const ProjectSchedule = () => {
   };
 
   useEffect(() => {
+    validateToken(accessToken);
     if (!isLoggedIn) {
       navigate('/login');
       return;
@@ -57,6 +58,7 @@ const ProjectSchedule = () => {
     isLoggedIn,
     navigate,
     accessToken,
+    validateToken,
     selectedProjectName,
     currentProject,
     models,

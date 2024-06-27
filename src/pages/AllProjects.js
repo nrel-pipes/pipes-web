@@ -18,7 +18,7 @@ import useProjectStore from "./stores/ProjectStore";
 
 const AllProjects = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken } = useAuthStore();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { projectBasics, getProjectBasics, isGettingProjectBasics, projectBasicsGetError, getProject } = useProjectStore();
 
   const handleProjectClick = (event, project) =>{
@@ -29,11 +29,12 @@ const AllProjects = () => {
   }
 
   useEffect(() => {
+    validateToken(accessToken);
     if (!isLoggedIn) {
       navigate('/login');
     }
     getProjectBasics(accessToken);
-  }, [isLoggedIn, navigate, getProjectBasics, accessToken]);
+  }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
 
   if (isGettingProjectBasics) {
     return (

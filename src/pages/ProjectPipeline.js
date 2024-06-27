@@ -38,7 +38,7 @@ const nodeHeight = 45;
 
 const ProjectPipeline = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken } = useAuthStore();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { selectedProjectName, currentProject} = useProjectStore();
   const { projectRuns } = useProjectRunStore();
   const { models, getModels, isGettingModels} = useModelStore();
@@ -47,6 +47,7 @@ const ProjectPipeline = () => {
   const [clickedElementData, setClickedElementedData] = useState({});
 
   useEffect(() => {
+    validateToken(accessToken);
     if (!isLoggedIn) {
       navigate('/login');
       return;
@@ -66,6 +67,7 @@ const ProjectPipeline = () => {
     isLoggedIn,
     navigate,
     accessToken,
+    validateToken,
     selectedProjectName,
     currentProject,
     models,

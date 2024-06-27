@@ -18,6 +18,8 @@ const Login = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const validateToken = useAuthStore((state) => state.validateToken);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   // State for username and password
   const [username, setUsername] = useState('');
@@ -25,10 +27,11 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    validateToken(accessToken);
     if (isLoggedIn) {
       navigate(-1);
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, navigate, accessToken, validateToken]);
 
   const handleLogin = async (event) => {
     event.preventDefault();  // Prevent the default form submission

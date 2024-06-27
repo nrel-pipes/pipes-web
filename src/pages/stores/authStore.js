@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import { CognitoUser, CognitoUserPool, AuthenticationDetails} from "amazon-cognito-identity-js"
+import { jwtDecode } from 'jwt-decode';
 
 import pipesConfig from '../configs/PipesConfig'
 
@@ -171,6 +172,26 @@ const useAuthStore = create(
           onFailure: reject
         });
       });
+    },
+
+    // Validate if token expired
+    validateToken: async (token) => {
+      try {
+        const isTokenExpired = (token) => {
+          const { exp } = jwtDecode(token);
+          const now = Math.floor(Date.now() / 1000);
+          return exp < now;
+        };
+
+        // Check if the token is expired
+        if (isTokenExpired(token)) {
+          set({ isLoggedIn: false});
+        }
+
+      } catch (error) {
+        set({ isLoggedIn: false });
+        console.error('Token validatation failed, please re-login', error);
+      }
     }
 
   }),
