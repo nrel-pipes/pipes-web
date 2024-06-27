@@ -19,12 +19,12 @@ const Home = () => {
         </Col>
       </Row>
       <Row className="mt-4 text-start">
-        <Col lg={7}>
+        <Col lg={7} className="text-center">
           <Image
             className="rounded"
             src="/images/NREL-PIPES-v2.png"
             alt="PIPES"
-            style={{ width: "85%" }}
+            style={{ width: "75%" }}
             fluid
           />
         </Col>
@@ -53,7 +53,7 @@ const Home = () => {
         </Col>
       </Row>
       <Row className="my-5 text-start">
-        <Col md={6}>
+        <Col md={6} className="my-3">
           <Card className='nrelCard mt-1'>
             <Card.Header className='nrelCardHeader'>
               <h3><a href='https://nrel-pipes.github.io/pipes-core/' target='_blank' rel='noreferrer'>
@@ -68,7 +68,7 @@ const Home = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={6}>
+        <Col md={6} className="my-3">
           <Card className='nrelCard mt-1'>
             <Card.Header className='nrelCardHeader'>
               <h3>
