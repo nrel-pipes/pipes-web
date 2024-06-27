@@ -29,9 +29,13 @@ const edgeTypes = {
 };
 
 
-const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData}) => {
-  const [nodes, onNodesChange] = useNodesState(graphNodes);
-  const [edges, onEdgesChange] = useEdgesState(graphEdges);
+const ProjectPipelineGraphView = ({layoutedNodes, layoutedEdges, setClickedElementData}) => {
+  const [nodes, onNodesChange] = useNodesState(layoutedNodes);
+  const [edges, onEdgesChange] = useEdgesState(layoutedEdges);
+
+  if (nodes.length === 6) {
+    return
+  }
 
   function onNodeClick(event, node) {
     setClickedElementData(node.data);

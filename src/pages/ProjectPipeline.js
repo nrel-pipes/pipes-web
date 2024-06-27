@@ -183,8 +183,8 @@ const ProjectPipeline = () => {
       <Row id="pipeline-flowview">
         <Col md={8}>
           <ProjectPipelineGraphView
-            graphNodes={nodes}
-            graphEdges={edges}
+            layoutedNodes={nodes}
+            layoutedEdges={edges}
             setClickedElementData={setClickedElementedData}
           />
         </Col>
