@@ -112,8 +112,8 @@ const Login = () => {
               </Button>
             </div>
             <div className='mt-3 text-center'>
-              <Link to='https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html#pipes-team-contacts' target="_blank">
-                Don't have an account?
+              <Link to='https://nrel-pipes.github.io/pipes-core/index.html' target="_blank">
+                Learn more about PIPES?
               </Link>{' '}
               <Link to='/forgot-password'>Forgot the password?</Link>
             </div>
