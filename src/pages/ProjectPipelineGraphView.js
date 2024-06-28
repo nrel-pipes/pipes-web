@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   useNodesState,
@@ -34,12 +34,17 @@ const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData
   // const renderCount = useRef(0);
   // renderCount.current += 1;
 
-  const [nodes] = useNodesState(graphNodes);
-  const [edges] = useEdgesState(graphEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(graphNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(graphEdges);
 
   function onNodeClick(event, node) {
     setClickedElementData(node.data);
   }
+
+  useEffect(() => {
+    setNodes(graphNodes);
+    setEdges(graphEdges);
+  }, [graphNodes, graphEdges, setNodes, setEdges]);
 
   const nodeClassName = (node) => node.type;
   return (
@@ -48,8 +53,8 @@ const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          // onNodesChange={onNodesChange}
-          // onEdgesChange={onEdgesChange}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
           attributionPosition="top-right"
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
