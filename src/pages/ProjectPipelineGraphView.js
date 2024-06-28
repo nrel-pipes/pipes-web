@@ -29,13 +29,13 @@ const edgeTypes = {
 };
 
 
-const ProjectPipelineGraphView = ({layoutedNodes, layoutedEdges, setClickedElementData}) => {
-  const [nodes, onNodesChange] = useNodesState(layoutedNodes);
-  const [edges, onEdgesChange] = useEdgesState(layoutedEdges);
+const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData}) => {
 
-  if (nodes.length === 6) {
-    return
-  }
+  // const renderCount = useRef(0);
+  // renderCount.current += 1;
+
+  const [nodes] = useNodesState(graphNodes);
+  const [edges] = useEdgesState(graphEdges);
 
   function onNodeClick(event, node) {
     setClickedElementData(node.data);
@@ -48,14 +48,14 @@ const ProjectPipelineGraphView = ({layoutedNodes, layoutedEdges, setClickedEleme
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          fitView
+          // onNodesChange={onNodesChange}
+          // onEdgesChange={onEdgesChange}
           attributionPosition="top-right"
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           className="pipeline-flowview"
           onNodeClick={onNodeClick}
+          fitView
         >
           <MiniMap zoomable pannable nodeClassName={nodeClassName} />
           <Controls />

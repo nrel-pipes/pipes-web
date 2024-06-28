@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -74,119 +74,125 @@ const ProjectPipeline = () => {
     getModels
   ]);
 
-  if ( !currentProject || currentProject === null) {
-    return (
-      <Container className="mainContent">
-        <Row className="mt-5">
-          <Col>
-            <p>Please go to <a href="/projects">projects</a> and select one of your project.</p>
-          </Col>
-        </Row>
-      </Container>
-    )
-  }
+  const pipesGraph = useMemo(() => {
 
-  if (isGettingModels) {
-    return (
-      <Container className="mainContent">
-        <Row className="mt-5">
-          <Col>
-            <FontAwesomeIcon icon={faSpinner} spin size="xl" />
-          </Col>
-        </Row>
-      </Container>
-    )
-  }
-
-  let initialNodes = []
-  let initialEdges = []
-
-  // Add project node
-  const pNodeId = 'n-p-' + currentProject.name;
-  const pNode = {
-    id: pNodeId,
-    label: 'Project',
-    type: 'circle',
-    position: {x: Math.random(), y: Math.random()},
-    data: currentProject,
-    style: {
-      backgroundColor: nodeColors.project
+    if ( !currentProject || currentProject === null) {
+      return (
+        <Container className="mainContent">
+          <Row className="mt-5">
+            <Col>
+              <p>Please go to <a href="/projects">projects</a> and select one of your project.</p>
+            </Col>
+          </Row>
+        </Container>
+      )
     }
-  }
-  initialNodes.push(pNode);
 
-  // Add project run nodes & edges
-  projectRuns.forEach((projectRun) => {
-    const prNodeId = 'n-pr-' + projectRun.name;
-    const prNode = {
-      id: prNodeId,
-      label: 'ProjectRun',
+    if (isGettingModels) {
+      return (
+        <Container className="mainContent">
+          <Row className="mt-5">
+            <Col>
+              <FontAwesomeIcon icon={faSpinner} spin size="xl" />
+            </Col>
+          </Row>
+        </Container>
+      )
+    }
+
+    let initialNodes = []
+    let initialEdges = []
+
+    // Add project node
+    const pNodeId = 'n-p-' + currentProject.name;
+    const pNode = {
+      id: pNodeId,
       type: 'circle',
+      label: 'Project',
       position: {x: Math.random(), y: Math.random()},
-      data: projectRun,
+      data: currentProject,
       style: {
-        backgroundColor: nodeColors.projectRun
+        backgroundColor: nodeColors.project
       }
     }
-    initialNodes.push(prNode);
+    initialNodes.push(pNode);
 
-    const prEdgeId = 'e-' + pNodeId + '-' + prNodeId;
-    const prEdgeHandle = 'h-' + prEdgeId;
-    const prEdge = {
-      id: prEdgeId,
-      source: pNodeId,
-      target: prNodeId,
-      sourceHandle: prEdgeHandle,
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-      },
-      type: 'default'
-    }
-    initialEdges.push(prEdge);
+    // Add project run nodes & edges
+    projectRuns.forEach((projectRun) => {
+      const prNodeId = 'n-pr-' + projectRun.name;
+      const prNode = {
+        id: prNodeId,
+        type: 'circle',
+        label: 'ProjectRun',
+        position: {x: Math.random(), y: Math.random()},
+        data: projectRun,
+        style: {
+          backgroundColor: nodeColors.projectRun
+        }
+      }
+      initialNodes.push(prNode);
 
-    // Push model nodes & edges
-    models.forEach((model) => {
-      if (model.context.projectrun !== projectRun.name) {
-        const mNodeId = 'n-m-' + model.name;
-        const mNode = {
-          id: mNodeId,
-          label: 'Model',
-          type: 'circle',
-          position: {x: Math.random(), y: Math.random()},
-          data: model,
-          style: {
-            backgroundColor: nodeColors.model
+      const prEdgeId = 'e-' + pNodeId + '-' + prNodeId;
+      const prEdgeHandle = 'h-' + prEdgeId;
+      const prEdge = {
+        id: prEdgeId,
+        source: pNodeId,
+        target: prNodeId,
+        sourceHandle: prEdgeHandle,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+        },
+        type: 'default'
+      }
+      initialEdges.push(prEdge);
+
+      // Push model nodes & edges
+      models.forEach((model) => {
+        if (model.context.projectrun !== projectRun.name) {
+          const mNodeId = 'n-m-' + model.name;
+          const mNode = {
+            id: mNodeId,
+            type: 'circle',
+            label: 'Model',
+            position: {x: Math.random(), y: Math.random()},
+            data: model,
+            style: {
+              backgroundColor: nodeColors.model
+            }
           }
-        }
-        initialNodes.push(mNode);
+          initialNodes.push(mNode);
 
-        const mEdgeId = 'e-' + prNodeId + '-' + mNodeId;
-        const mEdgeHandle = 'h-' + mEdgeId;
-        const mEdge = {
-          id: mEdgeId,
-          source: prNodeId,
-          target: mNodeId,
-          sourceHandle: mEdgeHandle,
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-          },
-          type: 'default'
+          const mEdgeId = 'e-' + prNodeId + '-' + mNodeId;
+          const mEdgeHandle = 'h-' + mEdgeId;
+          const mEdge = {
+            id: mEdgeId,
+            source: prNodeId,
+            target: mNodeId,
+            sourceHandle: mEdgeHandle,
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+            },
+            type: 'default'
+          }
+          initialEdges.push(mEdge);
         }
-        initialEdges.push(mEdge);
-      }
+      });
     });
-  });
 
-  // Generate dagre graph layout
-  const {nodes, edges} = getDagreLayoutedElements(initialNodes, initialEdges);
+    // Generate dagre graph layout
+    const {layoutedNodes, layoutedEdges} = getDagreLayoutedElements(initialNodes, initialEdges);
+
+    return {nodes: layoutedNodes, edges: layoutedEdges}
+
+  }, [currentProject, projectRuns, isGettingModels, models]);
 
   return (
     <Container className="mainContent" fluid>
       <Row id="pipeline-flowview">
         <Col md={8}>
           <ProjectPipelineGraphView
-            layoutedNodes={nodes}
-            layoutedEdges={edges}
+            graphNodes={pipesGraph.nodes}
+            graphEdges={pipesGraph.edges}
             setClickedElementData={setClickedElementedData}
           />
         </Col>
@@ -213,7 +219,7 @@ function getDagreLayoutedElements(nodes, edges) {
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, {
-      label: node.data.label,
+      label: node.label,
       width: nodeWidth,
       height: nodeHeight,
     });
@@ -245,7 +251,7 @@ function getDagreLayoutedElements(nodes, edges) {
     return node;
   });
 
-  return {nodes, edges};
+  return {layoutedNodes: nodes, layoutedEdges: edges};
 }
 
 export default ProjectPipeline;
