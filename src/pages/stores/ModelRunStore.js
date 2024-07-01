@@ -14,9 +14,15 @@ const useModelRunStore = create(
     getModelRuns: async (projectName, projectRunName, modelName, accessToken) => {
       set({ isGettingModelRuns: true, modelRunsGetError: null});
       try {
-        const params = new URLSearchParams({project: projectName, projectrun: projectRunName, model: modelName});
+        let params = null;
+        if (projectName !== null) {
+          params = new URLSearchParams({project: projectName});
+        } else if (projectRunName !== null) {
+          params = new URLSearchParams({project: projectName, projectrun: projectRunName});
+        } else if (modelName !== null) {
+          params = new URLSearchParams({project: projectName, projectrun: projectRunName, model: modelName});
+        }
         const data = await fetchData('/api/modelruns', params, accessToken);
-        console.log("modelruns ==== ", data)
         set({modelRuns: data, isGettingModelRuns: false});
       } catch (error) {
         set({modelRuns: [], modelRunsGetError: error, isGettingModelRuns: false});

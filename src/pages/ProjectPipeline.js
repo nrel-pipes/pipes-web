@@ -18,7 +18,7 @@ import "./ReactflowStyles.css"
 import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 import useModelStore from "./stores/ModelStore";
-// import useModelRunStore from "./stores/ModelRunStore";
+import useModelRunStore from "./stores/ModelRunStore";
 
 import ProjectPipelineGraphView from "./ProjectPipelineGraphView";
 import ProjectPipelineDataView from "./ProjectPipelineDataView";
@@ -42,7 +42,7 @@ const ProjectPipeline = () => {
   const { selectedProjectName, currentProject} = useProjectStore();
   const { projectRuns } = useProjectRunStore();
   const { models, getModels, isGettingModels} = useModelStore();
-  // const { modelRuns } = useModelRunStore();
+  const { modelRuns, getModelRuns, isGettingModelRuns } = useModelRunStore();
 
   const [clickedElementData, setClickedElementedData] = useState({});
 
@@ -62,6 +62,9 @@ const ProjectPipeline = () => {
       getModels(currentProject.name, null, accessToken);
     }
 
+    if (!modelRuns || modelRuns === null || modelRuns.length === 0) {
+      getModelRuns(currentProject.name, null, null, accessToken);
+    }
 
   }, [
     isLoggedIn,
@@ -71,7 +74,9 @@ const ProjectPipeline = () => {
     selectedProjectName,
     currentProject,
     models,
-    getModels
+    getModels,
+    modelRuns,
+    getModelRuns
   ]);
 
   const pipesGraph = useMemo(() => {
@@ -89,6 +94,18 @@ const ProjectPipeline = () => {
     }
 
     if (isGettingModels) {
+      return (
+        <Container className="mainContent">
+          <Row className="mt-5">
+            <Col>
+              <FontAwesomeIcon icon={faSpinner} spin size="xl" />
+            </Col>
+          </Row>
+        </Container>
+      )
+    }
+
+    if (isGettingModelRuns) {
       return (
         <Container className="mainContent">
           <Row className="mt-5">
@@ -148,8 +165,8 @@ const ProjectPipeline = () => {
 
       // Push model nodes & edges
       models.forEach((model) => {
-        if (model.context.projectrun !== projectRun.name) {
-          const mNodeId = 'n-m-' + model.name;
+        const mNodeId = 'n-m-' + model.name;
+        if (model.context.projectrun === projectRun.name) {
           const mNode = {
             id: mNodeId,
             type: 'circle',
@@ -176,6 +193,48 @@ const ProjectPipeline = () => {
           }
           initialEdges.push(mEdge);
         }
+
+        function generateRandomString(length) {
+          const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          let result = '';
+          const charactersLength = characters.length;
+          for (let i = 0; i < length; i++) {
+              result += characters.charAt(Math.floor(Math.random() * charactersLength));
+          }
+          return result;
+      }
+
+        // Push model run nodes & edges
+        modelRuns.forEach((modelRun, index) => {
+          const mrNodeId = 'n-mr-' + projectRun.name + '-' + model.name + '-' + modelRun.name + '-' + index;
+          if (modelRun.context.projectrun === projectRun.name && modelRun.context.model === model.name) {
+            const mrNode = {
+              id: mrNodeId,
+              type: 'circle',
+              label: 'ModelRun',
+              position: {x: Math.random(), y: Math.random()},
+              data: modelRun,
+              style: {
+                backgroundColor: nodeColors.modelRun
+              }
+            }
+            initialNodes.push(mrNode);
+
+            const mrEdgeId = 'e-' + prNodeId + '-' + mNodeId + '-' + mrNodeId + '-i' + index + generateRandomString(5);
+            const mrEdgeHandle = 'h-' + mrEdgeId;
+            const mrEdge = {
+              id: mrEdgeId,
+              source: mNodeId,
+              target: mrNodeId,
+              sourceHandle: mrEdgeHandle,
+              markerEnd: {
+                type: MarkerType.ArrowClosed,
+              },
+              type: 'default'
+            }
+            initialEdges.push(mrEdge);
+          }
+        });
       });
     });
 
@@ -184,7 +243,7 @@ const ProjectPipeline = () => {
 
     return {nodes: layoutedNodes, edges: layoutedEdges}
 
-  }, [currentProject, projectRuns, isGettingModels, models]);
+  }, [currentProject, projectRuns, isGettingModels, models, modelRuns, isGettingModelRuns]);
 
   return (
     <Container className="mainContent" fluid>
