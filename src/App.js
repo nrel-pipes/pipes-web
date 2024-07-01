@@ -11,6 +11,7 @@ import AllProjects from './pages/AllProjects';
 import ProjectOverview from './pages/ProjectOverview';
 import ProjectSchedule from './pages/ProjectSchedule';
 import ProjectPipeline from './pages/ProjectPipeline';
+import ProjectRunDetail from './pages/ProjectRunDetail';
 import Login from './pages/UserLogin';
 import Logout from './pages/UserLogout';
 import CognitoTokens from './pages/UserTokens';
@@ -40,6 +41,9 @@ function App() {
             <Route path='/overview'  exact element={isLoggedIn? <ProjectOverview />: <Navigate to='/login' />} />
             <Route path='/schedule'  exact element={isLoggedIn? <ProjectSchedule />: <Navigate to='/login' />} />
             <Route path='/pipeline'  exact element={isLoggedIn? <ProjectPipeline />: <Navigate to='/login' />} />
+
+            {/* Project run route */}
+            <Route path='/projectrun' exect element={isLoggedIn? <ProjectRunDetail />: <Navigate to='/login' />} />
 
             {/* User auth routes */}
             <Route path='/login' element={isLoggedIn? <Navigate to='/projects' />:<Login />} />

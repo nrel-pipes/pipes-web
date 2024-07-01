@@ -9,6 +9,8 @@ const useProjectRunStore = create(
     isGettingProjectRuns: false,
     projectRuns: [],
     projectRunsGetError: null,
+
+    currentProjectRunName: null,
     currentProjectRun: null,
 
     // All project runs under current project
@@ -23,7 +25,11 @@ const useProjectRunStore = create(
       }
     },
 
-    // Set current project run name
+    // Set current project run
+    setCurrentProjectRunName: (projectRunName) => {
+      set({ currentProjectRunName: projectRunName});
+    },
+
     setCurrentProjectRun: (projectRun) => {
       set({ currentProjectRun: projectRun});
     }

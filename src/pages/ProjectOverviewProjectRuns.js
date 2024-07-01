@@ -6,9 +6,11 @@ import Row from "react-bootstrap/Row";
 import { faCircleArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import useProjectRunStore from "./stores/ProjectRunStore";
 
 
 const ProjectOverviewProjectRuns = ({projectRuns}) => {
+  const { setCurrentProjectRunName, setCurrentProjectRun } = useProjectRunStore();
 
   if (!projectRuns || projectRuns === null || projectRuns.length === 0) {
     return (
@@ -20,13 +22,24 @@ const ProjectOverviewProjectRuns = ({projectRuns}) => {
     )
   }
 
+  const handleClick = (event) => {
+    const selectedProjectRunName = event.currentTarget.innerText.slice(15);
+    setCurrentProjectRunName(selectedProjectRunName);
+
+    projectRuns.forEach((projectRun) => {
+      if (projectRun.name === selectedProjectRunName) {
+        setCurrentProjectRun(projectRun);
+      }
+    });
+  };
+
   return (
     <>
       {projectRuns.map((projectRun, index) => (
         <Card className="mt-4" key={"card-"+index}>
           <Card.Body className="bg-light text-start">
             <Card.Title className="mt-3 mb-3">
-              <a href="/projectrun" target="_blank">
+              <a href="/projectrun" onClick={handleClick}>
                 <FontAwesomeIcon icon={faCircleArrowRight} size="xl" />
                 &nbsp; Project Run: {projectRun.name}
               </a>
