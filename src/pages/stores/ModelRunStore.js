@@ -10,7 +10,7 @@ const useModelRunStore = create(
     modelRuns: [],
     modelRunsGetError: null,
 
-    // All project runs under current project
+    // All model runs under current project
     getModelRuns: async (projectName, projectRunName, modelName, accessToken) => {
       set({ isGettingModelRuns: true, modelRunsGetError: null});
       try {

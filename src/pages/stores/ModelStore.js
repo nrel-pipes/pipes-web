@@ -9,6 +9,7 @@ const useModelStore = create(
     isGettingModels: false,
     models: [],
     modelsGetError: null,
+    lastCheckIns: {},
 
     // All project runs under current project
     getModels: async (projectName, projectRunName, accessToken) => {
