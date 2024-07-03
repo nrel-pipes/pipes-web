@@ -49,8 +49,10 @@ ifeq ($(BRANCH_NAME), 'master')
   ENVIRONMENT = 'prod'
 else ifeq ($(BRANCH_NAME), 'stage')
   ENVIRONMENT = 'stage'
+else ifeq ($(BRANCH_NAME), 'develop')
+	ENVIRONMENT = 'dev'
 else
-	ENVIRONMENT = 'develop'
+	ENVIRONMENT = 'other'
 endif
 
 $(info ENVIRONMENT="$(ENVIRONMENT)")
