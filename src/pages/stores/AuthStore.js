@@ -176,11 +176,11 @@ const useAuthStore = create(
 
     // Validate if token expired
     validateToken: async (token) => {
-      if (!token) {
-        set({ isLoggedIn: false });
-      }
       try {
         const isTokenExpired = (token) => {
+          if (!token) {
+            return true;
+          }
           const { exp } = jwtDecode(token);
           const now = Math.floor(Date.now() / 1000);
           return exp < now;
@@ -193,7 +193,6 @@ const useAuthStore = create(
 
       } catch (error) {
         set({ isLoggedIn: false });
-        console.error('Token validatation failed, please re-login', error);
       }
     }
 
