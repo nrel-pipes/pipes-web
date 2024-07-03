@@ -21,6 +21,7 @@ endif
 # #   ENVIRONMENT=prod
 # endif
 
+
 REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
 
 ifdef RELEASE_SHA2
@@ -43,9 +44,19 @@ endif
 
 $(info BRANCH_NAME="$(BRANCH_NAME)")
 
-# git release version - use for rollbacks
 
-TAG ?= $(CODEBUILD_BUILD_NUMBER)-$(BASE_IMAGE_TAG)-$(BRANCH_NAME)-$(HEAD_VER)-$(ENVIRONMENT)
+ifeq ($(BRANCH_NAME), 'master')
+  ENVIRONMENT = 'prod'
+else ifeq ($(BRANCH_NAME), 'stage')
+  ENVIRONMENT = 'stage'
+else
+	ENVIRONMENT = 'develop'
+endif
+
+$(info ENVIRONMENT="$(ENVIRONMENT)")
+
+
+TAG ?= $(CODEBUILD_BUILD_NUMBER)-$(BASE_IMAGE_TAG)-$(BRANCH_NAME)-$(HEAD_VER)
 
 .PHONY: build push
 
@@ -54,7 +65,7 @@ build:
 		--build-arg BASE_IMAGE_TAG=$(BASE_IMAGE_TAG) \
 		--build-arg AWS_ACCOUNT_ID=$(REGISTRY-IDS) \
     --build-arg ENV_CONFIG=${ENVIRONMENT} \
-	  -f production/Dockerfile \
+	  -f deployment/Dockerfile \
 		./
 
 push:
