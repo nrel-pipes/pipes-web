@@ -176,6 +176,9 @@ const useAuthStore = create(
 
     // Validate if token expired
     validateToken: async (token) => {
+      if (!token) {
+        set({ isLoggedIn: false });
+      }
       try {
         const isTokenExpired = (token) => {
           const { exp } = jwtDecode(token);
