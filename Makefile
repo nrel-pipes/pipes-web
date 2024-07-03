@@ -45,14 +45,14 @@ endif
 $(info BRANCH_NAME="$(BRANCH_NAME)")
 
 
-ifeq ($(BRANCH_NAME), 'master')
-  ENVIRONMENT = 'prod'
-else ifeq ($(BRANCH_NAME), 'stage')
-  ENVIRONMENT = 'stage'
-else ifeq ($(BRANCH_NAME), 'develop')
-	ENVIRONMENT = 'dev'
+ifeq ($(BRANCH_NAME), master)
+  ENVIRONMENT := prod
+else ifeq ($(BRANCH_NAME), stage)
+  ENVIRONMENT := stage
+else ifeq ($(BRANCH_NAME), develop)
+  ENVIRONMENT := dev
 else
-	ENVIRONMENT = 'other'
+  ENVIRONMENT := other
 endif
 
 $(info ENVIRONMENT="$(ENVIRONMENT)")
