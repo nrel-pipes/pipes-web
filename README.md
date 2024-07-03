@@ -41,4 +41,4 @@ on base branch `develop` and `master`.
 
 2. Deploy the image
 
-Deploy via Jenkins
+Deploy via Jenkins `pipes-web` job.
