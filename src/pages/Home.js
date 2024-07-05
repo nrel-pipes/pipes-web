@@ -1,3 +1,8 @@
+
+import { faEnvelope, faPhoneSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -53,7 +58,7 @@ const Home = () => {
         </Col>
       </Row>
       <Row className="my-5 text-start">
-        <Col md={6} className="my-3">
+        <Col md={4} className="my-3">
           <Card className='nrelCard mt-1'>
             <Card.Header className='nrelCardHeader'>
               <h3><a href='https://nrel-pipes.github.io/pipes-core/' target='_blank' rel='noreferrer'>
@@ -62,25 +67,49 @@ const Home = () => {
               </h3>
             </Card.Header>
             <Card.Body>
-              <Card.Text className='mt-3'>
+              <Card.Text className='mt-3' style={{ fontSize: '16px'}}>
                 Checkout our <a href='https://nrel-pipes.github.io/pipes-core/' target='_blank' rel='noreferrer'>documentation</a> on Github built out for PIPES system (MVP version).
               </Card.Text>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={6} className="my-3">
+        <Col md={4} className="my-3">
           <Card className='nrelCard mt-1'>
             <Card.Header className='nrelCardHeader'>
               <h3>
                 <a href='https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html' target='_blank' rel='noreferrer'>
-                  Contact Us &gt;
+                  Support &gt;
                 </a>
               </h3>
             </Card.Header>
             <Card.Body>
-              <Card.Text className='mt-3'>
-                Feel free to <a href='https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html' target='_blank' rel='noreferrer'>reach out to us</a> if any question, or you would
-                like to try with PIPES.
+              <Card.Text className='mt-3' style={{ fontSize: '16px'}}>
+                Feel free to reach out to the PIPES <a href='https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html' target='_blank' rel='noreferrer'>development team</a> with any questions
+                or if you would like to try PIPES and setup your own account.
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4} className="my-3">
+          <Card className='nrelCard mt-1'>
+            <Card.Header className='nrelCardHeader'>
+              <h3>
+                <a href='https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html' target='_blank' rel='noreferrer'>
+                  Contact &gt;
+                </a>
+              </h3>
+            </Card.Header>
+            <Card.Body>
+              <Card.Text className='mt-2' style={{ fontSize: '16px'}}>
+                <span style={{fontSize: '1.1em'}}>Meghan Mooney</span>
+                <br/>
+                <a href="mailto:Meghan.Mooney@nrel.gov" style={{ textDecoration: 'none'}}>
+                  <FontAwesomeIcon icon={faEnvelope} /> meghan.mooney@nrel.gov
+                </a>
+                <br/>
+                <a href="tel:+1 720-908-2952" style={{ textDecoration: 'none'}}>
+                  <FontAwesomeIcon icon={faPhoneSquare} /> 720-908-2952
+                </a>
               </Card.Text>
             </Card.Body>
           </Card>
