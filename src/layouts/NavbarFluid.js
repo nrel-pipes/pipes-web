@@ -34,8 +34,8 @@ const SiteNavbarFluid = () => {
           {isLoggedIn ? (
           <Nav className="ms-auto">
             <NavDropdown title={<FontAwesomeIcon icon={faCog} size="lg" />} id="collasible-nav-dropdown">
-              <NavDropdown.Item href="/tokens"><FontAwesomeIcon icon={faKey} size='sm' />&nbsp;&nbsp;Tokens</NavDropdown.Item>
-              <NavDropdown.Item href="/profile"><FontAwesomeIcon icon={faUser} size='sm' />&nbsp;&nbsp; Profile </NavDropdown.Item>
+              <NavDropdown.Item href="/profile" className='py-2'><FontAwesomeIcon icon={faUser} size='sm' />&nbsp;&nbsp; Profile </NavDropdown.Item>
+              <NavDropdown.Item href="/tokens" className='py-2'><FontAwesomeIcon icon={faKey} size='sm' />&nbsp;&nbsp;Tokens</NavDropdown.Item>
               <hr style={{marginLeft:"15px", marginRight: "15px"}} />
               <NavDropdown.Item href="/change-password"><FontAwesomeIcon icon={faLock} size='sm' />&nbsp;&nbsp;Change Password </NavDropdown.Item>
             </NavDropdown>

@@ -7,7 +7,7 @@ import ReactFlow, {
 
 import { ScenarioNode } from "./graph/DecoratedNode";
 import { createScenarioNodes, createScenarioEdges } from "./utilities/RunUtils";
-import { useUIStore } from "./stores/UIStore";
+import useUIStore  from "./stores/UIStore";
 import useProjectStore from "./stores/ProjectStore";
 
 const nodeTypes = {

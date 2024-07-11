@@ -1,7 +1,10 @@
 /// for saving state across components
 
 import { create } from "zustand";
+import { persist, createJSONStorage } from 'zustand/middleware';
 import * as d3 from "d3";
+
+
 export const distinguishableColors = function (number) {
   /*
     This generates colors using the following algorithm:
@@ -272,52 +275,91 @@ export const distinguishableColors = function (number) {
 };
 
 export const modelNodeColors = d3.scaleOrdinal(d3.schemeCategory10);
-export const useUIStore = create((set) => ({
-  //for storing info on how certain pipeline elements should appear
-  project: {
-    display_name:
-      "maybe we want a different name than the one registered with PIPES",
-    font: "Helvetica", //maybe we want to specify default font
-  },
-  scenarios: {},
-  models: {
-    // values for type or exact model name
-    capacity_expansion: {
-      color: "#263f23",
-      display_name: "Capacity Expansion",
+
+
+const useUIStore = create(persist(
+  (set, get) => ({
+    colors: {},
+    project: {
+      display_name:
+        "maybe we want a different name than the one registered with PIPES",
+      font: "Helvetica", //maybe we want to specify default font
     },
-    building_loads: {
-      color: "#0866b3",
-      display_name: "Building Loads",
+    scenarios: {},
+    models: {
+      // values for type or exact model name
+      capacity_expansion: {
+        color: "#263f23",
+        display_name: "Capacity Expansion",
+      },
+      building_loads: {
+        color: "#0866b3",
+        display_name: "Building Loads",
+      },
+      mobility_loads: {
+        color: "#1876c3",
+        display_name: "Mobility Loads",
+      },
+      prod_cost: {
+        color: "#084343",
+        display_name: "Production Cost Modeling",
+      },
+      demand_resp: {
+        color: "#1a2f52",
+        display_name: "Demand Response",
+      },
+      dsgrid: {
+        color: "#1a2f52",
+        display_name: "dsgrid",
+      },
+      dgen: {
+        color: "#1a2f52",
+        display_name: "Distributed Generation",
+      },
     },
-    mobility_loads: {
-      color: "#1876c3",
-      display_name: "Mobility Loads",
+
+    setScenarioProperty: (property, scenario, value) => {
+      const newProperty = Object.fromEntries([[property, value]]);
+      set((state) => ({
+        scenarios: Object.fromEntries([
+          ...Object.entries(state.scenarios),
+          [scenario, newProperty],
+        ]),
+      }));
     },
-    prod_cost: {
-      color: "#084343",
-      display_name: "Production Cost Modeling",
+
+    getColor: (name) => {
+      const colors = get().colors;
+      if (colors[name]) {
+        return colors[name]
+      } else {
+        // Generate a new color if not found
+        const newColor = getRandomColor();
+        set(state => ({ colors: { ...state.colors, [name]: newColor } }));
+        return newColor;
+      }
     },
-    demand_resp: {
-      color: "#1a2f52",
-      display_name: "Demand Response",
-    },
-    dsgrid: {
-      color: "#1a2f52",
-      display_name: "dsgrid",
-    },
-    dgen: {
-      color: "#1a2f52",
-      display_name: "Distributed Generation",
-    },
-  },
-  setScenarioProperty: (property, scenario, value) => {
-    const newProperty = Object.fromEntries([[property, value]]);
-    set((state) => ({
-      scenarios: Object.fromEntries([
-        ...Object.entries(state.scenarios),
-        [scenario, newProperty],
-      ]),
-    }));
-  },
-}));
+
+    setColor: (name, color) => {
+      if (color) { // Only set if the color is defined
+        set(state => ({ colors: { ...state.colors, [name]: color } }));
+      }
+    }
+  }),
+  {
+    name: 'UIStore',
+    storage: createJSONStorage(() => localStorage)
+  }
+));
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+
+export default useUIStore;

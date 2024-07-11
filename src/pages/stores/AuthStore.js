@@ -5,12 +5,16 @@ import { CognitoUser, CognitoUserPool, AuthenticationDetails} from "amazon-cogni
 import { jwtDecode } from 'jwt-decode';
 
 import pipesConfig from '../configs/PipesConfig'
+import fetchData from '../utilities/FetchData';
 
 
 const useAuthStore = create(
   persist((set) => ({
     // Attributes
     currentUser: null,
+    isGettingUser: false,
+
+    currentCognitoUser: null,
     isLoggedIn: false,
     challengeUsername: null,
     tempPassword: null,
@@ -38,7 +42,7 @@ const useAuthStore = create(
             set({accessToken: session.getAccessToken().getJwtToken()});
             set({idToken: session.getIdToken().getJwtToken()});
             set({isLoggedIn: true});
-            set({currentUser: cognitoUser});
+            set({currentCognitoUser: cognitoUser});
             resolve(session);
           },
           onFailure: () => {
@@ -61,11 +65,11 @@ const useAuthStore = create(
     // lougout method
     logout: () => {
       const userPool = new CognitoUserPool(pipesConfig.poolData);
-      const currentUser = userPool.getCurrentUser();
-      if (currentUser !== null) {
-        currentUser.signOut();
+      const currentCognitoUser = userPool.getCurrentUser();
+      if (currentCognitoUser !== null) {
+        currentCognitoUser.signOut();
         set({
-          currentUser: null,
+          currentCognitoUser: null,
           isLoggedIn: false,
           accessToken: null,
           idToken: null,
@@ -193,6 +197,18 @@ const useAuthStore = create(
 
       } catch (error) {
         set({ isLoggedIn: false });
+      }
+    },
+
+    // Pull user detail information from PIPES API server
+    getCurrentUser: async (email, accessToken) => {
+      set({ isGettingUser: true });
+      try {
+        const params = new URLSearchParams({email: email});
+        const data = await fetchData('/api/users/detail', params, accessToken);
+        set({currentUser: data, isGettingUser: false});
+      } catch (error) {
+        set({userGetError: error, isGettingUser: false});
       }
     }
 
