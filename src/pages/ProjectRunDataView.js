@@ -8,7 +8,7 @@ import ScenarioMapping from "./ProjectRunScenarioMapping";
 import useModelStore from "./stores/ModelStore";
 import useModelRunStore from "./stores/ModelRunStore";
 import { makeBullets } from "./ProjectPipelineDataView";
-import { useUIStore } from "./stores/UIStore";
+import useUIStore from "./stores/UIStore";
 
 
 export default function ProjectRunDataView({ selected }) {

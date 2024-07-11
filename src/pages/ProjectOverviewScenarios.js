@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import Table from "react-bootstrap/Table";
 
-import useColorStore from './stores/ColorStore';
+import useUIStore from './stores/UIStore';
 
 const ScenarioRow = ({ name, description, other }) => {
-  const getColor = useColorStore(state => state.getColor);
-  const setColor = useColorStore(state => state.setColor);
+  const getColor = useUIStore(state => state.getColor);
+  const setColor = useUIStore(state => state.setColor);
 
   useEffect(() => {
     if (other.color) {

@@ -65,7 +65,12 @@ const AllProjects = () => {
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p>You currently do not have projects on PIPES!</p>
+            <p style={{fontSize: '16px'}}>
+              You currently do not have your own projects! Learn more about how to&nbsp;
+              <a href='https://nrel-pipes.github.io/pipes-core/command_line.html#project' target='_blank' rel='noreferrer'>
+               create project
+              </a> in PIPES.
+            </p>
           </Col>
         </Row>
       </Container>
