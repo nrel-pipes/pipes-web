@@ -106,10 +106,6 @@ const Home = () => {
                 <a href="mailto:Meghan.Mooney@nrel.gov" style={{ textDecoration: 'none'}}>
                   <FontAwesomeIcon icon={faEnvelope} /> meghan.mooney@nrel.gov
                 </a>
-                <br/>
-                <a href="tel:+1 720-908-2952" style={{ textDecoration: 'none'}}>
-                  <FontAwesomeIcon icon={faPhoneSquare} /> 720-908-2952
-                </a>
               </Card.Text>
             </Card.Body>
           </Card>

@@ -14,7 +14,7 @@ function SiteFooter() {
             <div className="row text-start social-and-global-links">
               <div className="col-md-4 col-lg-5">
                 <div>
-                  <a href="mailto:maps.help@nrel.gov">Contact Us</a></div><div className="mt-2"><a href="http://www.nrel.gov/about/visiting-nrel.html">Visit</a>
+                  <a href="https://www.nrel.gov/webmaster.html">Contact Us</a></div><div className="mt-2"><a href="http://www.nrel.gov/about/visiting-nrel.html">Visit</a>
                 </div>
                 <div className="mt-2">
                   <a href="http://www.nrel.gov/news/subscribe.html">Subscribe</a>
