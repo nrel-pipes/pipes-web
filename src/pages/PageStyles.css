@@ -1,0 +1,48 @@
+.imageCol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  background-color: rgb(105, 105, 105);
+  border-radius: 5px;
+}
+
+.mainContent {
+  min-height: calc(100vh - 455px);
+}
+
+.smallCaps {
+  font-variant: small-caps;
+}
+
+
+.schedule {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.nrelCard {
+  min-height: 200px;
+  border: 1px solid #0079c2;
+  color: '#fff';
+  border-radius: 0px !important;
+}
+
+.nrelCardHeader {
+  background-color: #0079C2 !important;
+  border-radius: 0px !important;
+}
+
+.nrelCardHeader > h3 > a {
+  color: white !important;
+  text-decoration: none !important;
+  font-size: 1.75rem;
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.8125rem;
+}
+
+.nrelCardHeader > h3 > a:hover {
+  text-decoration: underline !important;
+}

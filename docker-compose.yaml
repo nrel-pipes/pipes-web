@@ -1,0 +1,11 @@
+services:
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pipes-web
+    environment:
+      NODE_ENV: "development"
+    ports:
+      - "3030:80"
