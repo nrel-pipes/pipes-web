@@ -105,7 +105,7 @@ export function createNodesOverview(models, modelRuns, lastCheckIns, edges) {
           .map((run) => {
             const datasets = run.datasets;
             const doneDatasetIds = datasets.map((d) => d.dataset_id);
-            const doneTasks = run.tasks.map((task) => task.subtask_ids).flat();
+            // const doneTasks = run.tasks.map((task) => task.subtask_ids).flat();
             // const plannedTasks = run.model_run_props.handoffs
             //   .map((handoff) => {
 
