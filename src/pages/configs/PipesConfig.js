@@ -19,7 +19,7 @@ const stageConfig = {
 
 const prodConfig = {
   env: 'prod',
-  pollData: {
+  poolData: {
     UserPoolId: 'us-west-2_QIFK6524E',
     ClientId: '539o71b6rh0ua124ro8q3bv39s',
   },
