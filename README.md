@@ -25,6 +25,13 @@ Builds the app for production to the `build` folder.
 $ npm run build
 ```
 
+## Release
+
+The release workflow is this:
+
+* Release via `release` branch.
+* Merge `release` into `develop` and `master` branches.
+
 
 ## Deployment
 
