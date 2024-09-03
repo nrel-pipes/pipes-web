@@ -48,7 +48,7 @@ const Login = () => {
         navigate('/new-password-challenge');
       }
     } catch (error) {
-      setErrorMessage(error);
+      setErrorMessage(error.message);
     }
 
   };
