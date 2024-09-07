@@ -126,7 +126,7 @@ const ProjectPipeline = () => {
       id: pNodeId,
       type: 'circle',
       label: 'Project',
-      position: {x: Math.random(), y: Math.random()},
+      position: {x: 0, y: 0},
       data: currentProject,
       style: {
         backgroundColor: nodeColors.project
@@ -141,7 +141,7 @@ const ProjectPipeline = () => {
         id: prNodeId,
         type: 'circle',
         label: 'ProjectRun',
-        position: {x: Math.random(), y: Math.random()},
+        position: {x: 0, y: 0},
         data: projectRun,
         style: {
           backgroundColor: nodeColors.projectRun
@@ -171,7 +171,7 @@ const ProjectPipeline = () => {
             id: mNodeId,
             type: 'circle',
             label: 'Model',
-            position: {x: Math.random(), y: Math.random()},
+            position: {x: 0, y: 0},
             data: model,
             style: {
               backgroundColor: nodeColors.model
@@ -212,7 +212,7 @@ const ProjectPipeline = () => {
               id: mrNodeId,
               type: 'circle',
               label: 'ModelRun',
-              position: {x: Math.random(), y: Math.random()},
+              position: {x: 0, y: 0},
               data: modelRun,
               style: {
                 backgroundColor: nodeColors.modelRun
@@ -296,15 +296,16 @@ function getDagreLayoutedElements(nodes, edges) {
 
     // We are shifting the dagre node position (anchor=center center) to the top left
     // so it matches the React Flow node anchor point (top left).
+    let size = 0.5
     if (node.label === 'ProjectRun') {
       node.position = {
-        x: (nodeWithPosition.x + nodeWidth / (1 + Math.random())) * (3 + Math.random()),
-        y: (nodeWithPosition.y + nodeHeight / (3 + Math.random())) * (2 + Math.random()),
+        x: (nodeWithPosition.x + nodeWidth / (1 + size)) * (3 + size),
+        y: (nodeWithPosition.y + nodeHeight / (3 + size)) * (2 + size),
       };
     } else {
       node.position = {
-        x: (nodeWithPosition.x - nodeWidth / (2 + Math.random())) * (4 + Math.random()),
-        y: (nodeWithPosition.y - nodeHeight / (2 + Math.random())) * (3 + Math.random()),
+        x: (nodeWithPosition.x - nodeWidth / (2 + size)) * (4 + size),
+        y: (nodeWithPosition.y - nodeHeight / (2 + size)) * (3 + size),
       };
     }
     return node;

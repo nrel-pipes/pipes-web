@@ -34,17 +34,17 @@ const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData
   // const renderCount = useRef(0);
   // renderCount.current += 1;
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(graphNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(graphEdges);
-
-  function onNodeClick(event, node) {
-    setClickedElementData(node.data);
-  }
+  const [nodes, setNodes, onNodesChange] = useNodesState(graphNodes || []);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(graphEdges || []);
 
   useEffect(() => {
-    setNodes(graphNodes);
-    setEdges(graphEdges);
+    if (graphNodes) setNodes(graphNodes);
+    if (graphEdges) setEdges(graphEdges);
   }, [graphNodes, graphEdges, setNodes, setEdges]);
+
+  const onNodeClick = (event, node) => {
+    setClickedElementData(node.data);
+  }
 
   const nodeClassName = (node) => node.type;
   return (
