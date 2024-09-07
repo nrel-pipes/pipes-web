@@ -28,16 +28,11 @@ const prodConfig = {
 
 const otherConfig = {
   env: 'other',
-  // poolData: {
-  //   UserPoolId: 'us-west-2_RzEL2COOq',
-  //   ClientId: 'clfpli1avt6eil03ovr11qdpi',
-  // },
-  // apiOrigin: 'http://0.0.0.0:8080'
   poolData: {
-    UserPoolId: 'us-west-2_QIFK6524E',
-    ClientId: '539o71b6rh0ua124ro8q3bv39s',
+    UserPoolId: 'us-west-2_RzEL2COOq',
+    ClientId: 'clfpli1avt6eil03ovr11qdpi',
   },
-  apiOrigin: 'https://pipes-api.nrel.gov'
+  apiOrigin: 'http://0.0.0.0:8080'
 }
 
 
