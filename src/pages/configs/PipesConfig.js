@@ -29,8 +29,8 @@ const prodConfig = {
 const otherConfig = {
   env: 'other',
   poolData: {
-    UserPoolId: 'us-west-2_RzEL2COOq',
-    ClientId: 'clfpli1avt6eil03ovr11qdpi',
+    UserPoolId: 'us-west-2_TvEJ1biz0',
+    ClientId: '6n5co9eh7bab4a21egr95ds3r8',
   },
   apiOrigin: 'http://0.0.0.0:8080'
 }

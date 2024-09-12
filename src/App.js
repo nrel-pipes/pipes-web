@@ -7,7 +7,7 @@ import SiteNavbar from './layouts/Navbar';
 import SiteNavbarFluid from './layouts/NavbarFluid';
 import SiteFooter from './layouts/Footer';
 import Home from './pages/Home';
-import AllProjects from './pages/AllProjects';
+import ProjectList from './pages/ProjectList';
 import ProjectOverview from './pages/ProjectOverview';
 import ProjectSchedule from './pages/ProjectSchedule';
 import ProjectPipeline from './pages/ProjectPipeline';
@@ -37,7 +37,7 @@ function App() {
             {/* Home route */}
             <Route exact path='/' element={<Home />} />
             {/* Project routes*/}
-            <Route path='/projects'  exact element={isLoggedIn? <AllProjects />: <Navigate to='/login' />} />
+            <Route path='/projects'  exact element={isLoggedIn? <ProjectList />: <Navigate to='/login' />} />
             <Route path='/overview'  exact element={isLoggedIn? <ProjectOverview />: <Navigate to='/login' />} />
             <Route path='/schedule'  exact element={isLoggedIn? <ProjectSchedule />: <Navigate to='/login' />} />
             <Route path='/pipeline'  exact element={isLoggedIn? <ProjectPipeline />: <Navigate to='/login' />} />
