@@ -185,7 +185,14 @@ const useAuthStore = create(
           if (!token) {
             return true;
           }
-          const { exp } = jwtDecode(token);
+          const { exp, iss } = jwtDecode(token);
+          const parts = iss.split('/');
+          const issId = parts[parts.length - 1];
+          const userPoolId = pipesConfig.poolData.UserPoolId;
+          if (issId !== userPoolId) {
+            set({ isLoggedIn: false });
+            return false;
+          }
           const now = Math.floor(Date.now() / 1000);
           return exp < now;
         };
