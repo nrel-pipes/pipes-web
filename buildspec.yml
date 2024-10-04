@@ -10,9 +10,6 @@ env:
     - BASE_IMAGE_TAG
 phases:
   install:
-    runtime-versions:
-      docker: 19
-  install:
     commands:
       - git submodule init
       - git submodule update --recursive
