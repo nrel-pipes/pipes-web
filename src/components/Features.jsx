@@ -1,5 +1,5 @@
 import React from 'react';
-import Card from './Card';
+import FeatureCard from './cards/FeatureCard';
 import SectionTitle from './SectionTitle'; // Import SectionTitle component
 
 const Features = () => {
@@ -12,13 +12,12 @@ const Features = () => {
         {/* Use Flexbox for centering and wrapping */}
         <div className="flex flex-wrap justify-center gap-6">
           {/* Card Items */}
-          <Card text="Provides robust, multi-level, and multi-dimensional metadata management" />
-          <Card text="Integrates with NREL cloud and on-prem resources" />
-          <Card text="Performs transforms for dataset handoffs" />
-          <Card text="Enhances data accessibility and usability" />
-          <Card text="Supports advanced analytics and reporting" />
-          <Card text="Supports advanced analytics and reporting" />
-
+          <FeatureCard text="Provides robust, multi-level, and multi-dimensional metadata management" />
+          <FeatureCard text="Integrates with NREL cloud and on-prem resources" />
+          <FeatureCard text="Performs transforms for dataset handoffs" />
+          <FeatureCard text="Enhances data accessibility and usability" />
+          <FeatureCard text="Supports advanced analytics and reporting" />
+          <FeatureCard text="Supports advanced analytics and reporting" />
         </div>
       </div>
     </div>

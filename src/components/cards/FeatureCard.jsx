@@ -1,4 +1,4 @@
-const Card = ({ text }) => {
+const FeatureCard = ({ text }) => {
     return (
       <div className="card w-[300px] shadow-xl overflow-hidden">
         <div className="card-body bg-[#0079C2] text-white flex flex-col items-center">
@@ -15,5 +15,5 @@ const Card = ({ text }) => {
     );
   };
   
-  export default Card;
+  export default FeatureCard;
   

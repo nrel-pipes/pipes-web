@@ -5,7 +5,6 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import Button from "react-bootstrap/Button";
-import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
@@ -15,6 +14,8 @@ import "./PageStyles.css"
 import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
 import SectionTitle from "../components/SectionTitle";
+import DirectoryCard from "../components/cards/DirectoryCard";
+import Features from "../components/Features";
 
 
 const ProjectList = () => {
@@ -80,30 +81,24 @@ const ProjectList = () => {
 
   return (
     <Container className="mainContent">
-      <div className="my-4">
-        <SectionTitle text="Your Projects"/>
+      <div className="w-full">
+        <div className="max-w-7xl mx-auto py-16 px-4 md:px-8">
+          <SectionTitle text="Your Projects" />
+          <div className="flex flex-wrap justify-center gap-6">
+            {projectBasics.map((project) => (
+              <DirectoryCard
+                key={project.name}
+                title={project.name}
+                description={project.description}
+                onClick={(e) => handleProjectClick(e, project)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-      <Row>
-        {projectBasics.map((project) => (
-          <Col sm={6} key={project.name} >
-            <Card style={{ margin: "20px" }}>
-              <Card.Body className="bg-light text-start">
-                <Card.Title className="mt-3 mb-3">{project.name}</Card.Title>
-                <Card.Text>{project.description}</Card.Text>
-                <Button
-                  variant="outline-success"
-                  onClick={(e) => handleProjectClick(e, project)}
-                >
-                  Go to Project &gt;&gt;
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+      <Features/>
     </Container>
   );
 };
-
 
 export default ProjectList;
