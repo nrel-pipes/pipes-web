@@ -13,13 +13,13 @@ import Row from "react-bootstrap/Row";
 import "./PageStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
-import useProjectStore from "./stores/ProjectStore";
+import useDataStore from "./stores/DataStore";
 
 
 const ProjectList = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { projectBasics, getProjectBasics, isGettingProjectBasics, projectBasicsGetError, getProject } = useProjectStore();
+  const { projectBasics, getProjectBasics, isGettingProjectBasics, projectBasicsGetError, getProject } = useDataStore();
 
   const handleProjectClick = (event, project) =>{
     event.preventDefault();

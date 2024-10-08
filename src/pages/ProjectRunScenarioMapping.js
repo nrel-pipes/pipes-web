@@ -8,7 +8,7 @@ import ReactFlow, {
 import { ScenarioNode } from "./graph/DecoratedNode";
 import { createScenarioNodes, createScenarioEdges } from "./utilities/RunUtils";
 import useUIStore  from "./stores/UIStore";
-import useProjectStore from "./stores/ProjectStore";
+import useDataStore from "./stores/DataStore";
 
 const nodeTypes = {
   scenario: ScenarioNode,
@@ -17,7 +17,7 @@ const nodeTypes = {
 export default function ScenarioMapping({ data }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const scenarios = useProjectStore((state) => state.currentProject.scenarios);
+  const scenarios = useDataStore((state) => state.currentProject.scenarios);
   const scenarioColors = useUIStore((state) => state.scenarios);
 
   useEffect(() => {
