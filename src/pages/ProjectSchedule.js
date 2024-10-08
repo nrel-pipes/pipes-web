@@ -14,8 +14,7 @@ import "gantt-task-react/dist/index.css";
 import "./PageStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
-import useProjectStore from "./stores/ProjectStore";
-import useModelStore from "./stores/ModelStore";
+import useDataStore from "./stores/DataStore";
 
 import ProjectScheduleTimeline from "./ProjectScheduleTimeline";
 import ProjectScheduleEvents from "./ProjectScheduleEvents";
@@ -24,8 +23,7 @@ import ProjectScheduleEvents from "./ProjectScheduleEvents";
 const ProjectSchedule = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { selectedProjectName, currentProject} = useProjectStore();
-  const { models, getModels, isGettingModels} = useModelStore();
+  const { selectedProjectName, currentProject, models, getModels, isGettingModels} = useDataStore();
 
   // page state
   const [viewMode, setViewMode] = useState("Week");

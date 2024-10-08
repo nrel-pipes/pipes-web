@@ -11,8 +11,7 @@ import Row from "react-bootstrap/Row";
 import "./PageStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
-import useProjectStore from "./stores/ProjectStore";
-import useProjectRunStore from "./stores/ProjectRunStore";
+import useDataStore from "./stores/DataStore";
 
 import ProjectOverviewAssumptions from "./ProjectOverviewAssumptions";
 import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
@@ -24,8 +23,16 @@ import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
 const ProjectOverview = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { selectedProjectName, currentProject, getProject, isGettingProject, projectGetError} = useProjectStore();
-  const { getProjectRuns, projectRuns, isGettingProjectRuns} = useProjectRunStore();
+  const {
+    selectedProjectName,
+    currentProject,
+    getProject,
+    isGettingProject,
+    projectGetError,
+    getProjectRuns,
+    projectRuns,
+    isGettingProjectRuns
+  } = useDataStore();
 
   useEffect(() => {
     validateToken(accessToken);
@@ -41,6 +48,9 @@ const ProjectOverview = () => {
 
     if (!currentProject || currentProject === null) {
       getProject(selectedProjectName, accessToken);
+    }
+
+    if (!projectRuns || projectRuns.length === 0) {
       getProjectRuns(selectedProjectName, accessToken);
     }
 
