@@ -1,0 +1,15 @@
+.pill-button {
+    background-color: #ffffff; /* White background */
+    color: #000000; /* Black text */
+    padding: 0.5em 1.5em; /* Padding for button size */
+    border: 1px solid #DEE2E5; /* 2px black border */
+    border-radius: 999px; /* Fully rounded corners */
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .pill-button:hover {
+    background-color: #f0f0f0; /* Slightly darker gray on hover */
+  }
+  

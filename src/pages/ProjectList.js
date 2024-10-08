@@ -14,6 +14,7 @@ import "./PageStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
 import useProjectStore from "./stores/ProjectStore";
+import SectionTitle from "../components/SectionTitle";
 
 
 const ProjectList = () => {
@@ -79,9 +80,9 @@ const ProjectList = () => {
 
   return (
     <Container className="mainContent">
-      <Row>
-        <h2 className="mt-4 mb-4">Your Available Projects</h2>
-      </Row>
+      <div className="my-4">
+        <SectionTitle text="Your Projects"/>
+      </div>
       <Row>
         {projectBasics.map((project) => (
           <Col sm={6} key={project.name} >

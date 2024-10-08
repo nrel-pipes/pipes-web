@@ -13,7 +13,6 @@ import useAuthStore from '../pages/stores/AuthStore';
 
 const SiteNavbarFluid = () => {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-
   return (
     <Navbar expand="lg" className="navbar-instance">
       <Container className="navbar-menu-container" fluid>

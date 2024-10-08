@@ -1,0 +1,48 @@
+/* Gradient Text Effect */
+
+text{
+    color: 0079C2;
+}
+
+.gradient-text {
+    background: linear-gradient(to right, #3A4246, #5DD2FF); 
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+  }
+  
+  /* Animation for sliding text */
+  @keyframes slide {
+    0% {
+      transform: translateY(100%);
+      opacity: 0.1;
+    }
+    15% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    30% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    45% {
+      transform: translateY(-100%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100%);
+      opacity: 0.1;
+    }
+  }
+  
+  .animate-slide {
+    animation: slide 3s linear infinite;
+  }
+  
+  /* Additional Styles */
+  .buttons {
+    display: flex;
+    gap: 1rem;
+  }
+  
