@@ -19,7 +19,9 @@ import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
 import ProjectOverviewScenarios from "./ProjectOverviewScenarios";
 import ProjectOverviewSchedule from "./ProjectOverviewSchedule";
 import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
-
+import SectionTitle from "../components/SectionTitle";
+import SmallDirectoryCard from "../components/cards/SmallDirectoryCard";
+import Breadcrumb from "../components/Breadcrumb";
 
 const ProjectOverview = () => {
   const navigate = useNavigate();
@@ -93,18 +95,20 @@ const ProjectOverview = () => {
   }
 
   return (
-    <Container className="mainContent" fluid>
-      <Row className="text-start">
-        <Col>
-          <h2 className='display-5 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
-          <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>
-
-          <p className="mt-4">{currentProject.description}</p>
-          <hr></hr>
-        </Col>
-      </Row>
+  <Container className="mainContent" fluid>
+      <Breadcrumb directory={["Your Projects", "project"]}></Breadcrumb>
       <Row>
         <Col md={8}>
+        <Row className="text-start mt-4">
+            <h3 className="mb-4 smallCaps">Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</h3>
+          </Row>
+        <Row className="text-start mt-4">
+            <h3 className="mb-4 smallCaps">Project Runs</h3>
+            <Col>
+            <SmallDirectoryCard/>
+            </Col>
+          </Row>
+
           <Row className="text-start mt-4">
             <h3 className="mb-4 smallCaps">Assumptions</h3>
             <Col>
@@ -134,14 +138,14 @@ const ProjectOverview = () => {
           </Row>
         </Col>
 
-        <Col md={4} className="border-start">
+        {/* <Col md={4} className="border-start">
           <Row className="text-start mt-4">
             <h3 className="mb-4 smallCaps">Available Project Runs</h3>
             <Col>
               <ProjectOverviewProjectRuns projectRuns={projectRuns} />
             </Col>
           </Row>
-        </Col>
+        </Col> */}
       </Row>
     </Container>
   );

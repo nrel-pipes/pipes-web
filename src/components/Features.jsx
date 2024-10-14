@@ -15,8 +15,7 @@ const Features = () => {
           <FeatureCard text="Provides robust, multi-level, and multi-dimensional metadata management" />
           <FeatureCard text="Integrates with NREL cloud and on-prem resources" />
           <FeatureCard text="Performs transforms for dataset handoffs" />
-          <FeatureCard text="Enhances data accessibility and usability" />
-          <FeatureCard text="Supports advanced analytics and reporting" />
+          <FeatureCard text="Has easy-to-use interface for project and model management" />
           <FeatureCard text="Supports advanced analytics and reporting" />
         </div>
       </div>
