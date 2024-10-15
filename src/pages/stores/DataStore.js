@@ -70,9 +70,6 @@ const useDataStore = create(
       try {
         const params = new URLSearchParams({project: projectName});
         const data = await fetchData('/api/projectruns', params, accessToken);
-        console.log("================================runsruns....");
-        console.log(data);
-        console.log("================================");
         set({projectRuns: data, isGettingProjectRuns: false});
 
         // Prune other cached data

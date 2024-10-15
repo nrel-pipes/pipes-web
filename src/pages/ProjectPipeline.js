@@ -22,12 +22,12 @@ import ProjectPipelineGraphView from "./ProjectPipelineGraphView";
 import ProjectPipelineDataView from "./ProjectPipelineDataView";
 
 const nodeColors = {
-  project: "#2D8AED",
-  projectRun: "#8CCFF2",
-  model: "#00A69F",
-  modelRun: "#BCCB32",
-  task: "#FDC70F",
-  dataset: "#ED2F8C",
+  project: "#0079C2",
+  projectRun: "#5DD2FF",
+  model: "#5D9732",
+  modelRun: "#C1EE86",
+  dataset: "#FE6523",
+  task: "#FFC423"
 };
 const nodeWidth = 45;
 const nodeHeight = 45;
