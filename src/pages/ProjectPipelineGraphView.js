@@ -5,7 +5,7 @@ import ReactFlow, {
   useEdgesState,
   Controls,
   Background,
-  MiniMap
+  MiniMap,
 } from "reactflow";
 
 import AnnotationNode from "./graph/AnnotationNode";
@@ -15,6 +15,7 @@ import ResizerNode from "./graph/ResizerNode";
 import TextNode from "./graph/TextNode";
 import ButtonEdge from "./graph/ButtonEdge";
 
+import 'reactflow/dist/style.css';
 
 const nodeTypes = {
   annotation: AnnotationNode,
@@ -28,25 +29,24 @@ const edgeTypes = {
   button: ButtonEdge,
 };
 
-
-const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData}) => {
-
-  // const renderCount = useRef(0);
-  // renderCount.current += 1;
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(graphNodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(graphEdges || []);
+const ProjectPipelineGraphView = ({ graphNodes, graphEdges, setClickedElementData }) => {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   useEffect(() => {
-    if (graphNodes) setNodes(graphNodes);
-    if (graphEdges) setEdges(graphEdges);
-  }, [graphNodes, graphEdges, setNodes, setEdges]);
+    setNodes(graphNodes || []);
+  }, [graphNodes, setNodes]);
+
+  useEffect(() => {
+    setEdges(graphEdges || []);
+  }, [graphEdges, setEdges]);
 
   const onNodeClick = (event, node) => {
     setClickedElementData(node.data);
-  }
+  };
 
   const nodeClassName = (node) => node.type;
+
   return (
     <div style={{ width: "100%", height: 900 }}>
       <ReactFlowProvider>
@@ -69,7 +69,6 @@ const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData
       </ReactFlowProvider>
     </div>
   );
-
-}
+};
 
 export default ProjectPipelineGraphView;

@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import fetchData from '../utilities/FetchData';
 
 
+
 const useDataStore = create(
   persist((set) => ({
 
@@ -33,6 +34,11 @@ const useDataStore = create(
     isGettingModelRuns: false,
     modelRuns: [],
     modelRunsGetError: null,
+
+    // Handoff Variables
+    isGettingHandoffs: false,
+    handoffs: [],
+    handoffsGetError: null,
 
     // All project basics
     getProjectBasics: async (accessToken) => {
@@ -131,7 +137,114 @@ const useDataStore = create(
       }
     },
 
+    // All handoffs under current project
+    getHandoffs: async (modelRuns, accessToken) => {
+      set({ isGettingHandoffs: true, handoffsGetError: null });
+      console.log("mruns, ", modelRuns)
+      let handoffResults = {}; // To store the results
+      
+      try {
+        // Iterate over each modelRun in the list
+        for (const modelRun of modelRuns) {
+          const { project, projectrun, model } = modelRun.context;
+          const modelRunName = modelRun.name;
+    
+          // Create the query parameters
+          const params = new URLSearchParams({
+            project: project,
+            projectrun: projectrun,
+            model: model
+          });
+          
+          // Fetch handoffs for the current modelRun
+          const handoffData = await fetchData('/api/handoffs', params, accessToken);
+          
+          // If there are handoffs, add them to the handoffResults object
+          if (handoffData && handoffData.length > 0) {
+            handoffResults[modelRunName] = {
+              project,
+              projectrun,
+              model,
+              handoffs: handoffData
+            };
+          }
+        }
+    
+        // Store the accumulated results in the state
+        set({ handoffs: handoffResults, isGettingHandoffs: false });
+      } catch (error) {
+        set({ handoffs: {}, handoffsGetError: error, isGettingHandoffs: false });
+      }
+    },
+        // New function to batch fetch all data
+        batchFetchProjectData: async (projectName, accessToken) => {
+          set({ 
+            isGettingProject: true, 
+            isGettingProjectRuns: true, 
+            isGettingModels: true, 
+            isGettingModelRuns: true, 
+            isGettingHandoffs: true 
+          });
+    
+          try {
+            const projectParams = new URLSearchParams({project: projectName});
+            const [project, projectRuns, models, modelRuns] = await Promise.all([
+              fetchData('/api/projects', projectParams, accessToken),
+              fetchData('/api/projectruns', projectParams, accessToken),
+              fetchData('/api/models', projectParams, accessToken),
+              fetchData('/api/modelruns', projectParams, accessToken)
+            ]);
+    
+            // Fetch handoffs after modelRuns are available
+            const handoffResults = {};
+            for (const modelRun of modelRuns) {
+              const { project, projectrun, model } = modelRun.context;
+              const params = new URLSearchParams({ project, projectrun, model });
+              const handoffData = await fetchData('/api/handoffs', params, accessToken);
+              if (handoffData && handoffData.length > 0) {
+                handoffResults[modelRun.name] = { project, projectrun, model, handoffs: handoffData };
+              }
+            }
+    
+            // Batch update all state
+            set({
+              currentProject: project,
+              projectRuns,
+              models,
+              modelRuns,
+              handoffs: handoffResults,
+              isGettingProject: false,
+              isGettingProjectRuns: false,
+              isGettingModels: false,
+              isGettingModelRuns: false,
+              isGettingHandoffs: false,
+              selectedProjectName: projectName,
+              projectGetError: null,
+              projectRunsGetError: null,
+              modelsGetError: null,
+              modelRunsGetError: null,
+              handoffsGetError: null
+            });
+          } catch (error) {
+            set({
+              isGettingProject: false,
+              isGettingProjectRuns: false,
+              isGettingModels: false,
+              isGettingModelRuns: false,
+              isGettingHandoffs: false,
+              projectGetError: error,
+              projectRunsGetError: error,
+              modelsGetError: error,
+              modelRunsGetError: error,
+              handoffsGetError: error
+            });
+          }
+        },
+    
+
+        
   }),
+
   {
     name: 'DataStore',
     storage: createJSONStorage(() => localStorage)
