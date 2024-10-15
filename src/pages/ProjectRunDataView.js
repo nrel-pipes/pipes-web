@@ -5,15 +5,14 @@ import Accordion from "react-bootstrap/Accordion";
 // Internal imports
 import ScenarioMapping from "./ProjectRunScenarioMapping";
 
-import useModelStore from "./stores/ModelStore";
-import useModelRunStore from "./stores/ModelRunStore";
+import useDataStore from "./stores/DataStore";
 import { makeBullets } from "./ProjectPipelineDataView";
 import useUIStore from "./stores/UIStore";
 
 
 export default function ProjectRunDataView({ selected }) {
-  const models = useModelStore((state) => state.models);
-  const modelRuns = useModelRunStore((state) => state.modelRuns);
+  const models = useDataStore((state) => state.models);
+  const modelRuns = useDataStore((state) => state.modelRuns);
 
   const scenarioColors = useUIStore((state) => state.scenarios);
 

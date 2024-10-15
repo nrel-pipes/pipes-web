@@ -1,17 +1,13 @@
 
 import { Gantt } from "gantt-task-react";
 
-import useProjectStore from "./stores/ProjectStore";
-import useProjectRunStore from "./stores/ProjectRunStore";
-import useModelStore from "./stores/ModelStore";
+import useDataStore from "./stores/DataStore";
 
 import "./PageStyles.css"
 
 
 const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
-  const { currentProject } = useProjectStore();
-  const { projectRuns } = useProjectRunStore();
-  const { models } = useModelStore();
+  const { currentProject, projectRuns, models } = useDataStore();
 
   let ganttTasks = [];
 

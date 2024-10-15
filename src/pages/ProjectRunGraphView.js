@@ -15,10 +15,7 @@ import Row from "react-bootstrap/Row";
 import { DecoratedNode } from "./graph/DecoratedNode";
 import { createNodesOverview, createEdgesOverview } from "./utilities/RunUtils";
 import useAuthStore from "./stores/AuthStore";
-import useProjectStore from "./stores/ProjectStore";
-import useProjectRunStore from "./stores/ProjectRunStore";
-import useModelStore from "./stores/ModelStore";
-import useModelRunStore from "./stores/ModelRunStore";
+import useDataStore from "./stores/DataStore";
 
 
 const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
@@ -31,10 +28,17 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
   const [nodes, setNodes, onNodesChange] = useNodesState();
   const [edges, setEdges, onEdgesChange] = useEdgesState();
 
-  const { currentProject } = useProjectStore();
-  const { currentProjectRunName } = useProjectRunStore();
-  const { models, getModels, isGettingModels, lastCheckIns } = useModelStore();
-  const { modelRuns, getModelRuns, isGettingModelRuns } = useModelRunStore();
+  const {
+    currentProject,
+    currentProjectRunName,
+    models,
+    getModels,
+    isGettingModels,
+    lastCheckIns,
+    modelRuns,
+    getModelRuns,
+    isGettingModelRuns
+  } = useDataStore();
   const handoffs = [];
 
   function onSelect(s) {
