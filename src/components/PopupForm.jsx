@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Button, Modal, Form, Row, Col } from 'react-bootstrap';
-import createProject from "../pages/stores/DataStore";
 
 const SensitivityForm = ({ sensitivity, index, handleChange, handleRemove }) => (
   <div className="mb-3">
