@@ -90,7 +90,7 @@ export function createNodesOverview(models, modelRuns, lastCheckIns, edges) {
       : null;
 
     const type = modelTypeMap(model.name);
-    const numCheckIns = runs
+    let numCheckIns = runs
       ? Object.values(runs)
           .map((run) => run.datasets.length)
           .reduce((a, b) => a + b, 0)
@@ -158,6 +158,13 @@ export function createNodesOverview(models, modelRuns, lastCheckIns, edges) {
       ? handoffProgress.tasks / numRuns
       : handoffProgress.tasks;
     const color = "color" in model.other ? model.other.color : defaultColor;
+
+    // TODO: hard-code, refactor later
+    handoffProgress = {
+      datasets: Math.random() * 0.5 + 0.5,
+      tasks: Math.random() * 0.5 + 0.5,
+    }
+    numCheckIns = Math.floor(Math.random() * 200) + 1;
 
     return {
       id: model.name,
