@@ -23,6 +23,11 @@ const useDataStore = create(
     currentProjectRunName: null,
     currentProjectRun: null,
 
+    // Project handoffs between models
+    isGettingHandoffs: false,
+    handoffs: [],
+    handoffsGetError: null,
+
     // Model variables
     isGettingModels: false,
     models: [],
@@ -70,9 +75,6 @@ const useDataStore = create(
       try {
         const params = new URLSearchParams({project: projectName});
         const data = await fetchData('/api/projectruns', params, accessToken);
-        console.log("================================runsruns....");
-        console.log(data);
-        console.log("================================");
         set({projectRuns: data, isGettingProjectRuns: false});
 
         // Prune other cached data
@@ -91,6 +93,22 @@ const useDataStore = create(
 
     setCurrentProjectRun: (projectRun) => {
       set({ currentProjectRun: projectRun});
+    },
+
+    // Get Handoffs
+    getHandoffs: async (projectName, projectRunName, accessToken) => {
+      set({ isGettingHandoffs: true, handoffsGetError: null});
+      try {
+        let params = new URLSearchParams({project: projectName, projectrun: projectRunName});
+        if (!projectRunName || projectRunName === null) {
+          params = new URLSearchParams({project: projectName});
+        }
+        const data = await fetchData('/api/handoffs', params, accessToken);
+        set({handoffs: data, isGettingHandoffs: false});
+
+      } catch (error) {
+        set({handoffs: [], handoffsGetError: error, isGettingHandoffs: false});
+      }
     },
 
     // All project runs under current project
