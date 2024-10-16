@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-import { CognitoUser, CognitoUserPool, AuthenticationDetails} from "amazon-cognito-identity-js"
+import { CognitoUser, CognitoUserPool, AuthenticationDetails } from "amazon-cognito-identity-js"
 import { jwtDecode } from 'jwt-decode';
 
 import pipesConfig from '../configs/PipesConfig'
-import fetchData from '../utilities/FetchData';
+import { fetchData } from '../utilities/ApiClient';
 
 
 const useAuthStore = create(

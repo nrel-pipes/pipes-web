@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-import fetchData from '../utilities/FetchData';
+import {fetchData, postData} from '../utilities/ApiClient';
 
 
 const useDataStore = create(
@@ -33,6 +33,9 @@ const useDataStore = create(
     isGettingModelRuns: false,
     modelRuns: [],
     modelRunsGetError: null,
+
+    // Project Create variable
+    isCreatingProject: false, // Fixed this line
 
     // All project basics
     getProjectBasics: async (accessToken) => {
@@ -70,9 +73,6 @@ const useDataStore = create(
       try {
         const params = new URLSearchParams({project: projectName});
         const data = await fetchData('/api/projectruns', params, accessToken);
-        console.log("================================runsruns....");
-        console.log(data);
-        console.log("================================");
         set({projectRuns: data, isGettingProjectRuns: false});
 
         // Prune other cached data
@@ -124,12 +124,51 @@ const useDataStore = create(
         } else if (modelName !== null) {
           params = new URLSearchParams({project: projectName, projectrun: projectRunName, model: modelName});
         }
-        const data = await fetchData('/api/modelruns', params, accessToken);
+        const data = await fetchData('localhost:8080/api/modelruns', params, accessToken);
         set({modelRuns: data, isGettingModelRuns: false});
       } catch (error) {
         set({modelRuns: [], modelRunsGetError: error, isGettingModelRuns: false});
       }
     },
+
+// Create new project
+createProject: async (formData, accessToken) => {
+  set({ isCreatingProject: true, projectCreationError: null });
+  console.log("hello");
+  const defaultValues = {
+    name: 'Default Project Name', 
+    description: 'Default project description', 
+    scheduled_start: new Date().toISOString(), 
+    scheduled_end: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
+  };
+
+  try {
+    var params = null;
+    const response = await postData(`/api/projects`, params, formData, accessToken);
+
+    if (!response.ok) {
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.message || 'Failed to create project');
+    }
+
+    const newProject = await response.json();
+
+    set(state => ({
+      projectBasics: [...state.projectBasics, {
+        name: newProject.name,
+        description: newProject.description,
+      }],
+      isCreatingProject: false,
+    }));
+
+    return newProject; 
+  } catch (error) {
+    console.error('Error creating project:', error);
+    set({ projectCreationError: error, isCreatingProject: false });
+    throw error; 
+  }
+},
+
 
   }),
   {
