@@ -200,8 +200,7 @@ export function createScenarioNodes(model_scenarios, scenarios, colorMap) {
     let x = -scenarioNodeWidth / 2;
     let y = (index * nodeHeight) / (model_scenarios.length / 3);
 
-    // const color = colorMap[scenario.model_scenario].color; //scenarios.find((s) => s.name === scenario.model_scenario).color;
-    const color = 'gray';
+    const color = colorMap[scenario.model_scenario];
 
     return {
       id: "model_" + scenario.model_scenario,
@@ -225,8 +224,7 @@ export function createScenarioNodes(model_scenarios, scenarios, colorMap) {
     let x = 2 * nodeWidth;
     let y = (index * nodeHeight) / 3;
 
-    // const color = colorMap[scenario.name].color;
-    const color = 'gray';
+    const color = colorMap[scenario.name]
 
     return {
       id: "project_" + scenario.name,
