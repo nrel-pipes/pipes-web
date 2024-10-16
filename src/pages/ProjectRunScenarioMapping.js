@@ -14,7 +14,6 @@ export default function ScenarioMapping({ data }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const scenarios = useDataStore((state) => state.currentProject.scenarios);
-  const getColor = useUIStore(state => state.getColor);
   const scenarioColors = useUIStore((state) => state.colors);
 
   const nodeTypes = useMemo(
@@ -27,7 +26,7 @@ export default function ScenarioMapping({ data }) {
   useEffect(() => {
     setNodes(createScenarioNodes(data, scenarios, scenarioColors));
     setEdges(createScenarioEdges(data));
-  }, [data, scenarios, getColor, setNodes, setEdges, scenarioColors]);
+  }, [data, scenarios, setNodes, setEdges, scenarioColors]);
 
   return (
     <div className="scenario-mapping" style={{ height: 500 }}>

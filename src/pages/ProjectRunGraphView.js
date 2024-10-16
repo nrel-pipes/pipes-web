@@ -22,7 +22,7 @@ import useUIStore  from "./stores/UIStore";
 const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const getColor = useUIStore(state => state.getColor);
+  const getModelColor = useUIStore(state => state.getModelColor);
 
   // const renderCount = useRef(0);
   // renderCount.current += 1;
@@ -85,7 +85,7 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
 
     let prModels = [];
     models.forEach((model) => {
-      const color = getColor(model.name);
+      const color = getModelColor(model.name);
       model.other.color = color;
       if (model.context.projectrun === currentProjectRunName ) {
         prModels.push(model);
