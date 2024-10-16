@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   useNodesState,
@@ -10,37 +10,41 @@ import { createScenarioNodes, createScenarioEdges } from "./utilities/RunUtils";
 import useUIStore  from "./stores/UIStore";
 import useDataStore from "./stores/DataStore";
 
-const nodeTypes = {
-  scenario: ScenarioNode,
-};
-
 export default function ScenarioMapping({ data }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const scenarios = useDataStore((state) => state.currentProject.scenarios);
-  const scenarioColors = useUIStore((state) => state.scenarios);
+  const getColor = useUIStore(state => state.getColor);
+  const scenarioColors = useUIStore((state) => state.colors);
+
+  const nodeTypes = useMemo(
+    () => ({
+      scenario: ScenarioNode,
+    }),
+    [],
+  );
 
   useEffect(() => {
     setNodes(createScenarioNodes(data, scenarios, scenarioColors));
     setEdges(createScenarioEdges(data));
-  }, [data, scenarios, setNodes, setEdges, scenarioColors]);
+  }, [data, scenarios, getColor, setNodes, setEdges, scenarioColors]);
 
   return (
-    <div className="scenario-mapping" style={{ minHeight: 500 }}>
+    <div className="scenario-mapping" style={{ height: 500 }}>
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          nodesConnectable={true}
-          fitView
-          onInit={null}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           elementsSelectable={false}
+          nodesConnectable={true}
           attributionPosition="bottom-right"
           elevateEdgesOnSelect={true}
           nodeTypes={nodeTypes}
-        />
+          fitView
+        >
+        </ReactFlow>
       </ReactFlowProvider>
     </div>
   );
