@@ -16,11 +16,13 @@ import { DecoratedNode } from "./graph/DecoratedNode";
 import { createNodesOverview, createEdgesOverview } from "./utilities/RunUtils";
 import useAuthStore from "./stores/AuthStore";
 import useDataStore from "./stores/DataStore";
+import useUIStore  from "./stores/UIStore";
 
 
 const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const getModelColor = useUIStore(state => state.getModelColor);
 
   // const renderCount = useRef(0);
   // renderCount.current += 1;
@@ -37,9 +39,10 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
     lastCheckIns,
     modelRuns,
     getModelRuns,
-    isGettingModelRuns
+    isGettingModelRuns,
+    handoffs,
+    getHandoffs,
   } = useDataStore();
-  const handoffs = [];
 
   function onSelect(s) {
     if (selectedModel) {
@@ -68,6 +71,10 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
       return;
     }
 
+    if (!handoffs || handoffs === null || handoffs.length === 0) {
+      getHandoffs(currentProject.name, null, accessToken);
+    }
+
     if (!models || models === null || models.length === 0) {
       getModels(currentProject.name, null, accessToken);
     }
@@ -78,6 +85,8 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
 
     let prModels = [];
     models.forEach((model) => {
+      const color = getModelColor(model.name);
+      model.other.color = color;
       if (model.context.projectrun === currentProjectRunName ) {
         prModels.push(model);
       }

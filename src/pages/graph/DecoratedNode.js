@@ -139,12 +139,12 @@ function ProgressIndicators({ data }) {
       <div style={{ display: "flex", textAlign: "center" }}>
         <Progress
           percentage={data.percentages.datasets}
-          color="grey"
+          color="#e4f3f4"
           label="Datasets"
         />
         <Progress
           percentage={data.percentages.tasks}
-          color="grey"
+          color="#e4f3f4"
           label="Tasks"
         />
       </div>
