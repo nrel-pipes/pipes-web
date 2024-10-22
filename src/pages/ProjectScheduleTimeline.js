@@ -1,17 +1,13 @@
 
 import { Gantt } from "gantt-task-react";
 
-import useProjectStore from "./stores/ProjectStore";
-import useProjectRunStore from "./stores/ProjectRunStore";
-import useModelStore from "./stores/ModelStore";
+import useDataStore from "./stores/DataStore";
 
 import "./PageStyles.css"
 
 
 const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
-  const { currentProject } = useProjectStore();
-  const { projectRuns } = useProjectRunStore();
-  const { models } = useModelStore();
+  const { currentProject, projectRuns, models } = useDataStore();
 
   let ganttTasks = [];
 
@@ -24,7 +20,7 @@ const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
       end: projectEndDate,
       name: "Project: " + currentProject.name,
       id: "project",
-      styles: {progressColor: '#2D8AED', progressSelectedColor: '#2980B9'},
+      styles: {progressColor: '#0079C2', progressSelectedColor: '#0B5E90'},
       progress: getGanttTaskProgress(projectStartDate, projectEndDate),
       hideChildren: false,
       type: "project"
@@ -60,7 +56,7 @@ const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
       type: "task",
       progress: getGanttTaskProgress(projectRunStartDate, projectRunEndDate),
       project: currentProject.name,
-      styles: { progressColor: '#8CCFF2', progressSelectedColor: '#5DADE2' },
+      styles: { progressColor: '#5DD2FF', progressSelectedColor: '#00A4E4' },
       hideChildren: false
     });
 
@@ -76,7 +72,7 @@ const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
           name: "Model: " + model.name,
           id: model.name + index,
           type: "task",
-          styles: {progressColor: '#00A69F', progressSelectedColor: '#117A65' },
+          styles: {progressColor: '#5D9732', progressSelectedColor: '#3D6321' },
           progress: getGanttTaskProgress(modelStartDate, modelEndDate),
           project: projectRun.name,
         });
@@ -102,7 +98,7 @@ const ProjectScheduleTimeline = ({ viewMode, showSidebar, divId }) => {
           viewDate={new Date()}
           listCellWidth={showSidebar ? 200 : ""}
           rowHeight={70}
-          arrowColor={"#93a2bf"}
+          arrowColor={"#FFC423"}
           //   onSelect={setSelected}
         />
       ) : (

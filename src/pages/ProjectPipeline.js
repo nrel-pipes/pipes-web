@@ -16,21 +16,18 @@ import "./PageStyles.css"
 import "./ReactflowStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
-import useProjectStore from "./stores/ProjectStore";
-import useModelStore from "./stores/ModelStore";
-import useModelRunStore from "./stores/ModelRunStore";
+import useDataStore from "./stores/DataStore";
 
 import ProjectPipelineGraphView from "./ProjectPipelineGraphView";
 import ProjectPipelineDataView from "./ProjectPipelineDataView";
-import useProjectRunStore from "./stores/ProjectRunStore";
 
 const nodeColors = {
-  project: "#2D8AED",
-  projectRun: "#8CCFF2",
-  model: "#00A69F",
-  modelRun: "#BCCB32",
-  task: "#FDC70F",
-  dataset: "#ED2F8C",
+  project: "#0079C2",
+  projectRun: "#5DD2FF",
+  model: "#5D9732",
+  modelRun: "#C1EE86",
+  dataset: "#FE6523",
+  task: "#FFC423"
 };
 const nodeWidth = 45;
 const nodeHeight = 45;
@@ -39,10 +36,17 @@ const nodeHeight = 45;
 const ProjectPipeline = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { selectedProjectName, currentProject} = useProjectStore();
-  const { projectRuns } = useProjectRunStore();
-  const { models, getModels, isGettingModels} = useModelStore();
-  const { modelRuns, getModelRuns, isGettingModelRuns } = useModelRunStore();
+  const {
+    selectedProjectName,
+    currentProject,
+    projectRuns,
+    models,
+    getModels,
+    isGettingModels,
+    modelRuns,
+    getModelRuns,
+    isGettingModelRuns
+  } = useDataStore();
 
   const [clickedElementData, setClickedElementedData] = useState({});
 

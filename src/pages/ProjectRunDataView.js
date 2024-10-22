@@ -1,20 +1,20 @@
 // External imports
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import Accordion from "react-bootstrap/Accordion";
 
 // Internal imports
 import ScenarioMapping from "./ProjectRunScenarioMapping";
 
-import useModelStore from "./stores/ModelStore";
-import useModelRunStore from "./stores/ModelRunStore";
+import useDataStore from "./stores/DataStore";
 import { makeBullets } from "./ProjectPipelineDataView";
 import useUIStore from "./stores/UIStore";
 
 
 export default function ProjectRunDataView({ selected }) {
-  const models = useModelStore((state) => state.models);
-  const modelRuns = useModelRunStore((state) => state.modelRuns);
+  const models = useDataStore((state) => state.models);
+  const modelRuns = useDataStore((state) => state.modelRuns);
 
+  const getColor = useUIStore((state) => state.getColor);
   const scenarioColors = useUIStore((state) => state.scenarios);
 
   const model = useMemo(() => {
@@ -50,6 +50,14 @@ export default function ProjectRunDataView({ selected }) {
     }
     return null;
   }, [selected, modelRuns]);
+
+  useEffect(() => {
+    models.forEach((model) => {
+      model.scenario_mappings.forEach((mapping) => {
+        getColor(mapping.model_scenario);
+      });
+    });
+  });
 
   //
   // Render

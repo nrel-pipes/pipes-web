@@ -6,11 +6,11 @@ import Row from "react-bootstrap/Row";
 import { faCircleArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import useProjectRunStore from "./stores/ProjectRunStore";
+import useDataStore from "./stores/DataStore";
 
 
 const ProjectOverviewProjectRuns = ({projectRuns}) => {
-  const { setCurrentProjectRunName, setCurrentProjectRun } = useProjectRunStore();
+  const { setCurrentProjectRunName, setCurrentProjectRun } = useDataStore();
 
   if (!projectRuns || projectRuns === null || projectRuns.length === 0) {
     return (

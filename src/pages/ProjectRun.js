@@ -8,8 +8,7 @@ import Row from "react-bootstrap/Row";
 import "./PageStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
-import useProjectStore from "./stores/ProjectStore";
-import useProjectRunStore from "./stores/ProjectRunStore";
+import useDataStore from "./stores/DataStore";
 
 import ProjectRunGraphView from "./ProjectRunGraphView";
 import ProjectRunDataView from "./ProjectRunDataView";
@@ -18,8 +17,7 @@ import ProjectRunDataView from "./ProjectRunDataView";
 const ProjectRun = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { selectedProjectName, currentProject} = useProjectStore();
-  const { currentProjectRun } = useProjectRunStore();
+  const { selectedProjectName, currentProject, currentProjectRun} = useDataStore();
 
   const [selectedModel, setSelectedModel] = useState(null);
 

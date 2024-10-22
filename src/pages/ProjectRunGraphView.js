@@ -15,15 +15,14 @@ import Row from "react-bootstrap/Row";
 import { DecoratedNode } from "./graph/DecoratedNode";
 import { createNodesOverview, createEdgesOverview } from "./utilities/RunUtils";
 import useAuthStore from "./stores/AuthStore";
-import useProjectStore from "./stores/ProjectStore";
-import useProjectRunStore from "./stores/ProjectRunStore";
-import useModelStore from "./stores/ModelStore";
-import useModelRunStore from "./stores/ModelRunStore";
+import useDataStore from "./stores/DataStore";
+import useUIStore  from "./stores/UIStore";
 
 
 const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const getModelColor = useUIStore(state => state.getModelColor);
 
   // const renderCount = useRef(0);
   // renderCount.current += 1;
@@ -31,11 +30,19 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
   const [nodes, setNodes, onNodesChange] = useNodesState();
   const [edges, setEdges, onEdgesChange] = useEdgesState();
 
-  const { currentProject } = useProjectStore();
-  const { currentProjectRunName } = useProjectRunStore();
-  const { models, getModels, isGettingModels, lastCheckIns } = useModelStore();
-  const { modelRuns, getModelRuns, isGettingModelRuns } = useModelRunStore();
-  const handoffs = [];
+  const {
+    currentProject,
+    currentProjectRunName,
+    models,
+    getModels,
+    isGettingModels,
+    lastCheckIns,
+    modelRuns,
+    getModelRuns,
+    isGettingModelRuns,
+    handoffs,
+    getHandoffs,
+  } = useDataStore();
 
   function onSelect(s) {
     if (selectedModel) {
@@ -64,6 +71,10 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
       return;
     }
 
+    if (!handoffs || handoffs === null || handoffs.length === 0) {
+      getHandoffs(currentProject.name, null, accessToken);
+    }
+
     if (!models || models === null || models.length === 0) {
       getModels(currentProject.name, null, accessToken);
     }
@@ -74,6 +85,8 @@ const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
 
     let prModels = [];
     models.forEach((model) => {
+      const color = getModelColor(model.name);
+      model.other.color = color;
       if (model.context.projectrun === currentProjectRunName ) {
         prModels.push(model);
       }
