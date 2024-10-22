@@ -62,13 +62,9 @@ const ProjectPipeline = () => {
       return;
     }
 
-    if (!models || models === null || models.length === 0) {
-      getModels(currentProject.name, null, accessToken);
-    }
+    getModels(currentProject.name, null, accessToken);
 
-    if (!modelRuns || modelRuns === null || modelRuns.length === 0) {
-      getModelRuns(currentProject.name, null, null, accessToken);
-    }
+    getModelRuns(currentProject.name, null, null, accessToken);
 
   }, [
     isLoggedIn,
