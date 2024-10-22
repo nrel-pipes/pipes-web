@@ -17,7 +17,13 @@ const SiteNavbarFluid = () => {
   return (
     <Navbar expand="lg" className="navbar-instance">
       <Container className="navbar-menu-container" fluid>
-        <Navbar.Brand href="/">PIPES</Navbar.Brand>
+        <Navbar.Brand href="/" style={{width: '120px'}}>
+          <Image
+            src="/images/NREL-PIPES-Logo-IconAcronym-FullColor.png"
+            alt="PIPES"
+            style={{ width: "80%" }}
+          />
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse>
           <Nav className="me-auto">
