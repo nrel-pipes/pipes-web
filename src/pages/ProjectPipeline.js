@@ -73,9 +73,7 @@ const ProjectPipeline = () => {
     validateToken,
     selectedProjectName,
     currentProject,
-    models,
     getModels,
-    modelRuns,
     getModelRuns
   ]);
 
