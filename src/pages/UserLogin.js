@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
+import Image from 'react-bootstrap/Image';
 import Row from 'react-bootstrap/Row';
 
 import "./PageStyles.css"
@@ -77,7 +78,7 @@ const Login = () => {
 
       <Row>
         <Col sm={4} className='mx-auto mt-5'>
-          <h1 className='text-center'>Welcome!</h1>
+          <h1 className='text-center mb-5'>Welcome!</h1>
           <Form onSubmit={handleLogin}>
             <Form.Group controlId='username'>
               <Form.Label>Email</Form.Label>
