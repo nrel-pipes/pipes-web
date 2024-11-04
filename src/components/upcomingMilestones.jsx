@@ -1,10 +1,21 @@
 import Table from 'react-bootstrap/Table';
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import "./PageTitle.css";
 import "../pages/PageStyles.css";
-// import useDataStore from "./stores/DataStore";
+import useDataStore from "../pages/stores/DataStore";
+import useAuthStore from "../pages/stores/AuthStore";
 
 const UpcomingMilestones = ({ projectBasics }) => {
+    const navigate = useNavigate();
+    const { getProject } = useDataStore();
+    const { accessToken } = useAuthStore();
+    
+    const handleProjectClick = (event, projectName) => {
+        event.preventDefault();
+        getProject(projectName, accessToken);
+        navigate('/overview');
+    };
     
     const milestones = useMemo(() => {
         let milestonesExist = false;
@@ -32,7 +43,16 @@ const UpcomingMilestones = ({ projectBasics }) => {
                 if (milestoneDate >= today && milestoneDate <= thirtyDaysFromNow) {
                     return (
                         <tr key={`${project.name}-${milestone.name}`} className="even:bg-gray-50">
-                            <td className="p-3 border">{project.name}</td>
+                            <td className="p-3 border">
+                                <a
+                                    href="#"
+                                    onClick={(e) => handleProjectClick(e, project.name)}
+                                    className="text-primary hover:text-primary-dark text-decoration-none"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {project.name}
+                                </a>
+                            </td>
                             <td className="p-3 border">{milestoneDate.toLocaleDateString()}</td>
                             <td className="p-3 border">{milestone.name}</td>
                             <td className="p-3 border">
@@ -46,57 +66,55 @@ const UpcomingMilestones = ({ projectBasics }) => {
                 return null; // Skip milestones outside the 30-day window
             }).filter(Boolean) // Remove null values from the results
         );
-    }, [projectBasics]);
-  if (!milestones.length) {
-      return (
+    }, [projectBasics, navigate, getProject, accessToken]);
+
+    if (!milestones.length) {
+        return (
+            <div className="h-full w-full">
+                <Table striped bordered hover>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Project</th>
+                            <th>Milestone</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colSpan={4} className="text-center p-4">
+                                No upcoming milestones
+                            </td>
+                        </tr>
+                    </tbody>
+                </Table>
+            </div>
+        );
+    }
+
+    return (
         <div className="h-full w-full">
-        <Table striped bordered hover>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Project</th>
-                    <th>Milestone</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
+            <Table striped bordered hover>
+                <thead>
                     <tr>
-                        <td colSpan={4} className="text-center p-4">
-                            No upcoming milestones
-                        </td>
+                        <th>Project</th>
+                        <th>Date</th>
+                        <th>Milestone</th>
+                        <th>Description</th>
                     </tr>
+                </thead>
+                <tbody>
+                    {milestones.length > 0 ? milestones : (
+                        <tr>
+                            <td colSpan={4} className="text-center">
+                                No upcoming milestones found
+                            </td>
+                        </tr>
+                    )}
                 </tbody>
-
-        </Table>
-    </div>
-      );
-  }
-
-  return (
-    <div className="h-full w-full">
-        <Table striped bordered hover>
-            <thead>
-                <tr>
-                    <th>Project</th>
-                    <th>Date</th>
-                    <th>Milestone</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                {milestones.length > 0 ? milestones : (
-                    <tr>
-                        <td colSpan={4} className="text-center">
-                            No upcoming milestones found
-                        </td>
-                    </tr>
-                )}
-            </tbody>
-        </Table>
-    </div>
-);
-
-
+            </Table>
+        </div>
+    );
 };
 
 export default UpcomingMilestones;
