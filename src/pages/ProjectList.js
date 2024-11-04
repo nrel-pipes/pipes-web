@@ -14,7 +14,8 @@ import "./PageStyles.css"
 
 import useAuthStore from "./stores/AuthStore";
 import useDataStore from "./stores/DataStore";
-
+import PageTitle from "../components/pageTitle";
+import UpcomingMilestones from "../components/upcomingMilestones";
 
 const ProjectList = () => {
   const navigate = useNavigate();
@@ -80,7 +81,13 @@ const ProjectList = () => {
   return (
     <Container className="mainContent">
       <Row>
-        <h2 className="mt-4 mb-4">Your Available Projects</h2>
+        <PageTitle title="Upcoming Milestones"/>
+      </Row>
+      <Row>
+      <UpcomingMilestones projectBasics={projectBasics}/>
+      </Row>
+      <Row>
+        <PageTitle title="Your Available Projects"/>
       </Row>
       <Row>
         {projectBasics.map((project) => (
