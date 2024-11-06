@@ -21,8 +21,9 @@ const ProjectList = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { projectBasics, getProjectBasics, isGettingProjectBasics, projectBasicsGetError, getProject } = useDataStore();
-
-  const handleProjectClick = (event, project) =>{
+  // const handleProjectCreationClick = (event, project) => {
+  // }
+  const handleProjectClick = (event, project) => {
     event.preventDefault();
 
     getProject(project.name, accessToken);
@@ -87,7 +88,7 @@ const ProjectList = () => {
       <UpcomingMilestones projectBasics={projectBasics}/>
       </Row>
       <Row>
-        <PageTitle title="Your Available Projects"/>
+        <PageTitle title="Your Projects"/>
       </Row>
       <Row>
         {projectBasics.map((project) => (
@@ -106,6 +107,21 @@ const ProjectList = () => {
             </Card>
           </Col>
         ))}
+                  <Col sm={6} key="create-project">
+
+            <Card style={{ margin: "20px" }}>
+              <Card.Body className="bg-light text-start">
+                <Card.Title className="mt-3 mb-3">Create Project</Card.Title>
+                <Button
+                  variant="outline-success"
+                  // onClick={(e) => handleProjectClick(e, project)}
+                >
+                  Click Here! &gt;&gt;
+                </Button>
+              </Card.Body>
+            </Card>
+            </Col>
+
       </Row>
     </Container>
   );
