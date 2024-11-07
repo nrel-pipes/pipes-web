@@ -32,28 +32,74 @@ const CreateProject = () => {
 
     const handleAddRequirement = (type, e) => {
         e.preventDefault();
-        if (type === "str") {
-            const newRequirements = [...requirements, {"": [""]}];
-            setRequirments(newRequirements);
-        }
-        if (type === "int") {
-            const newRequirements = [...requirements, {"": [0]}];
-            setRequirments(newRequirements);
-        }
+        // Initialize with an empty requirement name and an array with one default value
+        const defaultValue = type === "int" ? 0 : "";
+        const newRequirements = [...requirements, { "": [defaultValue] }];
+        setRequirments(newRequirements);
+        
         const newRequirementsType = [...requirementsType, type];
         setRequirmentsType(newRequirementsType);
     };
 
-    // New function to handle removing a requirement
     const handleRemoveRequirement = (index, e) => {
         e.preventDefault();
-        // Remove the requirement at the specified index
         const newRequirements = requirements.filter((_, idx) => idx !== index);
         setRequirments(newRequirements);
         
-        // Remove the corresponding requirement type
         const newRequirementsType = requirementsType.filter((_, idx) => idx !== index);
         setRequirmentsType(newRequirementsType);
+    };
+
+    // New function to handle adding a sub-requirement value
+    const handleAddSubRequirement = (requirementIndex, e) => {
+        e.preventDefault();
+        const newRequirements = [...requirements];
+        const requirement = newRequirements[requirementIndex];
+        const requirementName = Object.keys(requirement)[0];
+        const defaultValue = requirementsType[requirementIndex] === "int" ? 0 : "";
+        
+        requirement[requirementName] = [...requirement[requirementName], defaultValue];
+        setRequirments(newRequirements);
+    };
+
+    // New function to handle removing a sub-requirement value
+    const handleRemoveSubRequirement = (requirementIndex, valueIndex, e) => {
+        e.preventDefault();
+        const newRequirements = [...requirements];
+        const requirement = newRequirements[requirementIndex];
+        const requirementName = Object.keys(requirement)[0];
+        
+        requirement[requirementName] = requirement[requirementName].filter((_, idx) => idx !== valueIndex);
+        setRequirments(newRequirements);
+    };
+
+    // New function to handle requirement name changes
+    const handleRequirementNameChange = (requirementIndex, newName) => {
+        const newRequirements = [...requirements];
+        const requirement = newRequirements[requirementIndex];
+        const oldName = Object.keys(requirement)[0];
+        const values = requirement[oldName];
+        
+        // Create new object with updated name but same values
+        newRequirements[requirementIndex] = { [newName]: values };
+        setRequirments(newRequirements);
+    };
+
+    // New function to handle requirement value changes
+    const handleRequirementValueChange = (requirementIndex, valueIndex, newValue) => {
+        const newRequirements = [...requirements];
+        const requirement = newRequirements[requirementIndex];
+        const requirementName = Object.keys(requirement)[0];
+        
+        // Handle type conversion for integers
+        if (requirementsType[requirementIndex] === "int") {
+            const intValue = parseInt(newValue) || 0;
+            requirement[requirementName][valueIndex] = intValue;
+        } else {
+            requirement[requirementName][valueIndex] = newValue;
+        }
+        
+        setRequirments(newRequirements);
     };
 
     const handleSubmit = (e) => {
@@ -121,63 +167,100 @@ const CreateProject = () => {
                         <div className="mb-3">
                             <Form.Label className="d-block text-start w-100">Requirements</Form.Label>
                             <div className='d-block'>
-                                {requirements.map((requirement, requirements_i) => (
-                                    <div key={requirements_i}>
-                                        <Row className="mb-2 align-items-center">
-                                            <Col xs="auto">
-                                                <Button 
-                                                    variant="outline-danger"
-                                                    size="sm"
-                                                    onClick={(e) => handleRemoveRequirement(requirements_i, e)}
-                                                    style={{ width: '32px', height: '32px', padding: '4px' }}
-                                                    className="d-flex align-items-center justify-content-center"
-                                                >
-                                                    <Minus className="w-4 h-4" />
-                                                </Button>
-                                            </Col>
-                                            <Col xs={3}>
-                                                <Form.Control type="text" placeholder="Requirement" />
-                                            </Col>
-                                            <Col>
-                                                <Form.Control type="text" placeholder="" />
-                                            </Col>
-                                            <Col xs="auto">
-                                                <Button 
-                                                    variant="outline-danger"
-                                                    size="sm"
-                                                    style={{ width: '32px', height: '32px', padding: '4px' }}
-                                                    className="d-flex align-items-center justify-content-center"
-                                                >
-                                                    <Minus className="w-4 h-4" />
-                                                </Button>
-                                            </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col xs="auto">
-                                                {/* Empty column to match first minus button */}
-                                            </Col>
-                                            <Col xs={3}>
-                                                {/* Empty column to match requirement field */}
-                                            </Col>
-                                            <Col>
-                                                <div className="d-flex mb-3">
-                                                    <Button 
-                                                        variant="outline-success"
-                                                        size="sm"
-                                                        style={{ width: '32px', height: '32px', padding: '4px', marginLeft: 36 }}
-                                                        className="d-flex align-items-center justify-content-center"
-                                                    >
-                                                        <Plus className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            </Col>
-                                            <Col xs="auto">
-                                                {/* Empty column to match last minus button */}
-                                            </Col>
-                                        </Row>
-                                    </div>
-                                ))}
+                                {requirements.map((requirement, requirements_i) => {
+                                    const requirementName = Object.keys(requirement)[0];
+                                    const values = requirement[requirementName];
+                                    const type = requirementsType[requirements_i];
+
+                                    return (
+                                        <div key={requirements_i}>
+                                            {values.map((value, value_i) => (
+                                                <Row key={`${requirements_i}-${value_i}`} className="mb-2 align-items-center">
+                                                    {/* Only show remove requirement button and name field for first row */}
+                                                    {value_i === 0 ? (
+                                                        <>
+                                                            <Col xs="auto">
+                                                                <Button 
+                                                                    variant="outline-danger"
+                                                                    size="sm"
+                                                                    onClick={(e) => handleRemoveRequirement(requirements_i, e)}
+                                                                    style={{ width: '32px', height: '32px', padding: '4px' }}
+                                                                    className="d-flex align-items-center justify-content-center"
+                                                                >
+                                                                    <Minus className="w-4 h-4" />
+                                                                </Button>
+                                                            </Col>
+                                                            <Col xs={3}>
+                                                                <Form.Control 
+                                                                    type="text" 
+                                                                    placeholder="Requirement"
+                                                                    value={requirementName}
+                                                                    onChange={(e) => handleRequirementNameChange(requirements_i, e.target.value)}
+                                                                />
+                                                            </Col>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Col xs="auto">
+                                                                <div style={{ width: '32px' }}></div>
+                                                            </Col>
+                                                            <Col xs={3}>
+                                                                <div></div>
+                                                            </Col>
+                                                        </>
+                                                    )}
+                                                    <Col>
+                                                        <Form.Control 
+                                                            type={type === "int" ? "number" : "text"}
+                                                            placeholder={type === "int" ? "Enter number" : "Enter value"}
+                                                            value={value}
+                                                            onChange={(e) => handleRequirementValueChange(requirements_i, value_i, e.target.value)}
+                                                        />
+                                                    </Col>
+                                                    <Col xs="auto">
+                                        {values.length > 1 && ( // Only show delete button if there's more than one value
+                                            <Button 
+                                                variant="outline-danger"
+                                                size="sm"
+                                                onClick={(e) => handleRemoveSubRequirement(requirements_i, value_i, e)}
+                                                style={{ width: '32px', height: '32px', padding: '4px' }}
+                                                className="d-flex align-items-center justify-content-center"
+                                            >
+                                                <Minus className="w-4 h-4" />
+                                            </Button>
+                                        )}
+                                    </Col>
+                                                </Row>
+                                            ))}
+                                            <Row>
+                                                <Col xs="auto">
+                                                    <div style={{ width: '32px' }}></div>
+                                                </Col>
+                                                <Col xs={3}>
+                                                </Col>
+                                                <Col>
+                                                    <div className="d-flex mb-3">
+                                                        <Button 
+                                                            variant="outline-success"
+                                                            size="sm"
+                                                            onClick={(e) => handleAddSubRequirement(requirements_i, e)}
+                                                            style={{ width: '32px', height: '32px', padding: '4px' }}
+                                                            className="d-flex align-items-center justify-content-center"
+                                                        >
+                                                            <Plus className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </Col>
+                                                <Col xs="auto">
+                                                    <div style={{ width: '32px' }}></div>
+                                                </Col>
+                                            </Row>
+                                        </div>
+                                    );
+                                })}
                             </div>
+
+
 
                             <Row>
                             </Row>
