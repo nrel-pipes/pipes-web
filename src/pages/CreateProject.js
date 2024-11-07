@@ -169,6 +169,23 @@ const CreateProject = () => {
         newSensitivities[sensitivityIndex].list = newSensitivities[sensitivityIndex].list.filter((_, idx) => idx !== listIndex);
         setSensitivities(newSensitivities);
     };
+    // Setting Milestones
+    const [milestones, setMilestones] = useState([]); // Will hold array of {name, description[], milestone_date}
+
+    const handleAddMilestone = (e) => {
+        e.preventDefault();
+        setMilestones([...milestones, {
+            name: "",
+            description: [""],
+            milestone_date: "" // Will be in YYYY-MM-DD format
+        }]);
+    };
+
+    const handleRemoveMilestone = (index, e) => {
+        e.preventDefault();
+        const newMilestones = milestones.filter((_, idx) => idx !== index);
+        setMilestones(newMilestones);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -600,6 +617,91 @@ const CreateProject = () => {
         >
             <Plus className="w-4 h-4 mr-1" />
             Add Sensitivity
+        </Button>
+    </div>
+</div>
+
+{/* Milestones Section */}
+<div className="mb-3">
+    <h3 className="mb-3">Milestones</h3>
+    <div className='d-block'>
+        {milestones.map((milestone, milestoneIndex) => (
+            <div key={milestoneIndex} className="border rounded p-3 mb-4">
+                {/* Milestone Header with Delete Button */}
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h4 className="mb-0">Milestone {milestoneIndex + 1}</h4>
+                    <Button 
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={(e) => handleRemoveMilestone(milestoneIndex, e)}
+                        style={{ width: '32px', height: '32px', padding: '4px' }}
+                        className="d-flex align-items-center justify-content-center"
+                    >
+                        <Minus className="w-4 h-4" />
+                    </Button>
+                </div>
+                
+                {/* Milestone Name */}
+                <div className="d-flex mb-3 align-items-center gap-2">
+                    <Form.Control
+                        type="input"
+                        placeholder="Milestone name"
+                        value={milestone.name}
+                        onChange={(e) => {
+                            const newMilestones = [...milestones];
+                            newMilestones[milestoneIndex].name = e.target.value;
+                            setMilestones(newMilestones);
+                        }}
+                    />
+                </div>
+
+                {/* Milestone Description */}
+                <div className="d-flex mb-3 align-items-center gap-2">
+                    <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Enter description"
+                        value={milestone.description[0]}
+                        onChange={(e) => {
+                            const newMilestones = [...milestones];
+                            newMilestones[milestoneIndex].description = [e.target.value];
+                            setMilestones(newMilestones);
+                        }}
+                    />
+                </div>
+
+                {/* Milestone Date */}
+                <div className="d-flex mb-3 align-items-center gap-2">
+                    <Form.Group controlId={`milestone-date-${milestoneIndex}`} className="w-100">
+                        <Form.Label className="d-block text-start">Milestone Date (YYYY-MM-DD)</Form.Label>
+                        <Form.Control
+                            type="date"
+                            value={milestone.milestone_date}
+                            onChange={(e) => {
+                                const newMilestones = [...milestones];
+                                newMilestones[milestoneIndex].milestone_date = e.target.value;
+                                setMilestones(newMilestones);
+                            }}
+                            // Optional: Add min/max attributes if you want to restrict date range
+                            // min="2024-01-01"
+                            // max="2025-12-31"
+                        />
+                    </Form.Group>
+                </div>
+            </div>
+        ))}
+    </div>
+    
+    {/* Add Milestone Button */}
+    <div className="d-flex justify-content-start mt-2">
+        <Button 
+            variant="outline-primary" 
+            size="sm"
+            onClick={handleAddMilestone}
+            className="mt-2 align-items-left"
+        >
+            <Plus className="w-4 h-4 mr-1" />
+            Add Milestone
         </Button>
     </div>
 </div>
