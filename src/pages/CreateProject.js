@@ -120,22 +120,22 @@ const CreateProject = () => {
         setScenarios(newScenarios);
     };
     
-    const handleOtherChange = (scenarioIndex, keyIndex, key, value) => {
+    const handleOtherChange = (scenarioIndex, keyIndex, newKey, value) => {
         const newScenarios = [...scenarios];
-        const oldKey = Object.keys(newScenarios[scenarioIndex].other)[keyIndex];
+        // Get array of current keys
+        const keys = Object.keys(newScenarios[scenarioIndex].other);
+        const currentKey = keys[keyIndex];
         
-        // Create a new other object without the old key
+        // Create new other object
         const newOther = { ...newScenarios[scenarioIndex].other };
-        if (oldKey) delete newOther[oldKey];
-        
+        // If we had an old key, delete it
+        if (currentKey) delete newOther[currentKey];
         // Add the new key-value pair
-        newOther[key] = value;
+        newOther[newKey] = value;
         
         newScenarios[scenarioIndex].other = newOther;
         setScenarios(newScenarios);
     };
-    
-
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Form submitted');
@@ -317,7 +317,19 @@ const CreateProject = () => {
                                 <div className='d-block'>
                                 {scenarios.map((scenario, scenarioIndex) => (
     <div key={scenarioIndex} className="border rounded p-3 mb-4">
-        <h4 className="mb-3">Scenario {scenarioIndex + 1}</h4>
+        {/* Scenario Header with Delete Button */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+            <h4 className="mb-0">Scenario {scenarioIndex + 1}</h4>
+            <Button 
+                variant="outline-danger"
+                size="sm"
+                onClick={(e) => handleRemoveScenario(scenarioIndex, e)}
+                style={{ width: '32px', height: '32px', padding: '4px' }}
+                className="d-flex align-items-center justify-content-center"
+            >
+                <Minus className="w-4 h-4" />
+            </Button>
+        </div>
         
         {/* Scenario Name */}
         <div className="d-flex mb-3 align-items-center gap-2">
@@ -331,13 +343,6 @@ const CreateProject = () => {
                     setScenarios(newScenarios);
                 }}
             />
-            <Button 
-                variant="outline-danger"
-                size="sm"
-                onClick={(e) => handleRemoveScenario(scenarioIndex, e)}
-            >
-                <Minus className="w-4 h-4" />
-            </Button>
         </div>
 
         {/* Scenario Description */}
@@ -366,12 +371,21 @@ const CreateProject = () => {
                             type="input"
                             placeholder="Key"
                             value={key}
-                            onChange={(e) => handleOtherChange(
-                                scenarioIndex,
-                                keyIndex,
-                                e.target.value,
-                                value
-                            )}
+                            onChange={(e) => {
+                                const newScenarios = [...scenarios];
+                                const oldKey = Object.keys(newScenarios[scenarioIndex].other)[keyIndex];
+                                const oldValue = newScenarios[scenarioIndex].other[oldKey];
+                                
+                                // Create new other object without the old key
+                                const newOther = { ...newScenarios[scenarioIndex].other };
+                                delete newOther[oldKey];
+                                
+                                // Add the new key with the existing value
+                                newOther[e.target.value] = oldValue;
+                                
+                                newScenarios[scenarioIndex].other = newOther;
+                                setScenarios(newScenarios);
+                            }}
                         />
                     </Col>
                     <Col>
@@ -407,17 +421,18 @@ const CreateProject = () => {
                 </Row>
             ))}
             
-            {/* Add Other Information Button - Styled like Assumptions button */}
+            {/* Add Other Information Button */}
             <div className="d-flex justify-content-start mt-2">
                 <Button 
-                    variant="outline-success" 
+                    variant="outline-primary" 
                     size="sm"
                     onClick={(e) => {
                         e.preventDefault();
                         const newScenarios = [...scenarios];
+                        const newKey = `key${Object.keys(newScenarios[scenarioIndex].other).length + 1}`;
                         newScenarios[scenarioIndex].other = {
                             ...newScenarios[scenarioIndex].other,
-                            "": ""
+                            [newKey]: ""
                         };
                         setScenarios(newScenarios);
                     }}
@@ -429,7 +444,9 @@ const CreateProject = () => {
             </div>
         </div>
     </div>
-))}                                </div>
+))}
+
+                            </div>
                                 
                                 {/* Add Scenario Button */}
                                 <div className="d-flex justify-content-start mt-2">
