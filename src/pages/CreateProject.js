@@ -102,6 +102,40 @@ const CreateProject = () => {
         setRequirments(newRequirements);
     };
 
+    // Adding scenario
+    const [scenarios, setScenarios] = useState([]); // Will hold array of {name, description[], other}
+
+    const handleAddScenario = (e) => {
+        e.preventDefault();
+        setScenarios([...scenarios, {
+            name: "",
+            description: [""],
+            other: {}  // Initialize with empty object
+        }]);
+    };
+        
+    const handleRemoveScenario = (index, e) => {
+        e.preventDefault();
+        const newScenarios = scenarios.filter((_, idx) => idx !== index);
+        setScenarios(newScenarios);
+    };
+    
+    const handleOtherChange = (scenarioIndex, keyIndex, key, value) => {
+        const newScenarios = [...scenarios];
+        const oldKey = Object.keys(newScenarios[scenarioIndex].other)[keyIndex];
+        
+        // Create a new other object without the old key
+        const newOther = { ...newScenarios[scenarioIndex].other };
+        if (oldKey) delete newOther[oldKey];
+        
+        // Add the new key-value pair
+        newOther[key] = value;
+        
+        newScenarios[scenarioIndex].other = newOther;
+        setScenarios(newScenarios);
+    };
+    
+
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Form submitted');
@@ -114,183 +148,311 @@ const CreateProject = () => {
             </Row>
             <div className="d-flex justify-content-center">
                 <Col className='justify-content-center mw-600' style={{ maxWidth: '1000px' }} xs={12} md={9}>
-                <Form className="my-4 justify-content" onSubmit={handleSubmit}>
-                    <Form.Group className="mb-3 w-100" controlId="formProjectName">
-                        <Form.Label className="d-block text-start w-100">Project Name</Form.Label>
-                        <Form.Control 
-                            type="input" 
-                            placeholder="Project Name" 
-                            className="mb-4"
-                        />
-        
-                        <Form.Label className="d-block text-start w-100">Project Description</Form.Label>
-                        <Form.Control 
-                            as="textarea" 
-                            rows={3}
-                            placeholder="Describe your project" 
-                            className="mb-4"
-                        />
-        
-                        <div className="mb-3">
-                            <Form.Label className="d-block text-start w-100">Assumptions</Form.Label>
-                            
-                            {assumptions.map((assumption, index) => (
-                                <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                                    <Form.Control
-                                        type="input"
-                                        placeholder="Enter assumption"
-                                        value={assumption}
-                                        onChange={(e) => handleAssumptionChange(index, e.target.value)}
-                                    />
+                    <Form className="my-4 justify-content" onSubmit={handleSubmit}>
+                        <Form.Group className="mb-3 w-100" controlId="formProjectName">
+                            <Form.Label className="d-block text-start w-100">Project Name</Form.Label>
+                            <Form.Control 
+                                type="input" 
+                                placeholder="Project Name" 
+                                className="mb-4"
+                            />
+            
+                            <Form.Label className="d-block text-start w-100">Project Description</Form.Label>
+                            <Form.Control 
+                                as="textarea" 
+                                rows={3}
+                                placeholder="Describe your project" 
+                                className="mb-4"
+                            />
+            
+                            {/* Assumptions Section */}
+                            <div className="mb-3">
+                                <Form.Label className="d-block text-start w-100">Assumptions</Form.Label>
+                                {assumptions.map((assumption, index) => (
+                                    <div key={index} className="d-flex mb-2 align-items-center gap-2">
+                                        <Form.Control
+                                            type="input"
+                                            placeholder="Enter assumption"
+                                            value={assumption}
+                                            onChange={(e) => handleAssumptionChange(index, e.target.value)}
+                                        />
+                                        <Button 
+                                            variant="outline-danger"
+                                            size="sm"
+                                            onClick={(e) => handleRemoveAssumption(index, e)}
+                                        >
+                                            <Minus className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                <div className="d-flex justify-content-start mt-2">
                                     <Button 
-                                        variant="outline-danger"
+                                        variant="outline-primary" 
                                         size="sm"
-                                        onClick={(e) => handleRemoveAssumption(index, e)}
+                                        onClick={handleAddAssumption}
+                                        className="mt-2 align-items-left"
                                     >
-                                        <Minus className="w-4 h-4" />
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Assumption
                                     </Button>
                                 </div>
-                            ))}
-                            <div className="d-flex justify-content-start mt-2">
-                                <Button 
-                                    variant="outline-primary" 
-                                    size="sm"
-                                    onClick={handleAddAssumption}
-                                    className="mt-2 align-items-left"
-                                >
-                                    <Plus className="w-4 h-4 mr-1" />
-                                    Assumption
-                                </Button>
                             </div>
-                        </div>
-
-                        <div className="mb-3">
-                            <Form.Label className="d-block text-start w-100">Requirements</Form.Label>
-                            <div className='d-block'>
-                                {requirements.map((requirement, requirements_i) => {
-                                    const requirementName = Object.keys(requirement)[0];
-                                    const values = requirement[requirementName];
-                                    const type = requirementsType[requirements_i];
-
-                                    return (
-                                        <div key={requirements_i}>
-                                            {values.map((value, value_i) => (
-                                                <Row key={`${requirements_i}-${value_i}`} className="mb-2 align-items-center">
-                                                    {/* Only show remove requirement button and name field for first row */}
-                                                    {value_i === 0 ? (
-                                                        <>
-                                                            <Col xs="auto">
+    
+                            {/* Requirements Section */}
+                            <div className="mb-3">
+                                <Form.Label className="d-block text-start w-100">Requirements</Form.Label>
+                                <div className='d-block'>
+                                    {requirements.map((requirement, requirements_i) => {
+                                        const requirementName = Object.keys(requirement)[0];
+                                        const values = requirement[requirementName];
+                                        const type = requirementsType[requirements_i];
+    
+                                        return (
+                                            <div key={requirements_i}>
+                                                {values.map((value, value_i) => (
+                                                    <Row key={`${requirements_i}-${value_i}`} className="mb-2 align-items-center">
+                                                        {value_i === 0 ? (
+                                                            <>
+                                                                <Col xs="auto">
+                                                                    <Button 
+                                                                        variant="outline-danger"
+                                                                        size="sm"
+                                                                        onClick={(e) => handleRemoveRequirement(requirements_i, e)}
+                                                                        style={{ width: '32px', height: '32px', padding: '4px' }}
+                                                                        className="d-flex align-items-center justify-content-center"
+                                                                    >
+                                                                        <Minus className="w-4 h-4" />
+                                                                    </Button>
+                                                                </Col>
+                                                                <Col xs={3}>
+                                                                    <Form.Control 
+                                                                        type="text" 
+                                                                        placeholder="Requirement"
+                                                                        value={requirementName}
+                                                                        onChange={(e) => handleRequirementNameChange(requirements_i, e.target.value)}
+                                                                    />
+                                                                </Col>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Col xs="auto">
+                                                                    <div style={{ width: '32px' }}></div>
+                                                                </Col>
+                                                                <Col xs={3}>
+                                                                    <div></div>
+                                                                </Col>
+                                                            </>
+                                                        )}
+                                                        <Col>
+                                                            <Form.Control 
+                                                                type={type === "int" ? "number" : "text"}
+                                                                placeholder={type === "int" ? "Enter number" : "Enter value"}
+                                                                value={value}
+                                                                onChange={(e) => handleRequirementValueChange(requirements_i, value_i, e.target.value)}
+                                                            />
+                                                        </Col>
+                                                        <Col xs="auto">
+                                                            {values.length > 1 && (
                                                                 <Button 
                                                                     variant="outline-danger"
                                                                     size="sm"
-                                                                    onClick={(e) => handleRemoveRequirement(requirements_i, e)}
+                                                                    onClick={(e) => handleRemoveSubRequirement(requirements_i, value_i, e)}
                                                                     style={{ width: '32px', height: '32px', padding: '4px' }}
                                                                     className="d-flex align-items-center justify-content-center"
                                                                 >
                                                                     <Minus className="w-4 h-4" />
                                                                 </Button>
-                                                            </Col>
-                                                            <Col xs={3}>
-                                                                <Form.Control 
-                                                                    type="text" 
-                                                                    placeholder="Requirement"
-                                                                    value={requirementName}
-                                                                    onChange={(e) => handleRequirementNameChange(requirements_i, e.target.value)}
-                                                                />
-                                                            </Col>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Col xs="auto">
-                                                                <div style={{ width: '32px' }}></div>
-                                                            </Col>
-                                                            <Col xs={3}>
-                                                                <div></div>
-                                                            </Col>
-                                                        </>
-                                                    )}
+                                                            )}
+                                                        </Col>
+                                                    </Row>
+                                                ))}
+                                                <Row>
+                                                    <Col xs="auto">
+                                                        <div style={{ width: '32px' }}></div>
+                                                    </Col>
+                                                    <Col xs={3}>
+                                                    </Col>
                                                     <Col>
-                                                        <Form.Control 
-                                                            type={type === "int" ? "number" : "text"}
-                                                            placeholder={type === "int" ? "Enter number" : "Enter value"}
-                                                            value={value}
-                                                            onChange={(e) => handleRequirementValueChange(requirements_i, value_i, e.target.value)}
-                                                        />
+                                                        <div className="d-flex mb-3">
+                                                            <Button 
+                                                                variant="outline-success"
+                                                                size="sm"
+                                                                onClick={(e) => handleAddSubRequirement(requirements_i, e)}
+                                                                style={{ width: '32px', height: '32px', padding: '4px' }}
+                                                                className="d-flex align-items-center justify-content-center"
+                                                            >
+                                                                <Plus className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
                                                     </Col>
                                                     <Col xs="auto">
-                                        {values.length > 1 && ( // Only show delete button if there's more than one value
-                                            <Button 
-                                                variant="outline-danger"
-                                                size="sm"
-                                                onClick={(e) => handleRemoveSubRequirement(requirements_i, value_i, e)}
-                                                style={{ width: '32px', height: '32px', padding: '4px' }}
-                                                className="d-flex align-items-center justify-content-center"
-                                            >
-                                                <Minus className="w-4 h-4" />
-                                            </Button>
-                                        )}
-                                    </Col>
+                                                        <div style={{ width: '32px' }}></div>
+                                                    </Col>
                                                 </Row>
-                                            ))}
-                                            <Row>
-                                                <Col xs="auto">
-                                                    <div style={{ width: '32px' }}></div>
-                                                </Col>
-                                                <Col xs={3}>
-                                                </Col>
-                                                <Col>
-                                                    <div className="d-flex mb-3">
-                                                        <Button 
-                                                            variant="outline-success"
-                                                            size="sm"
-                                                            onClick={(e) => handleAddSubRequirement(requirements_i, e)}
-                                                            style={{ width: '32px', height: '32px', padding: '4px' }}
-                                                            className="d-flex align-items-center justify-content-center"
-                                                        >
-                                                            <Plus className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                </Col>
-                                                <Col xs="auto">
-                                                    <div style={{ width: '32px' }}></div>
-                                                </Col>
-                                            </Row>
-                                        </div>
-                                    );
-                                })}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="d-flex justify-content-start mt-2">
+                                    <DropdownButton variant="outline-primary" id="dropdown-item-button" title="Add Requirement">
+                                        <Dropdown.Item 
+                                            as="button"
+                                            onClick={(e) => handleAddRequirement("str", e)}
+                                        >
+                                            <Plus className="w-1 h-1 mr-1" /> String Requirement
+                                        </Dropdown.Item>
+                                        <Dropdown.Item 
+                                            as="button"
+                                            onClick={(e) => handleAddRequirement("int", e)}
+                                        >
+                                            <Plus className="w-1 h-1 mr-1" /> Integer Requirement
+                                        </Dropdown.Item>
+                                    </DropdownButton>
+                                </div>
                             </div>
-
-
-
-                            <Row>
-                            </Row>
-                            <div className="d-flex justify-content-start mt-2">
-                                <DropdownButton variant="outline-primary" id="dropdown-item-button" title="Add Requirement">
-                                    <Dropdown.Item 
-                                        as="button"
-                                        onClick={(e) => handleAddRequirement("str", e)}
-                                    >
-                                        <Plus className="w-1 h-1 mr-1" /> String Requirement
-                                    </Dropdown.Item>
-                                    <Dropdown.Item 
-                                        as="button"
-                                        onClick={(e) => handleAddRequirement("int", e)}
-                                    >
-                                        <Plus className="w-1 h-1 mr-1" /> Integer Requirement
-                                    </Dropdown.Item>
-                                </DropdownButton>
-                            </div>
-                        </div>
-                    </Form.Group>
+    
+                            {/* Scenarios Section */}
+                            <div className="mb-3">
+                                <h3 className="mb-3">Scenarios</h3>
+                                <div className='d-block'>
+                                {scenarios.map((scenario, scenarioIndex) => (
+    <div key={scenarioIndex} className="border rounded p-3 mb-4">
+        <h4 className="mb-3">Scenario {scenarioIndex + 1}</h4>
         
-                    <Button variant="primary" type="submit">
-                        Submit
-                    </Button>
-                </Form>
+        {/* Scenario Name */}
+        <div className="d-flex mb-3 align-items-center gap-2">
+            <Form.Control
+                type="input"
+                placeholder="Scenario name"
+                value={scenario.name}
+                onChange={(e) => {
+                    const newScenarios = [...scenarios];
+                    newScenarios[scenarioIndex].name = e.target.value;
+                    setScenarios(newScenarios);
+                }}
+            />
+            <Button 
+                variant="outline-danger"
+                size="sm"
+                onClick={(e) => handleRemoveScenario(scenarioIndex, e)}
+            >
+                <Minus className="w-4 h-4" />
+            </Button>
+        </div>
+
+        {/* Scenario Description */}
+        <div className="d-flex mb-3 align-items-center gap-2">
+            <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder="Enter description"
+                value={scenario.description[0]}
+                onChange={(e) => {
+                    const newScenarios = [...scenarios];
+                    newScenarios[scenarioIndex].description = [e.target.value];
+                    setScenarios(newScenarios);
+                }}
+            />
+        </div>
+
+        {/* Other Information Section */}
+        <div className="mb-3">
+            <h5 className="mb-3">Other</h5>
+            {/* Other Key-Value Pairs */}
+            {Object.entries(scenario.other).map(([key, value], keyIndex) => (
+                <Row key={keyIndex} className="mb-2 align-items-center">
+                    <Col xs={3}>
+                        <Form.Control
+                            type="input"
+                            placeholder="Key"
+                            value={key}
+                            onChange={(e) => handleOtherChange(
+                                scenarioIndex,
+                                keyIndex,
+                                e.target.value,
+                                value
+                            )}
+                        />
+                    </Col>
+                    <Col>
+                        <Form.Control
+                            type="input"
+                            placeholder="Value"
+                            value={value}
+                            onChange={(e) => {
+                                const newScenarios = [...scenarios];
+                                newScenarios[scenarioIndex].other[key] = e.target.value;
+                                setScenarios(newScenarios);
+                            }}
+                        />
+                    </Col>
+                    <Col xs="auto">
+                        <Button 
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                const newScenarios = [...scenarios];
+                                const newOther = { ...newScenarios[scenarioIndex].other };
+                                delete newOther[key];
+                                newScenarios[scenarioIndex].other = newOther;
+                                setScenarios(newScenarios);
+                            }}
+                            style={{ width: '32px', height: '32px', padding: '4px' }}
+                            className="d-flex align-items-center justify-content-center"
+                        >
+                            <Minus className="w-4 h-4" />
+                        </Button>
+                    </Col>
+                </Row>
+            ))}
+            
+            {/* Add Other Information Button - Styled like Assumptions button */}
+            <div className="d-flex justify-content-start mt-2">
+                <Button 
+                    variant="outline-success" 
+                    size="sm"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        const newScenarios = [...scenarios];
+                        newScenarios[scenarioIndex].other = {
+                            ...newScenarios[scenarioIndex].other,
+                            "": ""
+                        };
+                        setScenarios(newScenarios);
+                    }}
+                    className="d-flex align-items-center gap-1"
+                >
+                    <Plus className="w-4 h-4" />
+                    Other Information
+                </Button>
+            </div>
+        </div>
+    </div>
+))}                                </div>
+                                
+                                {/* Add Scenario Button */}
+                                <div className="d-flex justify-content-start mt-2">
+                                    <Button 
+                                        variant="outline-primary" 
+                                        size="sm"
+                                        onClick={handleAddScenario}
+                                        className="mt-2 align-items-left"
+                                    >
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Add Scenario
+                                    </Button>
+                                </div>
+                            </div>
+                        </Form.Group>
+            
+                        <Button variant="primary" type="submit">
+                            Submit
+                        </Button>
+                    </Form>
                 </Col>
             </div>
         </Container>
-    );
-};
+    );};
 
 export default CreateProject;
