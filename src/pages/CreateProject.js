@@ -136,6 +136,40 @@ const CreateProject = () => {
         newScenarios[scenarioIndex].other = newOther;
         setScenarios(newScenarios);
     };
+
+    // Add this with other state declarations
+    // Adding Sensitivity to state
+    const [sensitivities, setSensitivities] = useState([]); // Will hold array of {name, description[], list[]}
+
+    const handleAddSensitivity = (e) => {
+        e.preventDefault();
+        setSensitivities([...sensitivities, {
+            name: "",
+            description: [""],
+            list: [""] // Initialize with one empty string in the list
+        }]);
+    };
+
+    const handleRemoveSensitivity = (index, e) => {
+        e.preventDefault();
+        const newSensitivities = sensitivities.filter((_, idx) => idx !== index);
+        setSensitivities(newSensitivities);
+    };
+
+    const handleAddSensitivityListItem = (sensitivityIndex, e) => {
+        e.preventDefault();
+        const newSensitivities = [...sensitivities];
+        newSensitivities[sensitivityIndex].list.push("");
+        setSensitivities(newSensitivities);
+    };
+
+    const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
+        e.preventDefault();
+        const newSensitivities = [...sensitivities];
+        newSensitivities[sensitivityIndex].list = newSensitivities[sensitivityIndex].list.filter((_, idx) => idx !== listIndex);
+        setSensitivities(newSensitivities);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Form submitted');
@@ -424,7 +458,7 @@ const CreateProject = () => {
             {/* Add Other Information Button */}
             <div className="d-flex justify-content-start mt-2">
                 <Button 
-                    variant="outline-primary" 
+                    variant="outline-success" 
                     size="sm"
                     onClick={(e) => {
                         e.preventDefault();
@@ -446,7 +480,11 @@ const CreateProject = () => {
     </div>
 ))}
 
+
+
+
                             </div>
+
                                 
                                 {/* Add Scenario Button */}
                                 <div className="d-flex justify-content-start mt-2">
@@ -461,6 +499,111 @@ const CreateProject = () => {
                                     </Button>
                                 </div>
                             </div>
+                            <div className="mb-3">
+    <h3 className="mb-3">Sensitivities</h3>
+    <div className='d-block'>
+        {sensitivities.map((sensitivity, sensitivityIndex) => (
+            <div key={sensitivityIndex} className="border rounded p-3 mb-4">
+                {/* Sensitivity Header with Delete Button */}
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h4 className="mb-0">Sensitivity {sensitivityIndex + 1}</h4>
+                    <Button 
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={(e) => handleRemoveSensitivity(sensitivityIndex, e)}
+                        style={{ width: '32px', height: '32px', padding: '4px' }}
+                        className="d-flex align-items-center justify-content-center"
+                    >
+                        <Minus className="w-4 h-4" />
+                    </Button>
+                </div>
+                
+                {/* Sensitivity Name */}
+                <div className="d-flex mb-3 align-items-center gap-2">
+                    <Form.Control
+                        type="input"
+                        placeholder="Sensitivity name"
+                        value={sensitivity.name}
+                        onChange={(e) => {
+                            const newSensitivities = [...sensitivities];
+                            newSensitivities[sensitivityIndex].name = e.target.value;
+                            setSensitivities(newSensitivities);
+                        }}
+                    />
+                </div>
+
+                {/* Sensitivity Description */}
+                <div className="d-flex mb-3 align-items-center gap-2">
+                    <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Enter description"
+                        value={sensitivity.description[0]}
+                        onChange={(e) => {
+                            const newSensitivities = [...sensitivities];
+                            newSensitivities[sensitivityIndex].description = [e.target.value];
+                            setSensitivities(newSensitivities);
+                        }}
+                    />
+                </div>
+
+                {/* Sensitivity List Items */}
+                <div className="mb-3">
+                    {sensitivity.list.map((item, listIndex) => (
+                        <div key={listIndex} className="d-flex mb-2 align-items-center gap-2">
+                            <Form.Control
+                                type="input"
+                                placeholder="Enter sensitivity item"
+                                value={item}
+                                onChange={(e) => {
+                                    const newSensitivities = [...sensitivities];
+                                    newSensitivities[sensitivityIndex].list[listIndex] = e.target.value;
+                                    setSensitivities(newSensitivities);
+                                }}
+                            />
+                            {sensitivity.list.length > 1 && (
+                                <Button 
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={(e) => handleRemoveSensitivityListItem(sensitivityIndex, listIndex, e)}
+                                >
+                                    <Minus className="w-4 h-4" />
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+                    
+                    {/* Add List Item Button */}
+                    <div className="d-flex justify-content-start mt-2">
+                        <Button 
+                            variant="outline-primary" 
+                            size="sm"
+                            onClick={(e) => handleAddSensitivityListItem(sensitivityIndex, e)}
+                            className="d-flex align-items-center gap-1"
+                        >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Item
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+    
+    {/* Add Sensitivity Button */}
+    <div className="d-flex justify-content-start mt-2">
+        <Button 
+            variant="outline-primary" 
+            size="sm"
+            onClick={handleAddSensitivity}
+            className="mt-2 align-items-left"
+        >
+            <Plus className="w-4 h-4 mr-1" />
+            Add Sensitivity
+        </Button>
+    </div>
+</div>
+
                         </Form.Group>
             
                         <Button variant="primary" type="submit">
