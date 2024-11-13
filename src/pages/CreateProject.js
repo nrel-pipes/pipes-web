@@ -403,7 +403,7 @@ const CreateProject = () => {
                     ))}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-primary"
+                        variant="outline-success"
                         size="sm"
                         onClick={handleAddAssumption}
                         className="mt-2 align-items-left"
@@ -554,24 +554,25 @@ const CreateProject = () => {
                       })}
                     </div>
                     <div className="d-flex justify-content-start mt-2">
-                      <DropdownButton
-                        variant="outline-primary"
-                        id="dropdown-item-button"
-                        title="Add Requirement"
+                      <Button
+                        variant="outline-success"
+                        size="sm"
+                        onClick={(e) => handleAddRequirement("str", e)}
+                        className="d-flex align-items-center me-2"
                       >
-                        <Dropdown.Item
-                          as="button"
-                          onClick={(e) => handleAddRequirement("str", e)}
-                        >
-                          <Plus className="w-1 h-1 mr-1" /> String Requirement
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          as="button"
-                          onClick={(e) => handleAddRequirement("int", e)}
-                        >
-                          <Plus className="w-1 h-1 mr-1" /> Integer Requirement
-                        </Dropdown.Item>
-                      </DropdownButton>
+                        <Plus className="w-4 h-4 mr-1" />
+                        String Requirement
+                      </Button>
+
+                      <Button
+                        variant="outline-success"
+                        size="sm"
+                        onClick={(e) => handleAddRequirement("int", e)}
+                        className="d-flex align-items-center"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Integer Requirement
+                      </Button>
                     </div>
                   </div>
 
@@ -728,7 +729,7 @@ const CreateProject = () => {
                     {/* Add Scenario Button */}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-primary"
+                        variant="outline-success"
                         size="sm"
                         onClick={handleAddScenario}
                         className="mt-2 align-items-left"
@@ -865,7 +866,7 @@ const CreateProject = () => {
                     {/* Add Sensitivity Button */}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-primary"
+                        variant="outline-success"
                         size="sm"
                         onClick={handleAddSensitivity}
                         className="mt-2 align-items-left"
@@ -964,9 +965,6 @@ const CreateProject = () => {
                                     e.target.value;
                                   setMilestones(newMilestones);
                                 }}
-                                // Optional: Add min/max attributes if you want to restrict date range
-                                // min="2024-01-01"
-                                // max="2025-12-31"
                               />
                             </Form.Group>
                           </div>
@@ -977,7 +975,7 @@ const CreateProject = () => {
                     {/* Add Milestone Button */}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-primary"
+                        variant="outline-success"
                         size="sm"
                         onClick={handleAddMilestone}
                         className="mt-2 align-items-left"
