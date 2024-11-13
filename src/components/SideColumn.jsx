@@ -1,29 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import { Info } from "lucide-react";
 
-const SideColumn = ({ isExpanded, onToggle }) => {
-  // Adjust spacing to match form exactly
+const SideColumn = ({ isExpanded, onToggle, definitions }) => {
   const NAV_HEIGHT = "60px";
-  const MARGIN_TOP = "5px"; // Reduced from 20px to match form spacing
+  const [isHighlighted, setIsHighlighted] = useState(false);
+
+  const handlePanelClick = () => {
+    setIsHighlighted(true);
+  };
 
   return (
     <div
       style={{
-        position: "fixed",
-        top: `calc(${NAV_HEIGHT} + ${MARGIN_TOP})`,
-        left: 0,
-        height: `calc(100vh - ${NAV_HEIGHT} - ${MARGIN_TOP})`,
-        width: isExpanded ? "calc(30vw + 40px)" : "40px",
+        height: `calc(100vh - ${NAV_HEIGHT})`,
+        transition: "width 0.3s ease",
+        width: "100%",
         display: "flex",
         flexDirection: "row",
-        backgroundColor: "white",
-        transition: "width 0.3s ease",
-        zIndex: 100,
       }}
     >
-      {/* Info bar */}
+      {/* Info bar - only this will toggle the expanded state */}
       <div
-        onClick={onToggle}
         style={{
           width: "40px",
           height: "100%",
@@ -32,48 +29,67 @@ const SideColumn = ({ isExpanded, onToggle }) => {
           justifyContent: "center",
           alignItems: "flex-start",
           backgroundColor: "white",
-          cursor: "pointer",
           flexShrink: 0,
           paddingTop: "1rem",
-          transition: "background-color 0.2s ease",
+          cursor: "pointer",
         }}
         className="info-bar"
+        onClick={onToggle}
       >
         <Info size={24} className="text-gray-600" />
       </div>
 
       {/* Expanded content */}
       <div
+        onClick={handlePanelClick} // Highlight panel on click
         style={{
           height: "100%",
-          backgroundColor: "white",
+          backgroundColor: "white", // Always white background
           boxShadow: isExpanded ? "4px 0 6px rgba(0,0,0,0.1)" : "none",
-          transition: "all 0.3s ease",
+          transition: "flex 0.3s ease, opacity 0.3s ease",
           overflowY: "auto",
-          width: isExpanded ? "calc(100% - 40px)" : 0,
+          flex: isExpanded ? 1 : 0,
           opacity: isExpanded ? 1 : 0,
           visibility: isExpanded ? "visible" : "hidden",
+          padding: "1.5rem",
+          cursor: "default",
         }}
       >
-        <div style={{ padding: "1.5rem" }}>
-          <h2
-            style={{
-              fontSize: "1.25rem",
-              fontWeight: 600,
-              marginBottom: "1rem",
-            }}
-          >
-            Project Creation Documentation
-          </h2>
-          <p style={{ color: "#666" }}>
-            This content appears when the side column is expanded.
-          </p>
+        {/* Center-aligned title */}
+        <h2
+          style={{
+            fontSize: "1.25rem",
+            fontWeight: 600,
+            marginBottom: "1rem",
+            textAlign: "center",
+            color: "black",
+          }}
+        >
+          Project Create Documentation
+        </h2>
+
+        {/* Render definitions */}
+        <div style={{ textAlign: "left" }}>
+          {definitions.map((item, index) => (
+            <div key={index} style={{ marginBottom: "1rem" }}>
+              <p
+                style={{
+                  fontWeight: "bold",
+                  color: "black",
+                  marginBottom: "0.2rem",
+                }}
+              >
+                {item.name}
+              </p>
+              <p style={{ color: "gray", margin: 0 }}>{item.definition}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       <style jsx>{`
         .info-bar:hover {
-          background-color: #f8f9fa !important;
+          background-color: #f8f9fa;
         }
       `}</style>
     </div>

@@ -7,7 +7,6 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import PageTitle from "../components/pageTitle";
 import DropdownButton from "react-bootstrap/DropdownButton";
-import Sidebar from "../components/Sidebar";
 import SideColumn from "../components/SideColumn";
 
 const CreateProject = () => {
@@ -228,6 +227,25 @@ const CreateProject = () => {
     console.log("Form submitted");
   };
   const [isExpanded, setIsExpanded] = useState(false);
+  // Adding definitions
+  const [definitions] = useState([
+    {
+      name: "Project Name",
+      definition: "Choose the name of your project",
+    },
+    {
+      name: "Scheduled Start",
+      definition: "Fill in the starting date of your modeling project",
+    },
+    {
+      name: "Scheduled End",
+      definition: "This will be ending date of your modeling project",
+    },
+    {
+      name: "Assumptions",
+      definition: "List what you take for granted in your project.",
+    },
+  ]);
 
   return (
     <Container fluid className="p-0">
@@ -243,6 +261,7 @@ const CreateProject = () => {
           <SideColumn
             isExpanded={isExpanded}
             onToggle={() => setIsExpanded(!isExpanded)}
+            definitions={definitions} // Pass definitions here
           />
         </div>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
@@ -303,29 +322,30 @@ const CreateProject = () => {
                     <Row>
                       <Col md={6} className="mb-3">
                         <Form.Label className="d-block text-start">
-                          Project Owner Email
+                          First Name
                         </Form.Label>
-                        <Form.Control type="input" placeholder="Email" />
+                        <Form.Control type="input" placeholder="First Name" />
                       </Col>
                       <Col md={6} className="mb-3">
                         <Form.Label className="d-block text-start">
-                          Project Owner First Name
+                          Last Name
                         </Form.Label>
-                        <Form.Control type="input" placeholder="First Name" />
+                        <Form.Control type="input" placeholder="Last Name" />
                       </Col>
                     </Row>
                     <Row>
                       <Col md={6} className="mb-3">
                         <Form.Label className="d-block text-start">
+                          Email
+                        </Form.Label>
+                        <Form.Control type="input" placeholder="Email" />
+                      </Col>
+
+                      <Col md={6} className="mb-3">
+                        <Form.Label className="d-block text-start">
                           Organization
                         </Form.Label>
                         <Form.Control type="input" placeholder="Organiztion" />
-                      </Col>
-                      <Col md={6} className="mb-3">
-                        <Form.Label className="d-block text-start">
-                          Project Owner First Name
-                        </Form.Label>
-                        <Form.Control type="input" placeholder="First Name" />
                       </Col>
                     </Row>
                   </Form.Group>
