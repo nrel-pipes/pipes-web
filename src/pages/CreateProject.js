@@ -230,18 +230,18 @@ const CreateProject = () => {
 
   return (
     <Container fluid className="p-0">
-      <Row className="g-0">
-        <SideColumn />
-        <Col
+      <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
+        <div
           style={{
-            marginLeft: "40px",
-            transition: "margin-left 0.3s ease",
-            width: "calc(100% - 40px)",
+            width: "40px", // SideColumn manages its own expansion, so set default width here
+            transition: "width 0.3s ease",
+            flexShrink: 0,
           }}
         >
-          <Row>
-            <PageTitle title="Create Project" />
-          </Row>
+          <SideColumn />
+        </div>
+        <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
+          <PageTitle title="Create Project" />
           <div className="d-flex justify-content-center">
             <Col
               className="justify-content-center mw-600"
@@ -259,6 +259,7 @@ const CreateProject = () => {
                     placeholder="Project Name"
                     className="mb-4"
                   />
+
                   <Row>
                     <Col md={6} className="mb-3">
                       <Form.Group controlId="scheduledStart">

@@ -1,27 +1,21 @@
 import React, { useState } from "react";
 import { Info } from "lucide-react";
-import { Col } from "react-bootstrap";
 
 const SideColumn = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const NAV_HEIGHT = "60px";
 
   return (
-    <Col
-      xs={isExpanded ? 4 : "auto"}
+    <div
       style={{
-        position: "fixed",
-        left: 0,
-        top: NAV_HEIGHT,
         height: `calc(100vh - ${NAV_HEIGHT})`,
-        transition: "all 0.3s ease",
-        padding: 0,
-        zIndex: 1000,
-        width: isExpanded ? "calc(30vw + 40px)" : "40px",
-        backgroundColor: "white",
+        transition: "width 0.3s ease",
+        width: "100%",
         display: "flex",
         flexDirection: "row",
+        cursor: "pointer",
       }}
+      onClick={() => setIsExpanded(!isExpanded)}
     >
       {/* Info bar */}
       <div
@@ -32,14 +26,11 @@ const SideColumn = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "flex-start",
-          cursor: "pointer",
-          transition: "background-color 0.2s ease",
           backgroundColor: "white",
           flexShrink: 0,
           paddingTop: "1rem",
         }}
         className="info-bar"
-        onClick={() => setIsExpanded(!isExpanded)}
       >
         <Info size={24} className="text-gray-600" />
       </div>
@@ -49,10 +40,10 @@ const SideColumn = () => {
         style={{
           height: "100%",
           backgroundColor: "white",
-          boxShadow: "4px 0 6px rgba(0,0,0,0.1)",
-          transition: "all 0.3s ease",
+          boxShadow: isExpanded ? "4px 0 6px rgba(0,0,0,0.1)" : "none",
+          transition: "flex 0.3s ease, opacity 0.3s ease",
           overflowY: "auto",
-          width: isExpanded ? "calc(100% - 40px)" : 0,
+          flex: isExpanded ? 1 : 0,
           opacity: isExpanded ? 1 : 0,
           visibility: isExpanded ? "visible" : "hidden",
         }}
@@ -78,7 +69,7 @@ const SideColumn = () => {
           background-color: #f8f9fa;
         }
       `}</style>
-    </Col>
+    </div>
   );
 };
 
