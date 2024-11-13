@@ -125,7 +125,7 @@ const CreateProject = () => {
       {
         name: "",
         description: [""],
-        other: {}, // Initialize with empty object
+        other: [], // Initialize with empty array instead of object
       },
     ]);
   };
@@ -136,20 +136,33 @@ const CreateProject = () => {
     setScenarios(newScenarios);
   };
 
-  const handleOtherChange = (scenarioIndex, keyIndex, newKey, value) => {
+  const handleAddOtherInfo = (scenarioIndex, e) => {
+    e.preventDefault();
     const newScenarios = [...scenarios];
-    // Get array of current keys
-    const keys = Object.keys(newScenarios[scenarioIndex].other);
-    const currentKey = keys[keyIndex];
+    // Add a new entry with empty key and value
+    newScenarios[scenarioIndex].other.push({
+      key: "",
+      value: "",
+    });
+    setScenarios(newScenarios);
+  };
 
-    // Create new other object
-    const newOther = { ...newScenarios[scenarioIndex].other };
-    // If we had an old key, delete it
-    if (currentKey) delete newOther[currentKey];
-    // Add the new key-value pair
-    newOther[newKey] = value;
+  // Example of handling other info changes
+  const handleOtherInfoChange = (
+    scenarioIndex,
+    otherIndex,
+    field,
+    newValue,
+  ) => {
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other[otherIndex][field] = newValue;
+    setScenarios(newScenarios);
+  };
 
-    newScenarios[scenarioIndex].other = newOther;
+  // Example of removing other info
+  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.splice(otherIndex, 1);
     setScenarios(newScenarios);
   };
 
@@ -577,8 +590,6 @@ const CreateProject = () => {
                           {/* Scenario Header with Delete Button */}
                           <div className="d-flex justify-content-between align-items-center mb-3">
                             <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                              {" "}
-                              {/* Set font size to 1.0rem */}
                               Scenario {scenarioIndex + 1}
                             </h4>
                             <Button
@@ -633,104 +644,76 @@ const CreateProject = () => {
                           {/* Other Information Section */}
                           <div className="mb-3">
                             <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
-                              {" "}
-                              {/* Set font size to 1.0rem */}
                               Other
                             </h5>
+
                             {/* Other Key-Value Pairs */}
-                            {Object.entries(scenario.other).map(
-                              ([key, value], keyIndex) => (
-                                <Row
-                                  key={keyIndex}
-                                  className="mb-2 align-items-center"
-                                >
-                                  <Col xs={3}>
-                                    <Form.Control
-                                      type="input"
-                                      placeholder="Key"
-                                      value={key}
-                                      onChange={(e) => {
-                                        const newScenarios = [...scenarios];
-                                        const oldKey = Object.keys(
-                                          newScenarios[scenarioIndex].other,
-                                        )[keyIndex];
-                                        const oldValue =
-                                          newScenarios[scenarioIndex].other[
-                                            oldKey
-                                          ];
-
-                                        // Create new other object without the old key
-                                        const newOther = {
-                                          ...newScenarios[scenarioIndex].other,
-                                        };
-                                        delete newOther[oldKey];
-
-                                        // Add the new key with the existing value
-                                        newOther[e.target.value] = oldValue;
-
-                                        newScenarios[scenarioIndex].other =
-                                          newOther;
-                                        setScenarios(newScenarios);
-                                      }}
-                                    />
-                                  </Col>
-                                  <Col>
-                                    <Form.Control
-                                      type="input"
-                                      placeholder="Value"
-                                      value={value}
-                                      onChange={(e) => {
-                                        const newScenarios = [...scenarios];
-                                        newScenarios[scenarioIndex].other[key] =
-                                          e.target.value;
-                                        setScenarios(newScenarios);
-                                      }}
-                                    />
-                                  </Col>
-                                  <Col xs="auto">
-                                    <Button
-                                      variant="outline-danger"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        const newScenarios = [...scenarios];
-                                        const newOther = {
-                                          ...newScenarios[scenarioIndex].other,
-                                        };
-                                        delete newOther[key];
-                                        newScenarios[scenarioIndex].other =
-                                          newOther;
-                                        setScenarios(newScenarios);
-                                      }}
-                                      style={{
-                                        width: "32px",
-                                        height: "32px",
-                                        padding: "4px",
-                                      }}
-                                      className="d-flex align-items-center justify-content-center"
-                                    >
-                                      <Minus className="w-4 h-4" />
-                                    </Button>
-                                  </Col>
-                                </Row>
-                              ),
-                            )}
+                            {scenario.other.map((item, otherIndex) => (
+                              <Row
+                                key={otherIndex}
+                                className="mb-2 align-items-center"
+                              >
+                                <Col xs={3}>
+                                  <Form.Control
+                                    type="input"
+                                    placeholder={`key${otherIndex + 1}`}
+                                    value={item.key}
+                                    onChange={(e) =>
+                                      handleOtherInfoChange(
+                                        scenarioIndex,
+                                        otherIndex,
+                                        "key",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                </Col>
+                                <Col>
+                                  <Form.Control
+                                    type="input"
+                                    placeholder="Value"
+                                    value={item.value}
+                                    onChange={(e) =>
+                                      handleOtherInfoChange(
+                                        scenarioIndex,
+                                        otherIndex,
+                                        "value",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                </Col>
+                                <Col xs="auto">
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleRemoveOtherInfo(
+                                        scenarioIndex,
+                                        otherIndex,
+                                      )
+                                    }
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      padding: "4px",
+                                    }}
+                                    className="d-flex align-items-center justify-content-center"
+                                  >
+                                    <Minus className="w-4 h-4" />
+                                  </Button>
+                                </Col>
+                              </Row>
+                            ))}
 
                             {/* Add Other Information Button */}
                             <div className="d-flex justify-content-start mt-2">
                               <Button
                                 variant="outline-success"
                                 size="sm"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  const newScenarios = [...scenarios];
-                                  const newKey = `key${Object.keys(newScenarios[scenarioIndex].other).length + 1}`;
-                                  newScenarios[scenarioIndex].other = {
-                                    ...newScenarios[scenarioIndex].other,
-                                    [newKey]: "",
-                                  };
-                                  setScenarios(newScenarios);
-                                }}
+                                onClick={(e) =>
+                                  handleAddOtherInfo(scenarioIndex, e)
+                                }
                                 className="d-flex align-items-center gap-1"
                               >
                                 <Plus className="w-4 h-4" />
