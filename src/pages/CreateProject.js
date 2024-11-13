@@ -227,18 +227,23 @@ const CreateProject = () => {
     e.preventDefault();
     console.log("Form submitted");
   };
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
+        {/* SideColumn wrapper with dynamic width */}
         <div
           style={{
-            width: "40px", // SideColumn manages its own expansion, so set default width here
+            width: isExpanded ? "calc(30vw + 40px)" : "40px",
             transition: "width 0.3s ease",
             flexShrink: 0,
           }}
         >
-          <SideColumn />
+          <SideColumn
+            isExpanded={isExpanded}
+            onToggle={() => setIsExpanded(!isExpanded)}
+          />
         </div>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
           <PageTitle title="Create Project" />

@@ -1,24 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 import { Info } from "lucide-react";
 
-const SideColumn = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const SideColumn = ({ isExpanded, onToggle }) => {
+  // Adjust spacing to match form exactly
   const NAV_HEIGHT = "60px";
+  const MARGIN_TOP = "5px"; // Reduced from 20px to match form spacing
 
   return (
     <div
       style={{
-        height: `calc(100vh - ${NAV_HEIGHT})`,
-        transition: "width 0.3s ease",
-        width: "100%",
+        position: "fixed",
+        top: `calc(${NAV_HEIGHT} + ${MARGIN_TOP})`,
+        left: 0,
+        height: `calc(100vh - ${NAV_HEIGHT} - ${MARGIN_TOP})`,
+        width: isExpanded ? "calc(30vw + 40px)" : "40px",
         display: "flex",
         flexDirection: "row",
-        cursor: "pointer",
+        backgroundColor: "white",
+        transition: "width 0.3s ease",
+        zIndex: 100,
       }}
-      onClick={() => setIsExpanded(!isExpanded)}
     >
       {/* Info bar */}
       <div
+        onClick={onToggle}
         style={{
           width: "40px",
           height: "100%",
@@ -27,8 +32,10 @@ const SideColumn = () => {
           justifyContent: "center",
           alignItems: "flex-start",
           backgroundColor: "white",
+          cursor: "pointer",
           flexShrink: 0,
           paddingTop: "1rem",
+          transition: "background-color 0.2s ease",
         }}
         className="info-bar"
       >
@@ -41,9 +48,9 @@ const SideColumn = () => {
           height: "100%",
           backgroundColor: "white",
           boxShadow: isExpanded ? "4px 0 6px rgba(0,0,0,0.1)" : "none",
-          transition: "flex 0.3s ease, opacity 0.3s ease",
+          transition: "all 0.3s ease",
           overflowY: "auto",
-          flex: isExpanded ? 1 : 0,
+          width: isExpanded ? "calc(100% - 40px)" : 0,
           opacity: isExpanded ? 1 : 0,
           visibility: isExpanded ? "visible" : "hidden",
         }}
@@ -56,7 +63,7 @@ const SideColumn = () => {
               marginBottom: "1rem",
             }}
           >
-            Additional Information
+            Project Creation Documentation
           </h2>
           <p style={{ color: "#666" }}>
             This content appears when the side column is expanded.
@@ -66,7 +73,7 @@ const SideColumn = () => {
 
       <style jsx>{`
         .info-bar:hover {
-          background-color: #f8f9fa;
+          background-color: #f8f9fa !important;
         }
       `}</style>
     </div>
