@@ -8,6 +8,7 @@ import Col from "react-bootstrap/Col";
 import PageTitle from "../components/pageTitle";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import SideColumn from "../components/SideColumn";
+import "./CreateProject.css";
 
 const CreateProject = () => {
   // Assumptions state
@@ -275,7 +276,7 @@ const CreateProject = () => {
             >
               <Form className="my-4 justify-content" onSubmit={handleSubmit}>
                 <Form.Group className="mb-3 w-100" controlId="formProjectName">
-                  <Form.Label className="d-block text-start w-100">
+                  <Form.Label className="d-block text-start w-100 custom-form-label">
                     Project Name
                   </Form.Label>
                   <Form.Control
@@ -287,7 +288,7 @@ const CreateProject = () => {
                   <Row>
                     <Col md={6} className="mb-3">
                       <Form.Group controlId="scheduledStart">
-                        <Form.Label className="d-block text-start">
+                        <Form.Label className="d-block text-start custom-form-label">
                           Scheduled Start
                         </Form.Label>
                         <Form.Control
@@ -301,7 +302,7 @@ const CreateProject = () => {
                     </Col>
                     <Col md={6} className="mb-3">
                       <Form.Group controlId="scheduledEnd">
-                        <Form.Label className="d-block text-start">
+                        <Form.Label className="d-block text-start custom-form-label">
                           Scheduled End
                         </Form.Label>
                         <Form.Control
@@ -316,7 +317,7 @@ const CreateProject = () => {
                   </Row>
 
                   <Form.Group className="mb-3" controlId="formProjectOwner">
-                    <Form.Label className="d-block text-start w-100">
+                    <Form.Label className="d-block text-start w-100 custom-form-label">
                       Project Owner
                     </Form.Label>
                     <Row>
@@ -350,7 +351,7 @@ const CreateProject = () => {
                     </Row>
                   </Form.Group>
 
-                  <Form.Label className="d-block text-start w-100">
+                  <Form.Label className="d-block text-start w-100 custom-form-label">
                     Project Description
                   </Form.Label>
                   <Form.Control
@@ -362,7 +363,7 @@ const CreateProject = () => {
 
                   {/* Assumptions Section */}
                   <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100">
+                    <Form.Label className="d-block text-start w-100 custom-form-label">
                       Assumptions
                     </Form.Label>
                     {assumptions.map((assumption, index) => (
@@ -402,7 +403,7 @@ const CreateProject = () => {
 
                   {/* Requirements Section */}
                   <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100">
+                    <Form.Label className="d-block text-start w-100 custom-form-label">
                       Requirements
                     </Form.Label>
                     <div className="d-block">
@@ -564,7 +565,7 @@ const CreateProject = () => {
                   {/* Scenarios Section */}
                   <div className="mb-3">
                     {/* Here */}
-                    <Form.Label className="d-block text-start w-100">
+                    <Form.Label className="d-block text-start w-100 custom-form-label">
                       Scenarios
                     </Form.Label>
                     <div className="d-block">
@@ -575,7 +576,9 @@ const CreateProject = () => {
                         >
                           {/* Scenario Header with Delete Button */}
                           <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className="mb-0">
+                            <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                              {" "}
+                              {/* Set font size to 1.0rem */}
                               Scenario {scenarioIndex + 1}
                             </h4>
                             <Button
@@ -629,7 +632,11 @@ const CreateProject = () => {
 
                           {/* Other Information Section */}
                           <div className="mb-3">
-                            <h5 className="mb-3">Other</h5>
+                            <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
+                              {" "}
+                              {/* Set font size to 1.0rem */}
+                              Other
+                            </h5>
                             {/* Other Key-Value Pairs */}
                             {Object.entries(scenario.other).map(
                               ([key, value], keyIndex) => (
@@ -749,7 +756,7 @@ const CreateProject = () => {
                     </div>
                   </div>
                   <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100">
+                    <Form.Label className="d-block text-start w-100 custom-form-label">
                       Sensitivities
                     </Form.Label>
                     <div className="d-block">
@@ -760,7 +767,9 @@ const CreateProject = () => {
                         >
                           {/* Sensitivity Header with Delete Button */}
                           <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className="mb-0">
+                            <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                              {" "}
+                              {/* Set font size to 1.0rem */}
                               Sensitivity {sensitivityIndex + 1}
                             </h4>
                             <Button
@@ -886,7 +895,7 @@ const CreateProject = () => {
 
                   {/* Milestones Section */}
                   <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100">
+                    <Form.Label className="d-block text-start w-100 custom-form-label">
                       Milestones
                     </Form.Label>
                     <div className="d-block">
@@ -897,7 +906,9 @@ const CreateProject = () => {
                         >
                           {/* Milestone Header with Delete Button */}
                           <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className="mb-0">
+                            <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                              {" "}
+                              {/* Set font size to 1.0rem */}
                               Milestone {milestoneIndex + 1}
                             </h4>
                             <Button
@@ -955,7 +966,10 @@ const CreateProject = () => {
                               controlId={`milestone-date-${milestoneIndex}`}
                               className="w-100"
                             >
-                              <Form.Label className="d-block text-start">
+                              <Form.Label
+                                className="d-block text-start"
+                                style={{ fontSize: "1.0rem" }}
+                              >
                                 Milestone Date (YYYY-MM-DD)
                               </Form.Label>
                               <Form.Control
