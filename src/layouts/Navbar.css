@@ -1,9 +1,18 @@
+:root {
+  --navbar-height: 65px;
+}
 
 .navbar-instance {
   background-color: #ededed;
   color: #5e6a71;
-  height: 65px;
+  height: var(--navbar-height);
   font-weight: bold;
+  position: fixed; /* Add this */
+  top: 0; /* Add this */
+  left: 0; /* Add this */
+  right: 0; /* Add this */
+  z-index: 1030; /* Add this */
+  width: 100%; /* Add this */
 }
 
 .navbar-menu-container {
@@ -30,6 +39,13 @@
 }
 
 .fluid-image {
-  height: 65px;
-  width: '100%';
+  height: var(--navbar-height);
+  width: "100%";
+}
+
+/* Add this new class for the main content */
+.main-content-wrapper {
+  padding-top: var(--navbar-height);
+  width: 100%;
+  min-height: 100vh;
 }

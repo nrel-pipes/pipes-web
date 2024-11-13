@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Info } from "lucide-react";
 
 const SideColumn = ({ isExpanded, onToggle, definitions }) => {
-  const NAV_HEIGHT = "60px";
+  // Use actual navbar height (56px is Bootstrap's default)
+  const NAV_HEIGHT = "56px";
   const [isHighlighted, setIsHighlighted] = useState(false);
 
   const handlePanelClick = () => {
@@ -12,14 +13,20 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
   return (
     <div
       style={{
-        height: `calc(100vh - ${NAV_HEIGHT})`,
-        transition: "width 0.3s ease",
-        width: "100%",
+        position: "fixed",
+        top: NAV_HEIGHT,
+        left: 0,
+        bottom: 0,
+        width: isExpanded ? "calc(30vw + 40px)" : "40px",
         display: "flex",
         flexDirection: "row",
+        backgroundColor: "white",
+        zIndex: 1020, // Just below navbar z-index
+        borderRight: "1px solid #dee2e6",
+        transition: "width 0.3s ease",
       }}
     >
-      {/* Info bar - only this will toggle the expanded state */}
+      {/* Info bar */}
       <div
         style={{
           width: "40px",
@@ -30,7 +37,7 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
           alignItems: "flex-start",
           backgroundColor: "white",
           flexShrink: 0,
-          paddingTop: "1rem",
+          paddingTop: "calc(1rem + 5px)", // Added 5px to move icon down
           cursor: "pointer",
         }}
         className="info-bar"
@@ -41,21 +48,20 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
 
       {/* Expanded content */}
       <div
-        onClick={handlePanelClick} // Highlight panel on click
+        onClick={handlePanelClick}
         style={{
           height: "100%",
-          backgroundColor: "white", // Always white background
+          backgroundColor: "white",
           boxShadow: isExpanded ? "4px 0 6px rgba(0,0,0,0.1)" : "none",
-          transition: "flex 0.3s ease, opacity 0.3s ease",
+          transition: "all 0.3s ease",
           overflowY: "auto",
-          flex: isExpanded ? 1 : 0,
+          width: isExpanded ? "calc(30vw)" : "0",
           opacity: isExpanded ? 1 : 0,
           visibility: isExpanded ? "visible" : "hidden",
-          padding: "1.5rem",
+          padding: isExpanded ? "1.5rem" : "0",
           cursor: "default",
         }}
       >
-        {/* Center-aligned title */}
         <h2
           style={{
             fontSize: "1.25rem",
@@ -68,7 +74,6 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
           Project Create Documentation
         </h2>
 
-        {/* Render definitions */}
         <div style={{ textAlign: "left" }}>
           {definitions.map((item, index) => (
             <div key={index} style={{ marginBottom: "1rem" }}>
