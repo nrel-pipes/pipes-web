@@ -1,159 +1,233 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-import fetchData from '../utilities/FetchData';
-
+import fetchData from "../utilities/FetchData";
 
 const useDataStore = create(
-  persist((set) => ({
+  persist(
+    (set) => ({
+      // Project variables
+      isGettingProjectBasics: false,
+      projectBasics: [],
+      projectBasicsGetError: null,
+      selectedProjectName: null,
+      isGettingProject: false,
+      currentProject: null,
+      projectGetError: null,
 
-    // Project variables
-    isGettingProjectBasics: false,
-    projectBasics: [],
-    projectBasicsGetError: null,
-    selectedProjectName: null,
-    isGettingProject: false,
-    currentProject: null,
-    projectGetError: null,
+      // ProjectRun variables
+      isGettingProjectRuns: false,
+      projectRuns: [],
+      projectRunsGetError: null,
+      currentProjectRunName: null,
+      currentProjectRun: null,
 
-    // ProjectRun variables
-    isGettingProjectRuns: false,
-    projectRuns: [],
-    projectRunsGetError: null,
-    currentProjectRunName: null,
-    currentProjectRun: null,
+      // Project handoffs between models
+      isGettingHandoffs: false,
+      handoffs: [],
+      handoffsGetError: null,
 
-    // Project handoffs between models
-    isGettingHandoffs: false,
-    handoffs: [],
-    handoffsGetError: null,
+      // Model variables
+      isGettingModels: false,
+      models: [],
+      modelsGetError: null,
+      lastCheckIns: {},
 
-    // Model variables
-    isGettingModels: false,
-    models: [],
-    modelsGetError: null,
-    lastCheckIns: {},
+      // ModelRun variables
+      isGettingModelRuns: false,
+      modelRuns: [],
+      modelRunsGetError: null,
 
-    // ModelRun variables
-    isGettingModelRuns: false,
-    modelRuns: [],
-    modelRunsGetError: null,
-
-    // All project basics
-    getProjectBasics: async (accessToken) => {
-      set({ isGettingProjectBasics: true, projectBasicsGetError: null});
-      try {
-        const data = await fetchData('/api/projects/basics', null, accessToken);
-        set({projectBasics: data, isGettingProjectBasics: false});
-      } catch (error) {
-        set({projectBasicsGetError: error, isGettingProjectBasics: false});
-      }
-    },
-
-    // Single project
-    getProject: async (projectName, accessToken) => {
-      set({ isGettingProject: true, projectGetError: null, selectedProjectName: projectName});
-      try {
-        const params = new URLSearchParams({project: projectName});
-        const data = await fetchData('/api/projects', params, accessToken);
-        set({currentProject: data, isGettingProject: false});
-
-        // Clear other cached data
-        set({projectRuns: [], projectRunsGetError: null, isGettingProjectRuns: false});
-        set({currentProjectRun: null});
-        set({models: [], modelsGetError: null, isGettingModels: false});
-        set({modelRuns: [], modelRunsGetError: null, isGettingModelRuns: false});
-
-      } catch (error) {
-        set({projectGetError: error, isGettingProject: false});
-      }
-    },
-
-    // All project runs under current project
-    getProjectRuns: async (projectName, accessToken) => {
-      set({ isGettingProjectRuns: true, projectRunsGetError: null});
-      try {
-        const params = new URLSearchParams({project: projectName});
-        const data = await fetchData('/api/projectruns', params, accessToken);
-        set({projectRuns: data, isGettingProjectRuns: false});
-
-        // Prune other cached data
-        set({models: [], modelsGetError: null, isGettingModels: false});
-        set({modelRuns: [], modelRunsGetError: null, isGettingModelRuns: false});
-
-      } catch (error) {
-        set({projectRuns: [], projectRunsGetError: error, isGettingProjectRuns: false});
-      }
-    },
-
-    // Set current project run
-    setCurrentProjectRunName: (projectRunName) => {
-      set({ currentProjectRunName: projectRunName});
-    },
-
-    setCurrentProjectRun: (projectRun) => {
-      set({ currentProjectRun: projectRun});
-    },
-
-    // Get Handoffs
-    getHandoffs: async (projectName, projectRunName, accessToken) => {
-      set({ isGettingHandoffs: true, handoffsGetError: null});
-      try {
-        let params = new URLSearchParams({project: projectName, projectrun: projectRunName});
-        if (!projectRunName || projectRunName === null) {
-          params = new URLSearchParams({project: projectName});
+      // All project basics
+      getProjectBasics: async (accessToken) => {
+        set({ isGettingProjectBasics: true, projectBasicsGetError: null });
+        try {
+          const data = await fetchData(
+            "/api/projects/basics",
+            null,
+            accessToken,
+          );
+          set({ projectBasics: data, isGettingProjectBasics: false });
+        } catch (error) {
+          set({ projectBasicsGetError: error, isGettingProjectBasics: false });
         }
-        const data = await fetchData('/api/handoffs', params, accessToken);
-        set({handoffs: data, isGettingHandoffs: false});
+      },
 
-      } catch (error) {
-        set({handoffs: [], handoffsGetError: error, isGettingHandoffs: false});
-      }
-    },
+      // Single project
+      getProject: async (projectName, accessToken) => {
+        set({
+          isGettingProject: true,
+          projectGetError: null,
+          selectedProjectName: projectName,
+        });
+        try {
+          const params = new URLSearchParams({ project: projectName });
+          const data = await fetchData("/api/projects", params, accessToken);
+          set({ currentProject: data, isGettingProject: false });
 
-    // All project runs under current project
-    getModels: async (projectName, projectRunName, accessToken) => {
-      set({ isGettingModels: true, modelsGetError: null});
-      try {
-        let params = new URLSearchParams({project: projectName, projectrun: projectRunName});
-        if (!projectRunName || projectRunName === null) {
-          params = new URLSearchParams({project: projectName});
+          // Clear other cached data
+          set({
+            projectRuns: [],
+            projectRunsGetError: null,
+            isGettingProjectRuns: false,
+          });
+          set({ currentProjectRun: null });
+          set({ models: [], modelsGetError: null, isGettingModels: false });
+          set({
+            modelRuns: [],
+            modelRunsGetError: null,
+            isGettingModelRuns: false,
+          });
+        } catch (error) {
+          set({ projectGetError: error, isGettingProject: false });
         }
-        const data = await fetchData('/api/models', params, accessToken);
-        set({models: data, isGettingModels: false});
+      },
 
-        // Prune other cached data
-        set({modelRuns: [], modelRunsGetError: null, isGettingModelRuns: false});
+      // All project runs under current project
+      getProjectRuns: async (projectName, accessToken) => {
+        set({ isGettingProjectRuns: true, projectRunsGetError: null });
+        try {
+          const params = new URLSearchParams({ project: projectName });
+          const data = await fetchData("/api/projectruns", params, accessToken);
+          set({ projectRuns: data, isGettingProjectRuns: false });
 
-      } catch (error) {
-        set({models: [], modelsGetError: error, isGettingModels: false});
-      }
-    },
-
-    // All model runs under current project
-    getModelRuns: async (projectName, projectRunName, modelName, accessToken) => {
-      set({ isGettingModelRuns: true, modelRunsGetError: null});
-      try {
-        let params = null;
-        if (projectName !== null) {
-          params = new URLSearchParams({project: projectName});
-        } else if (projectRunName !== null) {
-          params = new URLSearchParams({project: projectName, projectrun: projectRunName});
-        } else if (modelName !== null) {
-          params = new URLSearchParams({project: projectName, projectrun: projectRunName, model: modelName});
+          // Prune other cached data
+          set({ models: [], modelsGetError: null, isGettingModels: false });
+          set({
+            modelRuns: [],
+            modelRunsGetError: null,
+            isGettingModelRuns: false,
+          });
+        } catch (error) {
+          set({
+            projectRuns: [],
+            projectRunsGetError: error,
+            isGettingProjectRuns: false,
+          });
         }
-        const data = await fetchData('/api/modelruns', params, accessToken);
-        set({modelRuns: data, isGettingModelRuns: false});
-      } catch (error) {
-        set({modelRuns: [], modelRunsGetError: error, isGettingModelRuns: false});
-      }
-    },
+      },
 
-  }),
-  {
-    name: 'DataStore',
-    storage: createJSONStorage(() => localStorage)
-  }
-));
+      // Set current project run
+      setCurrentProjectRunName: (projectRunName) => {
+        set({ currentProjectRunName: projectRunName });
+      },
+
+      setCurrentProjectRun: (projectRun) => {
+        set({ currentProjectRun: projectRun });
+      },
+
+      // Get Handoffs
+      getHandoffs: async (projectName, projectRunName, accessToken) => {
+        set({ isGettingHandoffs: true, handoffsGetError: null });
+        try {
+          let params = new URLSearchParams({
+            project: projectName,
+            projectrun: projectRunName,
+          });
+          if (!projectRunName || projectRunName === null) {
+            params = new URLSearchParams({ project: projectName });
+          }
+          const data = await fetchData("/api/handoffs", params, accessToken);
+          set({ handoffs: data, isGettingHandoffs: false });
+        } catch (error) {
+          set({
+            handoffs: [],
+            handoffsGetError: error,
+            isGettingHandoffs: false,
+          });
+        }
+      },
+
+      // All project runs under current project
+      getModels: async (projectName, projectRunName, accessToken) => {
+        set({ isGettingModels: true, modelsGetError: null });
+        try {
+          let params = new URLSearchParams({
+            project: projectName,
+            projectrun: projectRunName,
+          });
+          if (!projectRunName || projectRunName === null) {
+            params = new URLSearchParams({ project: projectName });
+          }
+          const data = await fetchData("/api/models", params, accessToken);
+          set({ models: data, isGettingModels: false });
+
+          // Prune other cached data
+          set({
+            modelRuns: [],
+            modelRunsGetError: null,
+            isGettingModelRuns: false,
+          });
+        } catch (error) {
+          set({ models: [], modelsGetError: error, isGettingModels: false });
+        }
+      },
+
+      // All model runs under current project
+      getModelRuns: async (
+        projectName,
+        projectRunName,
+        modelName,
+        accessToken,
+      ) => {
+        set({ isGettingModelRuns: true, modelRunsGetError: null });
+        try {
+          let params = null;
+          if (projectName !== null) {
+            params = new URLSearchParams({ project: projectName });
+          } else if (projectRunName !== null) {
+            params = new URLSearchParams({
+              project: projectName,
+              projectrun: projectRunName,
+            });
+          } else if (modelName !== null) {
+            params = new URLSearchParams({
+              project: projectName,
+              projectrun: projectRunName,
+              model: modelName,
+            });
+          }
+          const data = await fetchData("/api/modelruns", params, accessToken);
+          set({ modelRuns: data, isGettingModelRuns: false });
+        } catch (error) {
+          set({
+            modelRuns: [],
+            modelRunsGetError: error,
+            isGettingModelRuns: false,
+          });
+        }
+      },
+      createProject: async (projectData, accessToken) => {
+        set({ isCreatingProject: true, createProjectError: null });
+        try {
+          const response = await fetchData(
+            "/api/projects", // Assume this is the endpoint for project creation
+            { method: "POST", body: JSON.stringify(projectData) },
+            accessToken,
+          );
+
+          console.log("Project created:", response);
+
+          // Update state: add the new project to `projectBasics`
+          set((state) => ({
+            projectBasics: [...state.projectBasics, response],
+            isCreatingProject: false,
+          }));
+        } catch (error) {
+          // Update state with error
+          set({
+            createProjectError: error,
+            isCreatingProject: false,
+          });
+          console.error("Error creating project:", error);
+        }
+      },
+    }),
+    {
+      name: "DataStore",
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
 
 export default useDataStore;

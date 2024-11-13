@@ -1,18 +1,28 @@
 import React, { useState } from "react";
-import { Container, Dropdown } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Plus, Minus } from "lucide-react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import PageTitle from "../components/pageTitle";
-import DropdownButton from "react-bootstrap/DropdownButton";
 import SideColumn from "../components/SideColumn";
+import useDataStore from "./stores/DataStore";
 import "./CreateProject.css";
 
 const CreateProject = () => {
+  // Project information
+  const [projectName, setProjectName] = useState("example project");
+  const [projectDescription, setProjectDescription] = useState("example");
+
+  // Owner information
+  const [ownerFirstName, setOwnerFirstName] = useState("Jordan");
+  const [ownerLastName, setOwnerLastName] = useState("Eisenman");
+  const [ownerEmail, setOwnerEmail] = useState("Jordan.Eisenman@nrel.gov");
+  const [ownerOrganization, setOwnerOrganization] = useState("NREL");
+
   // Assumptions state
-  const [assumptions, setAssumptions] = useState([]);
+  const [assumptions, setAssumptions] = useState(["Assumption 1"]);
   const handleAddAssumption = (e) => {
     e.preventDefault();
     setAssumptions([...assumptions, ""]);
@@ -29,8 +39,10 @@ const CreateProject = () => {
   };
 
   // Requirement state
-  const [requirements, setRequirments] = useState([]);
-  const [requirementsType, setRequirmentsType] = useState([]);
+  const [requirements, setRequirments] = useState([
+    { KeyRequirement: ["Value1"] },
+  ]);
+  const [requirementsType, setRequirmentsType] = useState(["str"]);
 
   const handleAddRequirement = (type, e) => {
     e.preventDefault();
@@ -116,7 +128,13 @@ const CreateProject = () => {
   };
 
   // Adding scenario
-  const [scenarios, setScenarios] = useState([]); // Will hold array of {name, description[], other}
+  const [scenarios, setScenarios] = useState([
+    {
+      name: "Base Scenario",
+      description: ["Description of the base scenario"],
+      other: [{ key: "Parameter1", value: "Value1" }],
+    },
+  ]);
 
   const handleAddScenario = (e) => {
     e.preventDefault();
@@ -168,7 +186,13 @@ const CreateProject = () => {
 
   // Add this with other state declarations
   // Adding Sensitivity to state
-  const [sensitivities, setSensitivities] = useState([]); // Will hold array of {name, description[], list[]}
+  const [sensitivities, setSensitivities] = useState([
+    {
+      name: "Default Sensitivity",
+      description: ["Description of sensitivity"],
+      list: ["Sensitivity factor 1"],
+    },
+  ]);
 
   const handleAddSensitivity = (e) => {
     e.preventDefault();
@@ -204,7 +228,13 @@ const CreateProject = () => {
     setSensitivities(newSensitivities);
   };
   // Setting Milestones
-  const [milestones, setMilestones] = useState([]); // Will hold array of {name, description[], milestone_date}
+  const [milestones, setMilestones] = useState([
+    {
+      name: "Milestone 1",
+      description: ["First major project milestone"],
+      milestone_date: "2023-02-01",
+    },
+  ]);
 
   const handleAddMilestone = (e) => {
     e.preventDefault();
@@ -225,8 +255,8 @@ const CreateProject = () => {
   };
   // Setting project Schedule
   const [schedule, setSchedule] = useState({
-    scheduledStart: null,
-    scheduledEnd: null,
+    scheduledStart: "2023-01-01",
+    scheduledEnd: "2023-12-31",
   });
 
   const handleDateChange = (field, value) => {
@@ -238,8 +268,74 @@ const CreateProject = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted");
+
+    // Generate the projectTitle as lowercase with underscores
+    const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
+
+    // Process requirements into a dictionary
+    let requirementsDict = {};
+    requirements.forEach((requirementObj) => {
+      const requirementName = Object.keys(requirementObj)[0];
+      const values = requirementObj[requirementName];
+      requirementsDict[requirementName] = values;
+    });
+
+    // Process scenarios
+    let scenariosList = scenarios.map((scenario) => {
+      let otherDict = {};
+      scenario.other.forEach((item) => {
+        if (item.key) {
+          otherDict[item.key] = item.value;
+        }
+      });
+
+      return {
+        name: scenario.name,
+        description: scenario.description,
+        other: otherDict,
+      };
+    });
+
+    // Process sensitivities
+    let sensitivitiesList = sensitivities.map((sensitivity) => {
+      return {
+        name: sensitivity.name,
+        description: sensitivity.description,
+      };
+    });
+
+    // Process milestones
+    let milestonesList = milestones.map((milestone) => {
+      return {
+        name: milestone.name,
+        description: milestone.description,
+        milestone_date: milestone.milestone_date,
+      };
+    });
+
+    // Assemble the final data object
+    const data = {
+      name: projectName,
+      title: projectTitle, // Use the generated projectTitle
+      description: projectDescription,
+      assumptions: assumptions,
+      requirements: requirementsDict,
+      scenarios: scenariosList,
+      sensitivities: sensitivitiesList,
+      milestones: milestonesList,
+      scheduled_start: schedule.scheduledStart,
+      scheduled_end: schedule.scheduledEnd,
+      owner: {
+        email: ownerEmail,
+        first_name: ownerFirstName,
+        last_name: ownerLastName,
+        organization: ownerOrganization,
+      },
+    };
+
+    console.log(JSON.stringify(data, null, 2));
   };
+
   const [isExpanded, setIsExpanded] = useState(false);
   // Adding definitions
   const [definitions] = useState([
@@ -296,8 +392,9 @@ const CreateProject = () => {
                     type="input"
                     placeholder="Project Name"
                     className="mb-4"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
                   />
-
                   <Row>
                     <Col md={6} className="mb-3">
                       <Form.Group controlId="scheduledStart">
@@ -338,13 +435,23 @@ const CreateProject = () => {
                         <Form.Label className="d-block text-start">
                           First Name
                         </Form.Label>
-                        <Form.Control type="input" placeholder="First Name" />
+                        <Form.Control
+                          type="input"
+                          placeholder="First Name"
+                          value={ownerFirstName}
+                          onChange={(e) => setOwnerFirstName(e.target.value)}
+                        />
                       </Col>
                       <Col md={6} className="mb-3">
                         <Form.Label className="d-block text-start">
                           Last Name
                         </Form.Label>
-                        <Form.Control type="input" placeholder="Last Name" />
+                        <Form.Control
+                          type="input"
+                          placeholder="Last Name"
+                          value={ownerLastName}
+                          onChange={(e) => setOwnerLastName(e.target.value)}
+                        />
                       </Col>
                     </Row>
                     <Row>
@@ -352,14 +459,24 @@ const CreateProject = () => {
                         <Form.Label className="d-block text-start">
                           Email
                         </Form.Label>
-                        <Form.Control type="input" placeholder="Email" />
+                        <Form.Control
+                          type="input"
+                          placeholder="Email"
+                          value={ownerEmail}
+                          onChange={(e) => setOwnerEmail(e.target.value)}
+                        />
                       </Col>
 
                       <Col md={6} className="mb-3">
                         <Form.Label className="d-block text-start">
                           Organization
                         </Form.Label>
-                        <Form.Control type="input" placeholder="Organiztion" />
+                        <Form.Control
+                          type="input"
+                          placeholder="Organization"
+                          value={ownerOrganization}
+                          onChange={(e) => setOwnerOrganization(e.target.value)}
+                        />
                       </Col>
                     </Row>
                   </Form.Group>
@@ -372,6 +489,8 @@ const CreateProject = () => {
                     rows={3}
                     placeholder="Describe your project"
                     className="mb-4"
+                    value={projectDescription}
+                    onChange={(e) => setProjectDescription(e.target.value)}
                   />
 
                   {/* Assumptions Section */}
@@ -844,7 +963,7 @@ const CreateProject = () => {
                             {/* Add List Item Button */}
                             <div className="d-flex justify-content-start mt-2">
                               <Button
-                                variant="outline-primary"
+                                variant="outline-success"
                                 size="sm"
                                 onClick={(e) =>
                                   handleAddSensitivityListItem(
