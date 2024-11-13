@@ -1,0 +1,40 @@
+/* Sidebar.css */
+
+/* Sidebar styles */
+.sidebar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 40px;
+  height: 100vh;
+  background-color: white;
+  border-right: 1px solid lightgray;
+  transition: background-color 0.3s ease;
+  padding-top: 10px;
+  cursor: pointer; /* Indicate it's clickable */
+}
+
+/* Change background color on hover */
+.sidebar:hover {
+  background-color: #f0f0f0;
+}
+
+/* Overlay styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 40px; /* Position it right next to the sidebar */
+  width: 500px;
+  height: 100vh;
+  background-color: white;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ensure it appears above other elements */
+  overflow-y: auto; /* Allows scrolling if content exceeds viewport */
+  padding: 20px;
+}
+
+/* Content styling within the overlay */
+.overlay-content {
+  padding: 20px;
+}

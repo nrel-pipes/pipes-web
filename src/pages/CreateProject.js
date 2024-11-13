@@ -7,6 +7,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import PageTitle from "../components/pageTitle";
 import DropdownButton from "react-bootstrap/DropdownButton";
+import Sidebar from "../components/Sidebar";
+import SideColumn from "../components/SideColumn";
 
 const CreateProject = () => {
   // Assumptions state
@@ -227,168 +229,270 @@ const CreateProject = () => {
   };
 
   return (
-    <Container fluid>
-      <Row>
-        <PageTitle title="Create Project" />
-      </Row>
-      <div className="d-flex justify-content-center">
+    <Container fluid className="p-0">
+      <Row className="g-0">
+        <SideColumn />
         <Col
-          className="justify-content-center mw-600"
-          style={{ maxWidth: "1000px" }}
-          xs={12}
-          md={9}
+          style={{
+            marginLeft: "40px",
+            transition: "margin-left 0.3s ease",
+            width: "calc(100% - 40px)",
+          }}
         >
-          <Form className="my-4 justify-content" onSubmit={handleSubmit}>
-            <Form.Group className="mb-3 w-100" controlId="formProjectName">
-              <Form.Label className="d-block text-start w-100">
-                Project Name
-              </Form.Label>
-              <Form.Control
-                type="input"
-                placeholder="Project Name"
-                className="mb-4"
-              />
-              <Row>
-                <Col md={6} className="mb-3">
-                  <Form.Group controlId="scheduledStart">
-                    <Form.Label className="d-block text-start">
-                      Scheduled Start
+          <Row>
+            <PageTitle title="Create Project" />
+          </Row>
+          <div className="d-flex justify-content-center">
+            <Col
+              className="justify-content-center mw-600"
+              style={{ maxWidth: "1000px" }}
+              xs={12}
+              md={9}
+            >
+              <Form className="my-4 justify-content" onSubmit={handleSubmit}>
+                <Form.Group className="mb-3 w-100" controlId="formProjectName">
+                  <Form.Label className="d-block text-start w-100">
+                    Project Name
+                  </Form.Label>
+                  <Form.Control
+                    type="input"
+                    placeholder="Project Name"
+                    className="mb-4"
+                  />
+                  <Row>
+                    <Col md={6} className="mb-3">
+                      <Form.Group controlId="scheduledStart">
+                        <Form.Label className="d-block text-start">
+                          Scheduled Start
+                        </Form.Label>
+                        <Form.Control
+                          type="date"
+                          value={schedule.scheduledStart || ""}
+                          onChange={(e) =>
+                            handleDateChange("scheduledStart", e.target.value)
+                          }
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6} className="mb-3">
+                      <Form.Group controlId="scheduledEnd">
+                        <Form.Label className="d-block text-start">
+                          Scheduled End
+                        </Form.Label>
+                        <Form.Control
+                          type="date"
+                          value={schedule.scheduledEnd || ""}
+                          onChange={(e) =>
+                            handleDateChange("scheduledEnd", e.target.value)
+                          }
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Form.Group className="mb-3" controlId="formProjectOwner">
+                    <Form.Label className="d-block text-start w-100">
+                      Project Owner
                     </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={schedule.scheduledStart || ""}
-                      onChange={(e) =>
-                        handleDateChange("scheduledStart", e.target.value)
-                      }
-                    />
+                    <Row>
+                      <Col md={6} className="mb-3">
+                        <Form.Label className="d-block text-start">
+                          Project Owner Email
+                        </Form.Label>
+                        <Form.Control type="input" placeholder="Email" />
+                      </Col>
+                      <Col md={6} className="mb-3">
+                        <Form.Label className="d-block text-start">
+                          Project Owner First Name
+                        </Form.Label>
+                        <Form.Control type="input" placeholder="First Name" />
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md={6} className="mb-3">
+                        <Form.Label className="d-block text-start">
+                          Organization
+                        </Form.Label>
+                        <Form.Control type="input" placeholder="Organiztion" />
+                      </Col>
+                      <Col md={6} className="mb-3">
+                        <Form.Label className="d-block text-start">
+                          Project Owner First Name
+                        </Form.Label>
+                        <Form.Control type="input" placeholder="First Name" />
+                      </Col>
+                    </Row>
                   </Form.Group>
-                </Col>
-                <Col md={6} className="mb-3">
-                  <Form.Group controlId="scheduledEnd">
-                    <Form.Label className="d-block text-start">
-                      Scheduled End
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={schedule.scheduledEnd || ""}
-                      onChange={(e) =>
-                        handleDateChange("scheduledEnd", e.target.value)
-                      }
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
 
-              <Form.Group className="mb-3" controlId="formProjectOwner">
-                <Form.Label className="d-block text-start w-100">
-                  Project Owner
-                </Form.Label>
-                <Row>
-                  <Col md={6} className="mb-3">
-                    <Form.Label className="d-block text-start">
-                      Project Owner Email
-                    </Form.Label>
-                    <Form.Control type="input" placeholder="Email" />
-                  </Col>
-                  <Col md={6} className="mb-3">
-                    <Form.Label className="d-block text-start">
-                      Project Owner First Name
-                    </Form.Label>
-                    <Form.Control type="input" placeholder="First Name" />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={6} className="mb-3">
-                    <Form.Label className="d-block text-start">
-                      Organization
-                    </Form.Label>
-                    <Form.Control type="input" placeholder="Organiztion" />
-                  </Col>
-                  <Col md={6} className="mb-3">
-                    <Form.Label className="d-block text-start">
-                      Project Owner First Name
-                    </Form.Label>
-                    <Form.Control type="input" placeholder="First Name" />
-                  </Col>
-                </Row>
-              </Form.Group>
+                  <Form.Label className="d-block text-start w-100">
+                    Project Description
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    placeholder="Describe your project"
+                    className="mb-4"
+                  />
 
-              <Form.Label className="d-block text-start w-100">
-                Project Description
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                placeholder="Describe your project"
-                className="mb-4"
-              />
-
-              {/* Assumptions Section */}
-              <div className="mb-3">
-                <Form.Label className="d-block text-start w-100">
-                  Assumptions
-                </Form.Label>
-                {assumptions.map((assumption, index) => (
-                  <div
-                    key={index}
-                    className="d-flex mb-2 align-items-center gap-2"
-                  >
-                    <Form.Control
-                      type="input"
-                      placeholder="Enter assumption"
-                      value={assumption}
-                      onChange={(e) =>
-                        handleAssumptionChange(index, e.target.value)
-                      }
-                    />
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={(e) => handleRemoveAssumption(index, e)}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
+                  {/* Assumptions Section */}
+                  <div className="mb-3">
+                    <Form.Label className="d-block text-start w-100">
+                      Assumptions
+                    </Form.Label>
+                    {assumptions.map((assumption, index) => (
+                      <div
+                        key={index}
+                        className="d-flex mb-2 align-items-center gap-2"
+                      >
+                        <Form.Control
+                          type="input"
+                          placeholder="Enter assumption"
+                          value={assumption}
+                          onChange={(e) =>
+                            handleAssumptionChange(index, e.target.value)
+                          }
+                        />
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={(e) => handleRemoveAssumption(index, e)}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="d-flex justify-content-start mt-2">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={handleAddAssumption}
+                        className="mt-2 align-items-left"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Assumption
+                      </Button>
+                    </div>
                   </div>
-                ))}
-                <div className="d-flex justify-content-start mt-2">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={handleAddAssumption}
-                    className="mt-2 align-items-left"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Assumption
-                  </Button>
-                </div>
-              </div>
 
-              {/* Requirements Section */}
-              <div className="mb-3">
-                <Form.Label className="d-block text-start w-100">
-                  Requirements
-                </Form.Label>
-                <div className="d-block">
-                  {requirements.map((requirement, requirements_i) => {
-                    const requirementName = Object.keys(requirement)[0];
-                    const values = requirement[requirementName];
-                    const type = requirementsType[requirements_i];
+                  {/* Requirements Section */}
+                  <div className="mb-3">
+                    <Form.Label className="d-block text-start w-100">
+                      Requirements
+                    </Form.Label>
+                    <div className="d-block">
+                      {requirements.map((requirement, requirements_i) => {
+                        const requirementName = Object.keys(requirement)[0];
+                        const values = requirement[requirementName];
+                        const type = requirementsType[requirements_i];
 
-                    return (
-                      <div key={requirements_i}>
-                        {values.map((value, value_i) => (
-                          <Row
-                            key={`${requirements_i}-${value_i}`}
-                            className="mb-2 align-items-center"
-                          >
-                            {value_i === 0 ? (
-                              <>
+                        return (
+                          <div key={requirements_i}>
+                            {values.map((value, value_i) => (
+                              <Row
+                                key={`${requirements_i}-${value_i}`}
+                                className="mb-2 align-items-center"
+                              >
+                                {value_i === 0 ? (
+                                  <>
+                                    <Col xs="auto">
+                                      <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={(e) =>
+                                          handleRemoveRequirement(
+                                            requirements_i,
+                                            e,
+                                          )
+                                        }
+                                        style={{
+                                          width: "32px",
+                                          height: "32px",
+                                          padding: "4px",
+                                        }}
+                                        className="d-flex align-items-center justify-content-center"
+                                      >
+                                        <Minus className="w-4 h-4" />
+                                      </Button>
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Form.Control
+                                        type="text"
+                                        placeholder="Requirement"
+                                        value={requirementName}
+                                        onChange={(e) =>
+                                          handleRequirementNameChange(
+                                            requirements_i,
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    </Col>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Col xs="auto">
+                                      <div style={{ width: "32px" }}></div>
+                                    </Col>
+                                    <Col xs={3}>
+                                      <div></div>
+                                    </Col>
+                                  </>
+                                )}
+                                <Col>
+                                  <Form.Control
+                                    type={type === "int" ? "number" : "text"}
+                                    placeholder={
+                                      type === "int"
+                                        ? "Enter number"
+                                        : "Enter value"
+                                    }
+                                    value={value}
+                                    onChange={(e) =>
+                                      handleRequirementValueChange(
+                                        requirements_i,
+                                        value_i,
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                </Col>
                                 <Col xs="auto">
+                                  {values.length > 1 && (
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={(e) =>
+                                        handleRemoveSubRequirement(
+                                          requirements_i,
+                                          value_i,
+                                          e,
+                                        )
+                                      }
+                                      style={{
+                                        width: "32px",
+                                        height: "32px",
+                                        padding: "4px",
+                                      }}
+                                      className="d-flex align-items-center justify-content-center"
+                                    >
+                                      <Minus className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                </Col>
+                              </Row>
+                            ))}
+                            <Row>
+                              <Col xs="auto">
+                                <div style={{ width: "32px" }}></div>
+                              </Col>
+                              <Col xs={3}></Col>
+                              <Col>
+                                <div className="d-flex mb-3">
                                   <Button
-                                    variant="outline-danger"
+                                    variant="outline-success"
                                     size="sm"
                                     onClick={(e) =>
-                                      handleRemoveRequirement(requirements_i, e)
+                                      handleAddSubRequirement(requirements_i, e)
                                     }
                                     style={{
                                       width: "32px",
@@ -397,557 +501,479 @@ const CreateProject = () => {
                                     }}
                                     className="d-flex align-items-center justify-content-center"
                                   >
-                                    <Minus className="w-4 h-4" />
+                                    <Plus className="w-4 h-4" />
                                   </Button>
-                                </Col>
-                                <Col xs={3}>
-                                  <Form.Control
-                                    type="text"
-                                    placeholder="Requirement"
-                                    value={requirementName}
-                                    onChange={(e) =>
-                                      handleRequirementNameChange(
-                                        requirements_i,
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </Col>
-                              </>
-                            ) : (
-                              <>
-                                <Col xs="auto">
-                                  <div style={{ width: "32px" }}></div>
-                                </Col>
-                                <Col xs={3}>
-                                  <div></div>
-                                </Col>
-                              </>
-                            )}
-                            <Col>
-                              <Form.Control
-                                type={type === "int" ? "number" : "text"}
-                                placeholder={
-                                  type === "int"
-                                    ? "Enter number"
-                                    : "Enter value"
-                                }
-                                value={value}
-                                onChange={(e) =>
-                                  handleRequirementValueChange(
-                                    requirements_i,
-                                    value_i,
-                                    e.target.value,
-                                  )
-                                }
-                              />
-                            </Col>
-                            <Col xs="auto">
-                              {values.length > 1 && (
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={(e) =>
-                                    handleRemoveSubRequirement(
-                                      requirements_i,
-                                      value_i,
-                                      e,
-                                    )
-                                  }
-                                  style={{
-                                    width: "32px",
-                                    height: "32px",
-                                    padding: "4px",
-                                  }}
-                                  className="d-flex align-items-center justify-content-center"
+                                </div>
+                              </Col>
+                              <Col xs="auto">
+                                <div style={{ width: "32px" }}></div>
+                              </Col>
+                            </Row>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="d-flex justify-content-start mt-2">
+                      <DropdownButton
+                        variant="outline-primary"
+                        id="dropdown-item-button"
+                        title="Add Requirement"
+                      >
+                        <Dropdown.Item
+                          as="button"
+                          onClick={(e) => handleAddRequirement("str", e)}
+                        >
+                          <Plus className="w-1 h-1 mr-1" /> String Requirement
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          as="button"
+                          onClick={(e) => handleAddRequirement("int", e)}
+                        >
+                          <Plus className="w-1 h-1 mr-1" /> Integer Requirement
+                        </Dropdown.Item>
+                      </DropdownButton>
+                    </div>
+                  </div>
+
+                  {/* Scenarios Section */}
+                  <div className="mb-3">
+                    {/* Here */}
+                    <Form.Label className="d-block text-start w-100">
+                      Scenarios
+                    </Form.Label>
+                    <div className="d-block">
+                      {scenarios.map((scenario, scenarioIndex) => (
+                        <div
+                          key={scenarioIndex}
+                          className="border rounded p-3 mb-4"
+                        >
+                          {/* Scenario Header with Delete Button */}
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h4 className="mb-0">
+                              Scenario {scenarioIndex + 1}
+                            </h4>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={(e) =>
+                                handleRemoveScenario(scenarioIndex, e)
+                              }
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                padding: "4px",
+                              }}
+                              className="d-flex align-items-center justify-content-center"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                          </div>
+
+                          {/* Scenario Name */}
+                          <div className="d-flex mb-3 align-items-center gap-2">
+                            <Form.Control
+                              type="input"
+                              placeholder="Scenario name"
+                              value={scenario.name}
+                              onChange={(e) => {
+                                const newScenarios = [...scenarios];
+                                newScenarios[scenarioIndex].name =
+                                  e.target.value;
+                                setScenarios(newScenarios);
+                              }}
+                            />
+                          </div>
+
+                          {/* Scenario Description */}
+                          <div className="d-flex mb-3 align-items-center gap-2">
+                            <Form.Control
+                              as="textarea"
+                              rows={3}
+                              placeholder="Enter description"
+                              value={scenario.description[0]}
+                              onChange={(e) => {
+                                const newScenarios = [...scenarios];
+                                newScenarios[scenarioIndex].description = [
+                                  e.target.value,
+                                ];
+                                setScenarios(newScenarios);
+                              }}
+                            />
+                          </div>
+
+                          {/* Other Information Section */}
+                          <div className="mb-3">
+                            <h5 className="mb-3">Other</h5>
+                            {/* Other Key-Value Pairs */}
+                            {Object.entries(scenario.other).map(
+                              ([key, value], keyIndex) => (
+                                <Row
+                                  key={keyIndex}
+                                  className="mb-2 align-items-center"
                                 >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              )}
-                            </Col>
-                          </Row>
-                        ))}
-                        <Row>
-                          <Col xs="auto">
-                            <div style={{ width: "32px" }}></div>
-                          </Col>
-                          <Col xs={3}></Col>
-                          <Col>
-                            <div className="d-flex mb-3">
+                                  <Col xs={3}>
+                                    <Form.Control
+                                      type="input"
+                                      placeholder="Key"
+                                      value={key}
+                                      onChange={(e) => {
+                                        const newScenarios = [...scenarios];
+                                        const oldKey = Object.keys(
+                                          newScenarios[scenarioIndex].other,
+                                        )[keyIndex];
+                                        const oldValue =
+                                          newScenarios[scenarioIndex].other[
+                                            oldKey
+                                          ];
+
+                                        // Create new other object without the old key
+                                        const newOther = {
+                                          ...newScenarios[scenarioIndex].other,
+                                        };
+                                        delete newOther[oldKey];
+
+                                        // Add the new key with the existing value
+                                        newOther[e.target.value] = oldValue;
+
+                                        newScenarios[scenarioIndex].other =
+                                          newOther;
+                                        setScenarios(newScenarios);
+                                      }}
+                                    />
+                                  </Col>
+                                  <Col>
+                                    <Form.Control
+                                      type="input"
+                                      placeholder="Value"
+                                      value={value}
+                                      onChange={(e) => {
+                                        const newScenarios = [...scenarios];
+                                        newScenarios[scenarioIndex].other[key] =
+                                          e.target.value;
+                                        setScenarios(newScenarios);
+                                      }}
+                                    />
+                                  </Col>
+                                  <Col xs="auto">
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        const newScenarios = [...scenarios];
+                                        const newOther = {
+                                          ...newScenarios[scenarioIndex].other,
+                                        };
+                                        delete newOther[key];
+                                        newScenarios[scenarioIndex].other =
+                                          newOther;
+                                        setScenarios(newScenarios);
+                                      }}
+                                      style={{
+                                        width: "32px",
+                                        height: "32px",
+                                        padding: "4px",
+                                      }}
+                                      className="d-flex align-items-center justify-content-center"
+                                    >
+                                      <Minus className="w-4 h-4" />
+                                    </Button>
+                                  </Col>
+                                </Row>
+                              ),
+                            )}
+
+                            {/* Add Other Information Button */}
+                            <div className="d-flex justify-content-start mt-2">
                               <Button
                                 variant="outline-success"
                                 size="sm"
-                                onClick={(e) =>
-                                  handleAddSubRequirement(requirements_i, e)
-                                }
-                                style={{
-                                  width: "32px",
-                                  height: "32px",
-                                  padding: "4px",
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  const newScenarios = [...scenarios];
+                                  const newKey = `key${Object.keys(newScenarios[scenarioIndex].other).length + 1}`;
+                                  newScenarios[scenarioIndex].other = {
+                                    ...newScenarios[scenarioIndex].other,
+                                    [newKey]: "",
+                                  };
+                                  setScenarios(newScenarios);
                                 }}
-                                className="d-flex align-items-center justify-content-center"
+                                className="d-flex align-items-center gap-1"
                               >
                                 <Plus className="w-4 h-4" />
+                                Other Information
                               </Button>
                             </div>
-                          </Col>
-                          <Col xs="auto">
-                            <div style={{ width: "32px" }}></div>
-                          </Col>
-                        </Row>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="d-flex justify-content-start mt-2">
-                  <DropdownButton
-                    variant="outline-primary"
-                    id="dropdown-item-button"
-                    title="Add Requirement"
-                  >
-                    <Dropdown.Item
-                      as="button"
-                      onClick={(e) => handleAddRequirement("str", e)}
-                    >
-                      <Plus className="w-1 h-1 mr-1" /> String Requirement
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      as="button"
-                      onClick={(e) => handleAddRequirement("int", e)}
-                    >
-                      <Plus className="w-1 h-1 mr-1" /> Integer Requirement
-                    </Dropdown.Item>
-                  </DropdownButton>
-                </div>
-              </div>
-
-              {/* Scenarios Section */}
-              <div className="mb-3">
-                {/* Here */}
-                <Form.Label className="d-block text-start w-100">
-                  Scenarios
-                </Form.Label>
-                <div className="d-block">
-                  {scenarios.map((scenario, scenarioIndex) => (
-                    <div
-                      key={scenarioIndex}
-                      className="border rounded p-3 mb-4"
-                    >
-                      {/* Scenario Header with Delete Button */}
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h4 className="mb-0">Scenario {scenarioIndex + 1}</h4>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={(e) =>
-                            handleRemoveScenario(scenarioIndex, e)
-                          }
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            padding: "4px",
-                          }}
-                          className="d-flex align-items-center justify-content-center"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      </div>
-
-                      {/* Scenario Name */}
-                      <div className="d-flex mb-3 align-items-center gap-2">
-                        <Form.Control
-                          type="input"
-                          placeholder="Scenario name"
-                          value={scenario.name}
-                          onChange={(e) => {
-                            const newScenarios = [...scenarios];
-                            newScenarios[scenarioIndex].name = e.target.value;
-                            setScenarios(newScenarios);
-                          }}
-                        />
-                      </div>
-
-                      {/* Scenario Description */}
-                      <div className="d-flex mb-3 align-items-center gap-2">
-                        <Form.Control
-                          as="textarea"
-                          rows={3}
-                          placeholder="Enter description"
-                          value={scenario.description[0]}
-                          onChange={(e) => {
-                            const newScenarios = [...scenarios];
-                            newScenarios[scenarioIndex].description = [
-                              e.target.value,
-                            ];
-                            setScenarios(newScenarios);
-                          }}
-                        />
-                      </div>
-
-                      {/* Other Information Section */}
-                      <div className="mb-3">
-                        <h5 className="mb-3">Other</h5>
-                        {/* Other Key-Value Pairs */}
-                        {Object.entries(scenario.other).map(
-                          ([key, value], keyIndex) => (
-                            <Row
-                              key={keyIndex}
-                              className="mb-2 align-items-center"
-                            >
-                              <Col xs={3}>
-                                <Form.Control
-                                  type="input"
-                                  placeholder="Key"
-                                  value={key}
-                                  onChange={(e) => {
-                                    const newScenarios = [...scenarios];
-                                    const oldKey = Object.keys(
-                                      newScenarios[scenarioIndex].other,
-                                    )[keyIndex];
-                                    const oldValue =
-                                      newScenarios[scenarioIndex].other[oldKey];
-
-                                    // Create new other object without the old key
-                                    const newOther = {
-                                      ...newScenarios[scenarioIndex].other,
-                                    };
-                                    delete newOther[oldKey];
-
-                                    // Add the new key with the existing value
-                                    newOther[e.target.value] = oldValue;
-
-                                    newScenarios[scenarioIndex].other =
-                                      newOther;
-                                    setScenarios(newScenarios);
-                                  }}
-                                />
-                              </Col>
-                              <Col>
-                                <Form.Control
-                                  type="input"
-                                  placeholder="Value"
-                                  value={value}
-                                  onChange={(e) => {
-                                    const newScenarios = [...scenarios];
-                                    newScenarios[scenarioIndex].other[key] =
-                                      e.target.value;
-                                    setScenarios(newScenarios);
-                                  }}
-                                />
-                              </Col>
-                              <Col xs="auto">
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    const newScenarios = [...scenarios];
-                                    const newOther = {
-                                      ...newScenarios[scenarioIndex].other,
-                                    };
-                                    delete newOther[key];
-                                    newScenarios[scenarioIndex].other =
-                                      newOther;
-                                    setScenarios(newScenarios);
-                                  }}
-                                  style={{
-                                    width: "32px",
-                                    height: "32px",
-                                    padding: "4px",
-                                  }}
-                                  className="d-flex align-items-center justify-content-center"
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              </Col>
-                            </Row>
-                          ),
-                        )}
-
-                        {/* Add Other Information Button */}
-                        <div className="d-flex justify-content-start mt-2">
-                          <Button
-                            variant="outline-success"
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const newScenarios = [...scenarios];
-                              const newKey = `key${Object.keys(newScenarios[scenarioIndex].other).length + 1}`;
-                              newScenarios[scenarioIndex].other = {
-                                ...newScenarios[scenarioIndex].other,
-                                [newKey]: "",
-                              };
-                              setScenarios(newScenarios);
-                            }}
-                            className="d-flex align-items-center gap-1"
-                          >
-                            <Plus className="w-4 h-4" />
-                            Other Information
-                          </Button>
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                {/* Add Scenario Button */}
-                <div className="d-flex justify-content-start mt-2">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={handleAddScenario}
-                    className="mt-2 align-items-left"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Scenario
-                  </Button>
-                </div>
-              </div>
-              <div className="mb-3">
-                <Form.Label className="d-block text-start w-100">
-                  Sensitivities
-                </Form.Label>
-                <div className="d-block">
-                  {sensitivities.map((sensitivity, sensitivityIndex) => (
-                    <div
-                      key={sensitivityIndex}
-                      className="border rounded p-3 mb-4"
-                    >
-                      {/* Sensitivity Header with Delete Button */}
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h4 className="mb-0">
-                          Sensitivity {sensitivityIndex + 1}
-                        </h4>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={(e) =>
-                            handleRemoveSensitivity(sensitivityIndex, e)
-                          }
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            padding: "4px",
-                          }}
-                          className="d-flex align-items-center justify-content-center"
+                    {/* Add Scenario Button */}
+                    <div className="d-flex justify-content-start mt-2">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={handleAddScenario}
+                        className="mt-2 align-items-left"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Scenario
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <Form.Label className="d-block text-start w-100">
+                      Sensitivities
+                    </Form.Label>
+                    <div className="d-block">
+                      {sensitivities.map((sensitivity, sensitivityIndex) => (
+                        <div
+                          key={sensitivityIndex}
+                          className="border rounded p-3 mb-4"
                         >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      </div>
+                          {/* Sensitivity Header with Delete Button */}
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h4 className="mb-0">
+                              Sensitivity {sensitivityIndex + 1}
+                            </h4>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={(e) =>
+                                handleRemoveSensitivity(sensitivityIndex, e)
+                              }
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                padding: "4px",
+                              }}
+                              className="d-flex align-items-center justify-content-center"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                          </div>
 
-                      {/* Sensitivity Name */}
-                      <div className="d-flex mb-3 align-items-center gap-2">
-                        <Form.Control
-                          type="input"
-                          placeholder="Sensitivity name"
-                          value={sensitivity.name}
-                          onChange={(e) => {
-                            const newSensitivities = [...sensitivities];
-                            newSensitivities[sensitivityIndex].name =
-                              e.target.value;
-                            setSensitivities(newSensitivities);
-                          }}
-                        />
-                      </div>
-
-                      {/* Sensitivity Description */}
-                      <div className="d-flex mb-3 align-items-center gap-2">
-                        <Form.Control
-                          as="textarea"
-                          rows={3}
-                          placeholder="Enter description"
-                          value={sensitivity.description[0]}
-                          onChange={(e) => {
-                            const newSensitivities = [...sensitivities];
-                            newSensitivities[sensitivityIndex].description = [
-                              e.target.value,
-                            ];
-                            setSensitivities(newSensitivities);
-                          }}
-                        />
-                      </div>
-
-                      {/* Sensitivity List Items */}
-                      <div className="mb-3">
-                        {sensitivity.list.map((item, listIndex) => (
-                          <div
-                            key={listIndex}
-                            className="d-flex mb-2 align-items-center gap-2"
-                          >
+                          {/* Sensitivity Name */}
+                          <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Control
                               type="input"
-                              placeholder="Enter sensitivity item"
-                              value={item}
+                              placeholder="Sensitivity name"
+                              value={sensitivity.name}
                               onChange={(e) => {
                                 const newSensitivities = [...sensitivities];
-                                newSensitivities[sensitivityIndex].list[
-                                  listIndex
-                                ] = e.target.value;
+                                newSensitivities[sensitivityIndex].name =
+                                  e.target.value;
                                 setSensitivities(newSensitivities);
                               }}
                             />
-                            {sensitivity.list.length > 1 && (
+                          </div>
+
+                          {/* Sensitivity Description */}
+                          <div className="d-flex mb-3 align-items-center gap-2">
+                            <Form.Control
+                              as="textarea"
+                              rows={3}
+                              placeholder="Enter description"
+                              value={sensitivity.description[0]}
+                              onChange={(e) => {
+                                const newSensitivities = [...sensitivities];
+                                newSensitivities[sensitivityIndex].description =
+                                  [e.target.value];
+                                setSensitivities(newSensitivities);
+                              }}
+                            />
+                          </div>
+
+                          {/* Sensitivity List Items */}
+                          <div className="mb-3">
+                            {sensitivity.list.map((item, listIndex) => (
+                              <div
+                                key={listIndex}
+                                className="d-flex mb-2 align-items-center gap-2"
+                              >
+                                <Form.Control
+                                  type="input"
+                                  placeholder="Enter sensitivity item"
+                                  value={item}
+                                  onChange={(e) => {
+                                    const newSensitivities = [...sensitivities];
+                                    newSensitivities[sensitivityIndex].list[
+                                      listIndex
+                                    ] = e.target.value;
+                                    setSensitivities(newSensitivities);
+                                  }}
+                                />
+                                {sensitivity.list.length > 1 && (
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={(e) =>
+                                      handleRemoveSensitivityListItem(
+                                        sensitivityIndex,
+                                        listIndex,
+                                        e,
+                                      )
+                                    }
+                                  >
+                                    <Minus className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+
+                            {/* Add List Item Button */}
+                            <div className="d-flex justify-content-start mt-2">
                               <Button
-                                variant="outline-danger"
+                                variant="outline-primary"
                                 size="sm"
                                 onClick={(e) =>
-                                  handleRemoveSensitivityListItem(
+                                  handleAddSensitivityListItem(
                                     sensitivityIndex,
-                                    listIndex,
                                     e,
                                   )
                                 }
+                                className="d-flex align-items-center gap-1"
                               >
-                                <Minus className="w-4 h-4" />
+                                <Plus className="w-4 h-4 mr-1" />
+                                Add Item
                               </Button>
-                            )}
+                            </div>
                           </div>
-                        ))}
-
-                        {/* Add List Item Button */}
-                        <div className="d-flex justify-content-start mt-2">
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            onClick={(e) =>
-                              handleAddSensitivityListItem(sensitivityIndex, e)
-                            }
-                            className="d-flex align-items-center gap-1"
-                          >
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add Item
-                          </Button>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                {/* Add Sensitivity Button */}
-                <div className="d-flex justify-content-start mt-2">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={handleAddSensitivity}
-                    className="mt-2 align-items-left"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Sensitivity
-                  </Button>
-                </div>
-              </div>
-
-              {/* Milestones Section */}
-              <div className="mb-3">
-                <Form.Label className="d-block text-start w-100">
-                  Milestones
-                </Form.Label>
-                <div className="d-block">
-                  {milestones.map((milestone, milestoneIndex) => (
-                    <div
-                      key={milestoneIndex}
-                      className="border rounded p-3 mb-4"
-                    >
-                      {/* Milestone Header with Delete Button */}
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h4 className="mb-0">Milestone {milestoneIndex + 1}</h4>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={(e) =>
-                            handleRemoveMilestone(milestoneIndex, e)
-                          }
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            padding: "4px",
-                          }}
-                          className="d-flex align-items-center justify-content-center"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      </div>
-
-                      {/* Milestone Name */}
-                      <div className="d-flex mb-3 align-items-center gap-2">
-                        <Form.Control
-                          type="input"
-                          placeholder="Milestone name"
-                          value={milestone.name}
-                          onChange={(e) => {
-                            const newMilestones = [...milestones];
-                            newMilestones[milestoneIndex].name = e.target.value;
-                            setMilestones(newMilestones);
-                          }}
-                        />
-                      </div>
-
-                      {/* Milestone Description */}
-                      <div className="d-flex mb-3 align-items-center gap-2">
-                        <Form.Control
-                          as="textarea"
-                          rows={3}
-                          placeholder="Enter description"
-                          value={milestone.description[0]}
-                          onChange={(e) => {
-                            const newMilestones = [...milestones];
-                            newMilestones[milestoneIndex].description = [
-                              e.target.value,
-                            ];
-                            setMilestones(newMilestones);
-                          }}
-                        />
-                      </div>
-
-                      {/* Milestone Date */}
-                      <div className="d-flex mb-3 align-items-center gap-2">
-                        <Form.Group
-                          controlId={`milestone-date-${milestoneIndex}`}
-                          className="w-100"
-                        >
-                          <Form.Label className="d-block text-start">
-                            Milestone Date (YYYY-MM-DD)
-                          </Form.Label>
-                          <Form.Control
-                            type="date"
-                            value={milestone.milestone_date}
-                            onChange={(e) => {
-                              const newMilestones = [...milestones];
-                              newMilestones[milestoneIndex].milestone_date =
-                                e.target.value;
-                              setMilestones(newMilestones);
-                            }}
-                            // Optional: Add min/max attributes if you want to restrict date range
-                            // min="2024-01-01"
-                            // max="2025-12-31"
-                          />
-                        </Form.Group>
-                      </div>
+                    {/* Add Sensitivity Button */}
+                    <div className="d-flex justify-content-start mt-2">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={handleAddSensitivity}
+                        className="mt-2 align-items-left"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Sensitivity
+                      </Button>
                     </div>
-                  ))}
-                </div>
+                  </div>
 
-                {/* Add Milestone Button */}
-                <div className="d-flex justify-content-start mt-2">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={handleAddMilestone}
-                    className="mt-2 align-items-left"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Milestone
-                  </Button>
-                </div>
-              </div>
-            </Form.Group>
+                  {/* Milestones Section */}
+                  <div className="mb-3">
+                    <Form.Label className="d-block text-start w-100">
+                      Milestones
+                    </Form.Label>
+                    <div className="d-block">
+                      {milestones.map((milestone, milestoneIndex) => (
+                        <div
+                          key={milestoneIndex}
+                          className="border rounded p-3 mb-4"
+                        >
+                          {/* Milestone Header with Delete Button */}
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h4 className="mb-0">
+                              Milestone {milestoneIndex + 1}
+                            </h4>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={(e) =>
+                                handleRemoveMilestone(milestoneIndex, e)
+                              }
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                padding: "4px",
+                              }}
+                              className="d-flex align-items-center justify-content-center"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                          </div>
 
-            <Button variant="primary" type="submit">
-              Submit
-            </Button>
-          </Form>
+                          {/* Milestone Name */}
+                          <div className="d-flex mb-3 align-items-center gap-2">
+                            <Form.Control
+                              type="input"
+                              placeholder="Milestone name"
+                              value={milestone.name}
+                              onChange={(e) => {
+                                const newMilestones = [...milestones];
+                                newMilestones[milestoneIndex].name =
+                                  e.target.value;
+                                setMilestones(newMilestones);
+                              }}
+                            />
+                          </div>
+
+                          {/* Milestone Description */}
+                          <div className="d-flex mb-3 align-items-center gap-2">
+                            <Form.Control
+                              as="textarea"
+                              rows={3}
+                              placeholder="Enter description"
+                              value={milestone.description[0]}
+                              onChange={(e) => {
+                                const newMilestones = [...milestones];
+                                newMilestones[milestoneIndex].description = [
+                                  e.target.value,
+                                ];
+                                setMilestones(newMilestones);
+                              }}
+                            />
+                          </div>
+
+                          {/* Milestone Date */}
+                          <div className="d-flex mb-3 align-items-center gap-2">
+                            <Form.Group
+                              controlId={`milestone-date-${milestoneIndex}`}
+                              className="w-100"
+                            >
+                              <Form.Label className="d-block text-start">
+                                Milestone Date (YYYY-MM-DD)
+                              </Form.Label>
+                              <Form.Control
+                                type="date"
+                                value={milestone.milestone_date}
+                                onChange={(e) => {
+                                  const newMilestones = [...milestones];
+                                  newMilestones[milestoneIndex].milestone_date =
+                                    e.target.value;
+                                  setMilestones(newMilestones);
+                                }}
+                                // Optional: Add min/max attributes if you want to restrict date range
+                                // min="2024-01-01"
+                                // max="2025-12-31"
+                              />
+                            </Form.Group>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add Milestone Button */}
+                    <div className="d-flex justify-content-start mt-2">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={handleAddMilestone}
+                        className="mt-2 align-items-left"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Milestone
+                      </Button>
+                    </div>
+                  </div>
+                </Form.Group>
+
+                <Button variant="primary" type="submit">
+                  Submit
+                </Button>
+              </Form>
+            </Col>
+          </div>
         </Col>
-      </div>
+      </Row>
     </Container>
   );
 };
