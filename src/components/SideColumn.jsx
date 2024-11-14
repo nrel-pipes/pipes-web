@@ -1,13 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { Info } from "lucide-react";
 
 const SideColumn = ({ isExpanded, onToggle, definitions }) => {
   const NAV_HEIGHT = "56px";
-  const [isHighlighted, setIsHighlighted] = useState(false);
-
-  const handlePanelClick = () => {
-    setIsHighlighted(true);
-  };
 
   return (
     <div
@@ -45,7 +40,6 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
       </div>
 
       <div
-        onClick={handlePanelClick}
         style={{
           height: "100%",
           backgroundColor: "white",

@@ -1,5 +1,5 @@
 import Table from "react-bootstrap/Table";
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PageTitle.css";
 import "../pages/PageStyles.css";
@@ -11,11 +11,14 @@ const UpcomingMilestones = ({ projectBasics }) => {
   const { getProject } = useDataStore();
   const { accessToken } = useAuthStore();
 
-  const handleProjectClick = (event, projectName) => {
-    event.preventDefault();
-    getProject(projectName, accessToken);
-    navigate("/overview");
-  };
+  const handleProjectClick = useCallback(
+    (event, projectName) => {
+      event.preventDefault();
+      getProject(projectName, accessToken);
+      navigate("/overview");
+    },
+    [getProject, accessToken, navigate],
+  );
 
   const milestones = useMemo(() => {
     let milestonesExist = false;
@@ -47,14 +50,13 @@ const UpcomingMilestones = ({ projectBasics }) => {
                 className="even:bg-gray-50"
               >
                 <td className="p-3 border">
-                  <a
-                    href="#"
+                  <button
                     onClick={(e) => handleProjectClick(e, project.name)}
-                    className="text-primary hover:text-primary-dark text-decoration-none"
+                    className="text-primary hover:text-primary-dark text-decoration-none border-0 bg-transparent p-0"
                     style={{ cursor: "pointer" }}
                   >
                     {project.name}
-                  </a>
+                  </button>
                 </td>
                 <td className="p-3 border">
                   {milestoneDate.toLocaleDateString()}
@@ -72,7 +74,7 @@ const UpcomingMilestones = ({ projectBasics }) => {
         })
         .filter(Boolean),
     );
-  }, [projectBasics, navigate, getProject, accessToken]);
+  }, [projectBasics, handleProjectClick]);
 
   if (!milestones.length) {
     return (
