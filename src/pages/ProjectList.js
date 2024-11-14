@@ -28,8 +28,6 @@ const ProjectList = () => {
     projectBasicsGetError,
     getProject,
   } = useDataStore();
-  // const handleProjectCreationClick = (event, project) => {
-  // }
   const handleProjectClick = (event, project) => {
     event.preventDefault();
 
