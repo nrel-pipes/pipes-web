@@ -144,7 +144,7 @@ const CreateProject = () => {
       {
         name: "",
         description: [""],
-        other: [], // Initialize with empty array instead of object
+        other: [],
       },
     ]);
   };
@@ -158,7 +158,6 @@ const CreateProject = () => {
   const handleAddOtherInfo = (scenarioIndex, e) => {
     e.preventDefault();
     const newScenarios = [...scenarios];
-    // Add a new entry with empty key and value
     newScenarios[scenarioIndex].other.push({
       key: "",
       value: "",
@@ -166,7 +165,6 @@ const CreateProject = () => {
     setScenarios(newScenarios);
   };
 
-  // Example of handling other info changes
   const handleOtherInfoChange = (
     scenarioIndex,
     otherIndex,
@@ -178,15 +176,12 @@ const CreateProject = () => {
     setScenarios(newScenarios);
   };
 
-  // Example of removing other info
   const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
     const newScenarios = [...scenarios];
     newScenarios[scenarioIndex].other.splice(otherIndex, 1);
     setScenarios(newScenarios);
   };
 
-  // Add this with other state declarations
-  // Adding Sensitivity to state
   const [sensitivities, setSensitivities] = useState([
     {
       name: "Default Sensitivity",

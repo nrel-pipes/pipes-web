@@ -7,12 +7,12 @@
   color: #5e6a71;
   height: var(--navbar-height);
   font-weight: bold;
-  position: fixed; /* Add this */
-  top: 0; /* Add this */
-  left: 0; /* Add this */
-  right: 0; /* Add this */
-  z-index: 1030; /* Add this */
-  width: 100%; /* Add this */
+  position: fixed; 
+  top: 0; 
+  left: 0; /
+  right: 0; 
+  z-index: 1030; 
+  width: 100%; 
 }
 
 .navbar-menu-container {
@@ -43,7 +43,6 @@
   width: "100%";
 }
 
-/* Add this new class for the main content */
 .main-content-wrapper {
   padding-top: var(--navbar-height);
   width: 100%;

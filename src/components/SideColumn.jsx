@@ -20,12 +20,11 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
         display: "flex",
         flexDirection: "row",
         backgroundColor: "white",
-        zIndex: 1020, // Just below navbar z-index
+        zIndex: 1020,
         borderRight: "1px solid #dee2e6",
         transition: "width 0.3s ease",
       }}
     >
-      {/* Info bar */}
       <div
         style={{
           width: "40px",
@@ -36,7 +35,7 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
           alignItems: "flex-start",
           backgroundColor: "white",
           flexShrink: 0,
-          paddingTop: "calc(1rem + 5px)", // Added 5px to move icon down
+          paddingTop: "calc(1rem + 5px)",
           cursor: "pointer",
         }}
         className="info-bar"
@@ -45,7 +44,6 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
         <Info size={24} className="text-gray-600" />
       </div>
 
-      {/* Expanded content */}
       <div
         onClick={handlePanelClick}
         style={{
