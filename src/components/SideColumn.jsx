@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Info } from "lucide-react";
 
 const SideColumn = ({ isExpanded, onToggle, definitions }) => {
-  // Use actual navbar height (56px is Bootstrap's default)
   const NAV_HEIGHT = "56px";
   const [isHighlighted, setIsHighlighted] = useState(false);
 
