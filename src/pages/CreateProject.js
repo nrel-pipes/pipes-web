@@ -7,7 +7,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/SideColumn";
-import useDataStore from "./stores/DataStore";
+import useDataStore from "../pages/stores/DataStore";
+import useAuthStore from "../pages/stores/AuthStore";
 import "./CreateProject.css";
 
 const CreateProject = () => {
@@ -265,8 +266,10 @@ const CreateProject = () => {
       [field]: value,
     });
   };
+  const createProject = useDataStore((state) => state.createProject);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Generate the projectTitle as lowercase with underscores
@@ -333,7 +336,17 @@ const CreateProject = () => {
       },
     };
 
+    // Call `createProject` with the data and access token
     console.log(JSON.stringify(data, null, 2));
+
+    try {
+      console.log(accessToken);
+      await createProject(data, accessToken);
+      // Optionally, redirect or reset the form
+    } catch (error) {
+      console.error("Error creating project:", error);
+      // Optionally, display an error message to the user
+    }
   };
 
   const [isExpanded, setIsExpanded] = useState(false);

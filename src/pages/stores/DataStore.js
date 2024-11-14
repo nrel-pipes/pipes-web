@@ -197,24 +197,34 @@ const useDataStore = create(
           });
         }
       },
+
       createProject: async (projectData, accessToken) => {
+        console.log("Access Token:", accessToken); // For debugging
         set({ isCreatingProject: true, createProjectError: null });
         try {
-          const response = await fetchData(
-            "/api/projects", // Assume this is the endpoint for project creation
-            { method: "POST", body: JSON.stringify(projectData) },
-            accessToken,
-          );
+          // Directly use the full URL if proxy is not set up
+          const response = await fetch("http://localhost:8080/api/projects", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`, // Attach access token directly
+            },
+            body: JSON.stringify(projectData), // Ensure projectData is JSON-stringified
+          });
 
-          console.log("Project created:", response);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("Project created:", data);
 
           // Update state: add the new project to `projectBasics`
           set((state) => ({
-            projectBasics: [...state.projectBasics, response],
+            projectBasics: [...state.projectBasics, data],
             isCreatingProject: false,
           }));
         } catch (error) {
-          // Update state with error
           set({
             createProjectError: error,
             isCreatingProject: false,
