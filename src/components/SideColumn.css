@@ -1,61 +1,44 @@
-/* SideColumn.css */
-
-/* Container for the side column */
 .side-column {
   display: flex;
-  flex-direction: row; /* Allows toggle section and expanded content side-by-side */
-  height: calc(
-    100vh - 60px
-  ); /* Adjust height to stay below a navbar with 60px height */
-  margin-top: 60px; /* Matches the navbar height to position content below it */
-  transition: width 0.3s ease; /* Smooth transition for width */
+  flex-direction: row;
+  height: calc(100vh - 60px);
+  margin-top: 60px;
+  transition: width 0.3s ease;
   background-color: white;
-  position: fixed; /* Sticks to the left side of the viewport */
+  position: fixed;
   left: 0;
   top: 0;
   z-index: 10;
 }
-
-/* Collapsed state */
 .side-column.collapsed {
-  width: 40px; /* Initial width */
+  width: 40px;
 }
-
-/* Expanded state */
 .side-column.expanded {
-  width: 30vw; /* Expands to 30% of viewport width */
+  width: 30vw;
 }
-
-/* Fixed 40px-wide section with icon */
 .toggle-section {
-  width: 40px; /* Fixed width */
+  width: 40px;
   display: flex;
-  align-items: flex-start; /* Align icon at the top */
+  align-items: flex-start;
   justify-content: center;
-  cursor: pointer; /* Indicate it's clickable */
+  cursor: pointer;
   background-color: white;
-  border-right: 1px solid lightgray; /* Divider when expanded */
+  border-right: 1px solid lightgray;
   transition: background-color 0.3s ease;
-  box-sizing: border-box; /* Ensures padding doesn’t alter width */
-}
-
-/* Icon styling to take up 100% of toggle section's width */
-.icon {
-  width: 100%;
-  padding: 10px 0; /* Adjust padding to center the icon */
   box-sizing: border-box;
 }
-
-/* Change background color slightly on hover */
+.icon {
+  width: 100%;
+  padding: 10px 0;
+  box-sizing: border-box;
+}
 .toggle-section:hover {
   background-color: #f0f0f0;
 }
-
-/* Expanded content section that appears to the right of the 40px section */
 .expanded-content {
-  flex-grow: 1; /* Takes up remaining width of side column */
-  padding: 20px; /* Add padding for the content */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Shadow for depth */
-  overflow-y: auto; /* Scroll if content exceeds viewport height */
+  flex-grow: 1;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
   background-color: white;
 }
