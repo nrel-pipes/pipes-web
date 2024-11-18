@@ -53,3 +53,17 @@
 .create-project-card:hover .plus-icon {
   color: white;
 }
+
+/* Override Bootstrap's primary color */
+.btn-outline-primary {
+  --bs-primary: rgb(71, 148, 218);
+  --bs-primary-rgb: 71, 148, 218;
+  border-color: rgb(71, 148, 218);
+  color: rgb(71, 148, 218);
+}
+
+.btn-outline-primary:hover {
+  background-color: rgb(71, 148, 218);
+  border-color: rgb(71, 148, 218);
+  color: white;
+}

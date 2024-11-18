@@ -105,54 +105,64 @@ const ProjectList = () => {
       <Row>
         <PageTitle title="Your Projects" />
       </Row>
-      <Row>
+      <div className="d-flex flex-column align-items-center">
         {projectBasics.map((project) => (
-          <Col sm={6} key={project.name}>
-            <div className="card">
-              <h5
-                className="card-header"
-                style={{
-                  backgroundColor: "rgb(71, 148, 218)",
-                  fontSize: "1.5rem",
-                  padding: "15px",
-                  color: "white",
-                }}
+          <Row className="mb-4 w-100" key={project.name}>
+            <Col sm={12} className="d-flex justify-content-center">
+              <div
+                className="card"
+                style={{ maxWidth: "1000px", width: "100%" }}
               >
-                {project.name}
-              </h5>
-              <div className="card-body text-left">{project.description}</div>
-
-              <div style={{ padding: "0 0 15px 15px" }}>
-                <Button
-                  variant="outline-success"
-                  onClick={(e) => handleProjectClick(e, project)}
+                <h5
+                  className="card-header"
+                  style={{
+                    backgroundColor: "rgb(71, 148, 218)",
+                    fontSize: "1.5rem",
+                    padding: "15px",
+                    color: "white",
+                  }}
                 >
-                  Go to Project &gt;&gt;
-                </Button>
+                  {project.name}
+                </h5>
+                <div className="card-body text-left">{project.description}</div>
+
+                <div style={{ padding: "0 0 15px 15px" }}>
+                  <Button
+                    variant="outline-primary"
+                    onClick={(e) => handleProjectClick(e, project)}
+                  >
+                    Go to Project &gt;&gt;
+                  </Button>
+                </div>
               </div>
-            </div>
+            </Col>
+          </Row>
+        ))}
+
+        <Row className="mb-4 w-100" key="create-project">
+          <Col sm={12} className="d-flex justify-content-center">
+            <Card
+              style={{
+                maxWidth: "1000px",
+                width: "100%",
+                margin: "20px",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                cursor: "pointer",
+              }}
+              className="create-project-card"
+              onClick={(e) => handleCreateProjectClick(e)}
+            >
+              <Card.Body className="bg-light text-start d-flex flex-column align-items-center">
+                <Card.Title className="mt-3 mb-3 text-center">
+                  Create Project
+                </Card.Title>
+                <Plus size={48} className="mb-4 plus-icon" />
+              </Card.Body>
+            </Card>
           </Col>
-        ))}{" "}
-        <Col sm={6} key="create-project">
-          <Card
-            style={{
-              margin: "20px",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-              cursor: "pointer",
-            }}
-            className="create-project-card"
-            onClick={(e) => handleCreateProjectClick(e)}
-          >
-            <Card.Body className="bg-light text-start d-flex flex-column align-items-center">
-              <Card.Title className="mt-3 mb-3 text-center">
-                Create Project
-              </Card.Title>
-              <Plus size={48} className="mb-4 plus-icon" />
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+        </Row>
+      </div>{" "}
     </Container>
   );
 };
