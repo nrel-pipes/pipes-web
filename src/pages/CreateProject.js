@@ -5,6 +5,8 @@ import Form from "react-bootstrap/Form";
 import { Plus, Minus } from "lucide-react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import ToggleButton from "react-bootstrap/ToggleButton";
+
 import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/SideColumn";
 import useDataStore from "../pages/stores/DataStore";
@@ -365,25 +367,48 @@ const CreateProject = () => {
     },
   ]);
 
+  const [isHovered, setIsHovered] = useState(false);
+  const lightBlue = "rgb(71, 148, 218)";
+  const red = "rgb(179, 63, 48)";
+
   return (
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
-        {/* SideColumn wrapper with dynamic width */}
-        <div
-          style={{
-            width: isExpanded ? "calc(30vw + 40px)" : "40px",
-            transition: "width 0.3s ease",
-            flexShrink: 0,
-          }}
-        >
-          <SideColumn
-            isExpanded={isExpanded}
-            onToggle={() => setIsExpanded(!isExpanded)}
-            definitions={definitions} // Pass definitions here
-          />
-        </div>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
           <PageTitle title="Create Project" />
+          <Row className="justify-content-center">
+            <ToggleButton
+              id="toggle-check"
+              type="checkbox"
+              variant={isExpanded ? "outline-primary" : "outline-danger"}
+              checked={isExpanded}
+              value="1"
+              onChange={(e) => setIsExpanded(e.currentTarget.checked)}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="rounded-pill"
+              style={{
+                width: "140px",
+                height: "40px",
+                transition: "all 0.15s ease-in-out",
+                backgroundColor: isHovered
+                  ? isExpanded
+                    ? lightBlue
+                    : red
+                  : "transparent",
+                color: isHovered ? "white" : isExpanded ? lightBlue : red,
+                borderColor: isExpanded ? lightBlue : red,
+                fontSize: "1rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                border: "1px solid",
+              }}
+            >
+              Show Docs
+            </ToggleButton>
+          </Row>
           <div className="d-flex justify-content-center">
             <Col
               className="justify-content-center mw-600"
@@ -1121,6 +1146,19 @@ const CreateProject = () => {
             </Col>
           </div>
         </Col>
+        <div
+          style={{
+            width: isExpanded ? "calc(30vw + 40px)" : "40px",
+            transition: "width 0.3s ease",
+            flexShrink: 0,
+          }}
+        >
+          <SideColumn
+            isExpanded={isExpanded}
+            onToggle={() => setIsExpanded(!isExpanded)}
+            definitions={definitions}
+          />
+        </div>
       </Row>
     </Container>
   );

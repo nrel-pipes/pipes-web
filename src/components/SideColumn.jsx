@@ -9,14 +9,14 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
       style={{
         position: "fixed",
         top: NAV_HEIGHT,
-        left: 0,
+        right: 0, // Changed from left: 0 to right: 0
         bottom: 0,
         width: isExpanded ? "calc(30vw + 40px)" : "40px",
         display: "flex",
-        flexDirection: "row",
+        flexDirection: "row-reverse", // Changed from row to row-reverse
         backgroundColor: "white",
         zIndex: 1020,
-        borderRight: "1px solid #dee2e6",
+        borderLeft: "1px solid #dee2e6", // Changed from borderRight to borderLeft
         transition: "width 0.3s ease",
       }}
     >
@@ -24,7 +24,7 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
         style={{
           width: "40px",
           height: "100%",
-          borderRight: "1px solid #dee2e6",
+          borderLeft: "1px solid #dee2e6", // Changed from borderRight to borderLeft
           display: "flex",
           justifyContent: "center",
           alignItems: "flex-start",
@@ -43,7 +43,7 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
         style={{
           height: "100%",
           backgroundColor: "white",
-          boxShadow: isExpanded ? "4px 0 6px rgba(0,0,0,0.1)" : "none",
+          boxShadow: isExpanded ? "-4px 0 6px rgba(0,0,0,0.1)" : "none", // Changed from 4px to -4px
           transition: "all 0.3s ease",
           overflowY: "auto",
           width: isExpanded ? "calc(30vw)" : "0",
