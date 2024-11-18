@@ -393,7 +393,7 @@ const CreateProject = () => {
             >
               <Form className="my-4 justify-content" onSubmit={handleSubmit}>
                 <Form.Group className="mb-3 w-100" controlId="formProjectName">
-                  <Form.Label className="d-block text-start w-100 custom-form-label">
+                  <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
                     Project Name
                   </Form.Label>
                   <Form.Control
@@ -406,7 +406,7 @@ const CreateProject = () => {
                   <Row>
                     <Col md={6} className="mb-3">
                       <Form.Group controlId="scheduledStart">
-                        <Form.Label className="d-block text-start custom-form-label">
+                        <Form.Label className="d-block text-start custom-form-label requiredField">
                           Scheduled Start
                         </Form.Label>
                         <Form.Control
@@ -420,7 +420,7 @@ const CreateProject = () => {
                     </Col>
                     <Col md={6} className="mb-3">
                       <Form.Group controlId="scheduledEnd">
-                        <Form.Label className="d-block text-start custom-form-label">
+                        <Form.Label className="d-block text-start custom-form-label requiredField">
                           Scheduled End
                         </Form.Label>
                         <Form.Control
@@ -435,7 +435,7 @@ const CreateProject = () => {
                   </Row>
 
                   <Form.Group className="mb-3" controlId="formProjectOwner">
-                    <Form.Label className="d-block text-start w-100 custom-form-label">
+                    <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
                       Project Owner
                     </Form.Label>
                     <Row>
@@ -530,7 +530,7 @@ const CreateProject = () => {
                     ))}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-success"
+                        variant="outline-primary"
                         size="sm"
                         onClick={handleAddAssumption}
                         className="mt-2 align-items-left"
@@ -656,7 +656,7 @@ const CreateProject = () => {
                               <Col>
                                 <div className="d-flex mb-3">
                                   <Button
-                                    variant="outline-success"
+                                    variant="outline-primary"
                                     size="sm"
                                     onClick={(e) =>
                                       handleAddSubRequirement(requirements_i, e)
@@ -682,7 +682,7 @@ const CreateProject = () => {
                     </div>
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-success"
+                        variant="outline-primary"
                         size="sm"
                         onClick={(e) => handleAddRequirement("str", e)}
                         className="d-flex align-items-center me-2"
@@ -692,7 +692,7 @@ const CreateProject = () => {
                       </Button>
 
                       <Button
-                        variant="outline-success"
+                        variant="outline-primary"
                         size="sm"
                         onClick={(e) => handleAddRequirement("int", e)}
                         className="d-flex align-items-center"
@@ -837,7 +837,7 @@ const CreateProject = () => {
                             {/* Add Other Information Button */}
                             <div className="d-flex justify-content-start mt-2">
                               <Button
-                                variant="outline-success"
+                                variant="outline-primary"
                                 size="sm"
                                 onClick={(e) =>
                                   handleAddOtherInfo(scenarioIndex, e)
@@ -856,7 +856,7 @@ const CreateProject = () => {
                     {/* Add Scenario Button */}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-success"
+                        variant="outline-primary"
                         size="sm"
                         onClick={handleAddScenario}
                         className="mt-2 align-items-left"
@@ -971,7 +971,7 @@ const CreateProject = () => {
                             {/* Add List Item Button */}
                             <div className="d-flex justify-content-start mt-2">
                               <Button
-                                variant="outline-success"
+                                variant="outline-primary"
                                 size="sm"
                                 onClick={(e) =>
                                   handleAddSensitivityListItem(
@@ -993,7 +993,7 @@ const CreateProject = () => {
                     {/* Add Sensitivity Button */}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-success"
+                        variant="outline-primary"
                         size="sm"
                         onClick={handleAddSensitivity}
                         className="mt-2 align-items-left"
@@ -1102,7 +1102,7 @@ const CreateProject = () => {
                     {/* Add Milestone Button */}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
-                        variant="outline-success"
+                        variant="outline-primary"
                         size="sm"
                         onClick={handleAddMilestone}
                         className="mt-2 align-items-left"

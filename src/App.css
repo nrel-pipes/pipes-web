@@ -30,15 +30,13 @@
 
 :root {
   --navbar-height: 65px;
-  --banner-height: 30px; /* Adjust this to your banner's actual height */
+  --banner-height: 30px;
 }
 
-/* If you have a banner, adjust the Content padding when banner is present */
 .Content {
   padding-top: calc(var(--navbar-height) + var(--banner-height));
 }
 
-/* When no banner is present (user is logged in) */
 .logged-in .Content {
   padding-top: var(--navbar-height);
 }
