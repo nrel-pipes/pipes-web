@@ -11,6 +11,7 @@ import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/SideColumn";
 import useDataStore from "../pages/stores/DataStore";
 import useAuthStore from "../pages/stores/AuthStore";
+import FormError from "../components/FormError";
 import "./CreateProject.css";
 
 const CreateProject = () => {
@@ -265,9 +266,12 @@ const CreateProject = () => {
   };
   const createProject = useDataStore((state) => state.createProject);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const [formError, setFormError] = useState(false);
+  const [formErrorMessage, setFormErrorMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError(false);
 
     // Generate the projectTitle as lowercase with underscores
     const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
@@ -313,6 +317,86 @@ const CreateProject = () => {
       };
     });
 
+    //  Required field validation
+    // Validating ProjectName
+    const title = document.getElementById("projectName");
+    if (projectTitle.length === 0) {
+      title.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide a title for your project.");
+      return;
+    }
+    title.classList.remove("form-error");
+    // Validating Schedule
+    const scheduledStart = document.getElementById("scheduledStart");
+    const scheduledEnd = document.getElementById("scheduledEnd");
+    let hasScheduleError = false;
+    if (!schedule.scheduledStart) {
+      scheduledStart.classList.add("form-error");
+      hasScheduleError = true;
+    }
+    if (!schedule.scheduledEnd) {
+      scheduledEnd.classList.add("form-error");
+      hasScheduleError = true;
+    }
+    if (schedule.scheduledStart && schedule.scheduledEnd) {
+      if (new Date(schedule.scheduledEnd) < new Date(schedule.scheduledStart)) {
+        scheduledStart.classList.add("form-error");
+        scheduledEnd.classList.add("form-error");
+        hasScheduleError = true;
+      }
+    }
+    if (hasScheduleError) {
+      console.error(
+        "Schedule is invalid: End date is before start date or fields are missing.",
+      );
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
+      );
+      return;
+    }
+    scheduledStart.classList.remove("form-error");
+    scheduledEnd.classList.remove("form-error");
+    // Validating Owner
+    const firstName = document.getElementById("firstName");
+    if (ownerFirstName.length === 0) {
+      firstName.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide your first name.");
+      return;
+    }
+    firstName.classList.remove("form-error");
+
+    const lastName = document.getElementById("lastName");
+    if (ownerLastName.length === 0) {
+      lastName.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide your last name.");
+      return;
+    }
+    lastName.classList.remove("form-error");
+
+    const email = document.getElementById("email");
+    if (ownerEmail.length === 0) {
+      email.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide the project owner's email.");
+      return;
+    }
+    email.classList.remove("form-error");
+
+    const organization = document.getElementById("organization");
+    if (ownerOrganization.length === 0) {
+      organization.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "You forgot to provide the project owner's organization.",
+      );
+      return;
+    }
+    organization.classList.remove("form-error");
+
     // Assemble the final data object
     const data = {
       name: projectName,
@@ -341,9 +425,14 @@ const CreateProject = () => {
       await createProject(data, accessToken);
       // Optionally, redirect or reset the form
     } catch (error) {
-      console.error("Error creating project:", error);
-      // Optionally, display an error message to the user
+      console.error("Error creating project  :", error);
+      setFormError(true);
+      setFormErrorMessage(
+        "You forgot to provide the project owner's organization.",
+      );
+      return;
     }
+    setFormError(false);
   };
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -417,12 +506,16 @@ const CreateProject = () => {
               md={9}
             >
               <Form className="my-4 justify-content" onSubmit={handleSubmit}>
-                <Form.Group className="mb-3 w-100" controlId="formProjectName">
-                  <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
+                <Form.Group className="mb-3 w-100">
+                  <Form.Label
+                    id="projectNameLabel"
+                    className="d-block text-start w-100 custom-form-label requiredField"
+                  >
                     Project Name
                   </Form.Label>
                   <Form.Control
                     type="input"
+                    id="projectName"
                     placeholder="Project Name"
                     className="mb-4"
                     value={projectName}
@@ -430,11 +523,12 @@ const CreateProject = () => {
                   />
                   <Row>
                     <Col md={6} className="mb-3">
-                      <Form.Group controlId="scheduledStart">
+                      <Form.Group>
                         <Form.Label className="d-block text-start custom-form-label requiredField">
                           Scheduled Start
                         </Form.Label>
                         <Form.Control
+                          id="scheduledStart"
                           type="date"
                           value={schedule.scheduledStart || ""}
                           onChange={(e) =>
@@ -444,11 +538,12 @@ const CreateProject = () => {
                       </Form.Group>
                     </Col>
                     <Col md={6} className="mb-3">
-                      <Form.Group controlId="scheduledEnd">
+                      <Form.Group>
                         <Form.Label className="d-block text-start custom-form-label requiredField">
                           Scheduled End
                         </Form.Label>
                         <Form.Control
+                          id="scheduledEnd"
                           type="date"
                           value={schedule.scheduledEnd || ""}
                           onChange={(e) =>
@@ -459,7 +554,7 @@ const CreateProject = () => {
                     </Col>
                   </Row>
 
-                  <Form.Group className="mb-3" controlId="formProjectOwner">
+                  <Form.Group className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
                       Project Owner
                     </Form.Label>
@@ -469,6 +564,7 @@ const CreateProject = () => {
                           First Name
                         </Form.Label>
                         <Form.Control
+                          id="firstName"
                           type="input"
                           placeholder="First Name"
                           value={ownerFirstName}
@@ -480,6 +576,7 @@ const CreateProject = () => {
                           Last Name
                         </Form.Label>
                         <Form.Control
+                          id="lastName"
                           type="input"
                           placeholder="Last Name"
                           value={ownerLastName}
@@ -493,6 +590,7 @@ const CreateProject = () => {
                           Email
                         </Form.Label>
                         <Form.Control
+                          id="email"
                           type="input"
                           placeholder="Email"
                           value={ownerEmail}
@@ -505,6 +603,7 @@ const CreateProject = () => {
                           Organization
                         </Form.Label>
                         <Form.Control
+                          id="organization"
                           type="input"
                           placeholder="Organization"
                           value={ownerOrganization}
@@ -1138,7 +1237,11 @@ const CreateProject = () => {
                     </div>
                   </div>
                 </Form.Group>
-
+                <Row>
+                  {formError ? (
+                    <FormError errorMessage={formErrorMessage} />
+                  ) : null}
+                </Row>
                 <Button variant="primary" type="submit">
                   Submit
                 </Button>
