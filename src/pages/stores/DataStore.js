@@ -199,17 +199,15 @@ const useDataStore = create(
       },
 
       createProject: async (projectData, accessToken) => {
-        console.log("Access Token:", accessToken); // For debugging
         set({ isCreatingProject: true, createProjectError: null });
         try {
-          // Directly use the full URL if proxy is not set up
           const response = await fetch("http://localhost:8080/api/projects", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`, // Attach access token directly
+              Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify(projectData), // Ensure projectData is JSON-stringified
+            body: JSON.stringify(projectData),
           });
 
           if (!response.ok) {
@@ -219,7 +217,6 @@ const useDataStore = create(
           const data = await response.json();
           console.log("Project created:", data);
 
-          // Update state: add the new project to `projectBasics`
           set((state) => ({
             projectBasics: [...state.projectBasics, data],
             isCreatingProject: false,
@@ -229,7 +226,9 @@ const useDataStore = create(
             createProjectError: error,
             isCreatingProject: false,
           });
-          console.error("Error creating project:", error);
+          console.log("Here");
+          console.error(error.message.toString());
+          throw error;
         }
       },
     }),

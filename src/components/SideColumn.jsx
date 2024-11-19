@@ -1,7 +1,7 @@
 import React from "react";
 import { Info } from "lucide-react";
 
-const SideColumn = ({ isExpanded, onToggle, definitions }) => {
+const SideColumn = ({ isExpanded, onToggle, documentation }) => {
   const NAV_HEIGHT = "56px";
 
   return (
@@ -66,7 +66,22 @@ const SideColumn = ({ isExpanded, onToggle, definitions }) => {
         </h2>
 
         <div style={{ textAlign: "left" }}>
-          {definitions.map((item, index) => (
+          <div style={{ marginBottom: "1rem" }}>
+            <p
+              style={{
+                fontWeight: "bold",
+                color: "black",
+                marginBottom: "0.2rem",
+              }}
+            >
+              Description
+            </p>
+            <p style={{ color: "gray", margin: 0 }}>
+              {documentation.description}
+            </p>
+          </div>
+
+          {documentation.definitions.map((item, index) => (
             <div key={index} style={{ marginBottom: "1rem" }}>
               <p
                 style={{

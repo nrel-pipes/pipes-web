@@ -200,7 +200,7 @@ const CreateProject = () => {
       {
         name: "",
         description: [""],
-        list: [""], // Initialize with one empty string in the list
+        list: [""],
       },
     ]);
   };
@@ -269,9 +269,11 @@ const CreateProject = () => {
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
 
+  const [submittingForm, setSubmittingForm] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(false);
+    setSubmittingForm(true);
 
     // Generate the projectTitle as lowercase with underscores
     const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
@@ -425,11 +427,11 @@ const CreateProject = () => {
       await createProject(data, accessToken);
       // Optionally, redirect or reset the form
     } catch (error) {
-      console.error("Error creating project  :", error);
+      console.error("Error creating project  :", error.status);
       setFormError(true);
-      setFormErrorMessage(
-        "You forgot to provide the project owner's organization.",
-      );
+      setFormErrorMessage(`Error creating project: ${error.message}`);
+      console.log(formError);
+      setSubmittingForm(false);
       return;
     }
     setFormError(false);
@@ -437,24 +439,27 @@ const CreateProject = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
   // Adding definitions
-  const [definitions] = useState([
-    {
-      name: "Project Name",
-      definition: "Choose the name of your project",
-    },
-    {
-      name: "Scheduled Start",
-      definition: "Fill in the starting date of your modeling project",
-    },
-    {
-      name: "Scheduled End",
-      definition: "This will be ending date of your modeling project",
-    },
-    {
-      name: "Assumptions",
-      definition: "List what you take for granted in your project.",
-    },
-  ]);
+  const [documentation] = useState({
+    description: "This is a sample description of the project creation page",
+    definitions: [
+      {
+        name: "Project Name",
+        definition: "Choose the name of your project",
+      },
+      {
+        name: "Scheduled Start",
+        definition: "Fill in the starting date of your modeling project",
+      },
+      {
+        name: "Scheduled End",
+        definition: "This will be ending date of your modeling project",
+      },
+      {
+        name: "Assumptions",
+        definition: "List what you take for granted in your project.",
+      },
+    ],
+  });
 
   const [isHovered, setIsHovered] = useState(false);
   const lightBlue = "rgb(71, 148, 218)";
@@ -1242,8 +1247,12 @@ const CreateProject = () => {
                     <FormError errorMessage={formErrorMessage} />
                   ) : null}
                 </Row>
-                <Button variant="primary" type="submit">
-                  Submit
+                <Button
+                  variant="primary"
+                  disabled={submittingForm}
+                  type="submit"
+                >
+                  {submittingForm ? "Submitted" : "Submit"}
                 </Button>
               </Form>
             </Col>
@@ -1259,7 +1268,7 @@ const CreateProject = () => {
           <SideColumn
             isExpanded={isExpanded}
             onToggle={() => setIsExpanded(!isExpanded)}
-            definitions={definitions}
+            documentation={documentation}
           />
         </div>
       </Row>
