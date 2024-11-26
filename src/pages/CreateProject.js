@@ -283,173 +283,203 @@ const CreateProject = () => {
   const [submittingForm, setSubmittingForm] = useState(false);
   const [formData, setFormData] = useState({});
 
+  const retriesLimit = 2;
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(false);
     setSubmittingForm(true);
 
-    // Generate the projectTitle as lowercase with underscores
-    const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
+    for (let i = 0; i < retriesLimit; i++) {
+      // Generate the projectTitle as lowercase with underscores
+      const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
 
-    // Process requirements into a dictionary
-    let requirementsDict = {};
-    requirements.forEach((requirementObj) => {
-      const requirementName = Object.keys(requirementObj)[0];
-      const values = requirementObj[requirementName];
-      requirementsDict[requirementName] = values;
-    });
-
-    // Process scenarios
-    let scenariosList = scenarios.map((scenario) => {
-      let otherDict = {};
-      scenario.other.forEach((item) => {
-        if (item.key) {
-          otherDict[item.key] = item.value;
-        }
+      // Process requirements into a dictionary
+      let requirementsDict = {};
+      requirements.forEach((requirementObj) => {
+        const requirementName = Object.keys(requirementObj)[0];
+        const values = requirementObj[requirementName];
+        requirementsDict[requirementName] = values;
       });
 
-      return {
-        name: scenario.name,
-        description: scenario.description,
-        other: otherDict,
-      };
-    });
+      // Process scenarios
+      let scenariosList = scenarios.map((scenario) => {
+        let otherDict = {};
+        scenario.other.forEach((item) => {
+          if (item.key) {
+            otherDict[item.key] = item.value;
+          }
+        });
 
-    // Process sensitivities
-    let sensitivitiesList = sensitivities.map((sensitivity) => {
-      return {
-        name: sensitivity.name,
-        description: sensitivity.description,
-      };
-    });
+        return {
+          name: scenario.name,
+          description: scenario.description,
+          other: otherDict,
+        };
+      });
 
-    // Process milestones
-    let milestonesList = milestones.map((milestone) => {
-      return {
-        name: milestone.name,
-        description: milestone.description,
-        milestone_date: milestone.milestone_date,
-      };
-    });
+      // Process sensitivities
+      let sensitivitiesList = sensitivities.map((sensitivity) => {
+        return {
+          name: sensitivity.name,
+          description: sensitivity.description,
+        };
+      });
 
-    //  Required field validation
-    // Validating ProjectName
-    const title = document.getElementById("projectName");
-    if (projectTitle.length === 0) {
-      title.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide a title for your project.");
-      return;
-    }
-    title.classList.remove("form-error");
-    // Validating Schedule
-    const scheduledStart = document.getElementById("scheduledStart");
-    const scheduledEnd = document.getElementById("scheduledEnd");
-    let hasScheduleError = false;
-    if (!schedule.scheduledStart) {
-      scheduledStart.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (!schedule.scheduledEnd) {
-      scheduledEnd.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (schedule.scheduledStart && schedule.scheduledEnd) {
-      if (new Date(schedule.scheduledEnd) < new Date(schedule.scheduledStart)) {
+      // Process milestones
+      let milestonesList = milestones.map((milestone) => {
+        return {
+          name: milestone.name,
+          description: milestone.description,
+          milestone_date: milestone.milestone_date,
+        };
+      });
+
+      //  Required field validation
+      // Validating ProjectName
+      const title = document.getElementById("projectName");
+      if (projectTitle.length === 0) {
+        title.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide a title for your project.");
+        return;
+      }
+      title.classList.remove("form-error");
+
+      // Validating Schedule
+      const scheduledStart = document.getElementById("scheduledStart");
+      const scheduledEnd = document.getElementById("scheduledEnd");
+      let hasScheduleError = false;
+      if (!schedule.scheduledStart) {
         scheduledStart.classList.add("form-error");
+        hasScheduleError = true;
+      }
+      if (!schedule.scheduledEnd) {
         scheduledEnd.classList.add("form-error");
         hasScheduleError = true;
       }
-    }
-    if (hasScheduleError) {
-      console.error(
-        "Schedule is invalid: End date is before start date or fields are missing.",
-      );
-      setFormError(true);
-      setFormErrorMessage(
-        "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
-      );
-      return;
-    }
-    scheduledStart.classList.remove("form-error");
-    scheduledEnd.classList.remove("form-error");
-    // Validating Owner
-    const firstName = document.getElementById("firstName");
-    if (ownerFirstName.length === 0) {
-      firstName.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your first name.");
-      return;
-    }
-    firstName.classList.remove("form-error");
+      if (schedule.scheduledStart && schedule.scheduledEnd) {
+        if (
+          new Date(schedule.scheduledEnd) < new Date(schedule.scheduledStart)
+        ) {
+          scheduledStart.classList.add("form-error");
+          scheduledEnd.classList.add("form-error");
+          hasScheduleError = true;
+        }
+      }
+      if (hasScheduleError) {
+        console.error(
+          "Schedule is invalid: End date is before start date or fields are missing.",
+        );
+        setFormError(true);
+        setFormErrorMessage(
+          "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
+        );
+        return;
+      }
+      scheduledStart.classList.remove("form-error");
+      scheduledEnd.classList.remove("form-error");
 
-    const lastName = document.getElementById("lastName");
-    if (ownerLastName.length === 0) {
-      lastName.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your last name.");
-      return;
+      // Validating Owner
+      const firstName = document.getElementById("firstName");
+      if (ownerFirstName.length === 0) {
+        firstName.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide your first name.");
+        return;
+      }
+      firstName.classList.remove("form-error");
+
+      const lastName = document.getElementById("lastName");
+      if (ownerLastName.length === 0) {
+        lastName.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide your last name.");
+        return;
+      }
+      lastName.classList.remove("form-error");
+
+      const email = document.getElementById("email");
+      if (ownerEmail.length === 0) {
+        email.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide the project owner's email.");
+        return;
+      }
+      email.classList.remove("form-error");
+
+      const organization = document.getElementById("organization");
+      if (ownerOrganization.length === 0) {
+        organization.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(
+          "You forgot to provide the project owner's organization.",
+        );
+        return;
+      }
+      organization.classList.remove("form-error");
+
+      // Assemble the final data object
+      setFormData({
+        name: projectName,
+        title: projectTitle,
+        description: projectDescription,
+        assumptions: assumptions,
+        requirements: requirementsDict,
+        scenarios: scenariosList,
+        sensitivities: sensitivitiesList,
+        milestones: milestonesList,
+        scheduled_start: schedule.scheduledStart,
+        scheduled_end: schedule.scheduledEnd,
+        owner: {
+          email: ownerEmail,
+          first_name: ownerFirstName,
+          last_name: ownerLastName,
+          organization: ownerOrganization,
+        },
+      });
+
+      // Call createProject with the data and access token
+      console.log(JSON.stringify(formData, null, 2));
+
+      try {
+        await createProject(formData, accessToken);
+        console.log(`Project created successfully on attempt ${i + 1}`);
+        // If successful, break out of the retry loop
+        break;
+      } catch (error) {
+        console.error(
+          `Error creating project (attempt ${i + 1}/${retriesLimit}):`,
+          error.status,
+        );
+
+        // If this is not the last attempt, wait 1 second before retrying
+        if (i < retriesLimit - 1) {
+          setFormError(true);
+          setFormErrorMessage(
+            `Error creating project: ${error.message}. Retrying in 1 second...`,
+          );
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 1000);
+          });
+        } else {
+          // If this was the last attempt, set the final error message
+          setFormError(true);
+          setFormErrorMessage(
+            `Failed to create project after ${retriesLimit} attempts: ${error.message}`,
+          );
+          setSubmittingForm(false);
+          return;
+        }
+      }
     }
-    lastName.classList.remove("form-error");
 
-    const email = document.getElementById("email");
-    if (ownerEmail.length === 0) {
-      email.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide the project owner's email.");
-      return;
-    }
-    email.classList.remove("form-error");
-
-    const organization = document.getElementById("organization");
-    if (ownerOrganization.length === 0) {
-      organization.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(
-        "You forgot to provide the project owner's organization.",
-      );
-      return;
-    }
-    organization.classList.remove("form-error");
-
-    // Assemble the final data object
-    setFormData({
-      name: projectName,
-      title: projectTitle,
-      description: projectDescription,
-      assumptions: assumptions,
-      requirements: requirementsDict,
-      scenarios: scenariosList,
-      sensitivities: sensitivitiesList,
-      milestones: milestonesList,
-      scheduled_start: schedule.scheduledStart,
-      scheduled_end: schedule.scheduledEnd,
-      owner: {
-        email: ownerEmail,
-        first_name: ownerFirstName,
-        last_name: ownerLastName,
-        organization: ownerOrganization,
-      },
-    });
-
-    // Call `createProject` with the data and access token
-    console.log(JSON.stringify(formData, null, 2));
-
-    try {
-      await createProject(formData, accessToken);
-      // Optionally, redirect or reset the form
-    } catch (error) {
-      console.error("Error creating project  :", error.status);
-      setFormError(true);
-      setFormErrorMessage(`Error creating project: ${error.message}`);
-      setSubmittingForm(false);
-      return;
-    }
+    // If we get here, the project was created successfully
     setFormError(false);
     await getProject(projectName, accessToken);
     navigate("/overview");
   };
-
   const [isExpanded, setIsExpanded] = useState(false);
   // Adding definitions
   const [documentation] = useState({
@@ -727,6 +757,7 @@ const CreateProject = () => {
                                 )}
                                 <Col>
                                   <Form.Control
+                                    id={`requirementValue-${index}`}
                                     type={type === "int" ? "number" : "text"}
                                     placeholder={
                                       type === "int"
@@ -921,6 +952,7 @@ const CreateProject = () => {
                                 </Col>
                                 <Col>
                                   <Form.Control
+                                    id={`scenarioOther-${scenarioIndex}`}
                                     type="input"
                                     placeholder="Value"
                                     value={item.value}
@@ -1202,7 +1234,7 @@ const CreateProject = () => {
                           {/* Milestone Date */}
                           <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Group
-                              controlId={`milestone-date-${milestoneIndex}`}
+                              id={`milestone-date-${milestoneIndex}`}
                               className="w-100"
                             >
                               <Form.Label
