@@ -276,6 +276,7 @@ const CreateProject = () => {
       [field]: value,
     });
   };
+
   const createProject = useDataStore((state) => state.createProject);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
