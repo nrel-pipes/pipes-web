@@ -5,7 +5,7 @@ import fetchData from "../utilities/FetchData";
 
 const useDataStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Project variables
       isGettingProjectBasics: false,
       projectBasics: [],
@@ -21,6 +21,7 @@ const useDataStore = create(
       projectRunsGetError: null,
       currentProjectRunName: null,
       currentProjectRun: null,
+      projectRunRetries: 0,
 
       // Project handoffs between models
       isGettingHandoffs: false,
@@ -59,6 +60,7 @@ const useDataStore = create(
           isGettingProject: true,
           projectGetError: null,
           selectedProjectName: projectName,
+          projectRunRetries: 0,
         });
         try {
           const params = new URLSearchParams({ project: projectName });
@@ -85,7 +87,12 @@ const useDataStore = create(
 
       // All project runs under current project
       getProjectRuns: async (projectName, accessToken) => {
-        set({ isGettingProjectRuns: true, projectRunsGetError: null });
+        const currentRetries = get().projectRunRetries;
+        set({
+          isGettingProjectRuns: true,
+          projectRunsGetError: null,
+          projectRunRetries: currentRetries + 1,
+        });
         try {
           const params = new URLSearchParams({ project: projectName });
           const data = await fetchData("/api/projectruns", params, accessToken);
@@ -106,7 +113,6 @@ const useDataStore = create(
           });
         }
       },
-
       // Set current project run
       setCurrentProjectRunName: (projectRunName) => {
         set({ currentProjectRunName: projectRunName });
@@ -215,7 +221,6 @@ const useDataStore = create(
           }
 
           const data = await response.json();
-          console.log("Project created:", data);
 
           set((state) => ({
             projectBasics: [...state.projectBasics, data],
@@ -226,7 +231,6 @@ const useDataStore = create(
             createProjectError: error,
             isCreatingProject: false,
           });
-          console.log("Here");
           console.error(error.message.toString());
           throw error;
         }

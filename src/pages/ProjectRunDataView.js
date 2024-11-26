@@ -9,7 +9,6 @@ import useDataStore from "./stores/DataStore";
 import { makeBullets } from "./ProjectPipelineDataView";
 import useUIStore from "./stores/UIStore";
 
-
 export default function ProjectRunDataView({ selected }) {
   const models = useDataStore((state) => state.models);
   const modelRuns = useDataStore((state) => state.modelRuns);
@@ -26,19 +25,17 @@ export default function ProjectRunDataView({ selected }) {
   const data = useMemo(() => {
     if (selected) {
       if (selected.id in modelRuns) {
-        console.log("im in here");
         let datasets = [];
-
         Object.values(modelRuns[selected.id]).forEach((run) => {
           run.datasets.forEach((dataset) => {
             if (!(dataset.spatial_info.other instanceof Object)) {
               dataset.spatial_info.other = JSON.parse(
-                dataset.spatial_info.other
+                dataset.spatial_info.other,
               );
             }
             if (!(dataset.temporal_info.other instanceof Object)) {
               dataset.temporal_info.other = JSON.parse(
-                dataset.temporal_info.other
+                dataset.temporal_info.other,
               );
             }
 

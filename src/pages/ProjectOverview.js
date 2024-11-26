@@ -30,6 +30,7 @@ const ProjectOverview = () => {
     projectGetError,
     getProjectRuns,
     projectRuns,
+    projectRunRetries,
     isGettingProjectRuns,
   } = useDataStore();
 
@@ -39,7 +40,6 @@ const ProjectOverview = () => {
       navigate("/login");
       return;
     }
-    console.log(selectedProjectName);
     if (!selectedProjectName || selectedProjectName === null) {
       navigate("/projects");
       return;
@@ -48,7 +48,7 @@ const ProjectOverview = () => {
     if (!currentProject || currentProject === null) {
       getProject(selectedProjectName, accessToken);
     }
-
+    if (projectRunRetries > 2) return;
     if (!projectRuns || projectRuns.length === 0) {
       getProjectRuns(selectedProjectName, accessToken);
     }
@@ -62,6 +62,7 @@ const ProjectOverview = () => {
     currentProject,
     projectRuns,
     getProjectRuns,
+    projectRunRetries,
   ]);
 
   if (isGettingProject || isGettingProjectRuns) {

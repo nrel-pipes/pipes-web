@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -13,8 +12,21 @@ import useDataStore from "../pages/stores/DataStore";
 import useAuthStore from "../pages/stores/AuthStore";
 import FormError from "../components/form/FormError";
 import "./FormStyles.css";
+import { useState, useEffect } from "react";
 
 const CreateProject = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { getProjectBasics, getProject } = useDataStore();
+
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+    getProjectBasics(accessToken);
+  }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
+
   // Project information
   const [projectName, setProjectName] = useState("example project");
   const [projectDescription, setProjectDescription] = useState("example");
@@ -265,15 +277,11 @@ const CreateProject = () => {
     });
   };
   const createProject = useDataStore((state) => state.createProject);
-  const accessToken = useAuthStore((state) => state.accessToken);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
 
   const [submittingForm, setSubmittingForm] = useState(false);
-  const [successfulSubmission, setSuccessfulSubmission] = useState(false);
   const [formData, setFormData] = useState({});
-  const navigate = useNavigate();
-  const { getProject } = useDataStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -428,41 +436,19 @@ const CreateProject = () => {
     console.log(JSON.stringify(formData, null, 2));
 
     try {
-      console.log(accessToken);
       await createProject(formData, accessToken);
       // Optionally, redirect or reset the form
     } catch (error) {
       console.error("Error creating project  :", error.status);
       setFormError(true);
       setFormErrorMessage(`Error creating project: ${error.message}`);
-      console.log(formError);
       setSubmittingForm(false);
       return;
     }
     setFormError(false);
-    setSuccessfulSubmission(true);
+    await getProject(projectName, accessToken);
+    navigate("/overview");
   };
-  // Control the variables with use effect. Which one causing issue.
-  useEffect(() => {
-    if (!successfulSubmission) return;
-    console.log("Using effect");
-    const navigateAfterSubmission = async () => {
-      try {
-        console.log("Fetching project details...");
-
-        await getProject(projectName, accessToken);
-
-        navigate("/overview");
-      } catch (error) {
-        console.error("Error during post-submission processing:", error);
-      }
-      // finally {
-      // setSuccessfulSubmission(false);
-      // }
-    };
-
-    navigateAfterSubmission();
-  }, [successfulSubmission, projectName, accessToken, navigate, getProject]);
 
   const [isExpanded, setIsExpanded] = useState(false);
   // Adding definitions
