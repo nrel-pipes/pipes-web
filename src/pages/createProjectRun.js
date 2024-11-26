@@ -17,9 +17,7 @@ import { useState, useEffect } from "react";
 const CreateProjectRun = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { getProjectBasics, getProject, createProject } = useDataStore();
-
-  // ================== INITIALIZATION AND VALIDATION ==================
+  const { getProjectBasics, getProject } = useDataStore();
 
   useEffect(() => {
     validateToken(accessToken);
@@ -29,90 +27,42 @@ const CreateProjectRun = () => {
     getProjectBasics(accessToken);
   }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
 
-  // ================== PROJECT DATA STATES ==================
-
-  // Project Info
+  // Project information
   const [projectName, setProjectName] = useState("example project");
   const [projectDescription, setProjectDescription] = useState("example");
 
-  // Owner Info
+  // Owner information
   const [ownerFirstName, setOwnerFirstName] = useState("Jordan");
   const [ownerLastName, setOwnerLastName] = useState("Eisenman");
   const [ownerEmail, setOwnerEmail] = useState("Jordan.Eisenman@nrel.gov");
   const [ownerOrganization, setOwnerOrganization] = useState("NREL");
 
-  // Assumptions
+  // Assumptions state
   const [assumptions, setAssumptions] = useState(["Assumption 1"]);
-
-  // Requirements
-  const [requirements, setRequirments] = useState([
-    { KeyRequirement: ["Value1"] },
-  ]);
-  const [requirementsType, setRequirmentsType] = useState(["str"]);
-
-  // Scenarios
-  const [scenarios, setScenarios] = useState([
-    {
-      name: "Base Scenario",
-      description: ["Description of the base scenario"],
-      other: [{ key: "Parameter1", value: "Value1" }],
-    },
-  ]);
-
-  // Sensitivities
-  const [sensitivities, setSensitivities] = useState([
-    {
-      name: "Default Sensitivity",
-      description: ["Description of sensitivity"],
-      list: ["Sensitivity factor 1"],
-    },
-  ]);
-
-  // Milestones
-  const [milestones, setMilestones] = useState([
-    {
-      name: "Milestone 1",
-      description: ["First major project milestone"],
-      milestone_date: "2023-02-01",
-    },
-  ]);
-
-  // Schedule
-  const [schedule, setSchedule] = useState({
-    scheduledStart: "2023-01-01",
-    scheduledEnd: "2023-12-31",
-  });
-
-  // Form States
-  const [formError, setFormError] = useState(false);
-  const [formErrorMessage, setFormErrorMessage] = useState("");
-  const [submittingForm, setSubmittingForm] = useState(false);
-  const [formData, setFormData] = useState({});
-  const retriesLimit = 2;
-
-  // ================== HANDLERS ==================
-
-  // Assumption Handlers
   const handleAddAssumption = (e) => {
     e.preventDefault();
     setAssumptions([...assumptions, ""]);
   };
-
   const handleRemoveAssumption = (index, e) => {
     e.preventDefault();
     const newAssumptions = assumptions.filter((_, idx) => idx !== index);
     setAssumptions(newAssumptions);
   };
-
   const handleAssumptionChange = (index, value) => {
     const newAssumptions = [...assumptions];
     newAssumptions[index] = value;
     setAssumptions(newAssumptions);
   };
 
-  // Requirement Handlers
+  // Requirement state
+  const [requirements, setRequirments] = useState([
+    { KeyRequirement: ["Value1"] },
+  ]);
+  const [requirementsType, setRequirmentsType] = useState(["str"]);
+
   const handleAddRequirement = (type, e) => {
     e.preventDefault();
+    // Initialize with an empty requirement name and an array with one default value
     const defaultValue = type === "int" ? 0 : "";
     const newRequirements = [...requirements, { "": [defaultValue] }];
     setRequirments(newRequirements);
@@ -132,15 +82,47 @@ const CreateProjectRun = () => {
     setRequirmentsType(newRequirementsType);
   };
 
+  // New function to handle adding a sub-requirement value
+  const handleAddSubRequirement = (requirementIndex, e) => {
+    e.preventDefault();
+    const newRequirements = [...requirements];
+    const requirement = newRequirements[requirementIndex];
+    const requirementName = Object.keys(requirement)[0];
+    const defaultValue = requirementsType[requirementIndex] === "int" ? 0 : "";
+
+    requirement[requirementName] = [
+      ...requirement[requirementName],
+      defaultValue,
+    ];
+    setRequirments(newRequirements);
+  };
+
+  // New function to handle removing a sub-requirement value
+  const handleRemoveSubRequirement = (requirementIndex, valueIndex, e) => {
+    e.preventDefault();
+    const newRequirements = [...requirements];
+    const requirement = newRequirements[requirementIndex];
+    const requirementName = Object.keys(requirement)[0];
+
+    requirement[requirementName] = requirement[requirementName].filter(
+      (_, idx) => idx !== valueIndex,
+    );
+    setRequirments(newRequirements);
+  };
+
+  // New function to handle requirement name changes
   const handleRequirementNameChange = (requirementIndex, newName) => {
     const newRequirements = [...requirements];
     const requirement = newRequirements[requirementIndex];
     const oldName = Object.keys(requirement)[0];
     const values = requirement[oldName];
+
+    // Create new object with updated name but same values
     newRequirements[requirementIndex] = { [newName]: values };
     setRequirments(newRequirements);
   };
 
+  // New function to handle requirement value changes
   const handleRequirementValueChange = (
     requirementIndex,
     valueIndex,
@@ -149,19 +131,37 @@ const CreateProjectRun = () => {
     const newRequirements = [...requirements];
     const requirement = newRequirements[requirementIndex];
     const requirementName = Object.keys(requirement)[0];
-    const value =
-      requirementsType[requirementIndex] === "int"
-        ? parseInt(newValue) || 0
-        : newValue;
 
-    requirement[requirementName][valueIndex] = value;
+    // Handle type conversion for integers
+    if (requirementsType[requirementIndex] === "int") {
+      const intValue = parseInt(newValue) || 0;
+      requirement[requirementName][valueIndex] = intValue;
+    } else {
+      requirement[requirementName][valueIndex] = newValue;
+    }
+
     setRequirments(newRequirements);
   };
 
-  // Scenario Handlers
+  // Adding scenario
+  const [scenarios, setScenarios] = useState([
+    {
+      name: "Base Scenario",
+      description: ["Description of the base scenario"],
+      other: [{ key: "Parameter1", value: "Value1" }],
+    },
+  ]);
+
   const handleAddScenario = (e) => {
     e.preventDefault();
-    setScenarios([...scenarios, { name: "", description: [""], other: [] }]);
+    setScenarios([
+      ...scenarios,
+      {
+        name: "",
+        description: [""],
+        other: [],
+      },
+    ]);
   };
 
   const handleRemoveScenario = (index, e) => {
@@ -170,12 +170,50 @@ const CreateProjectRun = () => {
     setScenarios(newScenarios);
   };
 
-  // Sensitivity Handlers
+  const handleAddOtherInfo = (scenarioIndex, e) => {
+    e.preventDefault();
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.push({
+      key: "",
+      value: "",
+    });
+    setScenarios(newScenarios);
+  };
+
+  const handleOtherInfoChange = (
+    scenarioIndex,
+    otherIndex,
+    field,
+    newValue,
+  ) => {
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other[otherIndex][field] = newValue;
+    setScenarios(newScenarios);
+  };
+
+  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.splice(otherIndex, 1);
+    setScenarios(newScenarios);
+  };
+
+  const [sensitivities, setSensitivities] = useState([
+    {
+      name: "Default Sensitivity",
+      description: ["Description of sensitivity"],
+      list: ["Sensitivity factor 1"],
+    },
+  ]);
+
   const handleAddSensitivity = (e) => {
     e.preventDefault();
     setSensitivities([
       ...sensitivities,
-      { name: "", description: [""], list: [""] },
+      {
+        name: "",
+        description: [""],
+        list: [""],
+      },
     ]);
   };
 
@@ -185,12 +223,39 @@ const CreateProjectRun = () => {
     setSensitivities(newSensitivities);
   };
 
-  // Milestone Handlers
+  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
+    e.preventDefault();
+    const newSensitivities = [...sensitivities];
+    newSensitivities[sensitivityIndex].list.push("");
+    setSensitivities(newSensitivities);
+  };
+
+  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
+    e.preventDefault();
+    const newSensitivities = [...sensitivities];
+    newSensitivities[sensitivityIndex].list = newSensitivities[
+      sensitivityIndex
+    ].list.filter((_, idx) => idx !== listIndex);
+    setSensitivities(newSensitivities);
+  };
+  // Setting Milestones
+  const [milestones, setMilestones] = useState([
+    {
+      name: "Milestone 1",
+      description: ["First major project milestone"],
+      milestone_date: "2023-02-01",
+    },
+  ]);
+
   const handleAddMilestone = (e) => {
     e.preventDefault();
     setMilestones([
       ...milestones,
-      { name: "", description: [""], milestone_date: "" },
+      {
+        name: "",
+        description: [""],
+        milestone_date: "", // Will be in YYYY-MM-DD format
+      },
     ]);
   };
 
@@ -199,69 +264,260 @@ const CreateProjectRun = () => {
     const newMilestones = milestones.filter((_, idx) => idx !== index);
     setMilestones(newMilestones);
   };
+  // Setting project Schedule
+  const [schedule, setSchedule] = useState({
+    scheduledStart: "2023-01-01",
+    scheduledEnd: "2023-12-31",
+  });
 
-  // Schedule Handlers
   const handleDateChange = (field, value) => {
-    setSchedule({ ...schedule, [field]: value });
+    setSchedule({
+      ...schedule,
+      [field]: value,
+    });
   };
 
-  // ================== FORM SUBMISSION ==================
+  const createProject = useDataStore((state) => state.createProject);
+  const [formError, setFormError] = useState(false);
+  const [formErrorMessage, setFormErrorMessage] = useState("");
 
+  const [submittingForm, setSubmittingForm] = useState(false);
+  const [formData, setFormData] = useState({});
+
+  const retriesLimit = 2;
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(false);
     setSubmittingForm(true);
 
-    const prepareFormData = () => ({
-      name: projectName,
-      title: projectName.toLowerCase().replace(/\s+/g, "_"),
-      description: projectDescription,
-      assumptions,
-      requirements: Object.fromEntries(
-        requirements.map((req, i) => [
-          Object.keys(req)[0],
-          Object.values(req)[0],
-        ]),
-      ),
-      scenarios,
-      sensitivities,
-      milestones,
-      scheduled_start: schedule.scheduledStart,
-      scheduled_end: schedule.scheduledEnd,
-      owner: {
-        email: ownerEmail,
-        first_name: ownerFirstName,
-        last_name: ownerLastName,
-        organization: ownerOrganization,
-      },
-    });
-
     for (let i = 0; i < retriesLimit; i++) {
+      // Generate the projectTitle as lowercase with underscores
+      const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
+
+      // Process requirements into a dictionary
+      let requirementsDict = {};
+      requirements.forEach((requirementObj) => {
+        const requirementName = Object.keys(requirementObj)[0];
+        const values = requirementObj[requirementName];
+        requirementsDict[requirementName] = values;
+      });
+
+      // Process scenarios
+      let scenariosList = scenarios.map((scenario) => {
+        let otherDict = {};
+        scenario.other.forEach((item) => {
+          if (item.key) {
+            otherDict[item.key] = item.value;
+          }
+        });
+
+        return {
+          name: scenario.name,
+          description: scenario.description,
+          other: otherDict,
+        };
+      });
+
+      // Process sensitivities
+      let sensitivitiesList = sensitivities.map((sensitivity) => {
+        return {
+          name: sensitivity.name,
+          description: sensitivity.description,
+        };
+      });
+
+      // Process milestones
+      let milestonesList = milestones.map((milestone) => {
+        return {
+          name: milestone.name,
+          description: milestone.description,
+          milestone_date: milestone.milestone_date,
+        };
+      });
+
+      //  Required field validation
+      // Validating ProjectName
+      const title = document.getElementById("projectName");
+      if (projectTitle.length === 0) {
+        title.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide a title for your project.");
+        return;
+      }
+      title.classList.remove("form-error");
+
+      // Validating Schedule
+      const scheduledStart = document.getElementById("scheduledStart");
+      const scheduledEnd = document.getElementById("scheduledEnd");
+      let hasScheduleError = false;
+      if (!schedule.scheduledStart) {
+        scheduledStart.classList.add("form-error");
+        hasScheduleError = true;
+      }
+      if (!schedule.scheduledEnd) {
+        scheduledEnd.classList.add("form-error");
+        hasScheduleError = true;
+      }
+      if (schedule.scheduledStart && schedule.scheduledEnd) {
+        if (
+          new Date(schedule.scheduledEnd) < new Date(schedule.scheduledStart)
+        ) {
+          scheduledStart.classList.add("form-error");
+          scheduledEnd.classList.add("form-error");
+          hasScheduleError = true;
+        }
+      }
+      if (hasScheduleError) {
+        console.error(
+          "Schedule is invalid: End date is before start date or fields are missing.",
+        );
+        setFormError(true);
+        setFormErrorMessage(
+          "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
+        );
+        return;
+      }
+      scheduledStart.classList.remove("form-error");
+      scheduledEnd.classList.remove("form-error");
+
+      // Validating Owner
+      const firstName = document.getElementById("firstName");
+      if (ownerFirstName.length === 0) {
+        firstName.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide your first name.");
+        return;
+      }
+      firstName.classList.remove("form-error");
+
+      const lastName = document.getElementById("lastName");
+      if (ownerLastName.length === 0) {
+        lastName.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide your last name.");
+        return;
+      }
+      lastName.classList.remove("form-error");
+
+      const email = document.getElementById("email");
+      if (ownerEmail.length === 0) {
+        email.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage("You forgot to provide the project owner's email.");
+        return;
+      }
+      email.classList.remove("form-error");
+
+      const organization = document.getElementById("organization");
+      if (ownerOrganization.length === 0) {
+        organization.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(
+          "You forgot to provide the project owner's organization.",
+        );
+        return;
+      }
+      organization.classList.remove("form-error");
+
+      // Assemble the final data object
+      setFormData({
+        name: projectName,
+        title: projectTitle,
+        description: projectDescription,
+        assumptions: assumptions,
+        requirements: requirementsDict,
+        scenarios: scenariosList,
+        sensitivities: sensitivitiesList,
+        milestones: milestonesList,
+        scheduled_start: schedule.scheduledStart,
+        scheduled_end: schedule.scheduledEnd,
+        owner: {
+          email: ownerEmail,
+          first_name: ownerFirstName,
+          last_name: ownerLastName,
+          organization: ownerOrganization,
+        },
+      });
+
+      // Call createProject with the data and access token
+      console.log(JSON.stringify(formData, null, 2));
+
       try {
-        const formData = prepareFormData();
         await createProject(formData, accessToken);
-        console.log("Project created successfully!");
-        navigate("/overview");
+        console.log(`Project created successfully on attempt ${i + 1}`);
+        // If successful, break out of the retry loop
         break;
       } catch (error) {
-        console.error(`Error on attempt ${i + 1}: ${error.message}`);
+        console.error(
+          `Error creating project (attempt ${i + 1}/${retriesLimit}):`,
+          error.status,
+        );
+
+        // If this is not the last attempt, wait 1 second before retrying
         if (i < retriesLimit - 1) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        } else {
           setFormError(true);
           setFormErrorMessage(
-            `Failed after ${retriesLimit} attempts: ${error.message}`,
+            `Error creating project: ${error.message}. Retrying in 1 second...`,
           );
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 1000);
+          });
+        } else {
+          // If this was the last attempt, set the final error message
+          setFormError(true);
+          setFormErrorMessage(
+            `Failed to create project after ${retriesLimit} attempts: ${error.message}`,
+          );
+          setSubmittingForm(false);
+          return;
         }
       }
     }
-    setSubmittingForm(false);
+
+    // If we get here, the project was created successfully
+    setFormError(false);
+    await getProject(projectName, accessToken);
+    navigate("/overview");
   };
+  const [isExpanded, setIsExpanded] = useState(false);
+  // Adding definitions
+  const [documentation] = useState({
+    description: "This is a sample description of the project creation page",
+    definitions: [
+      {
+        name: "Project Name",
+        definition: "Choose the name of your project",
+      },
+      {
+        name: "Scheduled Start",
+        definition: "Fill in the starting date of your modeling project",
+      },
+      {
+        name: "Scheduled End",
+        definition: "This will be ending date of your modeling project",
+      },
+      {
+        name: "Assumptions",
+        definition: "List what you take for granted in your project.",
+      },
+      {
+        name: "Sensitivity",
+        definition: "What is a sensitivity?",
+      },
+      {
+        name: "Milestone",
+        definition: "What is a Milestone?",
+      },
+    ],
+  });
+
   return (
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
-          <PageTitle title="Create Project Run" />
+          <PageTitle title="Create Project" />
           <Row className="justify-content-center"></Row>
           <div className="d-flex justify-content-center">
             <Col
