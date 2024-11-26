@@ -49,11 +49,12 @@ const CreateProject = () => {
     setAssumptions(newAssumptions);
   };
   const handleAssumptionChange = (index, value) => {
-    const newAssumptions = [...assumptions];
-    newAssumptions[index] = value;
-    setAssumptions(newAssumptions);
+    setAssumptions((prevAssumptions) => {
+      const updatedAssumptions = [...prevAssumptions];
+      updatedAssumptions[index] = value;
+      return updatedAssumptions;
+    });
   };
-
   // Requirement state
   const [requirements, setRequirments] = useState([
     { KeyRequirement: ["Value1"] },
