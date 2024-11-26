@@ -506,6 +506,7 @@ const CreateProject = () => {
                   <Form.Control
                     type="input"
                     id="projectName"
+                    name="projectName"
                     placeholder="Project Name"
                     className="mb-4"
                     value={projectName}
@@ -519,6 +520,7 @@ const CreateProject = () => {
                         </Form.Label>
                         <Form.Control
                           id="scheduledStart"
+                          name="scheduledStart"
                           type="date"
                           value={schedule.scheduledStart || ""}
                           onChange={(e) =>
@@ -534,6 +536,7 @@ const CreateProject = () => {
                         </Form.Label>
                         <Form.Control
                           id="scheduledEnd"
+                          name="scheduledEnd"
                           type="date"
                           value={schedule.scheduledEnd || ""}
                           onChange={(e) =>
@@ -607,6 +610,7 @@ const CreateProject = () => {
                     Project Description
                   </Form.Label>
                   <Form.Control
+                    id="projectDescription"
                     as="textarea"
                     rows={3}
                     placeholder="Describe your project"
@@ -626,6 +630,7 @@ const CreateProject = () => {
                         className="d-flex mb-2 align-items-center gap-2"
                       >
                         <Form.Control
+                          id={`assumptions${index}`}
                           type="input"
                           placeholder="Enter assumption"
                           value={assumption}
@@ -668,12 +673,12 @@ const CreateProject = () => {
 
                         return (
                           <div key={requirements_i}>
-                            {values.map((value, value_i) => (
+                            {values.map((value, index) => (
                               <Row
-                                key={`${requirements_i}-${value_i}`}
+                                key={`${requirements_i}-${index}`}
                                 className="mb-2 align-items-center"
                               >
-                                {value_i === 0 ? (
+                                {index === 0 ? (
                                   <>
                                     <Col xs="auto">
                                       <Button
@@ -698,6 +703,7 @@ const CreateProject = () => {
                                     <Col xs={3}>
                                       <Form.Control
                                         type="text"
+                                        id={`requirement${index}`}
                                         placeholder="Requirement"
                                         value={requirementName}
                                         onChange={(e) =>
@@ -731,7 +737,7 @@ const CreateProject = () => {
                                     onChange={(e) =>
                                       handleRequirementValueChange(
                                         requirements_i,
-                                        value_i,
+                                        index,
                                         e.target.value,
                                       )
                                     }
@@ -745,7 +751,7 @@ const CreateProject = () => {
                                       onClick={(e) =>
                                         handleRemoveSubRequirement(
                                           requirements_i,
-                                          value_i,
+                                          index,
                                           e,
                                         )
                                       }
@@ -854,6 +860,7 @@ const CreateProject = () => {
                           {/* Scenario Name */}
                           <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Control
+                              id={`scenario${scenarioIndex}`}
                               type="input"
                               placeholder="Scenario name"
                               value={scenario.name}
@@ -869,6 +876,7 @@ const CreateProject = () => {
                           {/* Scenario Description */}
                           <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Control
+                              id={`scenarioDescription${scenarioIndex}`}
                               as="textarea"
                               rows={3}
                               placeholder="Enter description"
@@ -897,6 +905,7 @@ const CreateProject = () => {
                               >
                                 <Col xs={3}>
                                   <Form.Control
+                                    id={`scenarioOther${otherIndex}`}
                                     type="input"
                                     placeholder={`key${otherIndex + 1}`}
                                     value={item.key}
@@ -1017,6 +1026,7 @@ const CreateProject = () => {
                           {/* Sensitivity Name */}
                           <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Control
+                              id={`sensitivityName-${sensitivityIndex}`}
                               type="input"
                               placeholder="Sensitivity name"
                               value={sensitivity.name}
@@ -1032,6 +1042,7 @@ const CreateProject = () => {
                           {/* Sensitivity Description */}
                           <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Control
+                              id={`sensitivityDescription-${sensitivityIndex}`}
                               as="textarea"
                               rows={3}
                               placeholder="Enter description"
@@ -1053,6 +1064,7 @@ const CreateProject = () => {
                                 className="d-flex mb-2 align-items-center gap-2"
                               >
                                 <Form.Control
+                                  id={`senstivityItem-${sensitivityIndex}`}
                                   type="input"
                                   placeholder="Enter sensitivity item"
                                   value={item}
@@ -1156,6 +1168,7 @@ const CreateProject = () => {
                           {/* Milestone Name */}
                           <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Control
+                              id={`milestoneName-${milestoneIndex}`}
                               type="input"
                               placeholder="Milestone name"
                               value={milestone.name}
@@ -1171,6 +1184,7 @@ const CreateProject = () => {
                           {/* Milestone Description */}
                           <div className="d-flex mb-3 align-items-center gap-2">
                             <Form.Control
+                              id={`milestoneDescription-${milestoneIndex}`}
                               as="textarea"
                               rows={3}
                               placeholder="Enter description"
@@ -1198,6 +1212,7 @@ const CreateProject = () => {
                                 Milestone Date (YYYY-MM-DD)
                               </Form.Label>
                               <Form.Control
+                                id={`milestoneDate-${milestoneIndex}`}
                                 type="date"
                                 value={milestone.milestone_date}
                                 onChange={(e) => {
