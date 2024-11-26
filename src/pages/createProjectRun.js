@@ -14,7 +14,7 @@ import FormError from "../components/form/FormError";
 import "./FormStyles.css";
 import { useState, useEffect } from "react";
 
-const CreateProject = () => {
+const CreateProjectRun = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, getProject } = useDataStore();
@@ -486,7 +486,7 @@ const CreateProject = () => {
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
-          <PageTitle title="Create Project" />
+          <PageTitle title="Create Project Run" />
           <Row className="justify-content-center"></Row>
           <div className="d-flex justify-content-center">
             <Col
@@ -1261,4 +1261,4 @@ const CreateProject = () => {
   );
 };
 
-export default CreateProject;
+export default CreateProjectRun;
