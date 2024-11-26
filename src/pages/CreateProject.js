@@ -471,6 +471,14 @@ const CreateProject = () => {
         name: "Assumptions",
         definition: "List what you take for granted in your project.",
       },
+      {
+        name: "Sensitivity",
+        definition: "What is a sensitivity?",
+      },
+      {
+        name: "Milestone",
+        definition: "What is a Milestone?",
+      },
     ],
   });
 
