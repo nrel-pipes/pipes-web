@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -12,7 +12,7 @@ import Row from "react-bootstrap/Row";
 import { Plus } from "lucide-react";
 
 import "./PageStyles.css";
-import "./ProjectList.css";
+import "./PageStyles.css";
 import useAuthStore from "./stores/AuthStore";
 import useDataStore from "./stores/DataStore";
 import PageTitle from "../components/pageTitle";
@@ -150,7 +150,7 @@ const ProjectList = () => {
                 boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                 cursor: "pointer",
               }}
-              className="create-project-card"
+              className="create-card"
               onClick={(e) => handleCreateProjectClick(e)}
             >
               <Card.Body className="bg-light text-start d-flex flex-column align-items-center">

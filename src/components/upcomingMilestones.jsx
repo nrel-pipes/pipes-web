@@ -1,7 +1,7 @@
 import Table from "react-bootstrap/Table";
 import React, { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import "./PageTitle.css";
+// import "./PageTitle.css";
 import "../pages/PageStyles.css";
 import useDataStore from "../pages/stores/DataStore";
 import useAuthStore from "../pages/stores/AuthStore";

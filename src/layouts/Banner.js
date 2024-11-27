@@ -7,7 +7,7 @@ import "./Banner.css";
 
 const SiteBanner = () => {
   return (
-    <Container className="">
+    <Container className="banner">
       <Row>
         <Col className="banner-pipes-name" md={9} sm={8} xs={8}>
           <a href="/">

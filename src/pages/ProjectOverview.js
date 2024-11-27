@@ -33,7 +33,6 @@ const ProjectOverview = () => {
     projectRunRetries,
     isGettingProjectRuns,
   } = useDataStore();
-
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
