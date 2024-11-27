@@ -3,12 +3,11 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Image from "react-bootstrap/Image";
 
-import "./Banner.css"
-
+import "./Banner.css";
 
 const SiteBanner = () => {
   return (
-    <Container className="banner">
+    <Container className="">
       <Row>
         <Col className="banner-pipes-name" md={9} sm={8} xs={8}>
           <a href="/">
@@ -22,7 +21,12 @@ const SiteBanner = () => {
           </a>
         </Col>
         <Col className="banner-nrel-container" md={3} sm={4} xs={4}>
-          <Image className="banner-nrel-image" src="./images/nrel-logo@2x-01.png" alt="NREL" fluid />
+          <Image
+            className="banner-nrel-image"
+            src="./images/nrel-logo@2x-01.png"
+            alt="NREL"
+            fluid
+          />
         </Col>
       </Row>
     </Container>

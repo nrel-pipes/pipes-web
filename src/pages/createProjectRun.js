@@ -64,6 +64,10 @@ const CreateProjectRun = (projectData) => {
     }));
   };
 
+  const handleChangeDate = (scheduledStart, scheduledEnd, e) => {
+    e.preventDefault();
+  };
+
   // Project information
 
   const handleSubmit = async (e) => {

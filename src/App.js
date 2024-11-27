@@ -30,9 +30,11 @@ function App() {
 
   return (
     <div className="App">
-      {isLoggedIn ? "" : <SiteBanner />}
       {isLoggedIn ? <SiteNavbarFluid /> : <SiteNavbar />}
+
       <div className="Content">
+        {isLoggedIn ? "" : <SiteBanner />}
+
         <BrowserRouter>
           <Routes>
             {/* Home route */}
