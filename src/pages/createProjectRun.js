@@ -72,6 +72,81 @@ const CreateProjectRun = (projectData) => {
     }));
   };
 
+  // Add new requirement
+  const handleAddRequirement = (type, e) => {
+    e.preventDefault();
+    setFormData((prevState) => ({
+      ...prevState,
+      requirements: {
+        ...prevState.requirements,
+        "": type === "int" ? [0] : [""],
+      },
+    }));
+  };
+
+  // Remove requirement
+  const handleRemoveRequirement = (name, e) => {
+    e.preventDefault();
+    setFormData((prevState) => {
+      const { [name]: removed, ...rest } = prevState.requirements;
+      return {
+        ...prevState,
+        requirements: rest,
+      };
+    });
+  };
+
+  // Add sub-requirement value
+  const handleAddSubRequirement = (name, e) => {
+    e.preventDefault();
+    setFormData((prevState) => ({
+      ...prevState,
+      requirements: {
+        ...prevState.requirements,
+        [name]: [...prevState.requirements[name], ""],
+      },
+    }));
+  };
+
+  // Remove sub-requirement value
+  const handleRemoveSubRequirement = (name, index, e) => {
+    e.preventDefault();
+    setFormData((prevState) => ({
+      ...prevState,
+      requirements: {
+        ...prevState.requirements,
+        [name]: prevState.requirements[name].filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  // Update requirement name
+  const handleRequirementNameChange = (oldName, newName) => {
+    setFormData((prevState) => {
+      const { [oldName]: values, ...rest } = prevState.requirements;
+      return {
+        ...prevState,
+        requirements: {
+          ...rest,
+          [newName]: values,
+        },
+      };
+    });
+  };
+
+  // Update requirement value
+  const handleRequirementValueChange = (name, index, value) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      requirements: {
+        ...prevState.requirements,
+        [name]: prevState.requirements[name].map((v, i) =>
+          i === index ? value : v,
+        ),
+      },
+    }));
+  };
+
   // Project information
 
   const handleSubmit = async (e) => {
@@ -283,6 +358,156 @@ const CreateProjectRun = (projectData) => {
                       <Plus className="w-4 h-4" />
                       Scenario
                     </Button>{" "}
+                  </div>
+
+                  <div className="mb-3">
+                    <Form.Label className="d-block text-start w-100 custom-form-label">
+                      Requirements
+                    </Form.Label>
+                    <div className="d-block">
+                      {Object.entries(formData.requirements).map(
+                        ([name, values], idx) => (
+                          <div key={idx}>
+                            {values.map((value, valueIndex) => (
+                              <Row
+                                key={`${idx}-${valueIndex}`}
+                                className="mb-2 align-items-center"
+                              >
+                                {valueIndex === 0 ? (
+                                  <>
+                                    <Col xs="auto">
+                                      <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={(e) =>
+                                          handleRemoveRequirement(name, e)
+                                        }
+                                        className="d-flex align-items-center justify-content-center"
+                                        style={{
+                                          width: "32px",
+                                          height: "32px",
+                                          padding: "4px",
+                                        }}
+                                      >
+                                        <Minus className="w-4 h-4" />
+                                      </Button>
+                                    </Col>
+                                    <Col xs={3}>
+                                      <Form.Control
+                                        type="text"
+                                        placeholder="Requirement"
+                                        value={name}
+                                        onChange={(e) =>
+                                          handleRequirementNameChange(
+                                            name,
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    </Col>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Col xs="auto">
+                                      <div style={{ width: "32px" }}></div>
+                                    </Col>
+                                    <Col xs={3}>
+                                      <div></div>
+                                    </Col>
+                                  </>
+                                )}
+                                <Col>
+                                  <Form.Control
+                                    type="text"
+                                    placeholder="Enter value"
+                                    value={value}
+                                    onChange={(e) =>
+                                      handleRequirementValueChange(
+                                        name,
+                                        valueIndex,
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                </Col>
+                                <Col xs="auto">
+                                  {values.length > 1 && (
+                                    <Button
+                                      variant="outline-danger"
+                                      size="sm"
+                                      onClick={(e) =>
+                                        handleRemoveSubRequirement(
+                                          name,
+                                          valueIndex,
+                                          e,
+                                        )
+                                      }
+                                      className="d-flex align-items-center justify-content-center"
+                                      style={{
+                                        width: "32px",
+                                        height: "32px",
+                                        padding: "4px",
+                                      }}
+                                    >
+                                      <Minus className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                </Col>
+                              </Row>
+                            ))}
+                            <Row>
+                              <Col xs="auto">
+                                <div style={{ width: "32px" }}></div>
+                              </Col>
+                              <Col xs={3}></Col>
+                              <Col>
+                                <div className="d-flex mb-3">
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={(e) =>
+                                      handleAddSubRequirement(name, e)
+                                    }
+                                    className="d-flex align-items-center justify-content-center"
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      padding: "4px",
+                                    }}
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </Col>
+                              <Col xs="auto">
+                                <div style={{ width: "32px" }}></div>
+                              </Col>
+                            </Row>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                    <div className="d-flex justify-content-start mt-2">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={(e) => handleAddRequirement("str", e)}
+                        className="d-flex align-items-center me-2"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        String Requirement
+                      </Button>
+
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={(e) => handleAddRequirement("int", e)}
+                        className="d-flex align-items-center"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Integer Requirement
+                      </Button>
+                    </div>
                   </div>
                 </Form.Group>
               </Form>
