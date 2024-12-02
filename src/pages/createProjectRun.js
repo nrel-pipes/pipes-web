@@ -26,6 +26,7 @@ const CreateProjectRun = (projectData) => {
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [submittingForm, setSubmittingForm] = useState(false);
+  const [hasScheduleError, setHasScheduleError] = useState(false);
 
   useEffect(() => {
     validateToken(accessToken);
@@ -43,8 +44,8 @@ const CreateProjectRun = (projectData) => {
     assumptions: [""],
     requirements: {},
     scenarios: [""],
-    scheduledStart: "11-03-2024",
-    scheduledEnd: "11-30-2024",
+    scheduledStart: "2024-11-03",
+    scheduledEnd: "2024-11-30",
   });
 
   const handleSetString = (key, value) => {
@@ -70,7 +71,19 @@ const CreateProjectRun = (projectData) => {
     }));
   };
 
-  const handleDateChange = (field, value) => {
+  const handleListValueChange = (field, index, value) => {
+    setFormData((prev) => {
+      const updatedList = [...prev[field]];
+      updatedList[index] = value;
+      return {
+        ...prev,
+        [field]: updatedList,
+      };
+    });
+  };
+
+  const handleDateChange = (field, value, e) => {
+    e.preventDefault();
     setFormData((prevState) => ({
       ...prevState,
       [field]: value,
@@ -156,37 +169,51 @@ const CreateProjectRun = (projectData) => {
   // Project information
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError(false);
     setSubmittingForm(true);
-    // Validation
-    // Validate Project Run name
-    const projectRunName = document.getElementById("projectRunName");
-    if (!formData.name) {
-      projectRunName.classList.add("form-error");
-      setSubmittingForm(false);
+    setFormError(false);
+
+    const scheduledStartElem = document.getElementById("scheduledStart");
+    const scheduledEndElem = document.getElementById("scheduledEnd");
+
+    let hasError = false;
+
+    // Validate Scheduled Start
+    if (!formData.scheduledStart || isNaN(new Date(formData.scheduledStart))) {
+      scheduledStartElem.classList.add("form-error");
+      hasError = true;
+    } else {
+      scheduledStartElem.classList.remove("form-error");
+    }
+
+    // Validate Scheduled End
+    if (!formData.scheduledEnd || isNaN(new Date(formData.scheduledEnd))) {
+      scheduledEndElem.classList.add("form-error");
+      hasError = true;
+    } else {
+      scheduledEndElem.classList.remove("form-error");
+    }
+
+    // Check if Start Date is Before End Date
+    if (
+      formData.scheduledStart &&
+      formData.scheduledEnd &&
+      new Date(formData.scheduledStart) > new Date(formData.scheduledEnd)
+    ) {
+      scheduledStartElem.classList.add("form-error");
+      scheduledEndElem.classList.add("form-error");
       setFormError(true);
       return;
     }
-    projectRunName.classList.remove("form-error");
-    // Validate Schedule
-    let hasScheduleError = false;
-    const scheduledStart = document.getElementById("scheduledStart");
-    if (!formData.scheduledStart) {
-      scheduledStart.classList.add("form-error");
-      hasScheduleError = true;
-      setSubmittingForm(false);
+
+    if (hasError) {
+      setFormError(true);
       return;
     }
-    const scheduledEnd = document.getElementById("scheduledEnd");
-    if (!formData.scheduledEnd) {
-      scheduledStart.classList.add("form-error");
-      hasScheduleError = true;
-      setSubmittingForm(false);
-      return;
-    }
-    if (formData.scheduledStart > formData.scheduledEnd) {
-    }
+
+    // Proceed with form submission
+    console.log("Form submitted successfully!");
   };
+
   // Adding definitions
   const [documentation] = useState({
     description: "This is a sample description of the project creation page",
@@ -271,29 +298,34 @@ const CreateProjectRun = (projectData) => {
                         </Form.Label>
                         <Form.Text className="text-muted align-left">
                           Date must be after{" "}
-                          {`${String(new Date(currentProject.scheduled_start).getMonth() + 1).padStart(2, "0")}-${String(new Date(currentProject.scheduled_start).getDate()).padStart(2, "0")}-${new Date(currentProject.scheduled_start).getFullYear()}`}
+                          {new Date(
+                            currentProject.scheduled_start,
+                          ).toLocaleDateString()}
                         </Form.Text>
-
                         <Form.Control
                           id="scheduledStart"
                           name="scheduledStart"
                           type="date"
-                          value={
-                            formData.scheduledStart
-                              ? `${formData.scheduledStart.split("-")[2]}-${formData.scheduledStart.split("-")[0].padStart(2, "0")}-${formData.scheduledStart.split("-")[1].padStart(2, "0")}`
+                          value={formData.scheduledStart || ""}
+                          className={
+                            formError && !formData.scheduledStart
+                              ? "form-error"
                               : ""
                           }
-                          onChange={(e) => {
-                            const [year, month, day] =
-                              e.target.value.split("-");
-                            setFormData((prev) => ({
-                              ...prev,
-                              scheduledStart: `${month}-${day}-${year}`,
-                            }));
-                          }}
+                          onChange={(e) =>
+                            handleDateChange(
+                              "scheduledStart",
+                              e.target.value,
+                              e,
+                            )
+                          }
                         />
-                      </Form.Group>{" "}
+                        <Form.Control.Feedback type="invalid">
+                          Please select a valid start date.
+                        </Form.Control.Feedback>
+                      </Form.Group>
                     </Col>
+
                     <Col md={6} className="mb-3">
                       <Form.Group>
                         <Form.Label className="d-block text-start custom-form-label requiredField">
@@ -301,26 +333,27 @@ const CreateProjectRun = (projectData) => {
                         </Form.Label>
                         <Form.Text className="text-muted">
                           Date must be before{" "}
-                          {`${String(new Date(currentProject.scheduled_end).getMonth() + 1).padStart(2, "0")}-${String(new Date(currentProject.scheduled_end).getDate()).padStart(2, "0")}-${new Date(currentProject.scheduled_end).getFullYear()}`}
-                        </Form.Text>{" "}
+                          {new Date(
+                            currentProject.scheduled_end,
+                          ).toLocaleDateString()}
+                        </Form.Text>
                         <Form.Control
                           id="scheduledEnd"
                           name="scheduledEnd"
                           type="date"
-                          value={
-                            formData.scheduledEnd
-                              ? `${formData.scheduledEnd.split("-")[2]}-${formData.scheduledEnd.split("-")[0].padStart(2, "0")}-${formData.scheduledEnd.split("-")[1].padStart(2, "0")}`
+                          value={formData.scheduledEnd || ""}
+                          className={
+                            formError && !formData.scheduledEnd
+                              ? "form-error"
                               : ""
                           }
-                          onChange={(e) => {
-                            const [year, month, day] =
-                              e.target.value.split("-");
-                            setFormData((prev) => ({
-                              ...prev,
-                              scheduledEnd: `${month}-${day}-${year}`,
-                            }));
-                          }}
-                        />{" "}
+                          onChange={(e) =>
+                            handleDateChange("scheduledEnd", e.target.value, e)
+                          }
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          Please select a valid end date.
+                        </Form.Control.Feedback>
                       </Form.Group>
                     </Col>
                   </Row>
@@ -338,7 +371,11 @@ const CreateProjectRun = (projectData) => {
                         placeholder="Enter assumption"
                         value={assumption}
                         onChange={(e) =>
-                          handleAddList("assumptions", e.target.value, index)
+                          handleListValueChange(
+                            "assumptions",
+                            index,
+                            e.target.value,
+                          )
                         }
                       />
                       <Button
@@ -351,7 +388,7 @@ const CreateProjectRun = (projectData) => {
                         <Minus className="w-4 h-4" />
                       </Button>
                     </div>
-                  ))}
+                  ))}{" "}
                   <div className="flex justify-start mt-2">
                     <Button
                       variant="outline-primary"
@@ -367,7 +404,6 @@ const CreateProjectRun = (projectData) => {
                     Scenarios
                   </Form.Label>
                   <div className="d-block">
-                    {/* Scenarios */}
                     {formData.scenarios.map((scenario, index) => (
                       <div
                         key={index}
@@ -379,7 +415,11 @@ const CreateProjectRun = (projectData) => {
                           placeholder="Enter scenario"
                           value={scenario}
                           onChange={(e) =>
-                            handleAddList("scenarios", e.target.value, index)
+                            handleListValueChange(
+                              "scenarios",
+                              index,
+                              e.target.value,
+                            )
                           }
                         />
                         <Button
@@ -393,7 +433,6 @@ const CreateProjectRun = (projectData) => {
                         </Button>
                       </div>
                     ))}
-                    {/* Add Scenario Button */}
                     <Button
                       variant="outline-primary"
                       size="sm"
@@ -403,8 +442,7 @@ const CreateProjectRun = (projectData) => {
                       <Plus className="w-4 h-4" />
                       Scenario
                     </Button>{" "}
-                  </div>
-
+                  </div>{" "}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
                       Requirements
