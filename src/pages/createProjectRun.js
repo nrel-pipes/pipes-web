@@ -18,24 +18,35 @@ import { useState, useEffect } from "react";
 const CreateProjectRun = (projectData) => {
   // Notice, project data will be set the bounds for scheduledStart and end in validation
   const navigate = useNavigate();
-  const createProjectrun = useDataStore((state) => state.createProjectrun);
+  const createProjectRun = useDataStore((state) => state.createProjectRun);
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, getProject, currentProject } = useDataStore();
-  console.log(currentProject);
   const [isExpanded, setIsExpanded] = useState(false);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [submittingForm, setSubmittingForm] = useState(false);
   const [hasScheduleError, setHasScheduleError] = useState(false);
 
+  const [scenarioNames, setScenarioNames] = useState([]);
+
   useEffect(() => {
     validateToken(accessToken);
-    console.log(projectData);
     if (!isLoggedIn) {
       navigate("/login");
     }
     getProjectBasics(accessToken);
-  }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
+    if (currentProject?.scenarios) {
+      const names = currentProject.scenarios.map((scenario) => scenario.name);
+      setScenarioNames(names);
+    }
+  }, [
+    isLoggedIn,
+    navigate,
+    getProjectBasics,
+    accessToken,
+    validateToken,
+    currentProject,
+  ]);
 
   // State Variables
   const [formData, setFormData] = useState({
@@ -100,7 +111,6 @@ const CreateProjectRun = (projectData) => {
         "": type === "int" ? [0] : [""],
       },
     }));
-    console.log(JSON.stringify(formData.requirements));
   };
 
   // Remove requirement
@@ -169,18 +179,30 @@ const CreateProjectRun = (projectData) => {
   // Project information
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmittingForm(true);
     setFormError(false);
+    setSubmittingForm(true);
 
+    // Validate Project Run name
+    const projectRunName = document.getElementById("projectRunName");
+    if (!formData.name) {
+      projectRunName.classList.add("form-error");
+      setSubmittingForm(false);
+      setFormError(true);
+      setFormErrorMessage("Project run name is required");
+      return;
+    }
+    projectRunName.classList.remove("form-error");
+
+    // Validate Schedule
     const scheduledStartElem = document.getElementById("scheduledStart");
     const scheduledEndElem = document.getElementById("scheduledEnd");
-
-    let hasError = false;
+    let hasScheduleError = false;
 
     // Validate Scheduled Start
     if (!formData.scheduledStart || isNaN(new Date(formData.scheduledStart))) {
       scheduledStartElem.classList.add("form-error");
-      hasError = true;
+      hasScheduleError = true;
+      setFormErrorMessage("Valid start date is required");
     } else {
       scheduledStartElem.classList.remove("form-error");
     }
@@ -188,7 +210,8 @@ const CreateProjectRun = (projectData) => {
     // Validate Scheduled End
     if (!formData.scheduledEnd || isNaN(new Date(formData.scheduledEnd))) {
       scheduledEndElem.classList.add("form-error");
-      hasError = true;
+      hasScheduleError = true;
+      setFormErrorMessage("Valid end date is required");
     } else {
       scheduledEndElem.classList.remove("form-error");
     }
@@ -202,18 +225,47 @@ const CreateProjectRun = (projectData) => {
       scheduledStartElem.classList.add("form-error");
       scheduledEndElem.classList.add("form-error");
       setFormError(true);
+      setFormErrorMessage("Start date must be before end date");
+      setSubmittingForm(false);
       return;
     }
 
-    if (hasError) {
+    if (hasScheduleError) {
       setFormError(true);
+      setSubmittingForm(false);
       return;
     }
 
-    // Proceed with form submission
-    console.log("Form submitted successfully!");
-  };
+    // Validate requirements keys
+    const hasEmptyRequirementKey = Object.keys(formData.requirements).some(
+      (key) => !key.trim(),
+    );
+    if (hasEmptyRequirementKey) {
+      setFormError(true);
+      setFormErrorMessage("Requirements cannot have empty keys");
+      setSubmittingForm(false);
+      return;
+    }
 
+    try {
+      await createProjectRun(currentProject.name, formData, accessToken);
+      console.log("Project created successfully");
+    } catch (error) {
+      console.error("Error creating project:", error.status);
+      setFormError(true);
+      setFormErrorMessage(
+        `Failed to create project: ${error.message}. Please try again later.`,
+      );
+      setSubmittingForm(false);
+      return;
+    }
+
+    // If we get here, the project was created successfully
+    setFormError(false);
+    await getProject(formData.name, accessToken);
+    setSubmittingForm(false);
+    navigate("/overview");
+  };
   // Adding definitions
   const [documentation] = useState({
     description: "This is a sample description of the project creation page",
@@ -409,10 +461,8 @@ const CreateProjectRun = (projectData) => {
                         key={index}
                         className="d-flex mb-2 align-items-center gap-2"
                       >
-                        <Form.Control
+                        <Form.Select
                           id={`scenarios${index}`}
-                          type="input"
-                          placeholder="Enter scenario"
                           value={scenario}
                           onChange={(e) =>
                             handleListValueChange(
@@ -421,7 +471,14 @@ const CreateProjectRun = (projectData) => {
                               e.target.value,
                             )
                           }
-                        />
+                        >
+                          <option value="">Select a scenario</option>
+                          {scenarioNames.map((name, idx) => (
+                            <option key={idx} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </Form.Select>
                         <Button
                           variant="outline-danger"
                           size="sm"
@@ -441,7 +498,7 @@ const CreateProjectRun = (projectData) => {
                     >
                       <Plus className="w-4 h-4" />
                       Scenario
-                    </Button>{" "}
+                    </Button>
                   </div>{" "}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
