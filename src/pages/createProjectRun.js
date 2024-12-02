@@ -18,9 +18,14 @@ import { useState, useEffect } from "react";
 const CreateProjectRun = (projectData) => {
   // Notice, project data will be set the bounds for scheduledStart and end in validation
   const navigate = useNavigate();
+  const createProjectrun = useDataStore((state) => state.createProjectrun);
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, getProject, currentProject } = useDataStore();
+  console.log(currentProject);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [formError, setFormError] = useState(false);
+  const [formErrorMessage, setFormErrorMessage] = useState("");
+  const [submittingForm, setSubmittingForm] = useState(false);
 
   useEffect(() => {
     validateToken(accessToken);
@@ -38,8 +43,8 @@ const CreateProjectRun = (projectData) => {
     assumptions: [""],
     requirements: {},
     scenarios: [""],
-    scheduledStart: "",
-    scheduledEnd: "",
+    scheduledStart: "11-03-2024",
+    scheduledEnd: "11-30-2024",
   });
 
   const handleSetString = (key, value) => {
@@ -82,6 +87,7 @@ const CreateProjectRun = (projectData) => {
         "": type === "int" ? [0] : [""],
       },
     }));
+    console.log(JSON.stringify(formData.requirements));
   };
 
   // Remove requirement
@@ -148,9 +154,38 @@ const CreateProjectRun = (projectData) => {
   };
 
   // Project information
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError(false);
+    setSubmittingForm(true);
+    // Validation
+    // Validate Project Run name
+    const projectRunName = document.getElementById("projectRunName");
+    if (!formData.name) {
+      projectRunName.classList.add("form-error");
+      setSubmittingForm(false);
+      setFormError(true);
+      return;
+    }
+    projectRunName.classList.remove("form-error");
+    // Validate Schedule
+    let hasScheduleError = false;
+    const scheduledStart = document.getElementById("scheduledStart");
+    if (!formData.scheduledStart) {
+      scheduledStart.classList.add("form-error");
+      hasScheduleError = true;
+      setSubmittingForm(false);
+      return;
+    }
+    const scheduledEnd = document.getElementById("scheduledEnd");
+    if (!formData.scheduledEnd) {
+      scheduledStart.classList.add("form-error");
+      hasScheduleError = true;
+      setSubmittingForm(false);
+      return;
+    }
+    if (formData.scheduledStart > formData.scheduledEnd) {
+    }
   };
   // Adding definitions
   const [documentation] = useState({
@@ -203,13 +238,13 @@ const CreateProjectRun = (projectData) => {
                     id="projectRunNameLabel"
                     className="d-block text-start w-100 custom-form-label requiredField"
                   >
-                    Project Name
+                    Project Run Name
                   </Form.Label>
                   <Form.Control
                     type="input"
                     id="projectRunName"
                     name="projectRunName"
-                    placeholder="Project Name"
+                    placeholder="Name"
                     className="mb-4"
                     value={formData.name}
                     onChange={(e) => handleSetString("name", e.target.value)}
@@ -236,23 +271,28 @@ const CreateProjectRun = (projectData) => {
                         </Form.Label>
                         <Form.Text className="text-muted align-left">
                           Date must be after{" "}
-                          {
-                            new Date(currentProject.scheduled_start)
-                              .toISOString()
-                              .split("T")[0]
-                          }
+                          {`${String(new Date(currentProject.scheduled_start).getMonth() + 1).padStart(2, "0")}-${String(new Date(currentProject.scheduled_start).getDate()).padStart(2, "0")}-${new Date(currentProject.scheduled_start).getFullYear()}`}
                         </Form.Text>
 
                         <Form.Control
                           id="scheduledStart"
                           name="scheduledStart"
                           type="date"
-                          value={formData.scheduledStart || ""}
-                          onChange={(e) =>
-                            handleDateChange("scheduledStart", e.target.value)
+                          value={
+                            formData.scheduledStart
+                              ? `${formData.scheduledStart.split("-")[2]}-${formData.scheduledStart.split("-")[0].padStart(2, "0")}-${formData.scheduledStart.split("-")[1].padStart(2, "0")}`
+                              : ""
                           }
+                          onChange={(e) => {
+                            const [year, month, day] =
+                              e.target.value.split("-");
+                            setFormData((prev) => ({
+                              ...prev,
+                              scheduledStart: `${month}-${day}-${year}`,
+                            }));
+                          }}
                         />
-                      </Form.Group>
+                      </Form.Group>{" "}
                     </Col>
                     <Col md={6} className="mb-3">
                       <Form.Group>
@@ -261,21 +301,26 @@ const CreateProjectRun = (projectData) => {
                         </Form.Label>
                         <Form.Text className="text-muted">
                           Date must be before{" "}
-                          {
-                            new Date(currentProject.scheduled_end)
-                              .toISOString()
-                              .split("T")[0]
-                          }
-                        </Form.Text>
+                          {`${String(new Date(currentProject.scheduled_end).getMonth() + 1).padStart(2, "0")}-${String(new Date(currentProject.scheduled_end).getDate()).padStart(2, "0")}-${new Date(currentProject.scheduled_end).getFullYear()}`}
+                        </Form.Text>{" "}
                         <Form.Control
                           id="scheduledEnd"
                           name="scheduledEnd"
                           type="date"
-                          value={formData.scheduledEnd || ""}
-                          onChange={(e) =>
-                            handleDateChange("scheduledEnd", e.target.value)
+                          value={
+                            formData.scheduledEnd
+                              ? `${formData.scheduledEnd.split("-")[2]}-${formData.scheduledEnd.split("-")[0].padStart(2, "0")}-${formData.scheduledEnd.split("-")[1].padStart(2, "0")}`
+                              : ""
                           }
-                        />
+                          onChange={(e) => {
+                            const [year, month, day] =
+                              e.target.value.split("-");
+                            setFormData((prev) => ({
+                              ...prev,
+                              scheduledEnd: `${month}-${day}-${year}`,
+                            }));
+                          }}
+                        />{" "}
                       </Form.Group>
                     </Col>
                   </Row>
@@ -495,21 +540,23 @@ const CreateProjectRun = (projectData) => {
                         className="d-flex align-items-center me-2"
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        String Requirement
-                      </Button>
-
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={(e) => handleAddRequirement("int", e)}
-                        className="d-flex align-items-center"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Integer Requirement
+                        Requirement
                       </Button>
                     </div>
                   </div>
                 </Form.Group>
+                <Row>
+                  {formError ? (
+                    <FormError errorMessage={formErrorMessage} />
+                  ) : null}
+                </Row>
+                <Button
+                  variant="primary"
+                  disabled={submittingForm}
+                  type="submit"
+                >
+                  {submittingForm ? "Submitted" : "Submit"}
+                </Button>
               </Form>
             </Col>
           </div>

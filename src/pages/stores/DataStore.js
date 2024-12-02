@@ -235,6 +235,40 @@ const useDataStore = create(
           throw error;
         }
       },
+      createProjectRun: async (projectRunData, accessToken) => {
+        set({ isCreatingProjectRun: true, createProjectRunError: null });
+        try {
+          const response = await fetch(
+            "http://localhost:8080/api/projectruns",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify(projectRunData),
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          set((state) => ({
+            projectRuns: [...state.projectRuns, data],
+            isCreatingProjectRun: false,
+          }));
+        } catch (error) {
+          set({
+            createProjectRunError: error,
+            isCreatingProjectRun: false,
+          });
+          console.error(error.message.toString());
+          throw error;
+        }
+      },
     }),
     {
       name: "DataStore",
