@@ -19,6 +19,43 @@ const CreateProject = () => {
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, getProject } = useDataStore();
 
+  const [formData, setFormData] = useState({
+    name: "project name",
+    title: "project_name",
+    description: "example",
+    assumptions: ["Assumption 1"],
+    requirements: [{ KeyRequirement: ["Value1"] }],
+    scenarios: [
+      {
+        name: "Base Scenario",
+        description: ["Description of the base scenario"],
+        other: [{ key: "Parameter1", value: "Value1" }],
+      },
+    ],
+    sensitivities: [
+      {
+        name: "Default Sensitivity",
+        description: ["Description of sensitivity"],
+        list: ["Sensitivity factor 1"],
+      },
+    ],
+    milestones: [
+      {
+        name: "Milestone 1",
+        description: ["First major project milestone"],
+        milestone_date: "2023-02-01",
+      },
+    ],
+    scheduled_start: "2023-01-01",
+    scheduled_end: "2023-12-31",
+    owner: {
+      email: "Jordan.Eisenman@nrel.gov",
+      first_name: "Jordan",
+      last_name: "Eisenman",
+      organization: "NREL",
+    },
+  });
+
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
@@ -41,7 +78,10 @@ const CreateProject = () => {
   const [assumptions, setAssumptions] = useState(["Assumption 1"]);
   const handleAddAssumption = (e) => {
     e.preventDefault();
-    setAssumptions([...assumptions, ""]);
+    setFormData((prevState) => ({
+      ...prevState,
+      assumptions: [...prevState.assumptions, ""],
+    }));
   };
   const handleRemoveAssumption = (index, e) => {
     e.preventDefault();
@@ -271,11 +311,13 @@ const CreateProject = () => {
     scheduledEnd: "2023-12-31",
   });
 
-  const handleDateChange = (field, value) => {
-    setSchedule({
-      ...schedule,
+  const handleDateChange = (field, value, e) => {
+    e.preventDefault();
+    console.log(value);
+    setFormData((prevState) => ({
+      ...prevState,
       [field]: value,
-    });
+    }));
   };
 
   const createProject = useDataStore((state) => state.createProject);
@@ -283,7 +325,6 @@ const CreateProject = () => {
   const [formErrorMessage, setFormErrorMessage] = useState("");
 
   const [submittingForm, setSubmittingForm] = useState(false);
-  const [formData, setFormData] = useState({});
 
   const retriesLimit = 2;
   const handleSubmit = async (e) => {
@@ -541,9 +582,17 @@ const CreateProject = () => {
                     name="projectName"
                     placeholder="Project Name"
                     className="mb-4"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                  />
+                    value={formData.name}
+                    onChange={(e) => {
+                      setFormData((prevState) => ({
+                        ...prevState,
+                        name: e.target.value,
+                        title: e.target.value
+                          .toLowerCase()
+                          .replace(/\s+/g, "_"),
+                      }));
+                    }}
+                  />{" "}
                   <Row>
                     <Col md={6} className="mb-3">
                       <Form.Group>
@@ -554,9 +603,13 @@ const CreateProject = () => {
                           id="scheduledStart"
                           name="scheduledStart"
                           type="date"
-                          value={schedule.scheduledStart || ""}
+                          value={formData.scheduledStart || ""}
                           onChange={(e) =>
-                            handleDateChange("scheduledStart", e.target.value)
+                            handleDateChange(
+                              "scheduledStart",
+                              e.target.value,
+                              e,
+                            )
                           }
                         />
                       </Form.Group>
@@ -570,15 +623,14 @@ const CreateProject = () => {
                           id="scheduledEnd"
                           name="scheduledEnd"
                           type="date"
-                          value={schedule.scheduledEnd || ""}
+                          value={formData.scheduled_end || ""}
                           onChange={(e) =>
-                            handleDateChange("scheduledEnd", e.target.value)
+                            handleDateChange("scheduled_end", e.target.value, e)
                           }
                         />
                       </Form.Group>
                     </Col>
                   </Row>
-
                   <Form.Group className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
                       Project Owner
@@ -637,7 +689,6 @@ const CreateProject = () => {
                       </Col>
                     </Row>
                   </Form.Group>
-
                   <Form.Label className="d-block text-start w-100 custom-form-label">
                     Project Description
                   </Form.Label>
@@ -650,7 +701,6 @@ const CreateProject = () => {
                     value={projectDescription}
                     onChange={(e) => setProjectDescription(e.target.value)}
                   />
-
                   {/* Assumptions Section */}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
@@ -691,7 +741,6 @@ const CreateProject = () => {
                       </Button>
                     </div>
                   </div>
-
                   {/* Requirements Section */}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
@@ -855,7 +904,6 @@ const CreateProject = () => {
                       </Button>
                     </div>
                   </div>
-
                   {/* Scenarios Section */}
                   <div className="mb-3">
                     {/* Here */}
@@ -1163,7 +1211,6 @@ const CreateProject = () => {
                       </Button>
                     </div>
                   </div>
-
                   {/* Milestones Section */}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
