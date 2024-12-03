@@ -644,8 +644,16 @@ const CreateProject = () => {
                           id="firstName"
                           type="input"
                           placeholder="First Name"
-                          value={ownerFirstName}
-                          onChange={(e) => setOwnerFirstName(e.target.value)}
+                          value={formData.owner.name}
+                          onChange={(e) => {
+                            setFormData((prevState) => ({
+                              ...prevState,
+                              owner: {
+                                ...prevState.owner,
+                                name: e.target.value,
+                              },
+                            }));
+                          }}
                         />
                       </Col>
                       <Col md={6} className="mb-3">
