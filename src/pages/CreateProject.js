@@ -664,8 +664,16 @@ const CreateProject = () => {
                           id="lastName"
                           type="input"
                           placeholder="Last Name"
-                          value={ownerLastName}
-                          onChange={(e) => setOwnerLastName(e.target.value)}
+                          value={formData.owner.last_name}
+                          onChange={(e) => {
+                            setFormData((prevState) => ({
+                              ...prevState,
+                              owner: {
+                                ...prevState.owner,
+                                last_name: e.target.value,
+                              },
+                            }));
+                          }}
                         />
                       </Col>
                     </Row>
@@ -678,8 +686,16 @@ const CreateProject = () => {
                           id="email"
                           type="input"
                           placeholder="Email"
-                          value={ownerEmail}
-                          onChange={(e) => setOwnerEmail(e.target.value)}
+                          value={formData.owner.email}
+                          onChange={(e) => {
+                            setFormData((prevState) => ({
+                              ...prevState,
+                              owner: {
+                                ...prevState.owner,
+                                email: e.target.value,
+                              },
+                            }));
+                          }}
                         />
                       </Col>
 
@@ -691,8 +707,17 @@ const CreateProject = () => {
                           id="organization"
                           type="input"
                           placeholder="Organization"
-                          value={ownerOrganization}
-                          onChange={(e) => setOwnerOrganization(e.target.value)}
+                          value={formData.owner.organization}
+                          onChange={(e) => {
+                            setFormData((prevState) => ({
+                              ...prevState,
+                              owner: {
+                                ...prevState.owner,
+                                organization: e.target.value,
+                              },
+                            }));
+                            console.log(formData.owner.organization);
+                          }}
                         />
                       </Col>
                     </Row>
@@ -706,8 +731,13 @@ const CreateProject = () => {
                     rows={3}
                     placeholder="Describe your project"
                     className="mb-4"
-                    value={projectDescription}
-                    onChange={(e) => setProjectDescription(e.target.value)}
+                    value={formData.description}
+                    onChange={(e) => {
+                      setFormData((prevState) => ({
+                        ...prevState,
+                        description: e.target.value,
+                      }));
+                    }}
                   />
                   {/* Assumptions Section */}
                   <div className="mb-3">
