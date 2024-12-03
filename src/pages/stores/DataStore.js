@@ -207,6 +207,7 @@ const useDataStore = create(
       createProject: async (projectData, accessToken) => {
         set({ isCreatingProject: true, createProjectError: null });
         try {
+          // Change to be actual API...
           const response = await fetch("http://localhost:8080/api/projects", {
             method: "POST",
             headers: {
@@ -235,6 +236,7 @@ const useDataStore = create(
           throw error;
         }
       },
+
       createProjectRun: async (projectName, projectRunData, accessToken) => {
         set({ isCreatingProjectRun: true, projectRunCreateError: null });
         console.log("Project Name received:", projectName); // Add this log

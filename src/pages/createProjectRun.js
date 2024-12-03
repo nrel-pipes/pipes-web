@@ -15,7 +15,7 @@ import "./FormStyles.css";
 import "./createProjectRun.css";
 import { useState, useEffect } from "react";
 
-const CreateProjectRun = (projectData) => {
+const CreateProjectRun = () => {
   // Notice, project data will be set the bounds for scheduledStart and end in validation
   const navigate = useNavigate();
   const createProjectRun = useDataStore((state) => state.createProjectRun);
@@ -25,7 +25,6 @@ const CreateProjectRun = (projectData) => {
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [submittingForm, setSubmittingForm] = useState(false);
-  const [hasScheduleError, setHasScheduleError] = useState(false);
 
   const [scenarioNames, setScenarioNames] = useState([]);
 
@@ -247,6 +246,24 @@ const CreateProjectRun = (projectData) => {
       return;
     }
 
+    // Validate Scenarios: empty
+    console.log(formData.scenarios);
+    console.log("here");
+    for (let i = 0; i < formData.scenarios.length; i++) {
+      let scenario = document.getElementById(`scenarios${i}`);
+      if (formData.scenarios[i] === "") {
+        if (scenario) {
+          scenario.classList.add("form-error");
+        }
+        setFormError(true);
+        setFormErrorMessage("You must either delete or fill in a scenario.");
+        setSubmittingForm(false);
+        return;
+      }
+      if (scenario) {
+        scenario.classList.remove("form-error");
+      }
+    }
     try {
       await createProjectRun(currentProject.name, formData, accessToken);
       console.log("Project created successfully");
@@ -459,7 +476,7 @@ const CreateProjectRun = (projectData) => {
                     {formData.scenarios.map((scenario, index) => (
                       <div
                         key={index}
-                        className="d-flex mb-2 align-items-center gap-2"
+                        className="d-flex mb-2 align-items-center gap-2 "
                       >
                         <Form.Select
                           id={`scenarios${index}`}
