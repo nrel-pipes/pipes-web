@@ -20,7 +20,13 @@ const CreateProjectRun = () => {
   const navigate = useNavigate();
   const createProjectRun = useDataStore((state) => state.createProjectRun);
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { getProjectBasics, getProject, currentProject } = useDataStore();
+  const {
+    getProjectBasics,
+    getProject,
+    currentProject,
+    setCurrentProjectRunName,
+    setCurrentProjectRun,
+  } = useDataStore();
   const [isExpanded, setIsExpanded] = useState(false);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
@@ -248,7 +254,6 @@ const CreateProjectRun = () => {
 
     // Validate Scenarios: empty
     console.log(formData.scenarios);
-    console.log("here");
     for (let i = 0; i < formData.scenarios.length; i++) {
       let scenario = document.getElementById(`scenarios${i}`);
       if (formData.scenarios[i] === "") {
@@ -265,23 +270,30 @@ const CreateProjectRun = () => {
       }
     }
     try {
-      await createProjectRun(currentProject.name, formData, accessToken);
-      console.log("Project created successfully");
+      const createdProjectRun = await createProjectRun(
+        currentProject.name,
+        formData,
+        accessToken,
+      );
+      console.log("Project run created successfully");
+
+      // Set the store with the actual server response data
+      setCurrentProjectRunName(createdProjectRun.name);
+      setCurrentProjectRun(createdProjectRun);
+
+      setFormError(false);
+      setSubmittingForm(false);
+
+      // Navigate after store is updated with correct data
+      navigate("/projectrun");
     } catch (error) {
-      console.error("Error creating project:", error.status);
+      console.error("Error creating project run:", error);
       setFormError(true);
       setFormErrorMessage(
-        `Failed to create project: ${error.message}. Please try again later.`,
+        `Failed to create project run: ${error.message}. Please try again later.`,
       );
       setSubmittingForm(false);
-      return;
     }
-
-    // If we get here, the project was created successfully
-    setFormError(false);
-    await getProject(formData.name, accessToken);
-    setSubmittingForm(false);
-    navigate("/overview");
   };
   // Adding definitions
   const [documentation] = useState({
