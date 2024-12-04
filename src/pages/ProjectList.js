@@ -12,7 +12,7 @@ import Row from "react-bootstrap/Row";
 import { Plus } from "lucide-react";
 
 import "./PageStyles.css";
-import "./PageStyles.css";
+import "../components/Cards.css";
 import useAuthStore from "./stores/AuthStore";
 import useDataStore from "./stores/DataStore";
 import PageTitle from "../components/pageTitle";
@@ -153,7 +153,7 @@ const ProjectList = () => {
               className="create-card"
               onClick={(e) => handleCreateProjectClick(e)}
             >
-              <Card.Body className="bg-light text-start d-flex flex-column align-items-center">
+              <Card.Body className="bg-light text-center d-flex flex-column align-items-center">
                 <Card.Title className="mt-3 mb-3 text-center">
                   Create Project
                 </Card.Title>

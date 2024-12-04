@@ -81,7 +81,7 @@
     inset 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
-.create-project-card:hover .card-body {
+.create-card:hover .card-body {
   background-color: rgb(71, 148, 218) !important;
   color: white;
 }
