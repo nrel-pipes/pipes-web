@@ -13,14 +13,11 @@ import "../components/Cards.css";
 const ProjectOverviewProjectRuns = ({ projectRuns }) => {
   const { setCurrentProjectRunName, setCurrentProjectRun } = useDataStore();
   const navigate = useNavigate();
-  const handleClick = (event) => {
-    const selectedProjectRunName = event.currentTarget.innerText.slice(15);
-    setCurrentProjectRunName(selectedProjectRunName);
-    projectRuns?.forEach((projectRun) => {
-      if (projectRun.name === selectedProjectRunName) {
-        setCurrentProjectRun(projectRun);
-      }
-    });
+
+  const handleClick = (projectRun) => {
+    setCurrentProjectRunName(projectRun.name);
+    setCurrentProjectRun(projectRun);
+    navigate("/projectrun"); // Add navigation after setting store values
   };
 
   const handleCreateProjectRunClick = () => {
@@ -78,7 +75,10 @@ const ProjectOverviewProjectRuns = ({ projectRuns }) => {
               </div>
 
               <div className="card-footer">
-                <Button variant="outline-primary" onClick={handleClick}>
+                <Button
+                  variant="outline-primary"
+                  onClick={() => handleClick(projectRun)} // Modified to pass the entire projectRun object
+                >
                   <FontAwesomeIcon icon={faCircleArrowRight} /> Go to Project
                   Run &gt;&gt;
                 </Button>
