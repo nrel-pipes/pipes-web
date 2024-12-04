@@ -24,7 +24,7 @@ const CreateProject = () => {
     title: "project_name",
     description: "example",
     assumptions: ["Assumption 1"],
-    requirements: [{ KeyRequirement: ["Value1"] }],
+    requirements: { key: ["Requirement1"], key2: ["Requirement1"] },
     scenarios: [
       {
         name: "Base Scenario",
@@ -83,107 +83,153 @@ const CreateProject = () => {
       assumptions: [...prevState.assumptions, ""],
     }));
   };
+  const handleRemoveFromList = (key, index, e) => {
+    e.preventDefault();
+    setFormData((prevState) => ({
+      ...prevState,
+      [key]: prevState[key].filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleAddSubRequirement = (name, e) => {
+    e.preventDefault();
+    setFormData((prevState) => ({
+      ...prevState,
+      requirements: {
+        ...prevState.requirements,
+        [name]: [...prevState.requirements[name], ""], // Add an empty value
+      },
+    }));
+  };
+
   const handleRemoveAssumption = (index, e) => {
     e.preventDefault();
-    const newAssumptions = assumptions.filter((_, idx) => idx !== index);
-    setAssumptions(newAssumptions);
-  };
-  const handleAssumptionChange = (index, value) => {
-    setAssumptions((prevAssumptions) => {
-      const updatedAssumptions = [...prevAssumptions];
-      updatedAssumptions[index] = value;
-      return updatedAssumptions;
+    setFormData((prevFormData) => {
+      const newAssumptions = prevFormData.assumptions.filter(
+        (_, idx) => idx !== index,
+      );
+      return {
+        ...prevFormData,
+        assumptions: newAssumptions,
+      };
     });
   };
-  // Requirement state
+  const handleAssumptionChange = (index, value) => {
+    setFormData((prevFormData) => {
+      const updatedAssumptions = [...prevFormData.assumptions];
+      updatedAssumptions[index] = value;
+      return {
+        ...prevFormData,
+        assumptions: updatedAssumptions,
+      };
+    });
+    console.log(formData.assumptions[index]);
+  }; // Requirement state
   const [requirements, setRequirments] = useState([
     { KeyRequirement: ["Value1"] },
   ]);
   const [requirementsType, setRequirmentsType] = useState(["str"]);
-
-  const handleAddRequirement = (type, e) => {
-    e.preventDefault();
-    // Initialize with an empty requirement name and an array with one default value
-    const defaultValue = type === "int" ? 0 : "";
-    const newRequirements = [...requirements, { "": [defaultValue] }];
-    setRequirments(newRequirements);
-
-    const newRequirementsType = [...requirementsType, type];
-    setRequirmentsType(newRequirementsType);
+  const handleRequirementChange = (index, field, value) => {
+    const updatedRequirements = [...formData.requirements];
+    updatedRequirements[index][field] = value; // Update the specific field ('key' or 'value')
+    setFormData({ ...formData, requirements: updatedRequirements });
+  };
+  const handleListValueChange = (field, index, value) => {
+    setFormData((prev) => {
+      const updatedList = [...prev[field]];
+      updatedList[index] = value;
+      return {
+        ...prev,
+        [field]: updatedList,
+      };
+    });
   };
 
-  const handleRemoveRequirement = (index, e) => {
+  const handleRemoveRequirement = (name, e) => {
     e.preventDefault();
-    const newRequirements = requirements.filter((_, idx) => idx !== index);
-    setRequirments(newRequirements);
-
-    const newRequirementsType = requirementsType.filter(
-      (_, idx) => idx !== index,
-    );
-    setRequirmentsType(newRequirementsType);
+    setFormData((prevState) => {
+      const { [name]: _, ...newRequirements } = prevState.requirements; // Omit the key
+      return {
+        ...prevState,
+        requirements: newRequirements,
+      };
+    });
   };
 
-  // New function to handle adding a sub-requirement value
-  const handleAddSubRequirement = (requirementIndex, e) => {
+  const handleAddRequirement = (e) => {
     e.preventDefault();
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const requirementName = Object.keys(requirement)[0];
-    const defaultValue = requirementsType[requirementIndex] === "int" ? 0 : "";
-
-    requirement[requirementName] = [
-      ...requirement[requirementName],
-      defaultValue,
-    ];
-    setRequirments(newRequirements);
+    setFormData((prevState) => {
+      // Avoid adding duplicate keys
+      if (prevState.requirements["requirement"]) {
+        return prevState;
+      }
+      return {
+        ...prevState,
+        requirements: {
+          ...prevState.requirements,
+          requirement: [""], // Initialize with a single empty value
+        },
+      };
+    });
   };
 
   // New function to handle removing a sub-requirement value
-  const handleRemoveSubRequirement = (requirementIndex, valueIndex, e) => {
+  const handleRemoveSubRequirement = (name, valueIndex, e) => {
     e.preventDefault();
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const requirementName = Object.keys(requirement)[0];
-
-    requirement[requirementName] = requirement[requirementName].filter(
-      (_, idx) => idx !== valueIndex,
-    );
-    setRequirments(newRequirements);
+    setFormData((prevState) => {
+      const newValues = prevState.requirements[name].filter(
+        (_, idx) => idx !== valueIndex,
+      ); // Remove the value at valueIndex
+      return {
+        ...prevState,
+        requirements: {
+          ...prevState.requirements,
+          [name]: newValues, // Update the specific key's array
+        },
+      };
+    });
   };
-
   // New function to handle requirement name changes
   const handleRequirementNameChange = (requirementIndex, newName) => {
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const oldName = Object.keys(requirement)[0];
-    const values = requirement[oldName];
+    setFormData((prevFormData) => {
+      const newRequirements = [...prevFormData.requirements];
+      const requirement = newRequirements[requirementIndex];
+      const oldName = Object.keys(requirement)[0];
+      const values = requirement[oldName];
 
-    // Create new object with updated name but same values
-    newRequirements[requirementIndex] = { [newName]: values };
-    setRequirments(newRequirements);
+      // Create new object with updated name but same values
+      newRequirements[requirementIndex] = { [newName]: values };
+
+      return {
+        ...prevFormData,
+        requirements: newRequirements,
+      };
+    });
+  };
+  const handleRequirementKeyChange = (oldKey, newKey) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      requirements: prevData.requirements.map((req) =>
+        req.key === oldKey ? { ...req, key: newKey } : req,
+      ),
+    }));
+  };
+
+  const handleRequirementValueChange = (key, index, newValue) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      requirements: prevData.requirements.map((req) =>
+        req.key === key
+          ? {
+              ...req,
+              values: req.values.map((v, i) => (i === index ? newValue : v)),
+            }
+          : req,
+      ),
+    }));
   };
 
   // New function to handle requirement value changes
-  const handleRequirementValueChange = (
-    requirementIndex,
-    valueIndex,
-    newValue,
-  ) => {
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const requirementName = Object.keys(requirement)[0];
-
-    // Handle type conversion for integers
-    if (requirementsType[requirementIndex] === "int") {
-      const intValue = parseInt(newValue) || 0;
-      requirement[requirementName][valueIndex] = intValue;
-    } else {
-      requirement[requirementName][valueIndex] = newValue;
-    }
-
-    setRequirments(newRequirements);
-  };
-
   // Adding scenario
   const [scenarios, setScenarios] = useState([
     {
@@ -744,7 +790,7 @@ const CreateProject = () => {
                     <Form.Label className="d-block text-start w-100 custom-form-label">
                       Assumptions
                     </Form.Label>
-                    {assumptions.map((assumption, index) => (
+                    {formData.assumptions.map((assumption, index) => (
                       <div
                         key={index}
                         className="d-flex mb-2 align-items-center gap-2"
@@ -755,18 +801,24 @@ const CreateProject = () => {
                           placeholder="Enter assumption"
                           value={assumption}
                           onChange={(e) =>
-                            handleAssumptionChange(index, e.target.value)
+                            handleListValueChange(
+                              "assumptions",
+                              index,
+                              e.target.value,
+                            )
                           }
                         />
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={(e) => handleRemoveAssumption(index, e)}
+                          onClick={(e) =>
+                            handleRemoveFromList("assumptions", index, e)
+                          }
                         >
                           <Minus className="w-4 h-4" />
                         </Button>
                       </div>
-                    ))}
+                    ))}{" "}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
                         variant="outline-primary"
@@ -785,36 +837,29 @@ const CreateProject = () => {
                       Requirements
                     </Form.Label>
                     <div className="d-block">
-                      {requirements.map((requirement, requirements_i) => {
-                        const requirementName = Object.keys(requirement)[0];
-                        const values = requirement[requirementName];
-                        const type = requirementsType[requirements_i];
-
-                        return (
-                          <div key={requirements_i}>
-                            {values.map((value, index) => (
+                      {Object.entries(formData.requirements).map(
+                        ([name, values], idx) => (
+                          <div key={idx}>
+                            {values.map((value, valueIndex) => (
                               <Row
-                                key={`${requirements_i}-${index}`}
+                                key={`${idx}-${valueIndex}`}
                                 className="mb-2 align-items-center"
                               >
-                                {index === 0 ? (
+                                {valueIndex === 0 ? (
                                   <>
                                     <Col xs="auto">
                                       <Button
                                         variant="outline-danger"
                                         size="sm"
                                         onClick={(e) =>
-                                          handleRemoveRequirement(
-                                            requirements_i,
-                                            e,
-                                          )
+                                          handleRemoveRequirement(name, e)
                                         }
+                                        className="d-flex align-items-center justify-content-center"
                                         style={{
                                           width: "32px",
                                           height: "32px",
                                           padding: "4px",
                                         }}
-                                        className="d-flex align-items-center justify-content-center"
                                       >
                                         <Minus className="w-4 h-4" />
                                       </Button>
@@ -822,12 +867,15 @@ const CreateProject = () => {
                                     <Col xs={3}>
                                       <Form.Control
                                         type="text"
-                                        id={`requirement${index}`}
-                                        placeholder="Requirement"
-                                        value={requirementName}
+                                        placeholder={
+                                          name === "requirement"
+                                            ? "Requirement Placeholder"
+                                            : "Requirement"
+                                        }
+                                        value={name}
                                         onChange={(e) =>
                                           handleRequirementNameChange(
-                                            requirements_i,
+                                            name,
                                             e.target.value,
                                           )
                                         }
@@ -846,18 +894,18 @@ const CreateProject = () => {
                                 )}
                                 <Col>
                                   <Form.Control
-                                    id={`requirementValue-${index}`}
-                                    type={type === "int" ? "number" : "text"}
+                                    type="text"
                                     placeholder={
-                                      type === "int"
-                                        ? "Enter number"
+                                      name === "requirement" &&
+                                      value === "Placeholder value"
+                                        ? "Placeholder value"
                                         : "Enter value"
                                     }
                                     value={value}
                                     onChange={(e) =>
                                       handleRequirementValueChange(
-                                        requirements_i,
-                                        index,
+                                        name,
+                                        valueIndex,
                                         e.target.value,
                                       )
                                     }
@@ -870,17 +918,17 @@ const CreateProject = () => {
                                       size="sm"
                                       onClick={(e) =>
                                         handleRemoveSubRequirement(
-                                          requirements_i,
-                                          index,
+                                          name,
+                                          valueIndex,
                                           e,
                                         )
                                       }
+                                      className="d-flex align-items-center justify-content-center"
                                       style={{
                                         width: "32px",
                                         height: "32px",
                                         padding: "4px",
                                       }}
-                                      className="d-flex align-items-center justify-content-center"
                                     >
                                       <Minus className="w-4 h-4" />
                                     </Button>
@@ -888,6 +936,7 @@ const CreateProject = () => {
                                 </Col>
                               </Row>
                             ))}
+                            {/* Add Plus Button Below the List */}
                             <Row>
                               <Col xs="auto">
                                 <div style={{ width: "32px" }}></div>
@@ -899,14 +948,14 @@ const CreateProject = () => {
                                     variant="outline-primary"
                                     size="sm"
                                     onClick={(e) =>
-                                      handleAddSubRequirement(requirements_i, e)
+                                      handleAddSubRequirement(name, e)
                                     }
+                                    className="d-flex align-items-center justify-content-center"
                                     style={{
                                       width: "32px",
                                       height: "32px",
                                       padding: "4px",
                                     }}
-                                    className="d-flex align-items-center justify-content-center"
                                   >
                                     <Plus className="w-4 h-4" />
                                   </Button>
@@ -917,28 +966,18 @@ const CreateProject = () => {
                               </Col>
                             </Row>
                           </div>
-                        );
-                      })}
+                        ),
+                      )}
                     </div>
                     <div className="d-flex justify-content-start mt-2">
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={(e) => handleAddRequirement("str", e)}
+                        onClick={(e) => handleAddRequirement(e)}
                         className="d-flex align-items-center me-2"
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        String Requirement
-                      </Button>
-
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={(e) => handleAddRequirement("int", e)}
-                        className="d-flex align-items-center"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Integer Requirement
+                        Requirement
                       </Button>
                     </div>
                   </div>
