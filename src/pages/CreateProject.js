@@ -76,7 +76,7 @@ const CreateProject = () => {
 
   // Assumptions state
   const [assumptions, setAssumptions] = useState(["Assumption 1"]);
-  const handleAddAssumption = (e) => {
+  const handleAssumptionAdd = (e) => {
     e.preventDefault();
     setFormData((prevState) => ({
       ...prevState,
@@ -91,7 +91,7 @@ const CreateProject = () => {
     }));
   };
 
-  const handleAddSubRequirement = (name, e) => {
+  const handleRequirementAddSub = (name, e) => {
     e.preventDefault();
     setFormData((prevState) => ({
       ...prevState,
@@ -114,17 +114,7 @@ const CreateProject = () => {
       };
     });
   };
-  const handleAssumptionChange = (index, value) => {
-    setFormData((prevFormData) => {
-      const updatedAssumptions = [...prevFormData.assumptions];
-      updatedAssumptions[index] = value;
-      return {
-        ...prevFormData,
-        assumptions: updatedAssumptions,
-      };
-    });
-    console.log(formData.assumptions[index]);
-  }; // Requirement state
+
   const [requirements, setRequirments] = useState([
     { KeyRequirement: ["Value1"] },
   ]);
@@ -145,7 +135,7 @@ const CreateProject = () => {
     });
   };
 
-  const handleRemoveRequirement = (name, e) => {
+  const handleRequirementRemove = (name, e) => {
     e.preventDefault();
     setFormData((prevState) => {
       const { [name]: _, ...newRequirements } = prevState.requirements; // Omit the key
@@ -239,7 +229,7 @@ const CreateProject = () => {
     },
   ]);
 
-  const handleAddScenario = (e) => {
+  const handleScenarioAdd = (e) => {
     e.preventDefault();
     setScenarios([
       ...scenarios,
@@ -251,13 +241,13 @@ const CreateProject = () => {
     ]);
   };
 
-  const handleRemoveScenario = (index, e) => {
+  const handleScenarioRemove = (index, e) => {
     e.preventDefault();
     const newScenarios = scenarios.filter((_, idx) => idx !== index);
     setScenarios(newScenarios);
   };
 
-  const handleAddOtherInfo = (scenarioIndex, e) => {
+  const handleScenarioAddOtherInfo = (scenarioIndex, e) => {
     e.preventDefault();
     const newScenarios = [...scenarios];
     newScenarios[scenarioIndex].other.push({
@@ -267,7 +257,7 @@ const CreateProject = () => {
     setScenarios(newScenarios);
   };
 
-  const handleOtherInfoChange = (
+  const handleScenarioOtherInfoChange = (
     scenarioIndex,
     otherIndex,
     field,
@@ -278,7 +268,7 @@ const CreateProject = () => {
     setScenarios(newScenarios);
   };
 
-  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+  const handleScenarioRemoveOtherInfo = (scenarioIndex, otherIndex) => {
     const newScenarios = [...scenarios];
     newScenarios[scenarioIndex].other.splice(otherIndex, 1);
     setScenarios(newScenarios);
@@ -823,7 +813,7 @@ const CreateProject = () => {
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={handleAddAssumption}
+                        onClick={handleAssumptionAdd}
                         className="mt-2 align-items-left"
                       >
                         <Plus className="w-4 h-4 mr-1" />
@@ -852,7 +842,7 @@ const CreateProject = () => {
                                         variant="outline-danger"
                                         size="sm"
                                         onClick={(e) =>
-                                          handleRemoveRequirement(name, e)
+                                          handleRequirementRemove(name, e)
                                         }
                                         className="d-flex align-items-center justify-content-center"
                                         style={{
@@ -948,7 +938,7 @@ const CreateProject = () => {
                                     variant="outline-primary"
                                     size="sm"
                                     onClick={(e) =>
-                                      handleAddSubRequirement(name, e)
+                                      handleRequirementAddSub(name, e)
                                     }
                                     className="d-flex align-items-center justify-content-center"
                                     style={{
@@ -1002,7 +992,7 @@ const CreateProject = () => {
                               variant="outline-danger"
                               size="sm"
                               onClick={(e) =>
-                                handleRemoveScenario(scenarioIndex, e)
+                                handleScenarioRemove(scenarioIndex, e)
                               }
                               style={{
                                 width: "32px",
@@ -1068,7 +1058,7 @@ const CreateProject = () => {
                                     placeholder={`key${otherIndex + 1}`}
                                     value={item.key}
                                     onChange={(e) =>
-                                      handleOtherInfoChange(
+                                      handleScenarioOtherInfoChange(
                                         scenarioIndex,
                                         otherIndex,
                                         "key",
@@ -1084,7 +1074,7 @@ const CreateProject = () => {
                                     placeholder="Value"
                                     value={item.value}
                                     onChange={(e) =>
-                                      handleOtherInfoChange(
+                                      handleScenarioOtherInfoChange(
                                         scenarioIndex,
                                         otherIndex,
                                         "value",
@@ -1098,7 +1088,7 @@ const CreateProject = () => {
                                     variant="outline-danger"
                                     size="sm"
                                     onClick={() =>
-                                      handleRemoveOtherInfo(
+                                      handleScenarioRemoveOtherInfo(
                                         scenarioIndex,
                                         otherIndex,
                                       )
@@ -1122,7 +1112,7 @@ const CreateProject = () => {
                                 variant="outline-primary"
                                 size="sm"
                                 onClick={(e) =>
-                                  handleAddOtherInfo(scenarioIndex, e)
+                                  handleScenarioAddOtherInfo(scenarioIndex, e)
                                 }
                                 className="d-flex align-items-center gap-1"
                               >
@@ -1140,7 +1130,7 @@ const CreateProject = () => {
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={handleAddScenario}
+                        onClick={handleScenarioAdd}
                         className="mt-2 align-items-left"
                       >
                         <Plus className="w-4 h-4 mr-1" />
