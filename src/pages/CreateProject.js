@@ -19,43 +19,6 @@ const CreateProject = () => {
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, getProject } = useDataStore();
 
-  const [formData, setFormData] = useState({
-    name: "project name",
-    title: "project_name",
-    description: "example",
-    assumptions: ["Assumption 1"],
-    requirements: { key: ["Requirement1"], key2: ["Requirement1"] },
-    scenarios: [
-      {
-        name: "Base Scenario",
-        description: ["Description of the base scenario"],
-        other: [{ key: "Parameter1", value: "Value1" }],
-      },
-    ],
-    sensitivities: [
-      {
-        name: "Default Sensitivity",
-        description: ["Description of sensitivity"],
-        list: ["Sensitivity factor 1"],
-      },
-    ],
-    milestones: [
-      {
-        name: "Milestone 1",
-        description: ["First major project milestone"],
-        milestone_date: "2023-02-01",
-      },
-    ],
-    scheduled_start: "2023-01-01",
-    scheduled_end: "2023-12-31",
-    owner: {
-      email: "Jordan.Eisenman@nrel.gov",
-      first_name: "Jordan",
-      last_name: "Eisenman",
-      organization: "NREL",
-    },
-  });
-
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
@@ -76,150 +39,110 @@ const CreateProject = () => {
 
   // Assumptions state
   const [assumptions, setAssumptions] = useState(["Assumption 1"]);
-  const handleAssumptionAdd = (e) => {
+  const handleAddAssumption = (e) => {
     e.preventDefault();
-    setFormData((prevState) => ({
-      ...prevState,
-      assumptions: [...prevState.assumptions, ""],
-    }));
+    setAssumptions([...assumptions, ""]);
   };
-  const handleRemoveFromList = (key, index, e) => {
-    e.preventDefault();
-    setFormData((prevState) => ({
-      ...prevState,
-      [key]: prevState[key].filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleRequirementAddSub = (name, e) => {
-    e.preventDefault();
-    setFormData((prevState) => ({
-      ...prevState,
-      requirements: {
-        ...prevState.requirements,
-        [name]: [...prevState.requirements[name], ""], // Add an empty value
-      },
-    }));
-  };
-
   const handleRemoveAssumption = (index, e) => {
     e.preventDefault();
-    setFormData((prevFormData) => {
-      const newAssumptions = prevFormData.assumptions.filter(
-        (_, idx) => idx !== index,
-      );
-      return {
-        ...prevFormData,
-        assumptions: newAssumptions,
-      };
-    });
+    const newAssumptions = assumptions.filter((_, idx) => idx !== index);
+    setAssumptions(newAssumptions);
+  };
+  const handleAssumptionChange = (index, value) => {
+    const newAssumptions = [...assumptions];
+    newAssumptions[index] = value;
+    setAssumptions(newAssumptions);
   };
 
+  // Requirement state
   const [requirements, setRequirments] = useState([
     { KeyRequirement: ["Value1"] },
   ]);
   const [requirementsType, setRequirmentsType] = useState(["str"]);
-  const handleRequirementChange = (index, field, value) => {
-    const updatedRequirements = [...formData.requirements];
-    updatedRequirements[index][field] = value; // Update the specific field ('key' or 'value')
-    setFormData({ ...formData, requirements: updatedRequirements });
-  };
-  const handleListValueChange = (field, index, value) => {
-    setFormData((prev) => {
-      const updatedList = [...prev[field]];
-      updatedList[index] = value;
-      return {
-        ...prev,
-        [field]: updatedList,
-      };
-    });
+
+  const handleAddRequirement = (type, e) => {
+    e.preventDefault();
+    // Initialize with an empty requirement name and an array with one default value
+    const defaultValue = type === "int" ? 0 : "";
+    const newRequirements = [...requirements, { "": [defaultValue] }];
+    setRequirments(newRequirements);
+
+    const newRequirementsType = [...requirementsType, type];
+    setRequirmentsType(newRequirementsType);
   };
 
-  const handleRequirementRemove = (name, e) => {
+  const handleRemoveRequirement = (index, e) => {
     e.preventDefault();
-    setFormData((prevState) => {
-      const { [name]: _, ...newRequirements } = prevState.requirements; // Omit the key
-      return {
-        ...prevState,
-        requirements: newRequirements,
-      };
-    });
+    const newRequirements = requirements.filter((_, idx) => idx !== index);
+    setRequirments(newRequirements);
+
+    const newRequirementsType = requirementsType.filter(
+      (_, idx) => idx !== index,
+    );
+    setRequirmentsType(newRequirementsType);
   };
 
-  const handleAddRequirement = (e) => {
+  // New function to handle adding a sub-requirement value
+  const handleAddSubRequirement = (requirementIndex, e) => {
     e.preventDefault();
-    setFormData((prevState) => {
-      // Avoid adding duplicate keys
-      if (prevState.requirements["requirement"]) {
-        return prevState;
-      }
-      return {
-        ...prevState,
-        requirements: {
-          ...prevState.requirements,
-          requirement: [""], // Initialize with a single empty value
-        },
-      };
-    });
+    const newRequirements = [...requirements];
+    const requirement = newRequirements[requirementIndex];
+    const requirementName = Object.keys(requirement)[0];
+    const defaultValue = requirementsType[requirementIndex] === "int" ? 0 : "";
+
+    requirement[requirementName] = [
+      ...requirement[requirementName],
+      defaultValue,
+    ];
+    setRequirments(newRequirements);
   };
 
   // New function to handle removing a sub-requirement value
-  const handleRemoveSubRequirement = (name, valueIndex, e) => {
+  const handleRemoveSubRequirement = (requirementIndex, valueIndex, e) => {
     e.preventDefault();
-    setFormData((prevState) => {
-      const newValues = prevState.requirements[name].filter(
-        (_, idx) => idx !== valueIndex,
-      ); // Remove the value at valueIndex
-      return {
-        ...prevState,
-        requirements: {
-          ...prevState.requirements,
-          [name]: newValues, // Update the specific key's array
-        },
-      };
-    });
+    const newRequirements = [...requirements];
+    const requirement = newRequirements[requirementIndex];
+    const requirementName = Object.keys(requirement)[0];
+
+    requirement[requirementName] = requirement[requirementName].filter(
+      (_, idx) => idx !== valueIndex,
+    );
+    setRequirments(newRequirements);
   };
+
   // New function to handle requirement name changes
   const handleRequirementNameChange = (requirementIndex, newName) => {
-    setFormData((prevFormData) => {
-      const newRequirements = [...prevFormData.requirements];
-      const requirement = newRequirements[requirementIndex];
-      const oldName = Object.keys(requirement)[0];
-      const values = requirement[oldName];
+    const newRequirements = [...requirements];
+    const requirement = newRequirements[requirementIndex];
+    const oldName = Object.keys(requirement)[0];
+    const values = requirement[oldName];
 
-      // Create new object with updated name but same values
-      newRequirements[requirementIndex] = { [newName]: values };
-
-      return {
-        ...prevFormData,
-        requirements: newRequirements,
-      };
-    });
-  };
-  const handleRequirementKeyChange = (oldKey, newKey) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      requirements: prevData.requirements.map((req) =>
-        req.key === oldKey ? { ...req, key: newKey } : req,
-      ),
-    }));
-  };
-
-  const handleRequirementValueChange = (key, index, newValue) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      requirements: prevData.requirements.map((req) =>
-        req.key === key
-          ? {
-              ...req,
-              values: req.values.map((v, i) => (i === index ? newValue : v)),
-            }
-          : req,
-      ),
-    }));
+    // Create new object with updated name but same values
+    newRequirements[requirementIndex] = { [newName]: values };
+    setRequirments(newRequirements);
   };
 
   // New function to handle requirement value changes
+  const handleRequirementValueChange = (
+    requirementIndex,
+    valueIndex,
+    newValue,
+  ) => {
+    const newRequirements = [...requirements];
+    const requirement = newRequirements[requirementIndex];
+    const requirementName = Object.keys(requirement)[0];
+
+    // Handle type conversion for integers
+    if (requirementsType[requirementIndex] === "int") {
+      const intValue = parseInt(newValue) || 0;
+      requirement[requirementName][valueIndex] = intValue;
+    } else {
+      requirement[requirementName][valueIndex] = newValue;
+    }
+
+    setRequirments(newRequirements);
+  };
+
   // Adding scenario
   const [scenarios, setScenarios] = useState([
     {
@@ -228,85 +151,52 @@ const CreateProject = () => {
       other: [{ key: "Parameter1", value: "Value1" }],
     },
   ]);
-  const handleScenarioAdd = (e) => {
+
+  const handleAddScenario = (e) => {
     e.preventDefault();
-    setFormData((prevState) => ({
-      ...prevState,
-      scenarios: [
-        ...prevState.scenarios,
-        {
-          name: "",
-          description: [""],
-          other: [],
-        },
-      ],
-    }));
+    setScenarios([
+      ...scenarios,
+      {
+        name: "",
+        description: [""],
+        other: [],
+      },
+    ]);
   };
 
-  const handleScenarioRemove = (index, e) => {
+  const handleRemoveScenario = (index, e) => {
     e.preventDefault();
-    setFormData((prevState) => ({
-      ...prevState,
-      scenarios: prevState.scenarios.filter((_, idx) => idx !== index),
-    }));
+    const newScenarios = scenarios.filter((_, idx) => idx !== index);
+    setScenarios(newScenarios);
   };
 
-  const handleScenarioAddOtherInfo = (scenarioIndex, e) => {
+  const handleAddOtherInfo = (scenarioIndex, e) => {
     e.preventDefault();
-    setFormData((prevState) => {
-      const newScenarios = [...prevState.scenarios];
-      newScenarios[scenarioIndex].other.push({
-        key: "",
-        value: "",
-      });
-      return {
-        ...prevState,
-        scenarios: newScenarios,
-      };
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.push({
+      key: "",
+      value: "",
     });
+    setScenarios(newScenarios);
   };
 
-  const handleScenarioOtherInfoChange = (
+  const handleOtherInfoChange = (
     scenarioIndex,
     otherIndex,
     field,
     newValue,
   ) => {
-    setFormData((prevState) => {
-      const newScenarios = [...prevState.scenarios];
-      newScenarios[scenarioIndex].other[otherIndex][field] = newValue;
-      return {
-        ...prevState,
-        scenarios: newScenarios,
-      };
-    });
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other[otherIndex][field] = newValue;
+    setScenarios(newScenarios);
   };
 
-  const handleScenarioRemoveOtherInfo = (scenarioIndex, otherIndex) => {
-    setFormData((prevState) => {
-      const newScenarios = [...prevState.scenarios];
-      newScenarios[scenarioIndex].other.splice(otherIndex, 1);
-      return {
-        ...prevState,
-        scenarios: newScenarios,
-      };
-    });
+  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.splice(otherIndex, 1);
+    setScenarios(newScenarios);
   };
 
-  const handleScenarioFieldChange = (scenarioIndex, field, value) => {
-    setFormData((prevState) => {
-      const newScenarios = [...prevState.scenarios];
-      if (field === "description") {
-        newScenarios[scenarioIndex][field] = [value];
-      } else {
-        newScenarios[scenarioIndex][field] = value;
-      }
-      return {
-        ...prevState,
-        scenarios: newScenarios,
-      };
-    });
-  };
   const [sensitivities, setSensitivities] = useState([
     {
       name: "Default Sensitivity",
@@ -380,13 +270,11 @@ const CreateProject = () => {
     scheduledEnd: "2023-12-31",
   });
 
-  const handleDateChange = (field, value, e) => {
-    e.preventDefault();
-    console.log(value);
-    setFormData((prevState) => ({
-      ...prevState,
+  const handleDateChange = (field, value) => {
+    setSchedule({
+      ...schedule,
       [field]: value,
-    }));
+    });
   };
 
   const createProject = useDataStore((state) => state.createProject);
@@ -530,8 +418,7 @@ const CreateProject = () => {
       }
       organization.classList.remove("form-error");
 
-      // Assemble the final data object
-      setFormData({
+      let form = {
         name: projectName,
         title: projectTitle,
         description: projectDescription,
@@ -548,13 +435,12 @@ const CreateProject = () => {
           last_name: ownerLastName,
           organization: ownerOrganization,
         },
-      });
-
+      };
       // Call createProject with the data and access token
-      console.log(JSON.stringify(formData, null, 2));
+      console.log(JSON.stringify(form, null, 2));
 
       try {
-        await createProject(formData, accessToken);
+        await createProject(form, accessToken);
         console.log(`Project created successfully on attempt ${i + 1}`);
         // If successful, break out of the retry loop
         break;
@@ -651,17 +537,9 @@ const CreateProject = () => {
                     name="projectName"
                     placeholder="Project Name"
                     className="mb-4"
-                    value={formData.name}
-                    onChange={(e) => {
-                      setFormData((prevState) => ({
-                        ...prevState,
-                        name: e.target.value,
-                        title: e.target.value
-                          .toLowerCase()
-                          .replace(/\s+/g, "_"),
-                      }));
-                    }}
-                  />{" "}
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                  />
                   <Row>
                     <Col md={6} className="mb-3">
                       <Form.Group>
@@ -672,13 +550,9 @@ const CreateProject = () => {
                           id="scheduledStart"
                           name="scheduledStart"
                           type="date"
-                          value={formData.scheduledStart || ""}
+                          value={schedule.scheduledStart || ""}
                           onChange={(e) =>
-                            handleDateChange(
-                              "scheduledStart",
-                              e.target.value,
-                              e,
-                            )
+                            handleDateChange("scheduledStart", e.target.value)
                           }
                         />
                       </Form.Group>
@@ -692,14 +566,15 @@ const CreateProject = () => {
                           id="scheduledEnd"
                           name="scheduledEnd"
                           type="date"
-                          value={formData.scheduled_end || ""}
+                          value={schedule.scheduledEnd || ""}
                           onChange={(e) =>
-                            handleDateChange("scheduled_end", e.target.value, e)
+                            handleDateChange("scheduledEnd", e.target.value)
                           }
                         />
                       </Form.Group>
                     </Col>
                   </Row>
+
                   <Form.Group className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
                       Project Owner
@@ -713,16 +588,8 @@ const CreateProject = () => {
                           id="firstName"
                           type="input"
                           placeholder="First Name"
-                          value={formData.owner.name}
-                          onChange={(e) => {
-                            setFormData((prevState) => ({
-                              ...prevState,
-                              owner: {
-                                ...prevState.owner,
-                                name: e.target.value,
-                              },
-                            }));
-                          }}
+                          value={ownerFirstName}
+                          onChange={(e) => setOwnerFirstName(e.target.value)}
                         />
                       </Col>
                       <Col md={6} className="mb-3">
@@ -733,16 +600,8 @@ const CreateProject = () => {
                           id="lastName"
                           type="input"
                           placeholder="Last Name"
-                          value={formData.owner.last_name}
-                          onChange={(e) => {
-                            setFormData((prevState) => ({
-                              ...prevState,
-                              owner: {
-                                ...prevState.owner,
-                                last_name: e.target.value,
-                              },
-                            }));
-                          }}
+                          value={ownerLastName}
+                          onChange={(e) => setOwnerLastName(e.target.value)}
                         />
                       </Col>
                     </Row>
@@ -755,16 +614,8 @@ const CreateProject = () => {
                           id="email"
                           type="input"
                           placeholder="Email"
-                          value={formData.owner.email}
-                          onChange={(e) => {
-                            setFormData((prevState) => ({
-                              ...prevState,
-                              owner: {
-                                ...prevState.owner,
-                                email: e.target.value,
-                              },
-                            }));
-                          }}
+                          value={ownerEmail}
+                          onChange={(e) => setOwnerEmail(e.target.value)}
                         />
                       </Col>
 
@@ -776,21 +627,13 @@ const CreateProject = () => {
                           id="organization"
                           type="input"
                           placeholder="Organization"
-                          value={formData.owner.organization}
-                          onChange={(e) => {
-                            setFormData((prevState) => ({
-                              ...prevState,
-                              owner: {
-                                ...prevState.owner,
-                                organization: e.target.value,
-                              },
-                            }));
-                            console.log(formData.owner.organization);
-                          }}
+                          value={ownerOrganization}
+                          onChange={(e) => setOwnerOrganization(e.target.value)}
                         />
                       </Col>
                     </Row>
                   </Form.Group>
+
                   <Form.Label className="d-block text-start w-100 custom-form-label">
                     Project Description
                   </Form.Label>
@@ -800,20 +643,16 @@ const CreateProject = () => {
                     rows={3}
                     placeholder="Describe your project"
                     className="mb-4"
-                    value={formData.description}
-                    onChange={(e) => {
-                      setFormData((prevState) => ({
-                        ...prevState,
-                        description: e.target.value,
-                      }));
-                    }}
+                    value={projectDescription}
+                    onChange={(e) => setProjectDescription(e.target.value)}
                   />
+
                   {/* Assumptions Section */}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
                       Assumptions
                     </Form.Label>
-                    {formData.assumptions.map((assumption, index) => (
+                    {assumptions.map((assumption, index) => (
                       <div
                         key={index}
                         className="d-flex mb-2 align-items-center gap-2"
@@ -824,29 +663,23 @@ const CreateProject = () => {
                           placeholder="Enter assumption"
                           value={assumption}
                           onChange={(e) =>
-                            handleListValueChange(
-                              "assumptions",
-                              index,
-                              e.target.value,
-                            )
+                            handleAssumptionChange(index, e.target.value)
                           }
                         />
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={(e) =>
-                            handleRemoveFromList("assumptions", index, e)
-                          }
+                          onClick={(e) => handleRemoveAssumption(index, e)}
                         >
                           <Minus className="w-4 h-4" />
                         </Button>
                       </div>
-                    ))}{" "}
+                    ))}
                     <div className="d-flex justify-content-start mt-2">
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={handleAssumptionAdd}
+                        onClick={handleAddAssumption}
                         className="mt-2 align-items-left"
                       >
                         <Plus className="w-4 h-4 mr-1" />
@@ -854,35 +687,43 @@ const CreateProject = () => {
                       </Button>
                     </div>
                   </div>
+
                   {/* Requirements Section */}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
                       Requirements
                     </Form.Label>
                     <div className="d-block">
-                      {Object.entries(formData.requirements).map(
-                        ([name, values], idx) => (
-                          <div key={idx}>
-                            {values.map((value, valueIndex) => (
+                      {requirements.map((requirement, requirements_i) => {
+                        const requirementName = Object.keys(requirement)[0];
+                        const values = requirement[requirementName];
+                        const type = requirementsType[requirements_i];
+
+                        return (
+                          <div key={requirements_i}>
+                            {values.map((value, index) => (
                               <Row
-                                key={`${idx}-${valueIndex}`}
+                                key={`${requirements_i}-${index}`}
                                 className="mb-2 align-items-center"
                               >
-                                {valueIndex === 0 ? (
+                                {index === 0 ? (
                                   <>
                                     <Col xs="auto">
                                       <Button
                                         variant="outline-danger"
                                         size="sm"
                                         onClick={(e) =>
-                                          handleRequirementRemove(name, e)
+                                          handleRemoveRequirement(
+                                            requirements_i,
+                                            e,
+                                          )
                                         }
-                                        className="d-flex align-items-center justify-content-center"
                                         style={{
                                           width: "32px",
                                           height: "32px",
                                           padding: "4px",
                                         }}
+                                        className="d-flex align-items-center justify-content-center"
                                       >
                                         <Minus className="w-4 h-4" />
                                       </Button>
@@ -890,15 +731,12 @@ const CreateProject = () => {
                                     <Col xs={3}>
                                       <Form.Control
                                         type="text"
-                                        placeholder={
-                                          name === "requirement"
-                                            ? "Requirement Placeholder"
-                                            : "Requirement"
-                                        }
-                                        value={name}
+                                        id={`requirement${index}`}
+                                        placeholder="Requirement"
+                                        value={requirementName}
                                         onChange={(e) =>
                                           handleRequirementNameChange(
-                                            name,
+                                            requirements_i,
                                             e.target.value,
                                           )
                                         }
@@ -917,18 +755,18 @@ const CreateProject = () => {
                                 )}
                                 <Col>
                                   <Form.Control
-                                    type="text"
+                                    id={`requirementValue-${index}`}
+                                    type={type === "int" ? "number" : "text"}
                                     placeholder={
-                                      name === "requirement" &&
-                                      value === "Placeholder value"
-                                        ? "Placeholder value"
+                                      type === "int"
+                                        ? "Enter number"
                                         : "Enter value"
                                     }
                                     value={value}
                                     onChange={(e) =>
                                       handleRequirementValueChange(
-                                        name,
-                                        valueIndex,
+                                        requirements_i,
+                                        index,
                                         e.target.value,
                                       )
                                     }
@@ -941,17 +779,17 @@ const CreateProject = () => {
                                       size="sm"
                                       onClick={(e) =>
                                         handleRemoveSubRequirement(
-                                          name,
-                                          valueIndex,
+                                          requirements_i,
+                                          index,
                                           e,
                                         )
                                       }
-                                      className="d-flex align-items-center justify-content-center"
                                       style={{
                                         width: "32px",
                                         height: "32px",
                                         padding: "4px",
                                       }}
+                                      className="d-flex align-items-center justify-content-center"
                                     >
                                       <Minus className="w-4 h-4" />
                                     </Button>
@@ -959,7 +797,6 @@ const CreateProject = () => {
                                 </Col>
                               </Row>
                             ))}
-                            {/* Add Plus Button Below the List */}
                             <Row>
                               <Col xs="auto">
                                 <div style={{ width: "32px" }}></div>
@@ -971,14 +808,14 @@ const CreateProject = () => {
                                     variant="outline-primary"
                                     size="sm"
                                     onClick={(e) =>
-                                      handleRequirementAddSub(name, e)
+                                      handleAddSubRequirement(requirements_i, e)
                                     }
-                                    className="d-flex align-items-center justify-content-center"
                                     style={{
                                       width: "32px",
                                       height: "32px",
                                       padding: "4px",
                                     }}
+                                    className="d-flex align-items-center justify-content-center"
                                   >
                                     <Plus className="w-4 h-4" />
                                   </Button>
@@ -989,21 +826,32 @@ const CreateProject = () => {
                               </Col>
                             </Row>
                           </div>
-                        ),
-                      )}
+                        );
+                      })}
                     </div>
                     <div className="d-flex justify-content-start mt-2">
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={(e) => handleAddRequirement(e)}
+                        onClick={(e) => handleAddRequirement("str", e)}
                         className="d-flex align-items-center me-2"
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        Requirement
+                        String Requirement
+                      </Button>
+
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={(e) => handleAddRequirement("int", e)}
+                        className="d-flex align-items-center"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Integer Requirement
                       </Button>
                     </div>
                   </div>
+
                   {/* Scenarios Section */}
                   <div className="mb-3">
                     {/* Here */}
@@ -1011,7 +859,7 @@ const CreateProject = () => {
                       Scenarios
                     </Form.Label>
                     <div className="d-block">
-                      {formData.scenarios.map((scenario, scenarioIndex) => (
+                      {scenarios.map((scenario, scenarioIndex) => (
                         <div
                           key={scenarioIndex}
                           className="border rounded p-3 mb-4"
@@ -1025,7 +873,7 @@ const CreateProject = () => {
                               variant="outline-danger"
                               size="sm"
                               onClick={(e) =>
-                                handleScenarioRemove(scenarioIndex, e)
+                                handleRemoveScenario(scenarioIndex, e)
                               }
                               style={{
                                 width: "32px",
@@ -1045,13 +893,12 @@ const CreateProject = () => {
                               type="input"
                               placeholder="Scenario name"
                               value={scenario.name}
-                              onChange={(e) =>
-                                handleScenarioFieldChange(
-                                  scenarioIndex,
-                                  "name",
-                                  e.target.value,
-                                )
-                              }
+                              onChange={(e) => {
+                                const newScenarios = [...scenarios];
+                                newScenarios[scenarioIndex].name =
+                                  e.target.value;
+                                setScenarios(newScenarios);
+                              }}
                             />
                           </div>
 
@@ -1063,13 +910,13 @@ const CreateProject = () => {
                               rows={3}
                               placeholder="Enter description"
                               value={scenario.description[0]}
-                              onChange={(e) =>
-                                handleScenarioFieldChange(
-                                  scenarioIndex,
-                                  "description",
+                              onChange={(e) => {
+                                const newScenarios = [...scenarios];
+                                newScenarios[scenarioIndex].description = [
                                   e.target.value,
-                                )
-                              }
+                                ];
+                                setScenarios(newScenarios);
+                              }}
                             />
                           </div>
 
@@ -1092,7 +939,7 @@ const CreateProject = () => {
                                     placeholder={`key${otherIndex + 1}`}
                                     value={item.key}
                                     onChange={(e) =>
-                                      handleScenarioOtherInfoChange(
+                                      handleOtherInfoChange(
                                         scenarioIndex,
                                         otherIndex,
                                         "key",
@@ -1108,7 +955,7 @@ const CreateProject = () => {
                                     placeholder="Value"
                                     value={item.value}
                                     onChange={(e) =>
-                                      handleScenarioOtherInfoChange(
+                                      handleOtherInfoChange(
                                         scenarioIndex,
                                         otherIndex,
                                         "value",
@@ -1122,7 +969,7 @@ const CreateProject = () => {
                                     variant="outline-danger"
                                     size="sm"
                                     onClick={() =>
-                                      handleScenarioRemoveOtherInfo(
+                                      handleRemoveOtherInfo(
                                         scenarioIndex,
                                         otherIndex,
                                       )
@@ -1146,7 +993,7 @@ const CreateProject = () => {
                                 variant="outline-primary"
                                 size="sm"
                                 onClick={(e) =>
-                                  handleScenarioAddOtherInfo(scenarioIndex, e)
+                                  handleAddOtherInfo(scenarioIndex, e)
                                 }
                                 className="d-flex align-items-center gap-1"
                               >
@@ -1164,7 +1011,7 @@ const CreateProject = () => {
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        onClick={handleScenarioAdd}
+                        onClick={handleAddScenario}
                         className="mt-2 align-items-left"
                       >
                         <Plus className="w-4 h-4 mr-1" />
@@ -1312,6 +1159,7 @@ const CreateProject = () => {
                       </Button>
                     </div>
                   </div>
+
                   {/* Milestones Section */}
                   <div className="mb-3">
                     <Form.Label className="d-block text-start w-100 custom-form-label">
