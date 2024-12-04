@@ -228,33 +228,42 @@ const CreateProject = () => {
       other: [{ key: "Parameter1", value: "Value1" }],
     },
   ]);
-
   const handleScenarioAdd = (e) => {
     e.preventDefault();
-    setScenarios([
-      ...scenarios,
-      {
-        name: "",
-        description: [""],
-        other: [],
-      },
-    ]);
+    setFormData((prevState) => ({
+      ...prevState,
+      scenarios: [
+        ...prevState.scenarios,
+        {
+          name: "",
+          description: [""],
+          other: [],
+        },
+      ],
+    }));
   };
 
   const handleScenarioRemove = (index, e) => {
     e.preventDefault();
-    const newScenarios = scenarios.filter((_, idx) => idx !== index);
-    setScenarios(newScenarios);
+    setFormData((prevState) => ({
+      ...prevState,
+      scenarios: prevState.scenarios.filter((_, idx) => idx !== index),
+    }));
   };
 
   const handleScenarioAddOtherInfo = (scenarioIndex, e) => {
     e.preventDefault();
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other.push({
-      key: "",
-      value: "",
+    setFormData((prevState) => {
+      const newScenarios = [...prevState.scenarios];
+      newScenarios[scenarioIndex].other.push({
+        key: "",
+        value: "",
+      });
+      return {
+        ...prevState,
+        scenarios: newScenarios,
+      };
     });
-    setScenarios(newScenarios);
   };
 
   const handleScenarioOtherInfoChange = (
@@ -263,17 +272,41 @@ const CreateProject = () => {
     field,
     newValue,
   ) => {
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other[otherIndex][field] = newValue;
-    setScenarios(newScenarios);
+    setFormData((prevState) => {
+      const newScenarios = [...prevState.scenarios];
+      newScenarios[scenarioIndex].other[otherIndex][field] = newValue;
+      return {
+        ...prevState,
+        scenarios: newScenarios,
+      };
+    });
   };
 
   const handleScenarioRemoveOtherInfo = (scenarioIndex, otherIndex) => {
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other.splice(otherIndex, 1);
-    setScenarios(newScenarios);
+    setFormData((prevState) => {
+      const newScenarios = [...prevState.scenarios];
+      newScenarios[scenarioIndex].other.splice(otherIndex, 1);
+      return {
+        ...prevState,
+        scenarios: newScenarios,
+      };
+    });
   };
 
+  const handleScenarioFieldChange = (scenarioIndex, field, value) => {
+    setFormData((prevState) => {
+      const newScenarios = [...prevState.scenarios];
+      if (field === "description") {
+        newScenarios[scenarioIndex][field] = [value];
+      } else {
+        newScenarios[scenarioIndex][field] = value;
+      }
+      return {
+        ...prevState,
+        scenarios: newScenarios,
+      };
+    });
+  };
   const [sensitivities, setSensitivities] = useState([
     {
       name: "Default Sensitivity",
@@ -978,7 +1011,7 @@ const CreateProject = () => {
                       Scenarios
                     </Form.Label>
                     <div className="d-block">
-                      {scenarios.map((scenario, scenarioIndex) => (
+                      {formData.scenarios.map((scenario, scenarioIndex) => (
                         <div
                           key={scenarioIndex}
                           className="border rounded p-3 mb-4"
@@ -1012,12 +1045,13 @@ const CreateProject = () => {
                               type="input"
                               placeholder="Scenario name"
                               value={scenario.name}
-                              onChange={(e) => {
-                                const newScenarios = [...scenarios];
-                                newScenarios[scenarioIndex].name =
-                                  e.target.value;
-                                setScenarios(newScenarios);
-                              }}
+                              onChange={(e) =>
+                                handleScenarioFieldChange(
+                                  scenarioIndex,
+                                  "name",
+                                  e.target.value,
+                                )
+                              }
                             />
                           </div>
 
@@ -1029,13 +1063,13 @@ const CreateProject = () => {
                               rows={3}
                               placeholder="Enter description"
                               value={scenario.description[0]}
-                              onChange={(e) => {
-                                const newScenarios = [...scenarios];
-                                newScenarios[scenarioIndex].description = [
+                              onChange={(e) =>
+                                handleScenarioFieldChange(
+                                  scenarioIndex,
+                                  "description",
                                   e.target.value,
-                                ];
-                                setScenarios(newScenarios);
-                              }}
+                                )
+                              }
                             />
                           </div>
 
