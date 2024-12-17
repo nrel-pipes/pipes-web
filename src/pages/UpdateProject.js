@@ -20,14 +20,7 @@ const UpdateProject = () => {
 
   // Initial blank form state
   const [form, setForm] = useState(currentProject);
-  const handleSetString = (key, value) => {
-    setForm((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
-  const handleSetNestedValue = (path, value) => {
+  const handleSetString = (path, value) => {
     setForm((prevState) => {
       const keys = path.split(".");
       const newState = { ...prevState };
@@ -39,7 +32,7 @@ const UpdateProject = () => {
       current[keys[keys.length - 1]] = value;
       return newState;
     });
-    console.log(form.owner);
+    console.log(form.description);
   };
 
   const handleDateChange = (field, value) => {
@@ -432,10 +425,7 @@ const UpdateProject = () => {
                         placeholder="First Name"
                         value={form.owner.first_name}
                         onChange={(e) =>
-                          handleSetNestedValue(
-                            "owner.first_name",
-                            e.target.value,
-                          )
+                          handleSetString("owner.first_name", e.target.value)
                         }
                       />
                     </Col>
@@ -449,10 +439,7 @@ const UpdateProject = () => {
                         placeholder="Last Name"
                         value={form.owner.last_name}
                         onChange={(e) =>
-                          handleSetNestedValue(
-                            "owner.last_name",
-                            e.target.value,
-                          )
+                          handleSetString("owner.last_name", e.target.value)
                         }
                       />
                     </Col>
@@ -468,7 +455,7 @@ const UpdateProject = () => {
                         placeholder="Email"
                         value={form.owner.email}
                         onChange={(e) =>
-                          handleSetNestedValue("owner.email", e.target.value)
+                          handleSetString("owner.email", e.target.value)
                         }
                       />
                     </Col>
@@ -483,14 +470,25 @@ const UpdateProject = () => {
                         placeholder="Organization"
                         value={form.owner.organization}
                         onChange={(e) =>
-                          handleSetNestedValue(
-                            "owner.organization",
-                            e.target.value,
-                          )
+                          handleSetString("owner.organization", e.target.value)
                         }
                       />
                     </Col>
                   </Row>
+                  <Form.Label className="d-block text-start w-100 custom-form-label">
+                    Project Description
+                  </Form.Label>
+                  <Form.Control
+                    id="projectDescription"
+                    as="textarea"
+                    rows={3}
+                    placeholder="Describe your project"
+                    className="mb-4"
+                    value={form.description}
+                    onChange={(e) =>
+                      handleSetString("description", e.target.value)
+                    }
+                  />
                 </Form.Group>
                 <Row>
                   {formError ? (
