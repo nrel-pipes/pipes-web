@@ -21,6 +21,7 @@ import ChangePassword from "./pages/UserChangePassword";
 import ForgotPassword from "./pages/UserForgotPassword";
 import ResetPassword from "./pages/UserResetPassword";
 import CreateProject from "./pages/CreateProject";
+import UpdateProject from "./pages/UpdateProject";
 import CreateProjectRun from "./pages/createProjectRun";
 
 import useAuthStore from "./pages/stores/AuthStore";
@@ -91,6 +92,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/create-project" element={<CreateProject />} />
             <Route path="/create-projectrun" element={<CreateProjectRun />} />
+            <Route path="/update-project" element={<UpdateProject />} />
           </Routes>
         </BrowserRouter>
       </div>
