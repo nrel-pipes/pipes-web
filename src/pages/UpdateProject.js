@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useNavigate } from "react-router-dom";
+import { Plus, Minus } from "lucide-react";
 
 import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/form/SideColumn";
@@ -33,6 +34,28 @@ const UpdateProject = () => {
       return newState;
     });
     console.log(form.description);
+  };
+  const handleAssumptionChange = (index, value) => {
+    setForm((prevState) => ({
+      ...prevState,
+      assumptions: prevState.assumptions.map((item, i) =>
+        i === index ? value : item,
+      ),
+    }));
+  };
+  const handleAddAssumption = () => {
+    setForm((prevState) => ({
+      ...prevState,
+      assumptions: [...prevState.assumptions, ""],
+    }));
+  };
+  const handleRemoveAssumption = (index, e) => {
+    e.preventDefault(); // Prevent any default button behavior
+
+    setForm((prevState) => ({
+      ...prevState,
+      assumptions: prevState.assumptions.filter((_, i) => i !== index),
+    }));
   };
 
   const handleDateChange = (field, value) => {
@@ -247,34 +270,6 @@ const UpdateProject = () => {
       }
       organization.classList.remove("form-error");
 
-      //   let form = {
-      //     name: projectName,
-      //     title: projectTitle,
-      //     description: projectDescription,
-      //     assumptions: assumptions,
-      //     requirements: requirementsDict,
-      //     scenarios: scenariosList,
-      //     sensitivities: sensitivitiesList.map((sensitivity) => ({
-      //       ...sensitivity,
-      //       description: Array.isArray(sensitivity.description)
-      //         ? [sensitivity.description[0]] // Keep as array with single string
-      //         : [sensitivity.description], // Convert string to array with single element
-      //     })),
-      //     milestones: milestonesList.map((milestone) => ({
-      //       ...milestone,
-      //       description: Array.isArray(milestone.description)
-      //         ? milestone.description[0]
-      //         : milestone.description,
-      //     })),
-      //     scheduled_start: schedule.scheduledStart,
-      //     scheduled_end: schedule.scheduledEnd,
-      //     owner: {
-      //       email: ownerEmail,
-      //       first_name: ownerFirstName,
-      //       last_name: ownerLastName,
-      //       organization: ownerOrganization,
-      //     },
-      //   };
       console.log(JSON.stringify(form, null, 2));
 
       try {
@@ -489,6 +484,44 @@ const UpdateProject = () => {
                       handleSetString("description", e.target.value)
                     }
                   />
+                  <Form.Label className="d-block text-start w-100 custom-form-label">
+                    Assumptions
+                  </Form.Label>
+                  {form.assumptions.map((assumption, index) => (
+                    <div
+                      key={index}
+                      className="d-flex mb-2 align-items-center gap-2"
+                    >
+                      <Form.Control
+                        id={`assumptions${index}`}
+                        type="input"
+                        placeholder="Enter assumption"
+                        value={form.assumptions[index]} // Changed from assumption to assumptions
+                        onChange={(e) =>
+                          handleAssumptionChange(index, e.target.value)
+                        }
+                      />{" "}
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={(e) => handleRemoveAssumption(index, e)}
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddAssumption}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Assumption
+                    </Button>
+                  </div>
                 </Form.Group>
                 <Row>
                   {formError ? (
