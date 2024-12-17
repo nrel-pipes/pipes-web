@@ -203,7 +203,6 @@ const useDataStore = create(
           });
         }
       },
-
       createProject: async (projectData, accessToken) => {
         set({ isCreatingProject: true, createProjectError: null });
         try {

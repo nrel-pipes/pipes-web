@@ -425,8 +425,18 @@ const CreateProject = () => {
         assumptions: assumptions,
         requirements: requirementsDict,
         scenarios: scenariosList,
-        sensitivities: sensitivitiesList,
-        milestones: milestonesList,
+        sensitivities: sensitivitiesList.map((sensitivity) => ({
+          ...sensitivity,
+          description: Array.isArray(sensitivity.description)
+            ? [sensitivity.description[0]] // Keep as array with single string
+            : [sensitivity.description], // Convert string to array with single element
+        })),
+        milestones: milestonesList.map((milestone) => ({
+          ...milestone,
+          description: Array.isArray(milestone.description)
+            ? milestone.description[0]
+            : milestone.description,
+        })),
         scheduled_start: schedule.scheduledStart,
         scheduled_end: schedule.scheduledEnd,
         owner: {
@@ -436,7 +446,6 @@ const CreateProject = () => {
           organization: ownerOrganization,
         },
       };
-      // Call createProject with the data and access token
       console.log(JSON.stringify(form, null, 2));
 
       try {
