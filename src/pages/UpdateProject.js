@@ -19,7 +19,8 @@ const UpdateProject = () => {
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, getProject, currentProject } = useDataStore();
 
-  const normalizeRequirements = (form) => {
+  const normalizeFormData = (form) => {
+    // Normalize requirements into parallel arrays
     const keys = Object.keys(form.requirements || {});
     const values = keys.map((key) => {
       const value = form.requirements[key];
@@ -33,16 +34,97 @@ const UpdateProject = () => {
       return [String(value)];
     });
 
+    // Normalize scenarios' other field into arrays of objects
+    const normalizedScenarios = (form.scenarios || []).map((scenario) => ({
+      ...scenario,
+      description: Array.isArray(scenario.description)
+        ? scenario.description
+        : [scenario.description],
+      other: Array.isArray(scenario.other)
+        ? scenario.other
+        : Object.entries(scenario.other || {}).map(([key, value]) => [
+            String(key),
+            String(value),
+          ]),
+    }));
     return {
       ...form,
       requirements: {
         keys,
         values,
       },
+      scenarios: normalizedScenarios,
     };
   };
-  const [form, setForm] = useState(() => normalizeRequirements(currentProject));
+  const [form, setForm] = useState(() => normalizeFormData(currentProject));
 
+  const handleKeyChange =
+    (scenarioIndex, otherIndex, item, handleScenarioChange) => (e) => {
+      const newOther = [...form.scenarios.other];
+      newOther[otherIndex] = [e.target.value, item[1]];
+      handleScenarioChange(scenarioIndex, "other", newOther);
+    };
+
+  const handleValueChange =
+    (scenarioIndex, otherIndex, item, handleScenarioChange) => (e) => {
+      const newOther = [...form.scenarios[scenarioIndex].other];
+      newOther[otherIndex] = [item[0], e.target.value];
+      handleScenarioChange(scenarioIndex, "other", newOther);
+    };
+
+  const handleRemove =
+    (scenarioIndex, otherIndex, handleScenarioChange) => () => {
+      const newOther = form.scenarios[scenarioIndex].other.filter(
+        (_, index) => index !== otherIndex,
+      );
+      handleScenarioChange(scenarioIndex, "other", newOther);
+    };
+
+  const handleScenarioChange = (scenarioIndex, field, value) => {
+    setForm((prevForm) => {
+      const newScenarios = [...prevForm.scenarios];
+      newScenarios[scenarioIndex] = {
+        ...newScenarios[scenarioIndex],
+        [field]: value,
+      };
+      return {
+        ...prevForm,
+        scenarios: newScenarios,
+      };
+    });
+  };
+
+  const handleRemoveScenario = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      scenarios: prevForm.scenarios.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleAddOtherInfo = (scenarioIndex, e) => {
+    e.preventDefault();
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.push(["", ""]);
+    setScenarios(newScenarios);
+  };
+  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+    setForm((prevForm) => {
+      const newScenarios = [...prevForm.scenarios];
+      newScenarios[scenarioIndex] = {
+        ...newScenarios[scenarioIndex],
+        other: newScenarios[scenarioIndex].other.filter(
+          (_, idx) => idx !== otherIndex,
+        ),
+      };
+      return {
+        ...prevForm,
+        scenarios: newScenarios,
+      };
+    });
+  };
+
+  // Add a new other info item to a scenario
   const handleSetArrayValue = (arrayPath, index, value) => {
     setForm((prevState) => {
       const keys = arrayPath.split(".");
@@ -799,6 +881,170 @@ const UpdateProject = () => {
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       Requirement
+                    </Button>
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Scenarios
+                  </Form.Label>
+                  <div className="d-block">
+                    {scenarios.map((scenario, scenarioIndex) => (
+                      <div
+                        key={scenarioIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Scenario Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            Scenario {scenarioIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveScenario(scenarioIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Scenario Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`scenario${scenarioIndex}`}
+                            type="input"
+                            placeholder="Scenario name"
+                            value={scenario.name}
+                            onChange={(e) => {
+                              const newScenarios = [...scenarios];
+                              newScenarios[scenarioIndex].name = e.target.value;
+                              setScenarios(newScenarios);
+                            }}
+                          />
+                        </div>
+
+                        {/* Scenario Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`scenarioDescription${scenarioIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={scenario.description[0]}
+                            onChange={(e) => {
+                              const newScenarios = [...scenarios];
+                              newScenarios[scenarioIndex].description = [
+                                e.target.value,
+                              ];
+                              setScenarios(newScenarios);
+                            }}
+                          />
+                        </div>
+
+                        {/* Other Information Section */}
+                        <div className="mb-3">
+                          <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
+                            Other
+                          </h5>
+                          {/* Other Key-Value Pairs */}
+                          {scenario.other.map((item, otherIndex) => (
+                            <Row
+                              key={otherIndex}
+                              className="mb-2 align-items-center"
+                            >
+                              <Col xs={3}>
+                                <Form.Control
+                                  id={`scenarioOther${otherIndex}`}
+                                  type="input"
+                                  placeholder={`key${otherIndex + 1}`}
+                                  value={item[0] || ""} // Add fallback empty string
+                                  onChange={(e) => {
+                                    const newScenarios = [...scenarios];
+                                    newScenarios[scenarioIndex].other[
+                                      otherIndex
+                                    ] = [
+                                      e.target.value,
+                                      item[1] || "", // Add fallback empty string
+                                    ];
+                                    setScenarios(newScenarios);
+                                  }}
+                                />
+                              </Col>
+                              <Col>
+                                <Form.Control
+                                  id={`scenarioOther-${scenarioIndex}`}
+                                  type="input"
+                                  placeholder="Value"
+                                  value={item[1] || ""} // Add fallback empty string
+                                  onChange={(e) => {
+                                    const newScenarios = [...scenarios];
+                                    newScenarios[scenarioIndex].other[
+                                      otherIndex
+                                    ] = [
+                                      item[0] || "", // Add fallback empty string
+                                      e.target.value,
+                                    ];
+                                    setScenarios(newScenarios);
+                                  }}
+                                />
+                              </Col>
+                              <Col xs="auto">
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newScenarios = [...scenarios];
+                                    newScenarios[scenarioIndex].other =
+                                      scenario.other.filter(
+                                        (_, index) => index !== otherIndex,
+                                      );
+                                    setScenarios(newScenarios);
+                                  }}
+                                  style={{
+                                    width: "32px",
+                                    height: "32px",
+                                    padding: "4px",
+                                  }}
+                                  className="d-flex align-items-center justify-content-center"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              </Col>
+                            </Row>
+                          ))}{" "}
+                          {/* Add Other Information Button */}
+                          <div className="d-flex justify-content-start mt-2">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={(e) =>
+                                handleAddOtherInfo(scenarioIndex, e)
+                              }
+                              className="d-flex align-items-center gap-1"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Other Information
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddScenario}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Scenario
                     </Button>
                   </div>
                 </Form.Group>
