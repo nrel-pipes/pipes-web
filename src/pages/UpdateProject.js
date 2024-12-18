@@ -20,50 +20,135 @@ const UpdateProject = () => {
   const { getProjectBasics, getProject, currentProject } = useDataStore();
 
   const normalizeRequirements = (form) => {
-    const normalizedRequirements = {};
-    Object.entries(form.requirements || {}).forEach(([key, value]) => {
+    const keys = Object.keys(form.requirements || {});
+    const values = keys.map((key) => {
+      const value = form.requirements[key];
+
       if (value == null) {
-        normalizedRequirements[key] = [];
-        return;
+        return [];
       }
       if (Array.isArray(value)) {
-        normalizedRequirements[key] = value.map(String);
-        return;
+        return value.map(String);
       }
-      normalizedRequirements[key] = [String(value)];
+      return [String(value)];
     });
 
     return {
       ...form,
-      requirements: normalizedRequirements,
+      requirements: {
+        keys,
+        values,
+      },
     };
   };
   const [form, setForm] = useState(() => normalizeRequirements(currentProject));
-  console.log(form);
-  const handleRequirementNameChange = (requirementName, newName) => {
-    // TODO: Implement requirement name change
+
+  const handleSetArrayValue = (arrayPath, index, value) => {
+    setForm((prevState) => {
+      const keys = arrayPath.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+
+      // Navigate to the array
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+
+      // Get the array name from the last key
+      const arrayName = keys[keys.length - 1];
+      // Create new array with updated value
+      const newArray = [...current[arrayName]];
+      newArray[index] = value;
+      current[arrayName] = newArray;
+
+      return newState;
+    });
   };
 
-  const handleRequirementValueChange = (
-    requirementName,
-    valueIndex,
-    newValue,
-  ) => {
-    // TODO: Implement value change
+  // Usage:
+  const handleRequirementNameChange = (index, newName) => {
+    setForm((prevForm) => {
+      const newKeys = [...prevForm.requirements.keys];
+      newKeys[index] = newName;
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          keys: newKeys,
+        },
+      };
+    });
   };
 
-  const handleRemoveRequirement = (requirementName, e) => {
-    // TODO: Implement requirement removal
+  const handleRequirementValueChange = (index, valueIndex, newValue) => {
+    setForm((prevForm) => {
+      const newValues = [...prevForm.requirements.values];
+      newValues[index] = [...newValues[index]];
+      newValues[index][valueIndex] = newValue;
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          values: newValues,
+        },
+      };
+    });
   };
 
-  const handleRemoveSubRequirement = (requirementName, valueIndex, e) => {
-    // TODO: Implement sub-requirement removal
+  const handleRemoveRequirement = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newKeys = [...prevForm.requirements.keys];
+      const newValues = [...prevForm.requirements.values];
+      newKeys.splice(index, 1);
+      newValues.splice(index, 1);
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          keys: newKeys,
+          values: newValues,
+        },
+      };
+    });
   };
 
-  const handleAddSubRequirement = (requirementName, e) => {
-    // TODO: Implement adding sub-requirement
+  const handleRemoveSubRequirement = (index, valueIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newValues = [...prevForm.requirements.values];
+      newValues[index] = [...newValues[index]];
+      newValues[index].splice(valueIndex, 1);
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          values: newValues,
+        },
+      };
+    });
   };
 
+  const handleAddSubRequirement = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newValues = [...prevForm.requirements.values];
+      newValues[index] = [...newValues[index], ""];
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          values: newValues,
+        },
+      };
+    });
+  };
   const handleSetString = (path, value) => {
     setForm((prevState) => {
       const keys = path.split(".");
@@ -561,12 +646,14 @@ const UpdateProject = () => {
                     Requirements
                   </Form.Label>
                   <div className="d-block">
-                    {Object.entries(form.requirements).map(
-                      ([requirementName, values], index) => (
+                    {form.requirements.keys.map((requirementName, index) => {
+                      const values = form.requirements.values[index];
+
+                      return (
                         <div key={index}>
                           {values.map((value, valueIndex) => (
                             <Row
-                              key={`${requirementName}-${valueIndex}`}
+                              key={`${index}-${valueIndex}`}
                               className="mb-2 align-items-center"
                             >
                               {valueIndex === 0 ? (
@@ -576,10 +663,7 @@ const UpdateProject = () => {
                                       variant="outline-danger"
                                       size="sm"
                                       onClick={(e) =>
-                                        handleRemoveRequirement(
-                                          requirementName,
-                                          e,
-                                        )
+                                        handleRemoveRequirement(index, e)
                                       }
                                       style={{
                                         width: "32px",
@@ -594,12 +678,12 @@ const UpdateProject = () => {
                                   <Col xs={3}>
                                     <Form.Control
                                       type="text"
-                                      id={`requirement${requirementName}`}
+                                      id={`requirement-${index}`}
                                       placeholder="Requirement"
                                       value={requirementName}
                                       onChange={(e) =>
                                         handleRequirementNameChange(
-                                          requirementName,
+                                          index,
                                           e.target.value,
                                         )
                                       }
@@ -618,13 +702,13 @@ const UpdateProject = () => {
                               )}
                               <Col>
                                 <Form.Control
-                                  id={`requirementValue-${valueIndex}`}
+                                  id={`value-${index}-${valueIndex}`}
                                   type="text"
                                   placeholder="Enter value"
                                   value={value}
                                   onChange={(e) =>
                                     handleRequirementValueChange(
-                                      requirementName,
+                                      index,
                                       valueIndex,
                                       e.target.value,
                                     )
@@ -638,7 +722,7 @@ const UpdateProject = () => {
                                     size="sm"
                                     onClick={(e) =>
                                       handleRemoveSubRequirement(
-                                        requirementName,
+                                        index,
                                         valueIndex,
                                         e,
                                       )
@@ -667,7 +751,7 @@ const UpdateProject = () => {
                                   variant="outline-primary"
                                   size="sm"
                                   onClick={(e) =>
-                                    handleAddSubRequirement(requirementName, e)
+                                    handleAddSubRequirement(index, e)
                                   }
                                   style={{
                                     width: "32px",
@@ -685,9 +769,9 @@ const UpdateProject = () => {
                             </Col>
                           </Row>
                         </div>
-                      ),
-                    )}
-                  </div>
+                      );
+                    })}
+                  </div>{" "}
                 </Form.Group>
                 <Row>
                   {formError ? (
