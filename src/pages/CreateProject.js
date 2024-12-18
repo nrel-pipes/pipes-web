@@ -846,7 +846,7 @@ const CreateProject = () => {
                         className="d-flex align-items-center me-2"
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        String Requirement
+                        Requirement
                       </Button>
 
                       <Button

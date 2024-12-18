@@ -149,6 +149,24 @@ const UpdateProject = () => {
       };
     });
   };
+
+  const handleAddRequirement = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newKeys = [...prevForm.requirements.keys, ""];
+      const newValues = [...prevForm.requirements.values, [""]];
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          keys: newKeys,
+          values: newValues,
+        },
+      };
+    });
+  };
+
   const handleSetString = (path, value) => {
     setForm((prevState) => {
       const keys = path.split(".");
@@ -642,7 +660,7 @@ const UpdateProject = () => {
                       Assumption
                     </Button>
                   </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label">
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
                     Requirements
                   </Form.Label>
                   <div className="d-block">
@@ -772,6 +790,17 @@ const UpdateProject = () => {
                       );
                     })}
                   </div>{" "}
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={(e) => handleAddRequirement(e)}
+                      className="d-flex align-items-center me-2"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Requirement
+                    </Button>
+                  </div>
                 </Form.Group>
                 <Row>
                   {formError ? (
