@@ -33,7 +33,6 @@ const UpdateProject = () => {
       }
       return [String(value)];
     });
-
     // Normalize scenarios' other field into arrays of objects
     const normalizedScenarios = (form.scenarios || []).map((scenario) => ({
       ...scenario,
@@ -57,7 +56,43 @@ const UpdateProject = () => {
     };
   };
   const [form, setForm] = useState(() => normalizeFormData(currentProject));
+  const handleRemoveSensitivity = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: prevForm.sensitivities.filter((_, idx) => idx !== index),
+    }));
+  };
 
+  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      // If the last item is already empty, don't add another
+      if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
+        return prevForm;
+      }
+
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list.push("");
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
+  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list = newSensitivities[
+        sensitivityIndex
+      ].list.filter((_, idx) => idx !== listIndex);
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
   const handleMilestoneDateChange = (milestoneIndex, value) => {
     setForm((prevForm) => {
       const newMilestones = [...(prevForm.milestones || [])];
@@ -288,6 +323,7 @@ const UpdateProject = () => {
       };
     });
   };
+
   const handleAddMilestone = (e) => {
     e.preventDefault();
     setForm((prevForm) => ({
@@ -411,16 +447,18 @@ const UpdateProject = () => {
 
   const handleAddSensitivity = (e) => {
     e.preventDefault();
-    setSensitivities([
-      ...sensitivities,
-      {
-        name: "",
-        description: [""],
-        list: [""],
-      },
-    ]);
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: [
+        ...(prevForm.sensitivities || []),
+        {
+          name: "",
+          description: [""],
+          list: [""],
+        },
+      ],
+    }));
   };
-
   // Setting Milestones
   const [milestones, setMilestones] = useState([
     {
@@ -1217,6 +1255,160 @@ const UpdateProject = () => {
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       Scenario
+                    </Button>
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Sensitivities
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.sensitivities.map((sensitivity, sensitivityIndex) => (
+                      <div
+                        key={sensitivityIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Sensitivity Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
+                            Sensitivity {sensitivityIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveSensitivity(sensitivityIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {/* Sensitivity Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`sensitivityName-${sensitivityIndex}`}
+                            type="input"
+                            placeholder="Sensitivity name"
+                            value={sensitivity.name}
+                            onChange={(e) => {
+                              setForm((prevForm) => {
+                                const newSensitivities = [
+                                  ...(prevForm.sensitivities || []),
+                                ];
+                                newSensitivities[sensitivityIndex].name =
+                                  e.target.value;
+                                return {
+                                  ...prevForm,
+                                  sensitivities: newSensitivities,
+                                };
+                              });
+                            }}
+                          />{" "}
+                        </div>
+                        {/* Sensitivity Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`sensitivityDescription-${sensitivityIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={sensitivity.description[0]}
+                            onChange={(e) => {
+                              setForm((prevForm) => {
+                                const newSensitivities = [
+                                  ...(prevForm.sensitivities || []),
+                                ];
+                                newSensitivities[sensitivityIndex].description =
+                                  [e.target.value];
+                                return {
+                                  ...prevForm,
+                                  sensitivities: newSensitivities,
+                                };
+                              });
+                            }}
+                          />{" "}
+                        </div>
+                        {/* Sensitivity List Items */}
+                        <div className="mb-3">
+                          {sensitivity.list.map((item, listIndex) => (
+                            <div
+                              key={listIndex}
+                              className="d-flex mb-2 align-items-center gap-2"
+                            >
+                              <Form.Control
+                                id={`senstivityItem-${sensitivityIndex}`}
+                                type="input"
+                                placeholder="Enter sensitivity item"
+                                value={item}
+                                onChange={(e) => {
+                                  setForm((prevForm) => {
+                                    const newSensitivities = [
+                                      ...(prevForm.sensitivities || []),
+                                    ];
+                                    newSensitivities[sensitivityIndex].list[
+                                      listIndex
+                                    ] = e.target.value;
+                                    return {
+                                      ...prevForm,
+                                      sensitivities: newSensitivities,
+                                    };
+                                  });
+                                }}
+                              />
+                              {sensitivity.list.length > 1 && (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={(e) =>
+                                    handleRemoveSensitivityListItem(
+                                      sensitivityIndex,
+                                      listIndex,
+                                      e,
+                                    )
+                                  }
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+
+                          {/* Add List Item Button */}
+                          <div className="d-flex justify-content-start mt-2">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={(e) =>
+                                handleAddSensitivityListItem(
+                                  sensitivityIndex,
+                                  e,
+                                )
+                              }
+                              className="d-flex align-items-center gap-1"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Item
+                            </Button>
+                          </div>
+                        </div>{" "}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddSensitivity}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Sensitivity
                     </Button>
                   </div>
                 </Form.Group>
