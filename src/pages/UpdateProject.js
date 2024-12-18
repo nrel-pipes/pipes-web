@@ -58,6 +58,20 @@ const UpdateProject = () => {
   };
   const [form, setForm] = useState(() => normalizeFormData(currentProject));
 
+  const handleMilestoneDateChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].milestone_date = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+
   const handleKeyChange =
     (scenarioIndex, otherIndex, item, handleScenarioChange) => (e) => {
       const newOther = [...form.scenarios.other];
@@ -248,6 +262,32 @@ const UpdateProject = () => {
       };
     });
   };
+  const handleMilestoneNameChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].name = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+  const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].description = [value];
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
 
   const handleSetString = (path, value) => {
     setForm((prevState) => {
@@ -261,7 +301,6 @@ const UpdateProject = () => {
       current[keys[keys.length - 1]] = value;
       return newState;
     });
-    console.log(form.description);
   };
   const handleAssumptionChange = (index, value) => {
     setForm((prevState) => ({
@@ -288,7 +327,7 @@ const UpdateProject = () => {
 
   const handleDateChange = (field, value) => {
     setForm({
-      ...Form,
+      ...form,
       [field]: value,
     });
   };
@@ -377,6 +416,16 @@ const UpdateProject = () => {
       milestone_date: "2023-02-01",
     },
   ]);
+
+  const handleRemoveMilestone = (milestoneIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      milestones: prevForm.milestones.filter(
+        (_, index) => index !== milestoneIndex,
+      ),
+    }));
+  };
   // Setting project Schedule
   const [schedule, setSchedule] = useState({
     scheduledStart: "2023-01-01",
@@ -605,7 +654,7 @@ const UpdateProject = () => {
                           type="date"
                           value={formatDateForInput(form.scheduled_start) || ""}
                           onChange={(e) =>
-                            handleDateChange("scheduledStart", e.target.value)
+                            handleDateChange("scheduled_start", e.target.value)
                           }
                         />
                       </Form.Group>
@@ -621,7 +670,7 @@ const UpdateProject = () => {
                           type="date"
                           value={formatDateForInput(form.scheduled_end) || ""}
                           onChange={(e) =>
-                            handleDateChange("scheduledEnd", e.target.value)
+                            handleDateChange("scheduled_end", e.target.value)
                           }
                         />
                       </Form.Group>
@@ -1046,6 +1095,105 @@ const UpdateProject = () => {
                       <Plus className="w-4 h-4 mr-1" />
                       Scenario
                     </Button>
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Milestones
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.milestones.map((milestone, milestoneIndex) => (
+                      <div
+                        key={milestoneIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Milestone Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
+                            Milestone {milestoneIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveMilestone(milestoneIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Milestone Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`milestoneName-${milestoneIndex}`}
+                            type="input"
+                            placeholder="Milestone name"
+                            value={milestone.name}
+                            onChange={(e) => {
+                              handleMilestoneNameChange(
+                                milestoneIndex,
+                                e.target.value,
+                              );
+                            }}
+                          />
+                        </div>
+
+                        {/* Milestone Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`milestoneDescription-${milestoneIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={milestone.description[0]}
+                            onChange={(e) =>
+                              handleMilestoneDescriptionChange(
+                                milestoneIndex,
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        {/* Milestone Date */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Group
+                            id={`milestone-date-${milestoneIndex}`}
+                            className="w-100"
+                          >
+                            <Form.Label
+                              className="d-block text-start"
+                              style={{ fontSize: "1.0rem" }}
+                            >
+                              Milestone Date (YYYY-MM-DD)
+                            </Form.Label>
+                            <Form.Control
+                              id={`milestoneDate-${milestoneIndex}`}
+                              type="date"
+                              value={
+                                formatDateForInput(
+                                  form.milestones[milestoneIndex]
+                                    ?.milestone_date,
+                                ) || ""
+                              }
+                              onChange={(e) =>
+                                handleMilestoneDateChange(
+                                  milestoneIndex,
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </Form.Group>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </Form.Group>
                 <Row>
