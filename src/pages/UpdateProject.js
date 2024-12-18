@@ -288,7 +288,20 @@ const UpdateProject = () => {
       };
     });
   };
-
+  const handleAddMilestone = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      milestones: [
+        ...(prevForm.milestones || []),
+        {
+          name: "",
+          description: [""],
+          milestone_date: "", // Will be in YYYY-MM-DD format
+        },
+      ],
+    }));
+  };
   const handleSetString = (path, value) => {
     setForm((prevState) => {
       const keys = path.split(".");
@@ -1194,6 +1207,17 @@ const UpdateProject = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddMilestone}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Scenario
+                    </Button>
                   </div>
                 </Form.Group>
                 <Row>
