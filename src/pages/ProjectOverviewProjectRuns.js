@@ -1,7 +1,7 @@
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import Button from "react-bootstrap/Button";
 import { faCircleArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,13 +19,32 @@ const ProjectOverviewProjectRuns = ({ projectRuns }) => {
     setCurrentProjectRun(projectRun);
     navigate("/projectrun"); // Add navigation after setting store values
   };
-
+  const handleUpdateProjectClick = () => {
+    navigate("/update-project");
+  };
   const handleCreateProjectRunClick = () => {
     navigate("/create-projectrun");
   };
 
   return (
     <div className="d-flex flex-column align-items-center">
+      <Row className="mb-4 w-100" key="create-project-run">
+        <Col sm={12} className="d-flex justify-content-center">
+          <Card
+            className="create-project-card"
+            onClick={handleUpdateProjectClick}
+          >
+            <Card.Body className="bg-light text-center d-flex flex-column align-items-center">
+              <Card.Title className="mt-3 mb-3">
+                Update Current Project
+              </Card.Title>
+              <RefreshCw size={48} className="mb-4 plus-icon" />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      <h3 className="mb-4 smallCaps">Available Project Runs</h3>
+
       {projectRuns?.map((projectRun, index) => (
         <Row className="mb-4 w-100" key={`run-${index}`}>
           <Col sm={12} className="d-flex justify-content-center">

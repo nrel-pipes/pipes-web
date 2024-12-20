@@ -108,7 +108,7 @@ const ProjectOverview = () => {
       <Row className="text-start">
         <Col>
           <h2 className="display-5 mt-4 mb-4">
-            [{currentProject.name}] {currentProject.title}
+            {currentProject.name} {currentProject.title}
           </h2>
           <p className="mt-3">
             <b>
@@ -160,8 +160,7 @@ const ProjectOverview = () => {
         </Col>
 
         <Col md={4} className="border-start">
-          <Row className="text-start mt-4">
-            <h3 className="mb-4 smallCaps">Available Project Runs</h3>
+          <Row className="mt-4">
             <Col>
               <ProjectOverviewProjectRuns projectRuns={projectRuns} />
             </Col>

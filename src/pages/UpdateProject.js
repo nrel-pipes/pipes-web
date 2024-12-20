@@ -495,137 +495,10 @@ const UpdateProject = () => {
     setFormError(false);
     setSubmittingForm(true);
 
-    for (let i = 0; i < retriesLimit; i++) {
-      // Generate the projectTitle as lowercase with underscores
-      const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
 
-      // Process requirements into a dictionary
-      let requirementsDict = {};
-      requirements.forEach((requirementObj) => {
-        const requirementName = Object.keys(requirementObj)[0];
-        const values = requirementObj[requirementName];
-        requirementsDict[requirementName] = values;
-      });
+    // Steps
 
-      //  Required field validation
-      // Validating ProjectName
-      const title = document.getElementById("projectName");
-      if (projectTitle.length === 0) {
-        title.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide a title for your project.");
-        return;
-      }
-      title.classList.remove("form-error");
 
-      // Validating Schedule
-      const scheduledStart = document.getElementById("scheduledStart");
-      const scheduledEnd = document.getElementById("scheduledEnd");
-      let hasScheduleError = false;
-      if (!schedule.scheduledStart) {
-        scheduledStart.classList.add("form-error");
-        hasScheduleError = true;
-      }
-      if (!schedule.scheduledEnd) {
-        scheduledEnd.classList.add("form-error");
-        hasScheduleError = true;
-      }
-      if (schedule.scheduledStart && schedule.scheduledEnd) {
-        if (
-          new Date(schedule.scheduledEnd) < new Date(schedule.scheduledStart)
-        ) {
-          scheduledStart.classList.add("form-error");
-          scheduledEnd.classList.add("form-error");
-          hasScheduleError = true;
-        }
-      }
-      if (hasScheduleError) {
-        console.error(
-          "Schedule is invalid: End date is before start date or fields are missing.",
-        );
-        setFormError(true);
-        setFormErrorMessage(
-          "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
-        );
-        return;
-      }
-      scheduledStart.classList.remove("form-error");
-      scheduledEnd.classList.remove("form-error");
-
-      // Validating Owner
-      const firstName = document.getElementById("firstName");
-      if (ownerFirstName.length === 0) {
-        firstName.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide your first name.");
-        return;
-      }
-      firstName.classList.remove("form-error");
-
-      const lastName = document.getElementById("lastName");
-      if (ownerLastName.length === 0) {
-        lastName.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide your last name.");
-        return;
-      }
-      lastName.classList.remove("form-error");
-
-      const email = document.getElementById("email");
-      if (ownerEmail.length === 0) {
-        email.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide the project owner's email.");
-        return;
-      }
-      email.classList.remove("form-error");
-
-      const organization = document.getElementById("organization");
-      if (ownerOrganization.length === 0) {
-        organization.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(
-          "You forgot to provide the project owner's organization.",
-        );
-        return;
-      }
-      organization.classList.remove("form-error");
-
-      console.log(JSON.stringify(form, null, 2));
-
-      try {
-        await createProject(form, accessToken);
-        console.log(`Project created successfully on attempt ${i + 1}`);
-        // If successful, break out of the retry loop
-        break;
-      } catch (error) {
-        console.error(
-          `Error creating project (attempt ${i + 1}/${retriesLimit}):`,
-          error.status,
-        );
-
-        // If this is not the last attempt, wait 1 second before retrying
-        if (i < retriesLimit - 1) {
-          setFormError(true);
-          setFormErrorMessage(
-            `Error creating project: ${error.message}. Retrying in 1 second...`,
-          );
-          await new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-            }, 1000);
-          });
-        } else {
-          // If this was the last attempt, set the final error message
-          setFormError(true);
-          setFormErrorMessage(
-            `Failed to create project after ${retriesLimit} attempts: ${error.message}`,
-          );
-          setSubmittingForm(false);
-          return;
-        }
-      }
-    }
 
     // If we get here, the project was created successfully
     setFormError(false);
@@ -668,6 +541,8 @@ const UpdateProject = () => {
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
+          <PageTitle title="Update Project" />
+
           <Row className="justify-content-center"></Row>
           <div className="d-flex justify-content-center">
             <Col
