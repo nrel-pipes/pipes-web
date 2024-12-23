@@ -28,7 +28,7 @@ const ProjectOverviewProjectRuns = ({ projectRuns }) => {
 
   return (
     <div className="d-flex flex-column align-items-center">
-      <Row className="mb-4 w-100" key="create-project-run">
+      <Row className="mb-4 w-100" key="update-project-run">
         <Col sm={12} className="d-flex justify-content-center">
           <Card
             className="create-project-card"
