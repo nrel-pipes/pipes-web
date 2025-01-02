@@ -67,18 +67,8 @@ const ProjectPipeline = () => {
       navigate("/projects");
       return;
     }
-
-    // Single composite function call
     getPipeline(currentProject.name, accessToken);
-  }, [
-    isLoggedIn,
-    navigate,
-    accessToken,
-    validateToken,
-    selectedProjectName,
-    currentProject,
-    getPipeline,
-  ]);
+  }, [isLoggedIn, navigate, accessToken, validateToken, getPipeline]);
   const pipesGraph = useMemo(() => {
     if (!currentProject || currentProject === null) {
       return (
@@ -162,6 +152,7 @@ const ProjectPipeline = () => {
           type: MarkerType.ArrowClosed,
         },
         type: "default",
+        isHandoff: false,
       };
       initialEdges.push(prEdge);
 
@@ -192,6 +183,7 @@ const ProjectPipeline = () => {
               type: MarkerType.ArrowClosed,
             },
             type: "default",
+            isHandoff: false,
           };
           initialEdges.push(mEdge);
         }
@@ -256,13 +248,38 @@ const ProjectPipeline = () => {
                 type: MarkerType.ArrowClosed,
               },
               type: "default",
+              isHandoff: false,
             };
             initialEdges.push(mrEdge);
           }
         });
       });
     });
+    console.log(handoffs.length);
+    handoffs.forEach((handoff) => {
+      if (handoff.from_model && handoff.to_model) {
+        const sourceModelId = "n-m-" + handoff.from_model;
+        const targetModelId = "n-m-" + handoff.to_model;
 
+        const handoffEdgeId = `e-handoff-${handoff.from_model}-${handoff.to_model}-${handoff.name}`;
+
+        const handoffEdge = {
+          id: handoffEdgeId,
+          source: sourceModelId,
+          target: targetModelId,
+          sourceHandle: `h-${handoffEdgeId}`,
+          data: handoff,
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+          },
+          type: "default", // Keep this for layout purposes only
+          strokeOpacity: 0,
+          isHandoff: true,
+        };
+
+        initialEdges.push(handoffEdge);
+      }
+    });
     // Generate dagre graph layout
     const { layoutedNodes, layoutedEdges } = getDagreLayoutedElements(
       initialNodes,
@@ -309,6 +326,7 @@ function getDagreLayoutedElements(nodes, edges) {
     return {};
   });
 
+  // Add all nodes as before
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, {
       label: node.label,
@@ -317,18 +335,21 @@ function getDagreLayoutedElements(nodes, edges) {
     });
   });
 
+  // Only add non-handoff edges to dagre for layout calculation
   edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
+    if (edge.isHandoff === false) {
+      dagreGraph.setEdge(edge.source, edge.target);
+    }
   });
+
   dagre.layout(dagreGraph);
 
+  // Position nodes as before
   nodes.forEach((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     node.targetPosition = isHorizontal ? "left" : "top";
     node.sourcePosition = isHorizontal ? "right" : "bottom";
 
-    // We are shifting the dagre node position (anchor=center center) to the top left
-    // so it matches the React Flow node anchor point (top left).
     let size = 0.5;
     if (node.label === "ProjectRun") {
       node.position = {
@@ -344,7 +365,7 @@ function getDagreLayoutedElements(nodes, edges) {
     return node;
   });
 
+  // Return all edges, including handoffs, but with layout only affected by non-handoffs
   return { layoutedNodes: nodes, layoutedEdges: edges };
 }
-
 export default ProjectPipeline;

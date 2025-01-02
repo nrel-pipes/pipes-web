@@ -113,7 +113,7 @@ export function DecoratedNode({ data, isConnectable }) {
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 9, color: 'white' }}>{data.label}</div>
+        <div style={{ fontSize: 9, color: "white" }}>{data.label}</div>
         <ProgressIndicators data={data} />
 
         <div style={outputHandleWrapper}>
@@ -208,7 +208,13 @@ function Progress({ percentage, color, label }) {
           strokeDasharray={[value, 100 - value]}
           strokeDashoffset={30}
         />
-        <text x="20" y="23" textAnchor="middle" className="complete" fill="white">
+        <text
+          x="20"
+          y="23"
+          textAnchor="middle"
+          className="complete"
+          fill="white"
+        >
           {Math.round(value)}%
         </text>
       </svg>
