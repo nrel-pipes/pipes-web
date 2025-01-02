@@ -255,6 +255,7 @@ const ProjectPipeline = () => {
         });
       });
     });
+
     console.log(handoffs.length);
     handoffs.forEach((handoff) => {
       if (handoff.from_model && handoff.to_model) {
@@ -272,14 +273,14 @@ const ProjectPipeline = () => {
           markerEnd: {
             type: MarkerType.ArrowClosed,
           },
-          type: "default", // Keep this for layout purposes only
-          strokeOpacity: 0,
+          type: "default",
           isHandoff: true,
         };
 
         initialEdges.push(handoffEdge);
       }
     });
+
     // Generate dagre graph layout
     const { layoutedNodes, layoutedEdges } = getDagreLayoutedElements(
       initialNodes,
