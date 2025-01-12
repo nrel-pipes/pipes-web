@@ -431,7 +431,7 @@ const ProjectForm = ({ create }) => {
     }));
   };
   const handleRemoveAssumption = (index, e) => {
-    e.preventDefault(); // Prevent any default button behavior
+    e.preventDefault();
 
     setForm((prevState) => ({
       ...prevState,
