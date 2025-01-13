@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Col from "react-bootstrap/Col";
-import Container from 'react-bootstrap/Container';
+import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
-import "./PageStyles.css"
+import "./PageStyles.css";
 
 import useAuthStore from "./stores/AuthStore";
 import useDataStore from "./stores/DataStore";
@@ -18,7 +18,6 @@ import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
 import ProjectOverviewScenarios from "./ProjectOverviewScenarios";
 import ProjectOverviewSchedule from "./ProjectOverviewSchedule";
 import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
-
 
 const ProjectOverview = () => {
   const navigate = useNavigate();
@@ -31,29 +30,28 @@ const ProjectOverview = () => {
     projectGetError,
     getProjectRuns,
     projectRuns,
-    isGettingProjectRuns
+    projectRunRetries,
+    isGettingProjectRuns,
   } = useDataStore();
 
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-
     if (!selectedProjectName || selectedProjectName === null) {
-      navigate('/projects');
+      navigate("/projects");
       return;
     }
 
     if (!currentProject || currentProject === null) {
       getProject(selectedProjectName, accessToken);
     }
-
+    if (projectRunRetries > 2) return;
     if (!projectRuns || projectRuns.length === 0) {
       getProjectRuns(selectedProjectName, accessToken);
     }
-
   }, [
     validateToken,
     isLoggedIn,
@@ -64,6 +62,7 @@ const ProjectOverview = () => {
     currentProject,
     projectRuns,
     getProjectRuns,
+    projectRunRetries,
   ]);
 
   if (isGettingProject || isGettingProjectRuns) {
@@ -75,7 +74,7 @@ const ProjectOverview = () => {
           </Col>
         </Row>
       </Container>
-    )
+    );
   }
 
   if (projectGetError) {
@@ -83,31 +82,41 @@ const ProjectOverview = () => {
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p style={{color: "red"}}>{projectGetError.message}</p>
+            <p style={{ color: "red" }}>{projectGetError.message}</p>
           </Col>
         </Row>
       </Container>
-    )
+    );
   }
 
-  if ( !currentProject ) {
+  if (!currentProject) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p>Please go to <a href="/projects">projects</a> and select one of your project.</p>
+            <p>
+              Please go to <a href="/projects">projects</a> and select one of
+              your project.
+            </p>
           </Col>
         </Row>
       </Container>
-    )
+    );
   }
 
   return (
     <Container className="mainContent" fluid>
       <Row className="text-start">
         <Col>
-          <h2 className='display-5 mt-4 mb-4'>[{currentProject.name}] {currentProject.title}</h2>
-          <p className='mt-3'><b>Project Owner: {currentProject.owner.first_name} {currentProject.owner.last_name}</b></p>
+          <h2 className="display-5 mt-4 mb-4">
+            [{currentProject.name}] {currentProject.title}
+          </h2>
+          <p className="mt-3">
+            <b>
+              Project Owner: {currentProject.owner.first_name}{" "}
+              {currentProject.owner.last_name}
+            </b>
+          </p>
 
           <p className="mt-4">{currentProject.description}</p>
           <hr></hr>
@@ -118,14 +127,18 @@ const ProjectOverview = () => {
           <Row className="text-start mt-4">
             <h3 className="mb-4 smallCaps">Assumptions</h3>
             <Col>
-              <ProjectOverviewAssumptions assumptions={currentProject.assumptions} />
+              <ProjectOverviewAssumptions
+                assumptions={currentProject.assumptions}
+              />
             </Col>
           </Row>
 
           <Row className="text-start mt-5">
             <h3 className="mb-4 smallCaps">Requirements</h3>
             <Col>
-              <ProjectOverviewRequirements requirements={currentProject.requirements} />
+              <ProjectOverviewRequirements
+                requirements={currentProject.requirements}
+              />
             </Col>
           </Row>
 
@@ -139,7 +152,10 @@ const ProjectOverview = () => {
           <Row className="text-start mt-5">
             <h3 className="mb-4 smallCaps">Schedule</h3>
             <Col>
-              <ProjectOverviewSchedule scheduled_start={currentProject.scheduled_start} scheduled_end={currentProject.scheduled_end} />
+              <ProjectOverviewSchedule
+                scheduled_start={currentProject.scheduled_start}
+                scheduled_end={currentProject.scheduled_end}
+              />
             </Col>
           </Row>
         </Col>
@@ -156,6 +172,5 @@ const ProjectOverview = () => {
     </Container>
   );
 };
-
 
 export default ProjectOverview;

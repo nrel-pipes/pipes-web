@@ -1,0 +1,12 @@
+.custom-form-label {
+  font-size: 1.2rem;
+}
+
+.requiredField::after {
+  content: " *";
+  color: red;
+}
+
+.form-error {
+  border: 2px solid red;
+}

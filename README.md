@@ -1,20 +1,23 @@
 # pipes-web
 
 Technology stack:
-* node
-* npm
-* react
+
+- node
+- npm
+- react
 
 ## Development
 
 Clone this repository and enter into `pipes-web` directory.
 
 Install node modules
+
 ```bash
 $ npm install
 ```
 
 Start development server
+
 ```bash
 $ npm run start
 ```
@@ -29,9 +32,8 @@ $ npm run build
 
 The release workflow is this:
 
-* Release via `release` branch.
-* Merge `release` into `develop` and `master` branches.
-
+- Release via `release` branch.
+- Merge `release` into `develop` and `master` branches.
 
 ## Deployment
 
@@ -39,12 +41,11 @@ The release workflow is this:
 
 AWS Codebuild and webhook has been setup on this repo, triggering by
 
-* pull request create
-* pull request update
-* pull request reopen
+- pull request create
+- pull request update
+- pull request reopen
 
 on base branch `develop` and `master`.
-
 
 2. Deploy the image
 

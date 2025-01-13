@@ -28,6 +28,19 @@
   color: #61dafb;
 }
 
+:root {
+  --navbar-height: 65px;
+  --banner-height: 30px;
+}
+
+.Content {
+  padding-top: calc(var(--navbar-height) + var(--banner-height));
+}
+
+.logged-in .Content {
+  padding-top: var(--navbar-height);
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

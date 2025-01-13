@@ -1,0 +1,10 @@
+
+
+.title-container {
+    border-left:1px solid #DDD;
+    border-right:1px solid #820606;
+    border-top: 3px solid;
+    border-bottom: 3px solid;
+    border-image: linear-gradient(to right, rgb(71, 148, 218), rgb(67, 78, 90)) 1 0 1 0;
+}
+
