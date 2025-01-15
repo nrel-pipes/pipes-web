@@ -282,7 +282,6 @@ const CreateProject = () => {
   const [formErrorMessage, setFormErrorMessage] = useState("");
 
   const [submittingForm, setSubmittingForm] = useState(false);
-  const [formData, setFormData] = useState({});
 
   const retriesLimit = 2;
   const handleSubmit = async (e) => {
@@ -419,16 +418,25 @@ const CreateProject = () => {
       }
       organization.classList.remove("form-error");
 
-      // Assemble the final data object
-      setFormData({
+      let form = {
         name: projectName,
         title: projectTitle,
         description: projectDescription,
         assumptions: assumptions,
         requirements: requirementsDict,
         scenarios: scenariosList,
-        sensitivities: sensitivitiesList,
-        milestones: milestonesList,
+        sensitivities: sensitivitiesList.map((sensitivity) => ({
+          ...sensitivity,
+          description: Array.isArray(sensitivity.description)
+            ? [sensitivity.description[0]] // Keep as array with single string
+            : [sensitivity.description], // Convert string to array with single element
+        })),
+        milestones: milestonesList.map((milestone) => ({
+          ...milestone,
+          description: Array.isArray(milestone.description)
+            ? milestone.description[0]
+            : milestone.description,
+        })),
         scheduled_start: schedule.scheduledStart,
         scheduled_end: schedule.scheduledEnd,
         owner: {
@@ -437,13 +445,11 @@ const CreateProject = () => {
           last_name: ownerLastName,
           organization: ownerOrganization,
         },
-      });
-
-      // Call createProject with the data and access token
-      console.log(JSON.stringify(formData, null, 2));
+      };
+      console.log(JSON.stringify(form, null, 2));
 
       try {
-        await createProject(formData, accessToken);
+        await createProject(form, accessToken);
         console.log(`Project created successfully on attempt ${i + 1}`);
         // If successful, break out of the retry loop
         break;
@@ -840,7 +846,7 @@ const CreateProject = () => {
                         className="d-flex align-items-center me-2"
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        String Requirement
+                        Requirement
                       </Button>
 
                       <Button

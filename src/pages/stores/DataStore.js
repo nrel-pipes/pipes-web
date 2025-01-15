@@ -203,10 +203,10 @@ const useDataStore = create(
           });
         }
       },
-
       createProject: async (projectData, accessToken) => {
         set({ isCreatingProject: true, createProjectError: null });
         try {
+          // Change to be actual API...
           const response = await fetch("http://localhost:8080/api/projects", {
             method: "POST",
             headers: {
@@ -232,6 +232,62 @@ const useDataStore = create(
             isCreatingProject: false,
           });
           console.error(error.message.toString());
+          throw error;
+        }
+      },
+
+      createProjectRun: async (projectName, projectRunData, accessToken) => {
+        set({ isCreatingProjectRun: true, projectRunCreateError: null });
+        console.log("Project Name received:", projectName); // Add this log
+
+        try {
+          // Encode project name properly
+          const encodedProjectName = encodeURIComponent(projectName);
+
+          // Make POST request to create the project run
+          const response = await fetch(
+            `http://localhost:8080/api/projectruns?project=${encodedProjectName}`,
+            {
+              method: "POST",
+              headers: {
+                accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                name: projectRunData.name,
+                description: projectRunData.description || "",
+                assumptions: projectRunData.assumptions || [],
+                requirements: projectRunData.requirements || {},
+                scenarios: projectRunData.scenarios || [],
+                scheduled_start: projectRunData.scheduledStart,
+                scheduled_end: projectRunData.scheduledEnd,
+              }),
+            },
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Failed to create project run: ${errorText} (Status ${response.status})`,
+            );
+          }
+
+          const data = await response.json();
+
+          set((state) => ({
+            currentProjectRun: data,
+            currentProjectRunName: data.name,
+            projectRuns: [...state.projectRuns, data],
+            isCreatingProjectRun: false,
+          }));
+
+          return data;
+        } catch (error) {
+          set({
+            projectRunCreateError: error.message,
+            isCreatingProjectRun: false,
+          });
           throw error;
         }
       },

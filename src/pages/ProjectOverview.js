@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -18,6 +18,7 @@ import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
 import ProjectOverviewScenarios from "./ProjectOverviewScenarios";
 import ProjectOverviewSchedule from "./ProjectOverviewSchedule";
 import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
+import ProjectOverviewTeam from "../components/ProjectOverviewTeam";
 
 const ProjectOverview = () => {
   const navigate = useNavigate();
@@ -34,6 +35,83 @@ const ProjectOverview = () => {
     isGettingProjectRuns,
   } = useDataStore();
 
+  const [team, setTeam] = useState([
+    {
+      name: "dsgrid",
+      description: null,
+      members: [
+        {
+          email: "sam.molnar@nrel.gov",
+          first_name: "Sam",
+          last_name: "Molnar",
+          organization: "National Renewable Energy Laboratory (NREL)",
+          is_active: true,
+          is_superuser: false,
+        },
+        {
+          email: "Meghan.Mooney@nrel.gov",
+          first_name: "Meghan",
+          last_name: "Mooney",
+          organization: "National Renewable Energy Laboratory (NREL)",
+          is_active: true,
+          is_superuser: false,
+        },
+      ],
+      context: {
+        project: "6762e21cd8b9ddb9ebac2891",
+      },
+    },
+    {
+      name: "dgen",
+      description: null,
+      members: [
+        {
+          email: "Jianli.Gu@nrel.gov",
+          first_name: "Jianli",
+          last_name: "Gu",
+          organization: "National Renewable Energy Laboratory (NREL)",
+          is_active: true,
+          is_superuser: false,
+        },
+        {
+          email: "Jacob.Nunemaker@nrel.gov",
+          first_name: "Jacob",
+          last_name: "Nunemaker",
+          organization: "National Renewable Energy Laboratory (NREL)",
+          is_active: true,
+          is_superuser: false,
+        },
+      ],
+      context: {
+        project: "6762e21cd8b9ddb9ebac2891",
+      },
+    },
+    {
+      name: "rpm",
+      description: null,
+      members: [
+        {
+          email: "Kenny.Gruchalla@nrel.gov",
+          first_name: "Kenny",
+          last_name: "Gruchalla",
+          organization: "National Renewable Energy Laboratory (NREL)",
+          is_active: true,
+          is_superuser: false,
+        },
+        {
+          email: "David.Rager@nrel.gov",
+          first_name: "David",
+          last_name: "Rager",
+          organization: "National Renewable Energy Laboratory (NREL)",
+          is_active: true,
+          is_superuser: false,
+        },
+      ],
+      context: {
+        project: "6762e21cd8b9ddb9ebac2891",
+      },
+    },
+  ]);
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
@@ -109,7 +187,7 @@ const ProjectOverview = () => {
       <Row className="text-start">
         <Col>
           <h2 className="display-5 mt-4 mb-4">
-            [{currentProject.name}] {currentProject.title}
+            {currentProject.name} {currentProject.title}
           </h2>
           <p className="mt-3">
             <b>
@@ -158,11 +236,17 @@ const ProjectOverview = () => {
               />
             </Col>
           </Row>
+          {/* Hard code for now, since we are switching from zustand to react-query */}
+          <Row className="text-start mt-5">
+            <h3 className="mb-4 smallCaps">Team</h3>
+            <Col>
+              <ProjectOverviewTeam team={team} />
+            </Col>
+          </Row>
         </Col>
 
         <Col md={4} className="border-start">
-          <Row className="text-start mt-4">
-            <h3 className="mb-4 smallCaps">Available Project Runs</h3>
+          <Row className="mt-4">
             <Col>
               <ProjectOverviewProjectRuns projectRuns={projectRuns} />
             </Col>
