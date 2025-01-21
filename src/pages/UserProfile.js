@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 
-import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Table from 'react-bootstrap/Table';
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Table from "react-bootstrap/Table";
 
-import "./PageStyles.css"
+import "./PageStyles.css";
 
-import useAuthStore from './stores/AuthStore';
-
+import useAuthStore from "./stores/AuthStore";
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, idToken, accessToken, currentUser, getCurrentUser} = useAuthStore();
+  const { isLoggedIn, idToken, accessToken, currentUser, getCurrentUser } =
+    useAuthStore();
 
   // const [userAttributes, setUserAttributes] = useState({});
   const [userEmail, setUserEmail] = useState(null);
@@ -22,7 +22,7 @@ const UserProfile = () => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/login");
     }
 
     if (idToken) {
@@ -31,38 +31,59 @@ const UserProfile = () => {
       setUserEmail(email);
     }
 
-    if (userEmail && (!userRole || (currentUser && userEmail !== currentUser.email.toLowerCase()))) {
+    if (
+      userEmail &&
+      (!userRole ||
+        (currentUser && userEmail !== currentUser.email.toLowerCase()))
+    ) {
       getCurrentUser(userEmail, accessToken);
       if (currentUser.is_superuser) {
-        setUserRole('Administrator');
+        setUserRole("Administrator");
       } else {
-        setUserRole('User')
+        setUserRole("User");
       }
     }
-
-  }, [isLoggedIn, navigate, idToken, accessToken, currentUser, getCurrentUser, userEmail, userRole]);
+  }, [
+    isLoggedIn,
+    navigate,
+    idToken,
+    accessToken,
+    currentUser,
+    getCurrentUser,
+    userEmail,
+    userRole,
+  ]);
 
   return (
     <Container className="mainContent">
-        <Row>
-          <Col className='mx-auto mt-5'>
-            <h3 style={{"paddingTop": "30px", "paddingBottom": "30px"}}>User Profile</h3>
-            <Table striped bordered hover>
-              <tbody className="text-start">
-                <tr key='1'>
-                  <td><b>Email</b></td>
-                  <td>{userEmail}</td>
-                </tr>
-                <tr key='2'>
-                  <td><b>Role</b></td>
-                  <td>{userRole}</td>
-                </tr>
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-      </Container>
+      <Row>
+        <Col className="mx-auto mt-5">
+          <h3 style={{ paddingTop: "30px", paddingBottom: "30px" }}>
+            User Profile
+          </h3>
+          <Table striped bordered hover>
+            <tbody className="text-start">
+              <tr key="1">
+                <td>
+                  <b>Email</b>
+                </td>
+                <td>{userEmail}</td>
+              </tr>
+              <tr key="2">
+                <td>
+                  <b>Role</b>
+                </td>
+                <td>{userRole}</td>
+              </tr>
+            </tbody>
+          </Table>
+          <h3 style={{ paddingTop: "30px", paddingBottom: "30px" }}>
+            User Teams
+          </h3>
+        </Col>
+      </Row>
+    </Container>
   );
-}
+};
 
 export default UserProfile;
