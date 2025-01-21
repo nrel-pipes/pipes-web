@@ -4,12 +4,28 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   background-color: white;
+  max-width: 1000px;
+  width: 100%;
 }
 
-.card,
-.card-header,
-.card-body {
+.card-header {
+  background-color: rgb(71, 148, 218);
+  font-size: 1.5rem;
+  padding: 15px;
+  color: white;
   transition: all 0.3s ease;
+  text-align: center;
+}
+
+.card-body {
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.card-body h6,
+.card-body ul,
+.card-body p {
+  text-align: left;
 }
 
 .card:hover {
@@ -24,8 +40,32 @@
   background-color: rgb(64, 133, 196);
 }
 
-.create-project-card .card-body {
-  transition: background-color 0.3s ease;
+.card-footer {
+  padding: 0 0 15px 15px;
+  border: none;
+  background: none;
+  text-align: center;
+}
+
+.btn-outline-primary {
+  --bs-primary: rgb(71, 148, 218);
+  --bs-primary-rgb: 71, 148, 218;
+  border-color: rgb(71, 148, 218);
+  color: rgb(71, 148, 218);
+}
+
+.btn-outline-primary:hover {
+  background-color: rgb(71, 148, 218);
+  border-color: rgb(71, 148, 218);
+  color: white;
+}
+
+.create-project-card {
+  margin: 15px 0 15px 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  background-color: white;
 }
 
 .create-project-card .card-body {
@@ -51,19 +91,5 @@
 }
 
 .create-project-card:hover .plus-icon {
-  color: white;
-}
-
-/* Override Bootstrap's primary color */
-.btn-outline-primary {
-  --bs-primary: rgb(71, 148, 218);
-  --bs-primary-rgb: 71, 148, 218;
-  border-color: rgb(71, 148, 218);
-  color: rgb(71, 148, 218);
-}
-
-.btn-outline-primary:hover {
-  background-color: rgb(71, 148, 218);
-  border-color: rgb(71, 148, 218);
   color: white;
 }
