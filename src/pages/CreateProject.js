@@ -1,24 +1,416 @@
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Plus, Minus } from "lucide-react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useNavigate } from "react-router-dom";
+import { Plus, Minus } from "lucide-react";
 
 import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/form/SideColumn";
-import useDataStore from "../pages/stores/DataStore";
-import useAuthStore from "../pages/stores/AuthStore";
+import useDataStore from "./stores/DataStore";
+import useAuthStore from "./stores/AuthStore";
 import FormError from "../components/form/FormError";
 import "./FormStyles.css";
 import { useState, useEffect } from "react";
 
 const CreateProject = () => {
+  // Create is true if we are creating a new project, is false if we are updating
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { getProjectBasics, getProject } = useDataStore();
+  const { getProjectBasics, getProject, currentProject } = useDataStore();
 
+  const initializeForm = () => {
+    return {
+      name: "",
+      title: "",
+      description: "",
+      assumptions: [],
+      leads: [],
+      milestones: [],
+      name: "",
+      owner: {
+        email: "",
+        first_name: "",
+        last_name: "",
+        organization: "",
+      },
+      requirements: {
+        keys: [],
+        values: [],
+      },
+      scenarios: [],
+      scheduled_end: "",
+      scheduled_start: "",
+      sensitivities: [],
+      teams: [],
+      title: "",
+    };
+  };
+  const denormalizeFormData = (normalizedForm) => {
+    const requirements = {};
+    normalizedForm.requirements.keys.forEach((key, index) => {
+      const values = normalizedForm.requirements.values[index];
+      requirements[key] = values.length === 1 ? values[0] : values;
+    });
+    const scenarios = normalizedForm.scenarios.map((scenario) => {
+      const description =
+        Array.isArray(scenario.description) && scenario.description.length === 1
+          ? scenario.description[0]
+          : scenario.description;
+      const other = Array.isArray(scenario.other)
+        ? scenario.other.reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+          }, {})
+        : scenario.other;
+
+      return {
+        ...scenario,
+        description,
+        other,
+      };
+    });
+
+    // Return denormalized form
+    return {
+      ...normalizedForm,
+      requirements,
+      scenarios,
+    };
+  };
+
+  const [form, setForm] = useState(() => initializeForm(currentProject));
+  const handleRemoveSensitivity = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: prevForm.sensitivities.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      // If the last item is already empty, don't add another
+      if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
+        return prevForm;
+      }
+
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list.push("");
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
+  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list = newSensitivities[
+        sensitivityIndex
+      ].list.filter((_, idx) => idx !== listIndex);
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
+  const handleMilestoneDateChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].milestone_date = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+
+  const handleKeyChange =
+    (scenarioIndex, otherIndex, item, handleScenarioChange) => (e) => {
+      const newOther = [...form.scenarios.other];
+      newOther[otherIndex] = [e.target.value, item[1]];
+      handleScenarioChange(scenarioIndex, "other", newOther);
+    };
+
+  const handleValueChange =
+    (scenarioIndex, otherIndex, item, handleScenarioChange) => (e) => {
+      const newOther = [...form.scenarios[scenarioIndex].other];
+      newOther[otherIndex] = [item[0], e.target.value];
+      handleScenarioChange(scenarioIndex, "other", newOther);
+    };
+
+  const handleRemove =
+    (scenarioIndex, otherIndex, handleScenarioChange) => () => {
+      const newOther = form.scenarios[scenarioIndex].other.filter(
+        (_, index) => index !== otherIndex,
+      );
+      handleScenarioChange(scenarioIndex, "other", newOther);
+    };
+
+  const handleScenarioChange = (scenarioIndex, field, value) => {
+    setForm((prevForm) => {
+      const newScenarios = [...prevForm.scenarios];
+      newScenarios[scenarioIndex] = {
+        ...newScenarios[scenarioIndex],
+        [field]: value,
+      };
+      return {
+        ...prevForm,
+        scenarios: newScenarios,
+      };
+    });
+  };
+
+  const handleRemoveScenario = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      scenarios: prevForm.scenarios.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleAddOtherInfo = (scenarioIndex, e) => {
+    e.preventDefault();
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.push(["", ""]);
+    setScenarios(newScenarios);
+  };
+  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+    setForm((prevForm) => {
+      const newScenarios = [...prevForm.scenarios];
+      newScenarios[scenarioIndex] = {
+        ...newScenarios[scenarioIndex],
+        other: newScenarios[scenarioIndex].other.filter(
+          (_, idx) => idx !== otherIndex,
+        ),
+      };
+      return {
+        ...prevForm,
+        scenarios: newScenarios,
+      };
+    });
+  };
+
+  // Add a new other info item to a scenario
+  const handleSetArrayValue = (arrayPath, index, value) => {
+    setForm((prevState) => {
+      const keys = arrayPath.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+
+      // Navigate to the array
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+
+      // Get the array name from the last key
+      const arrayName = keys[keys.length - 1];
+      // Create new array with updated value
+      const newArray = [...current[arrayName]];
+      newArray[index] = value;
+      current[arrayName] = newArray;
+
+      return newState;
+    });
+  };
+
+  // Usage:
+  const handleRequirementNameChange = (index, newName) => {
+    setForm((prevForm) => {
+      const newKeys = [...prevForm.requirements.keys];
+      newKeys[index] = newName;
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          keys: newKeys,
+        },
+      };
+    });
+  };
+
+  const handleRequirementValueChange = (index, valueIndex, newValue) => {
+    setForm((prevForm) => {
+      const newValues = [...prevForm.requirements.values];
+      newValues[index] = [...newValues[index]];
+      newValues[index][valueIndex] = newValue;
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          values: newValues,
+        },
+      };
+    });
+  };
+
+  const handleRemoveRequirement = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newKeys = [...prevForm.requirements.keys];
+      const newValues = [...prevForm.requirements.values];
+      newKeys.splice(index, 1);
+      newValues.splice(index, 1);
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          keys: newKeys,
+          values: newValues,
+        },
+      };
+    });
+  };
+
+  const handleRemoveSubRequirement = (index, valueIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newValues = [...prevForm.requirements.values];
+      newValues[index] = [...newValues[index]];
+      newValues[index].splice(valueIndex, 1);
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          values: newValues,
+        },
+      };
+    });
+  };
+
+  const handleAddSubRequirement = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newValues = [...prevForm.requirements.values];
+      newValues[index] = [...newValues[index], ""];
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          values: newValues,
+        },
+      };
+    });
+  };
+
+  const handleAddRequirement = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newKeys = [...prevForm.requirements.keys, ""];
+      const newValues = [...prevForm.requirements.values, [""]];
+
+      return {
+        ...prevForm,
+        requirements: {
+          ...prevForm.requirements,
+          keys: newKeys,
+          values: newValues,
+        },
+      };
+    });
+  };
+  const handleMilestoneNameChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].name = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+  const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].description = [value];
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+
+  const handleAddMilestone = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      milestones: [
+        ...(prevForm.milestones || []),
+        {
+          name: "",
+          description: [""],
+          milestone_date: "",
+        },
+      ],
+    }));
+  };
+  const handleSetString = (path, value) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = value;
+      return newState;
+    });
+  };
+  const handleAssumptionChange = (index, value) => {
+    setForm((prevState) => ({
+      ...prevState,
+      assumptions: prevState.assumptions.map((item, i) =>
+        i === index ? value : item,
+      ),
+    }));
+  };
+  const handleAddAssumption = () => {
+    setForm((prevState) => ({
+      ...prevState,
+      assumptions: [...prevState.assumptions, ""],
+    }));
+  };
+  const handleRemoveAssumption = (index, e) => {
+    e.preventDefault();
+
+    setForm((prevState) => ({
+      ...prevState,
+      assumptions: prevState.assumptions.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleDateChange = (field, value) => {
+    setForm({
+      ...form,
+      [field]: value,
+    });
+  };
+  const formatDateForInput = (isoString) => {
+    if (!isoString) return "";
+    return isoString.split("T")[0];
+  };
+
+  // Handle auth and initial data loading
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
@@ -27,121 +419,28 @@ const CreateProject = () => {
     getProjectBasics(accessToken);
   }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
 
+  // Handle loading project data when we have a project name
+  useEffect(() => {
+    // console.log(JSON.stringify(currentProject, null, 2));
+
+    if (projectName) {
+      getProject(currentProject.name, accessToken);
+    }
+  }, [currentProject, getProject, accessToken]);
+
+  // Update form when project data loads
+
   // Project information
   const [projectName, setProjectName] = useState("example project");
-  const [projectDescription, setProjectDescription] = useState("example");
 
   // Owner information
-  const [ownerFirstName, setOwnerFirstName] = useState("Jordan");
-  const [ownerLastName, setOwnerLastName] = useState("Eisenman");
-  const [ownerEmail, setOwnerEmail] = useState("Jordan.Eisenman@nrel.gov");
-  const [ownerOrganization, setOwnerOrganization] = useState("NREL");
-
-  // Assumptions state
-  const [assumptions, setAssumptions] = useState(["Assumption 1"]);
-  const handleAddAssumption = (e) => {
-    e.preventDefault();
-    setAssumptions([...assumptions, ""]);
-  };
-  const handleRemoveAssumption = (index, e) => {
-    e.preventDefault();
-    const newAssumptions = assumptions.filter((_, idx) => idx !== index);
-    setAssumptions(newAssumptions);
-  };
-  const handleAssumptionChange = (index, value) => {
-    const newAssumptions = [...assumptions];
-    newAssumptions[index] = value;
-    setAssumptions(newAssumptions);
-  };
+  const [ownerFirstName] = useState("Jordan");
+  const [ownerLastName] = useState("Eisenman");
+  const [ownerEmail] = useState("Jordan.Eisenman@nrel.gov");
+  const [ownerOrganization] = useState("NREL");
 
   // Requirement state
-  const [requirements, setRequirments] = useState([
-    { KeyRequirement: ["Value1"] },
-  ]);
-  const [requirementsType, setRequirmentsType] = useState(["str"]);
-
-  const handleAddRequirement = (type, e) => {
-    e.preventDefault();
-    // Initialize with an empty requirement name and an array with one default value
-    const defaultValue = type === "int" ? 0 : "";
-    const newRequirements = [...requirements, { "": [defaultValue] }];
-    setRequirments(newRequirements);
-
-    const newRequirementsType = [...requirementsType, type];
-    setRequirmentsType(newRequirementsType);
-  };
-
-  const handleRemoveRequirement = (index, e) => {
-    e.preventDefault();
-    const newRequirements = requirements.filter((_, idx) => idx !== index);
-    setRequirments(newRequirements);
-
-    const newRequirementsType = requirementsType.filter(
-      (_, idx) => idx !== index,
-    );
-    setRequirmentsType(newRequirementsType);
-  };
-
-  // New function to handle adding a sub-requirement value
-  const handleAddSubRequirement = (requirementIndex, e) => {
-    e.preventDefault();
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const requirementName = Object.keys(requirement)[0];
-    const defaultValue = requirementsType[requirementIndex] === "int" ? 0 : "";
-
-    requirement[requirementName] = [
-      ...requirement[requirementName],
-      defaultValue,
-    ];
-    setRequirments(newRequirements);
-  };
-
-  // New function to handle removing a sub-requirement value
-  const handleRemoveSubRequirement = (requirementIndex, valueIndex, e) => {
-    e.preventDefault();
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const requirementName = Object.keys(requirement)[0];
-
-    requirement[requirementName] = requirement[requirementName].filter(
-      (_, idx) => idx !== valueIndex,
-    );
-    setRequirments(newRequirements);
-  };
-
-  // New function to handle requirement name changes
-  const handleRequirementNameChange = (requirementIndex, newName) => {
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const oldName = Object.keys(requirement)[0];
-    const values = requirement[oldName];
-
-    // Create new object with updated name but same values
-    newRequirements[requirementIndex] = { [newName]: values };
-    setRequirments(newRequirements);
-  };
-
-  // New function to handle requirement value changes
-  const handleRequirementValueChange = (
-    requirementIndex,
-    valueIndex,
-    newValue,
-  ) => {
-    const newRequirements = [...requirements];
-    const requirement = newRequirements[requirementIndex];
-    const requirementName = Object.keys(requirement)[0];
-
-    // Handle type conversion for integers
-    if (requirementsType[requirementIndex] === "int") {
-      const intValue = parseInt(newValue) || 0;
-      requirement[requirementName][valueIndex] = intValue;
-    } else {
-      requirement[requirementName][valueIndex] = newValue;
-    }
-
-    setRequirments(newRequirements);
-  };
+  const [requirements] = useState([{ KeyRequirement: ["Value1"] }]);
 
   // Adding scenario
   const [scenarios, setScenarios] = useState([
@@ -163,40 +462,6 @@ const CreateProject = () => {
       },
     ]);
   };
-
-  const handleRemoveScenario = (index, e) => {
-    e.preventDefault();
-    const newScenarios = scenarios.filter((_, idx) => idx !== index);
-    setScenarios(newScenarios);
-  };
-
-  const handleAddOtherInfo = (scenarioIndex, e) => {
-    e.preventDefault();
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other.push({
-      key: "",
-      value: "",
-    });
-    setScenarios(newScenarios);
-  };
-
-  const handleOtherInfoChange = (
-    scenarioIndex,
-    otherIndex,
-    field,
-    newValue,
-  ) => {
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other[otherIndex][field] = newValue;
-    setScenarios(newScenarios);
-  };
-
-  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other.splice(otherIndex, 1);
-    setScenarios(newScenarios);
-  };
-
   const [sensitivities, setSensitivities] = useState([
     {
       name: "Default Sensitivity",
@@ -207,36 +472,17 @@ const CreateProject = () => {
 
   const handleAddSensitivity = (e) => {
     e.preventDefault();
-    setSensitivities([
-      ...sensitivities,
-      {
-        name: "",
-        description: [""],
-        list: [""],
-      },
-    ]);
-  };
-
-  const handleRemoveSensitivity = (index, e) => {
-    e.preventDefault();
-    const newSensitivities = sensitivities.filter((_, idx) => idx !== index);
-    setSensitivities(newSensitivities);
-  };
-
-  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
-    e.preventDefault();
-    const newSensitivities = [...sensitivities];
-    newSensitivities[sensitivityIndex].list.push("");
-    setSensitivities(newSensitivities);
-  };
-
-  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
-    e.preventDefault();
-    const newSensitivities = [...sensitivities];
-    newSensitivities[sensitivityIndex].list = newSensitivities[
-      sensitivityIndex
-    ].list.filter((_, idx) => idx !== listIndex);
-    setSensitivities(newSensitivities);
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: [
+        ...(prevForm.sensitivities || []),
+        {
+          name: "",
+          description: [""],
+          list: [""],
+        },
+      ],
+    }));
   };
   // Setting Milestones
   const [milestones, setMilestones] = useState([
@@ -247,22 +493,14 @@ const CreateProject = () => {
     },
   ]);
 
-  const handleAddMilestone = (e) => {
+  const handleRemoveMilestone = (milestoneIndex, e) => {
     e.preventDefault();
-    setMilestones([
-      ...milestones,
-      {
-        name: "",
-        description: [""],
-        milestone_date: "", // Will be in YYYY-MM-DD format
-      },
-    ]);
-  };
-
-  const handleRemoveMilestone = (index, e) => {
-    e.preventDefault();
-    const newMilestones = milestones.filter((_, idx) => idx !== index);
-    setMilestones(newMilestones);
+    setForm((prevForm) => ({
+      ...prevForm,
+      milestones: prevForm.milestones.filter(
+        (_, index) => index !== milestoneIndex,
+      ),
+    }));
   };
   // Setting project Schedule
   const [schedule, setSchedule] = useState({
@@ -270,222 +508,133 @@ const CreateProject = () => {
     scheduledEnd: "2023-12-31",
   });
 
-  const handleDateChange = (field, value) => {
-    setSchedule({
-      ...schedule,
-      [field]: value,
-    });
-  };
-
   const createProject = useDataStore((state) => state.createProject);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
 
   const [submittingForm, setSubmittingForm] = useState(false);
 
-  const retriesLimit = 2;
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(false);
     setSubmittingForm(true);
+    let submissionForm = denormalizeFormData(form);
+    console.log(submissionForm);
 
-    for (let i = 0; i < retriesLimit; i++) {
-      // Generate the projectTitle as lowercase with underscores
-      const projectTitle = projectName.toLowerCase().replace(/\s+/g, "_");
+    // Validation Section
+    // Validating Project Title
+    const title = document.getElementById("projectName");
+    if (!submissionForm.name || submissionForm.name.length === 0) {
+      title.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide a title for your project.");
+      setSubmittingForm(false);
+      return;
+    }
+    title.classList.remove("form-error");
 
-      // Process requirements into a dictionary
-      let requirementsDict = {};
-      requirements.forEach((requirementObj) => {
-        const requirementName = Object.keys(requirementObj)[0];
-        const values = requirementObj[requirementName];
-        requirementsDict[requirementName] = values;
-      });
+    // Validating Schedule
+    const scheduledStart = document.getElementById("scheduledStart");
+    const scheduledEnd = document.getElementById("scheduledEnd");
+    let hasScheduleError = false;
 
-      // Process scenarios
-      let scenariosList = scenarios.map((scenario) => {
-        let otherDict = {};
-        scenario.other.forEach((item) => {
-          if (item.key) {
-            otherDict[item.key] = item.value;
-          }
-        });
-
-        return {
-          name: scenario.name,
-          description: scenario.description,
-          other: otherDict,
-        };
-      });
-
-      // Process sensitivities
-      let sensitivitiesList = sensitivities.map((sensitivity) => {
-        return {
-          name: sensitivity.name,
-          description: sensitivity.description,
-        };
-      });
-
-      // Process milestones
-      let milestonesList = milestones.map((milestone) => {
-        return {
-          name: milestone.name,
-          description: milestone.description,
-          milestone_date: milestone.milestone_date,
-        };
-      });
-
-      //  Required field validation
-      // Validating ProjectName
-      const title = document.getElementById("projectName");
-      if (projectTitle.length === 0) {
-        title.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide a title for your project.");
-        return;
-      }
-      title.classList.remove("form-error");
-
-      // Validating Schedule
-      const scheduledStart = document.getElementById("scheduledStart");
-      const scheduledEnd = document.getElementById("scheduledEnd");
-      let hasScheduleError = false;
-      if (!schedule.scheduledStart) {
+    if (!submissionForm.scheduled_start) {
+      scheduledStart.classList.add("form-error");
+      hasScheduleError = true;
+    }
+    if (!submissionForm.scheduled_end) {
+      scheduledEnd.classList.add("form-error");
+      hasScheduleError = true;
+    }
+    if (submissionForm.scheduled_start && submissionForm.scheduled_end) {
+      if (
+        new Date(submissionForm.scheduled_end) <
+        new Date(submissionForm.scheduled_start)
+      ) {
         scheduledStart.classList.add("form-error");
-        hasScheduleError = true;
-      }
-      if (!schedule.scheduledEnd) {
         scheduledEnd.classList.add("form-error");
         hasScheduleError = true;
       }
-      if (schedule.scheduledStart && schedule.scheduledEnd) {
-        if (
-          new Date(schedule.scheduledEnd) < new Date(schedule.scheduledStart)
-        ) {
-          scheduledStart.classList.add("form-error");
-          scheduledEnd.classList.add("form-error");
-          hasScheduleError = true;
-        }
-      }
-      if (hasScheduleError) {
-        console.error(
-          "Schedule is invalid: End date is before start date or fields are missing.",
-        );
-        setFormError(true);
-        setFormErrorMessage(
-          "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
-        );
-        return;
-      }
-      scheduledStart.classList.remove("form-error");
-      scheduledEnd.classList.remove("form-error");
+    }
+    if (hasScheduleError) {
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
+      );
+      setSubmittingForm(false);
+      return;
+    }
+    scheduledStart.classList.remove("form-error");
+    scheduledEnd.classList.remove("form-error");
 
-      // Validating Owner
-      const firstName = document.getElementById("firstName");
-      if (ownerFirstName.length === 0) {
-        firstName.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide your first name.");
-        return;
-      }
-      firstName.classList.remove("form-error");
+    // Validating Owner Information
+    const firstName = document.getElementById("firstName");
+    if (
+      !submissionForm.owner?.first_name ||
+      submissionForm.owner.first_name.length === 0
+    ) {
+      firstName.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide your first name.");
+      setSubmittingForm(false);
+      return;
+    }
+    firstName.classList.remove("form-error");
 
-      const lastName = document.getElementById("lastName");
-      if (ownerLastName.length === 0) {
-        lastName.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide your last name.");
-        return;
-      }
-      lastName.classList.remove("form-error");
+    const lastName = document.getElementById("lastName");
+    if (
+      !submissionForm.owner?.last_name ||
+      submissionForm.owner.last_name.length === 0
+    ) {
+      lastName.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide your last name.");
+      setSubmittingForm(false);
+      return;
+    }
+    lastName.classList.remove("form-error");
 
-      const email = document.getElementById("email");
-      if (ownerEmail.length === 0) {
-        email.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide the project owner's email.");
-        return;
-      }
-      email.classList.remove("form-error");
+    const email = document.getElementById("email");
+    if (
+      !submissionForm.owner?.email ||
+      submissionForm.owner.email.length === 0
+    ) {
+      email.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide the project owner's email.");
+      setSubmittingForm(false);
+      return;
+    }
+    email.classList.remove("form-error");
 
-      const organization = document.getElementById("organization");
-      if (ownerOrganization.length === 0) {
-        organization.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(
-          "You forgot to provide the project owner's organization.",
-        );
-        return;
-      }
-      organization.classList.remove("form-error");
+    const organization = document.getElementById("organization");
+    if (
+      !submissionForm.owner?.organization ||
+      submissionForm.owner.organization.length === 0
+    ) {
+      organization.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "You forgot to provide the project owner's organization.",
+      );
+      setSubmittingForm(false);
+      return;
+    }
+    organization.classList.remove("form-error");
 
-      let form = {
-        name: projectName,
-        title: projectTitle,
-        description: projectDescription,
-        assumptions: assumptions,
-        requirements: requirementsDict,
-        scenarios: scenariosList,
-        sensitivities: sensitivitiesList.map((sensitivity) => ({
-          ...sensitivity,
-          description: Array.isArray(sensitivity.description)
-            ? [sensitivity.description[0]] // Keep as array with single string
-            : [sensitivity.description], // Convert string to array with single element
-        })),
-        milestones: milestonesList.map((milestone) => ({
-          ...milestone,
-          description: Array.isArray(milestone.description)
-            ? milestone.description[0]
-            : milestone.description,
-        })),
-        scheduled_start: schedule.scheduledStart,
-        scheduled_end: schedule.scheduledEnd,
-        owner: {
-          email: ownerEmail,
-          first_name: ownerFirstName,
-          last_name: ownerLastName,
-          organization: ownerOrganization,
-        },
-      };
-      console.log(JSON.stringify(form, null, 2));
-
-      try {
-        await createProject(form, accessToken);
-        console.log(`Project created successfully on attempt ${i + 1}`);
-        // If successful, break out of the retry loop
-        break;
-      } catch (error) {
-        console.error(
-          `Error creating project (attempt ${i + 1}/${retriesLimit}):`,
-          error.status,
-        );
-
-        // If this is not the last attempt, wait 1 second before retrying
-        if (i < retriesLimit - 1) {
-          setFormError(true);
-          setFormErrorMessage(
-            `Error creating project: ${error.message}. Retrying in 1 second...`,
-          );
-          await new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-            }, 1000);
-          });
-        } else {
-          // If this was the last attempt, set the final error message
-          setFormError(true);
-          setFormErrorMessage(
-            `Failed to create project after ${retriesLimit} attempts: ${error.message}`,
-          );
-          setSubmittingForm(false);
-          return;
-        }
-      }
+    try {
+      await createProject(submissionForm, accessToken);
+      setFormError(false);
+      await getProject(submissionForm.name, accessToken);
+      // navigate("/overview");
+    } catch (error) {
+      setFormError(true);
+      setFormErrorMessage(`Failed to create project: ${error.message}`);
+      setSubmittingForm(false);
+      return;
     }
 
-    // If we get here, the project was created successfully
-    setFormError(false);
-    await getProject(projectName, accessToken);
-    navigate("/overview");
+    setSubmittingForm(false);
   };
   const [isExpanded, setIsExpanded] = useState(false);
   // Adding definitions
@@ -523,7 +672,7 @@ const CreateProject = () => {
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
-          <PageTitle title="Create Project" />
+          <PageTitle title={"Create Project"} />
           <Row className="justify-content-center"></Row>
           <div className="d-flex justify-content-center">
             <Col
@@ -544,10 +693,10 @@ const CreateProject = () => {
                     type="input"
                     id="projectName"
                     name="projectName"
-                    placeholder="Project Name"
+                    placeholder="Project Names"
                     className="mb-4"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
+                    value={form.name}
+                    onChange={(e) => handleSetString("name", e.target.value)}
                   />
                   <Row>
                     <Col md={6} className="mb-3">
@@ -559,9 +708,9 @@ const CreateProject = () => {
                           id="scheduledStart"
                           name="scheduledStart"
                           type="date"
-                          value={schedule.scheduledStart || ""}
+                          value={formatDateForInput(form.scheduled_start) || ""}
                           onChange={(e) =>
-                            handleDateChange("scheduledStart", e.target.value)
+                            handleDateChange("scheduled_start", e.target.value)
                           }
                         />
                       </Form.Group>
@@ -575,74 +724,78 @@ const CreateProject = () => {
                           id="scheduledEnd"
                           name="scheduledEnd"
                           type="date"
-                          value={schedule.scheduledEnd || ""}
+                          value={formatDateForInput(form.scheduled_end) || ""}
                           onChange={(e) =>
-                            handleDateChange("scheduledEnd", e.target.value)
+                            handleDateChange("scheduled_end", e.target.value)
                           }
                         />
                       </Form.Group>
                     </Col>
                   </Row>
+                  <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
+                    Project Owner
+                  </Form.Label>
+                  <Row>
+                    <Col md={6} className="mb-3">
+                      <Form.Label className="d-block text-start">
+                        First Name
+                      </Form.Label>
+                      <Form.Control
+                        id="firstName"
+                        type="input"
+                        placeholder="First Name"
+                        value={form.owner.first_name}
+                        onChange={(e) =>
+                          handleSetString("owner.first_name", e.target.value)
+                        }
+                      />
+                    </Col>
+                    <Col md={6} className="mb-3">
+                      <Form.Label className="d-block text-start">
+                        Last Name
+                      </Form.Label>
+                      <Form.Control
+                        id="lastName"
+                        type="input"
+                        placeholder="Last Name"
+                        value={form.owner.last_name}
+                        onChange={(e) =>
+                          handleSetString("owner.last_name", e.target.value)
+                        }
+                      />
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={6} className="mb-3">
+                      <Form.Label className="d-block text-start">
+                        Email
+                      </Form.Label>
+                      <Form.Control
+                        id="email"
+                        type="input"
+                        placeholder="Email"
+                        value={form.owner.email}
+                        onChange={(e) =>
+                          handleSetString("owner.email", e.target.value)
+                        }
+                      />
+                    </Col>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
-                      Project Owner
-                    </Form.Label>
-                    <Row>
-                      <Col md={6} className="mb-3">
-                        <Form.Label className="d-block text-start">
-                          First Name
-                        </Form.Label>
-                        <Form.Control
-                          id="firstName"
-                          type="input"
-                          placeholder="First Name"
-                          value={ownerFirstName}
-                          onChange={(e) => setOwnerFirstName(e.target.value)}
-                        />
-                      </Col>
-                      <Col md={6} className="mb-3">
-                        <Form.Label className="d-block text-start">
-                          Last Name
-                        </Form.Label>
-                        <Form.Control
-                          id="lastName"
-                          type="input"
-                          placeholder="Last Name"
-                          value={ownerLastName}
-                          onChange={(e) => setOwnerLastName(e.target.value)}
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col md={6} className="mb-3">
-                        <Form.Label className="d-block text-start">
-                          Email
-                        </Form.Label>
-                        <Form.Control
-                          id="email"
-                          type="input"
-                          placeholder="Email"
-                          value={ownerEmail}
-                          onChange={(e) => setOwnerEmail(e.target.value)}
-                        />
-                      </Col>
-
-                      <Col md={6} className="mb-3">
-                        <Form.Label className="d-block text-start">
-                          Organization
-                        </Form.Label>
-                        <Form.Control
-                          id="organization"
-                          type="input"
-                          placeholder="Organization"
-                          value={ownerOrganization}
-                          onChange={(e) => setOwnerOrganization(e.target.value)}
-                        />
-                      </Col>
-                    </Row>
-                  </Form.Group>
-
+                    <Col md={6} className="mb-3">
+                      <Form.Label className="d-block text-start">
+                        Organization
+                      </Form.Label>
+                      <Form.Control
+                        id="organization"
+                        type="input"
+                        placeholder="Organization"
+                        value={form.owner.organization}
+                        onChange={(e) =>
+                          handleSetString("owner.organization", e.target.value)
+                        }
+                      />
+                    </Col>
+                  </Row>
                   <Form.Label className="d-block text-start w-100 custom-form-label">
                     Project Description
                   </Form.Label>
@@ -652,146 +805,70 @@ const CreateProject = () => {
                     rows={3}
                     placeholder="Describe your project"
                     className="mb-4"
-                    value={projectDescription}
-                    onChange={(e) => setProjectDescription(e.target.value)}
+                    value={form.description}
+                    onChange={(e) =>
+                      handleSetString("description", e.target.value)
+                    }
                   />
-
-                  {/* Assumptions Section */}
-                  <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100 custom-form-label">
-                      Assumptions
-                    </Form.Label>
-                    {assumptions.map((assumption, index) => (
-                      <div
-                        key={index}
-                        className="d-flex mb-2 align-items-center gap-2"
-                      >
-                        <Form.Control
-                          id={`assumptions${index}`}
-                          type="input"
-                          placeholder="Enter assumption"
-                          value={assumption}
-                          onChange={(e) =>
-                            handleAssumptionChange(index, e.target.value)
-                          }
-                        />
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={(e) => handleRemoveAssumption(index, e)}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <div className="d-flex justify-content-start mt-2">
+                  <Form.Label className="d-block text-start w-100 custom-form-label">
+                    Assumptions
+                  </Form.Label>
+                  {form.assumptions.map((assumption, index) => (
+                    <div
+                      key={index}
+                      className="d-flex mb-2 align-items-center gap-2"
+                    >
+                      <Form.Control
+                        id={`assumptions${index}`}
+                        type="input"
+                        placeholder="Enter assumption"
+                        value={form.assumptions[index]} // Changed from assumption to assumptions
+                        onChange={(e) =>
+                          handleAssumptionChange(index, e.target.value)
+                        }
+                      />{" "}
                       <Button
-                        variant="outline-primary"
+                        variant="outline-danger"
                         size="sm"
-                        onClick={handleAddAssumption}
-                        className="mt-2 align-items-left"
+                        onClick={(e) => handleRemoveAssumption(index, e)}
                       >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Assumption
+                        <Minus className="w-4 h-4" />
                       </Button>
                     </div>
+                  ))}
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddAssumption}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Assumption
+                    </Button>
                   </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Requirements
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.requirements.keys.map((requirementName, index) => {
+                      const values = form.requirements.values[index];
 
-                  {/* Requirements Section */}
-                  <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100 custom-form-label">
-                      Requirements
-                    </Form.Label>
-                    <div className="d-block">
-                      {requirements.map((requirement, requirements_i) => {
-                        const requirementName = Object.keys(requirement)[0];
-                        const values = requirement[requirementName];
-                        const type = requirementsType[requirements_i];
-
-                        return (
-                          <div key={requirements_i}>
-                            {values.map((value, index) => (
-                              <Row
-                                key={`${requirements_i}-${index}`}
-                                className="mb-2 align-items-center"
-                              >
-                                {index === 0 ? (
-                                  <>
-                                    <Col xs="auto">
-                                      <Button
-                                        variant="outline-danger"
-                                        size="sm"
-                                        onClick={(e) =>
-                                          handleRemoveRequirement(
-                                            requirements_i,
-                                            e,
-                                          )
-                                        }
-                                        style={{
-                                          width: "32px",
-                                          height: "32px",
-                                          padding: "4px",
-                                        }}
-                                        className="d-flex align-items-center justify-content-center"
-                                      >
-                                        <Minus className="w-4 h-4" />
-                                      </Button>
-                                    </Col>
-                                    <Col xs={3}>
-                                      <Form.Control
-                                        type="text"
-                                        id={`requirement${index}`}
-                                        placeholder="Requirement"
-                                        value={requirementName}
-                                        onChange={(e) =>
-                                          handleRequirementNameChange(
-                                            requirements_i,
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </Col>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Col xs="auto">
-                                      <div style={{ width: "32px" }}></div>
-                                    </Col>
-                                    <Col xs={3}>
-                                      <div></div>
-                                    </Col>
-                                  </>
-                                )}
-                                <Col>
-                                  <Form.Control
-                                    id={`requirementValue-${index}`}
-                                    type={type === "int" ? "number" : "text"}
-                                    placeholder={
-                                      type === "int"
-                                        ? "Enter number"
-                                        : "Enter value"
-                                    }
-                                    value={value}
-                                    onChange={(e) =>
-                                      handleRequirementValueChange(
-                                        requirements_i,
-                                        index,
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </Col>
-                                <Col xs="auto">
-                                  {values.length > 1 && (
+                      return (
+                        <div key={index}>
+                          {values.map((value, valueIndex) => (
+                            <Row
+                              key={`${index}-${valueIndex}`}
+                              className="mb-2 align-items-center"
+                            >
+                              {valueIndex === 0 ? (
+                                <>
+                                  <Col xs="auto">
                                     <Button
                                       variant="outline-danger"
                                       size="sm"
                                       onClick={(e) =>
-                                        handleRemoveSubRequirement(
-                                          requirements_i,
-                                          index,
-                                          e,
-                                        )
+                                        handleRemoveRequirement(index, e)
                                       }
                                       style={{
                                         width: "32px",
@@ -802,483 +879,542 @@ const CreateProject = () => {
                                     >
                                       <Minus className="w-4 h-4" />
                                     </Button>
-                                  )}
-                                </Col>
-                              </Row>
-                            ))}
-                            <Row>
-                              <Col xs="auto">
-                                <div style={{ width: "32px" }}></div>
-                              </Col>
-                              <Col xs={3}></Col>
+                                  </Col>
+                                  <Col xs={3}>
+                                    <Form.Control
+                                      type="text"
+                                      id={`requirement-${index}`}
+                                      placeholder="Requirement"
+                                      value={requirementName}
+                                      onChange={(e) =>
+                                        handleRequirementNameChange(
+                                          index,
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                  </Col>
+                                </>
+                              ) : (
+                                <>
+                                  <Col xs="auto">
+                                    <div style={{ width: "32px" }}></div>
+                                  </Col>
+                                  <Col xs={3}>
+                                    <div></div>
+                                  </Col>
+                                </>
+                              )}
                               <Col>
-                                <div className="d-flex mb-3">
-                                  <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    onClick={(e) =>
-                                      handleAddSubRequirement(requirements_i, e)
-                                    }
-                                    style={{
-                                      width: "32px",
-                                      height: "32px",
-                                      padding: "4px",
-                                    }}
-                                    className="d-flex align-items-center justify-content-center"
-                                  >
-                                    <Plus className="w-4 h-4" />
-                                  </Button>
-                                </div>
+                                <Form.Control
+                                  id={`value-${index}-${valueIndex}`}
+                                  type="text"
+                                  placeholder="Enter value"
+                                  value={value}
+                                  onChange={(e) =>
+                                    handleRequirementValueChange(
+                                      index,
+                                      valueIndex,
+                                      e.target.value,
+                                    )
+                                  }
+                                />
                               </Col>
                               <Col xs="auto">
-                                <div style={{ width: "32px" }}></div>
-                              </Col>
-                            </Row>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="d-flex justify-content-start mt-2">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={(e) => handleAddRequirement("str", e)}
-                        className="d-flex align-items-center me-2"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Requirement
-                      </Button>
-
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={(e) => handleAddRequirement("int", e)}
-                        className="d-flex align-items-center"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Integer Requirement
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Scenarios Section */}
-                  <div className="mb-3">
-                    {/* Here */}
-                    <Form.Label className="d-block text-start w-100 custom-form-label">
-                      Scenarios
-                    </Form.Label>
-                    <div className="d-block">
-                      {scenarios.map((scenario, scenarioIndex) => (
-                        <div
-                          key={scenarioIndex}
-                          className="border rounded p-3 mb-4"
-                        >
-                          {/* Scenario Header with Delete Button */}
-                          <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                              Scenario {scenarioIndex + 1}
-                            </h4>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={(e) =>
-                                handleRemoveScenario(scenarioIndex, e)
-                              }
-                              style={{
-                                width: "32px",
-                                height: "32px",
-                                padding: "4px",
-                              }}
-                              className="d-flex align-items-center justify-content-center"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                          </div>
-
-                          {/* Scenario Name */}
-                          <div className="d-flex mb-3 align-items-center gap-2">
-                            <Form.Control
-                              id={`scenario${scenarioIndex}`}
-                              type="input"
-                              placeholder="Scenario name"
-                              value={scenario.name}
-                              onChange={(e) => {
-                                const newScenarios = [...scenarios];
-                                newScenarios[scenarioIndex].name =
-                                  e.target.value;
-                                setScenarios(newScenarios);
-                              }}
-                            />
-                          </div>
-
-                          {/* Scenario Description */}
-                          <div className="d-flex mb-3 align-items-center gap-2">
-                            <Form.Control
-                              id={`scenarioDescription${scenarioIndex}`}
-                              as="textarea"
-                              rows={3}
-                              placeholder="Enter description"
-                              value={scenario.description[0]}
-                              onChange={(e) => {
-                                const newScenarios = [...scenarios];
-                                newScenarios[scenarioIndex].description = [
-                                  e.target.value,
-                                ];
-                                setScenarios(newScenarios);
-                              }}
-                            />
-                          </div>
-
-                          {/* Other Information Section */}
-                          <div className="mb-3">
-                            <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
-                              Other
-                            </h5>
-
-                            {/* Other Key-Value Pairs */}
-                            {scenario.other.map((item, otherIndex) => (
-                              <Row
-                                key={otherIndex}
-                                className="mb-2 align-items-center"
-                              >
-                                <Col xs={3}>
-                                  <Form.Control
-                                    id={`scenarioOther${otherIndex}`}
-                                    type="input"
-                                    placeholder={`key${otherIndex + 1}`}
-                                    value={item.key}
-                                    onChange={(e) =>
-                                      handleOtherInfoChange(
-                                        scenarioIndex,
-                                        otherIndex,
-                                        "key",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </Col>
-                                <Col>
-                                  <Form.Control
-                                    id={`scenarioOther-${scenarioIndex}`}
-                                    type="input"
-                                    placeholder="Value"
-                                    value={item.value}
-                                    onChange={(e) =>
-                                      handleOtherInfoChange(
-                                        scenarioIndex,
-                                        otherIndex,
-                                        "value",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </Col>
-                                <Col xs="auto">
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleRemoveOtherInfo(
-                                        scenarioIndex,
-                                        otherIndex,
-                                      )
-                                    }
-                                    style={{
-                                      width: "32px",
-                                      height: "32px",
-                                      padding: "4px",
-                                    }}
-                                    className="d-flex align-items-center justify-content-center"
-                                  >
-                                    <Minus className="w-4 h-4" />
-                                  </Button>
-                                </Col>
-                              </Row>
-                            ))}
-
-                            {/* Add Other Information Button */}
-                            <div className="d-flex justify-content-start mt-2">
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={(e) =>
-                                  handleAddOtherInfo(scenarioIndex, e)
-                                }
-                                className="d-flex align-items-center gap-1"
-                              >
-                                <Plus className="w-4 h-4" />
-                                Other Information
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Add Scenario Button */}
-                    <div className="d-flex justify-content-start mt-2">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={handleAddScenario}
-                        className="mt-2 align-items-left"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Scenario
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100 custom-form-label">
-                      Sensitivities
-                    </Form.Label>
-                    <div className="d-block">
-                      {sensitivities.map((sensitivity, sensitivityIndex) => (
-                        <div
-                          key={sensitivityIndex}
-                          className="border rounded p-3 mb-4"
-                        >
-                          {/* Sensitivity Header with Delete Button */}
-                          <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                              {" "}
-                              {/* Set font size to 1.0rem */}
-                              Sensitivity {sensitivityIndex + 1}
-                            </h4>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={(e) =>
-                                handleRemoveSensitivity(sensitivityIndex, e)
-                              }
-                              style={{
-                                width: "32px",
-                                height: "32px",
-                                padding: "4px",
-                              }}
-                              className="d-flex align-items-center justify-content-center"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                          </div>
-
-                          {/* Sensitivity Name */}
-                          <div className="d-flex mb-3 align-items-center gap-2">
-                            <Form.Control
-                              id={`sensitivityName-${sensitivityIndex}`}
-                              type="input"
-                              placeholder="Sensitivity name"
-                              value={sensitivity.name}
-                              onChange={(e) => {
-                                const newSensitivities = [...sensitivities];
-                                newSensitivities[sensitivityIndex].name =
-                                  e.target.value;
-                                setSensitivities(newSensitivities);
-                              }}
-                            />
-                          </div>
-
-                          {/* Sensitivity Description */}
-                          <div className="d-flex mb-3 align-items-center gap-2">
-                            <Form.Control
-                              id={`sensitivityDescription-${sensitivityIndex}`}
-                              as="textarea"
-                              rows={3}
-                              placeholder="Enter description"
-                              value={sensitivity.description[0]}
-                              onChange={(e) => {
-                                const newSensitivities = [...sensitivities];
-                                newSensitivities[sensitivityIndex].description =
-                                  [e.target.value];
-                                setSensitivities(newSensitivities);
-                              }}
-                            />
-                          </div>
-
-                          {/* Sensitivity List Items */}
-                          <div className="mb-3">
-                            {sensitivity.list.map((item, listIndex) => (
-                              <div
-                                key={listIndex}
-                                className="d-flex mb-2 align-items-center gap-2"
-                              >
-                                <Form.Control
-                                  id={`senstivityItem-${sensitivityIndex}`}
-                                  type="input"
-                                  placeholder="Enter sensitivity item"
-                                  value={item}
-                                  onChange={(e) => {
-                                    const newSensitivities = [...sensitivities];
-                                    newSensitivities[sensitivityIndex].list[
-                                      listIndex
-                                    ] = e.target.value;
-                                    setSensitivities(newSensitivities);
-                                  }}
-                                />
-                                {sensitivity.list.length > 1 && (
+                                {values.length > 1 && (
                                   <Button
                                     variant="outline-danger"
                                     size="sm"
                                     onClick={(e) =>
-                                      handleRemoveSensitivityListItem(
-                                        sensitivityIndex,
-                                        listIndex,
+                                      handleRemoveSubRequirement(
+                                        index,
+                                        valueIndex,
                                         e,
                                       )
                                     }
+                                    style={{
+                                      width: "32px",
+                                      height: "32px",
+                                      padding: "4px",
+                                    }}
+                                    className="d-flex align-items-center justify-content-center"
                                   >
                                     <Minus className="w-4 h-4" />
                                   </Button>
                                 )}
+                              </Col>
+                            </Row>
+                          ))}
+                          <Row>
+                            <Col xs="auto">
+                              <div style={{ width: "32px" }}></div>
+                            </Col>
+                            <Col xs={3}></Col>
+                            <Col>
+                              <div className="d-flex mb-3">
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  onClick={(e) =>
+                                    handleAddSubRequirement(index, e)
+                                  }
+                                  style={{
+                                    width: "32px",
+                                    height: "32px",
+                                    padding: "4px",
+                                  }}
+                                  className="d-flex align-items-center justify-content-center"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </Button>
                               </div>
-                            ))}
-
-                            {/* Add List Item Button */}
-                            <div className="d-flex justify-content-start mt-2">
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={(e) =>
-                                  handleAddSensitivityListItem(
-                                    sensitivityIndex,
-                                    e,
-                                  )
-                                }
-                                className="d-flex align-items-center gap-1"
-                              >
-                                <Plus className="w-4 h-4 mr-1" />
-                                Add Item
-                              </Button>
-                            </div>
-                          </div>
+                            </Col>
+                            <Col xs="auto">
+                              <div style={{ width: "32px" }}></div>
+                            </Col>
+                          </Row>
                         </div>
-                      ))}
-                    </div>
-
-                    {/* Add Sensitivity Button */}
-                    <div className="d-flex justify-content-start mt-2">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={handleAddSensitivity}
-                        className="mt-2 align-items-left"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Sensitivity
-                      </Button>
-                    </div>
+                      );
+                    })}
+                  </div>{" "}
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={(e) => handleAddRequirement(e)}
+                      className="d-flex align-items-center me-2"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Requirement
+                    </Button>
                   </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Scenarios
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.scenarios.map((scenario, scenarioIndex) => (
+                      <div
+                        key={scenarioIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Scenario Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            Scenario {scenarioIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveScenario(scenarioIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
 
-                  {/* Milestones Section */}
-                  <div className="mb-3">
-                    <Form.Label className="d-block text-start w-100 custom-form-label">
-                      Milestones
-                    </Form.Label>
-                    <div className="d-block">
-                      {milestones.map((milestone, milestoneIndex) => (
-                        <div
-                          key={milestoneIndex}
-                          className="border rounded p-3 mb-4"
-                        >
-                          {/* Milestone Header with Delete Button */}
-                          <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                              {" "}
-                              {/* Set font size to 1.0rem */}
-                              Milestone {milestoneIndex + 1}
-                            </h4>
+                        {/* Scenario Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`scenario${scenarioIndex}`}
+                            type="input"
+                            placeholder="Scenario name"
+                            value={form.scenario.name}
+                            onChange={(e) => {
+                              const newScenarios = [...scenarios];
+                              newScenarios[scenarioIndex].name = e.target.value;
+                              setScenarios(newScenarios);
+                            }}
+                          />
+                        </div>
+
+                        {/* Scenario Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`scenarioDescription${scenarioIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={scenario.description[0]}
+                            onChange={(e) => {
+                              const newScenarios = [...scenarios];
+                              newScenarios[scenarioIndex].description = [
+                                e.target.value,
+                              ];
+                              setScenarios(newScenarios);
+                            }}
+                          />
+                        </div>
+
+                        {/* Other Information Section */}
+                        <div className="mb-3">
+                          <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
+                            Other
+                          </h5>
+                          {/* Other Key-Value Pairs */}
+                          {scenario.other.map((item, otherIndex) => (
+                            <Row
+                              key={otherIndex}
+                              className="mb-2 align-items-center"
+                            >
+                              <Col xs={3}>
+                                <Form.Control
+                                  id={`scenarioOther${otherIndex}`}
+                                  type="input"
+                                  placeholder={`key${otherIndex + 1}`}
+                                  value={item[0] || ""} // Add fallback empty string
+                                  onChange={(e) => {
+                                    const newScenarios = [...scenarios];
+                                    newScenarios[scenarioIndex].other[
+                                      otherIndex
+                                    ] = [
+                                      e.target.value,
+                                      item[1] || "", // Add fallback empty string
+                                    ];
+                                    setScenarios(newScenarios);
+                                  }}
+                                />
+                              </Col>
+                              <Col>
+                                <Form.Control
+                                  id={`scenarioOther-${scenarioIndex}`}
+                                  type="input"
+                                  placeholder="Value"
+                                  value={item[1] || ""} // Add fallback empty string
+                                  onChange={(e) => {
+                                    const newScenarios = [...scenarios];
+                                    newScenarios[scenarioIndex].other[
+                                      otherIndex
+                                    ] = [
+                                      item[0] || "", // Add fallback empty string
+                                      e.target.value,
+                                    ];
+                                    setScenarios(newScenarios);
+                                  }}
+                                />
+                              </Col>
+                              <Col xs="auto">
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newScenarios = [...scenarios];
+                                    newScenarios[scenarioIndex].other =
+                                      scenario.other.filter(
+                                        (_, index) => index !== otherIndex,
+                                      );
+                                    setScenarios(newScenarios);
+                                  }}
+                                  style={{
+                                    width: "32px",
+                                    height: "32px",
+                                    padding: "4px",
+                                  }}
+                                  className="d-flex align-items-center justify-content-center"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              </Col>
+                            </Row>
+                          ))}{" "}
+                          {/* Add Other Information Button */}
+                          <div className="d-flex justify-content-start mt-2">
                             <Button
-                              variant="outline-danger"
+                              variant="outline-primary"
                               size="sm"
                               onClick={(e) =>
-                                handleRemoveMilestone(milestoneIndex, e)
+                                handleAddOtherInfo(scenarioIndex, e)
                               }
-                              style={{
-                                width: "32px",
-                                height: "32px",
-                                padding: "4px",
-                              }}
-                              className="d-flex align-items-center justify-content-center"
+                              className="d-flex align-items-center gap-1"
                             >
-                              <Minus className="w-4 h-4" />
+                              <Plus className="w-4 h-4" />
+                              Other Information
                             </Button>
                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddScenario}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Scenario
+                    </Button>
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Milestones
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.milestones.map((milestone, milestoneIndex) => (
+                      <div
+                        key={milestoneIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Milestone Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
+                            Milestone {milestoneIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveMilestone(milestoneIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
 
-                          {/* Milestone Name */}
-                          <div className="d-flex mb-3 align-items-center gap-2">
-                            <Form.Control
-                              id={`milestoneName-${milestoneIndex}`}
-                              type="input"
-                              placeholder="Milestone name"
-                              value={milestone.name}
-                              onChange={(e) => {
-                                const newMilestones = [...milestones];
-                                newMilestones[milestoneIndex].name =
-                                  e.target.value;
-                                setMilestones(newMilestones);
-                              }}
-                            />
-                          </div>
+                        {/* Milestone Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`milestoneName-${milestoneIndex}`}
+                            type="input"
+                            placeholder="Milestone name"
+                            value={milestone.name}
+                            onChange={(e) => {
+                              handleMilestoneNameChange(
+                                milestoneIndex,
+                                e.target.value,
+                              );
+                            }}
+                          />
+                        </div>
 
-                          {/* Milestone Description */}
-                          <div className="d-flex mb-3 align-items-center gap-2">
-                            <Form.Control
-                              id={`milestoneDescription-${milestoneIndex}`}
-                              as="textarea"
-                              rows={3}
-                              placeholder="Enter description"
-                              value={milestone.description[0]}
-                              onChange={(e) => {
-                                const newMilestones = [...milestones];
-                                newMilestones[milestoneIndex].description = [
-                                  e.target.value,
-                                ];
-                                setMilestones(newMilestones);
-                              }}
-                            />
-                          </div>
+                        {/* Milestone Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`milestoneDescription-${milestoneIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={milestone.description[0]}
+                            onChange={(e) =>
+                              handleMilestoneDescriptionChange(
+                                milestoneIndex,
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
 
-                          {/* Milestone Date */}
-                          <div className="d-flex mb-3 align-items-center gap-2">
-                            <Form.Group
-                              id={`milestone-date-${milestoneIndex}`}
-                              className="w-100"
+                        {/* Milestone Date */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Group
+                            id={`milestone-date-${milestoneIndex}`}
+                            className="w-100"
+                          >
+                            <Form.Label
+                              className="d-block text-start"
+                              style={{ fontSize: "1.0rem" }}
                             >
-                              <Form.Label
-                                className="d-block text-start"
-                                style={{ fontSize: "1.0rem" }}
-                              >
-                                Milestone Date (YYYY-MM-DD)
-                              </Form.Label>
+                              Milestone Date (YYYY-MM-DD)
+                            </Form.Label>
+                            <Form.Control
+                              id={`milestoneDate-${milestoneIndex}`}
+                              type="date"
+                              value={
+                                formatDateForInput(
+                                  form.milestones[milestoneIndex]
+                                    ?.milestone_date,
+                                ) || ""
+                              }
+                              onChange={(e) =>
+                                handleMilestoneDateChange(
+                                  milestoneIndex,
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </Form.Group>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddMilestone}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Scenario
+                    </Button>
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Sensitivities
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.sensitivities.map((sensitivity, sensitivityIndex) => (
+                      <div
+                        key={sensitivityIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Sensitivity Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
+                            Sensitivity {sensitivityIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveSensitivity(sensitivityIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {/* Sensitivity Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`sensitivityName-${sensitivityIndex}`}
+                            type="input"
+                            placeholder="Sensitivity name"
+                            value={sensitivity.name}
+                            onChange={(e) => {
+                              setForm((prevForm) => {
+                                const newSensitivities = [
+                                  ...(prevForm.sensitivities || []),
+                                ];
+                                newSensitivities[sensitivityIndex].name =
+                                  e.target.value;
+                                return {
+                                  ...prevForm,
+                                  sensitivities: newSensitivities,
+                                };
+                              });
+                            }}
+                          />{" "}
+                        </div>
+                        {/* Sensitivity Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`sensitivityDescription-${sensitivityIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={sensitivity.description[0]}
+                            onChange={(e) => {
+                              setForm((prevForm) => {
+                                const newSensitivities = [
+                                  ...(prevForm.sensitivities || []),
+                                ];
+                                newSensitivities[sensitivityIndex].description =
+                                  [e.target.value];
+                                return {
+                                  ...prevForm,
+                                  sensitivities: newSensitivities,
+                                };
+                              });
+                            }}
+                          />{" "}
+                        </div>
+                        {/* Sensitivity List Items */}
+                        <div className="mb-3">
+                          {sensitivity.list.map((item, listIndex) => (
+                            <div
+                              key={listIndex}
+                              className="d-flex mb-2 align-items-center gap-2"
+                            >
                               <Form.Control
-                                id={`milestoneDate-${milestoneIndex}`}
-                                type="date"
-                                value={milestone.milestone_date}
+                                id={`senstivityItem-${sensitivityIndex}`}
+                                type="input"
+                                placeholder="Enter sensitivity item"
+                                value={item}
                                 onChange={(e) => {
-                                  const newMilestones = [...milestones];
-                                  newMilestones[milestoneIndex].milestone_date =
-                                    e.target.value;
-                                  setMilestones(newMilestones);
+                                  setForm((prevForm) => {
+                                    const newSensitivities = [
+                                      ...(prevForm.sensitivities || []),
+                                    ];
+                                    newSensitivities[sensitivityIndex].list[
+                                      listIndex
+                                    ] = e.target.value;
+                                    return {
+                                      ...prevForm,
+                                      sensitivities: newSensitivities,
+                                    };
+                                  });
                                 }}
                               />
-                            </Form.Group>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                              {sensitivity.list.length > 1 && (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={(e) =>
+                                    handleRemoveSensitivityListItem(
+                                      sensitivityIndex,
+                                      listIndex,
+                                      e,
+                                    )
+                                  }
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
 
-                    {/* Add Milestone Button */}
-                    <div className="d-flex justify-content-start mt-2">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={handleAddMilestone}
-                        className="mt-2 align-items-left"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Milestone
-                      </Button>
-                    </div>
+                          {/* Add List Item Button */}
+                          <div className="d-flex justify-content-start mt-2">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={(e) =>
+                                handleAddSensitivityListItem(
+                                  sensitivityIndex,
+                                  e,
+                                )
+                              }
+                              className="d-flex align-items-center gap-1"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Item
+                            </Button>
+                          </div>
+                        </div>{" "}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddSensitivity}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Sensitivity
+                    </Button>
                   </div>
                 </Form.Group>
                 <Row>
