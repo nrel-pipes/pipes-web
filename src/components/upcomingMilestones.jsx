@@ -23,7 +23,7 @@ const UpcomingMilestones = ({ projectBasics }) => {
   const milestones = useMemo(() => {
     let milestonesExist = false;
     for (let i = 0; i < projectBasics.length; i++) {
-      if (projectBasics[i].milestones.length > 0) {
+      if (projectBasics[i].milestones && projectBasics[i].milestones.length > 0) {
         milestonesExist = true;
         break;
       }

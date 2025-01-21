@@ -1,37 +1,53 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query"
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Plus } from "lucide-react";
 
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
-import { Plus } from "lucide-react";
 
-import "./PageStyles.css";
-import "../components/Cards.css";
+import { getProjectBasics } from "./api/ProjectAPI";
 import useAuthStore from "./stores/AuthStore";
-import useDataStore from "./stores/DataStore";
 import PageTitle from "../components/pageTitle";
 import UpcomingMilestones from "../components/upcomingMilestones";
 
-const ProjectList = () => {
-  const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const {
-    projectBasics,
-    getProjectBasics,
-    isGettingProjectBasics,
-    projectBasicsGetError,
-    getProject,
-  } = useDataStore();
-  const handleProjectClick = (event, project) => {
-    event.preventDefault();
+import "./PageStyles.css";
+import "../components/Cards.css";
 
-    getProject(project.name, accessToken);
+
+const ProjectList = () => {
+  const { isLoggedIn } = useAuthStore();
+  const navigate = useNavigate();
+
+  // React Query: Fetch project basics
+  const {
+    data: projectBasics = [],
+    isLoading,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ["projectBasics"],
+    queryFn: getProjectBasics,
+    enabled: isLoggedIn,
+    retry: 3
+  });
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+    return;
+  }, [isLoggedIn, navigate]);
+
+  // handlers
+  const handleProjectClick = (event) => {
+    event.preventDefault();
     navigate(`/overview`);
   };
   const handleCreateProjectClick = (event) => {
@@ -39,15 +55,7 @@ const ProjectList = () => {
     navigate(`/create-project`);
   };
 
-  useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-    getProjectBasics(accessToken);
-  }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
-
-  if (isGettingProjectBasics) {
+  if (isLoading) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -59,12 +67,12 @@ const ProjectList = () => {
     );
   }
 
-  if (projectBasicsGetError) {
+  if (isError) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p style={{ color: "red" }}>{projectBasicsGetError.message}</p>
+            <p style={{ color: "red" }}>{error.message}</p>
           </Col>
         </Row>
       </Container>
@@ -150,10 +158,10 @@ const ProjectList = () => {
                 boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                 cursor: "pointer",
               }}
-              className="create-card"
+              className="create-project-card"
               onClick={(e) => handleCreateProjectClick(e)}
             >
-              <Card.Body className="bg-light text-center d-flex flex-column align-items-center">
+              <Card.Body className="bg-light text-start d-flex flex-column align-items-center">
                 <Card.Title className="mt-3 mb-3 text-center">
                   Create Project
                 </Card.Title>
@@ -165,6 +173,6 @@ const ProjectList = () => {
       </div>{" "}
     </Container>
   );
-};
+}
 
 export default ProjectList;
