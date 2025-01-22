@@ -14,17 +14,17 @@ import FormError from "../components/form/FormError";
 import "./FormStyles.css";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { postProject as createProjectAPI } from "./api/ProjectAPI"; // Rename on import
+import { postProject } from "./api/ProjectAPI"; // Rename on import
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const CreateProject = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { getProjectBasics, getProject, currentProject } = useDataStore();
+  const { getProjectBasics, currentProject } = useDataStore();
   const queryClient = useQueryClient();
 
   const createProjectMutation = useMutation({
-    mutationFn: createProjectAPI,
+    mutationFn: postProject,
     onSuccess: () => {
       setFormError(false);
       setSubmittingForm(false);
@@ -724,8 +724,8 @@ const CreateProject = () => {
     for (let attempt = 0; attempt < retriesLimit; attempt++) {
       try {
         await createProjectMutation.mutateAsync({
-          projectData: payload,
-          accessToken,
+          data: payload,
+          token: accessToken,
         });
         console.log(`Project created successfully on attempt ${attempt + 1}`);
         break; // Exit loop on success

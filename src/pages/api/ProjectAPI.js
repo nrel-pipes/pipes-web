@@ -5,7 +5,23 @@ export const getProjectBasics = async () => {
   return response.data;
 };
 
-export const postProject = async (data) => {
-  const response = await pipes.post("api/projects", data);
-  return response.data;
+export const postProject = async ({ data, token }) => {
+  try {
+    const response = await pipes.post("api/projects", data, {
+      // Remove JSON.stringify
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error posting project:", error);
+    if (error.response) {
+      console.error("Error status:", error.response.status);
+      console.error("Error data:", error.response.data);
+    }
+    throw error;
+  }
 };
