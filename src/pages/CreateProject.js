@@ -13,12 +13,33 @@ import useAuthStore from "./stores/AuthStore";
 import FormError from "../components/form/FormError";
 import "./FormStyles.css";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { postProject as createProjectAPI } from "./api/ProjectAPI"; // Rename on import
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const CreateProject = () => {
-  // Create is true if we are creating a new project, is false if we are updating
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, getProject, currentProject } = useDataStore();
+  const queryClient = useQueryClient();
+
+  const createProjectMutation = useMutation({
+    mutationFn: createProjectAPI,
+    onSuccess: () => {
+      setFormError(false);
+      setSubmittingForm(false);
+      navigate("/overview");
+    },
+    onError: (error) => {
+      setFormError(true);
+      setFormErrorMessage(
+        `Failed to create project: ${
+          error instanceof Error ? error.message : "Unknown error occurred"
+        }`,
+      );
+      setSubmittingForm(false);
+    },
+  });
 
   const initializeForm = () => {
     return {
@@ -28,7 +49,6 @@ const CreateProject = () => {
       assumptions: [],
       leads: [],
       milestones: [],
-      name: "",
       owner: {
         email: "",
         first_name: "",
@@ -44,7 +64,6 @@ const CreateProject = () => {
       scheduled_start: "",
       sensitivities: [],
       teams: [],
-      title: "",
     };
   };
   const denormalizeFormData = (normalizedForm) => {
@@ -72,7 +91,6 @@ const CreateProject = () => {
       };
     });
 
-    // Return denormalized form
     return {
       ...normalizedForm,
       requirements,
@@ -132,42 +150,6 @@ const CreateProject = () => {
     });
   };
 
-  const handleKeyChange =
-    (scenarioIndex, otherIndex, item, handleScenarioChange) => (e) => {
-      const newOther = [...form.scenarios.other];
-      newOther[otherIndex] = [e.target.value, item[1]];
-      handleScenarioChange(scenarioIndex, "other", newOther);
-    };
-
-  const handleValueChange =
-    (scenarioIndex, otherIndex, item, handleScenarioChange) => (e) => {
-      const newOther = [...form.scenarios[scenarioIndex].other];
-      newOther[otherIndex] = [item[0], e.target.value];
-      handleScenarioChange(scenarioIndex, "other", newOther);
-    };
-
-  const handleRemove =
-    (scenarioIndex, otherIndex, handleScenarioChange) => () => {
-      const newOther = form.scenarios[scenarioIndex].other.filter(
-        (_, index) => index !== otherIndex,
-      );
-      handleScenarioChange(scenarioIndex, "other", newOther);
-    };
-
-  const handleScenarioChange = (scenarioIndex, field, value) => {
-    setForm((prevForm) => {
-      const newScenarios = [...prevForm.scenarios];
-      newScenarios[scenarioIndex] = {
-        ...newScenarios[scenarioIndex],
-        [field]: value,
-      };
-      return {
-        ...prevForm,
-        scenarios: newScenarios,
-      };
-    });
-  };
-
   const handleRemoveScenario = (index, e) => {
     e.preventDefault();
     setForm((prevForm) => ({
@@ -178,9 +160,18 @@ const CreateProject = () => {
 
   const handleAddOtherInfo = (scenarioIndex, e) => {
     e.preventDefault();
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other.push(["", ""]);
-    setScenarios(newScenarios);
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        other: [...(updatedScenarios[scenarioIndex].other || []), ["", ""]],
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
   };
   const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
     setForm((prevForm) => {
@@ -195,30 +186,6 @@ const CreateProject = () => {
         ...prevForm,
         scenarios: newScenarios,
       };
-    });
-  };
-
-  // Add a new other info item to a scenario
-  const handleSetArrayValue = (arrayPath, index, value) => {
-    setForm((prevState) => {
-      const keys = arrayPath.split(".");
-      const newState = { ...prevState };
-      let current = newState;
-
-      // Navigate to the array
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-
-      // Get the array name from the last key
-      const arrayName = keys[keys.length - 1];
-      // Create new array with updated value
-      const newArray = [...current[arrayName]];
-      newArray[index] = value;
-      current[arrayName] = newArray;
-
-      return newState;
     });
   };
 
@@ -410,65 +377,84 @@ const CreateProject = () => {
     return isoString.split("T")[0];
   };
 
-  // Handle auth and initial data loading
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
       navigate("/login");
     }
-    getProjectBasics(accessToken);
   }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
-
-  // Handle loading project data when we have a project name
-  useEffect(() => {
-    // console.log(JSON.stringify(currentProject, null, 2));
-
-    if (projectName) {
-      getProject(currentProject.name, accessToken);
-    }
-  }, [currentProject, getProject, accessToken]);
-
-  // Update form when project data loads
-
-  // Project information
-  const [projectName, setProjectName] = useState("example project");
-
-  // Owner information
-  const [ownerFirstName] = useState("Jordan");
-  const [ownerLastName] = useState("Eisenman");
-  const [ownerEmail] = useState("Jordan.Eisenman@nrel.gov");
-  const [ownerOrganization] = useState("NREL");
-
-  // Requirement state
-  const [requirements] = useState([{ KeyRequirement: ["Value1"] }]);
-
-  // Adding scenario
-  const [scenarios, setScenarios] = useState([
-    {
-      name: "Base Scenario",
-      description: ["Description of the base scenario"],
-      other: [{ key: "Parameter1", value: "Value1" }],
-    },
-  ]);
 
   const handleAddScenario = (e) => {
     e.preventDefault();
-    setScenarios([
-      ...scenarios,
-      {
-        name: "",
-        description: [""],
-        other: [],
-      },
-    ]);
+    console.log(form.scenarios);
+    setForm((prevState) => ({
+      ...prevState,
+      scenarios: [
+        ...(prevState.scenarios || []),
+        {
+          name: "",
+          description: [""],
+          other: [],
+        },
+      ],
+    }));
   };
-  const [sensitivities, setSensitivities] = useState([
-    {
-      name: "Default Sensitivity",
-      description: ["Description of sensitivity"],
-      list: ["Sensitivity factor 1"],
-    },
-  ]);
+
+  // Add the new handler functions here
+  const handleScenarioNameChange = (scenarioIndex, value) => {
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        name: value,
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
+  const handleScenarioDescriptionChange = (scenarioIndex, value) => {
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        description: [value], // Keep it as an array with single value since that's your data structure
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
+  const handleOtherInfoChange = (
+    scenarioIndex,
+    otherIndex,
+    keyOrValue,
+    value,
+  ) => {
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      const currentOther = [...updatedScenarios[scenarioIndex].other];
+      const currentPair = currentOther[otherIndex] || ["", ""];
+      currentOther[otherIndex] =
+        keyOrValue === "key"
+          ? [value, currentPair[1]]
+          : [currentPair[0], value];
+
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        other: currentOther,
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
 
   const handleAddSensitivity = (e) => {
     e.preventDefault();
@@ -485,13 +471,6 @@ const CreateProject = () => {
     }));
   };
   // Setting Milestones
-  const [milestones, setMilestones] = useState([
-    {
-      name: "Milestone 1",
-      description: ["First major project milestone"],
-      milestone_date: "2023-02-01",
-    },
-  ]);
 
   const handleRemoveMilestone = (milestoneIndex, e) => {
     e.preventDefault();
@@ -503,12 +482,6 @@ const CreateProject = () => {
     }));
   };
   // Setting project Schedule
-  const [schedule, setSchedule] = useState({
-    scheduledStart: "2023-01-01",
-    scheduledEnd: "2023-12-31",
-  });
-
-  const createProject = useDataStore((state) => state.createProject);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
 
@@ -516,126 +489,106 @@ const CreateProject = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError(false);
     setSubmittingForm(true);
-    let submissionForm = denormalizeFormData(form);
-    console.log(submissionForm);
+    const submissionForm = denormalizeFormData(form);
 
-    // Validation Section
-    // Validating Project Title
-    const title = document.getElementById("projectName");
-    if (!submissionForm.name || submissionForm.name.length === 0) {
-      title.classList.add("form-error");
+    // Validation checks with early return if invalid
+    const validationError = validateForm(submissionForm);
+    if (validationError) {
       setFormError(true);
-      setFormErrorMessage("You forgot to provide a title for your project.");
-      setSubmittingForm(false);
-      return;
-    }
-    title.classList.remove("form-error");
-
-    // Validating Schedule
-    const scheduledStart = document.getElementById("scheduledStart");
-    const scheduledEnd = document.getElementById("scheduledEnd");
-    let hasScheduleError = false;
-
-    if (!submissionForm.scheduled_start) {
-      scheduledStart.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (!submissionForm.scheduled_end) {
-      scheduledEnd.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (submissionForm.scheduled_start && submissionForm.scheduled_end) {
-      if (
-        new Date(submissionForm.scheduled_end) <
-        new Date(submissionForm.scheduled_start)
-      ) {
-        scheduledStart.classList.add("form-error");
-        scheduledEnd.classList.add("form-error");
-        hasScheduleError = true;
-      }
-    }
-    if (hasScheduleError) {
-      setFormError(true);
-      setFormErrorMessage(
-        "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
-      );
-      setSubmittingForm(false);
-      return;
-    }
-    scheduledStart.classList.remove("form-error");
-    scheduledEnd.classList.remove("form-error");
-
-    // Validating Owner Information
-    const firstName = document.getElementById("firstName");
-    if (
-      !submissionForm.owner?.first_name ||
-      submissionForm.owner.first_name.length === 0
-    ) {
-      firstName.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your first name.");
-      setSubmittingForm(false);
-      return;
-    }
-    firstName.classList.remove("form-error");
-
-    const lastName = document.getElementById("lastName");
-    if (
-      !submissionForm.owner?.last_name ||
-      submissionForm.owner.last_name.length === 0
-    ) {
-      lastName.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your last name.");
-      setSubmittingForm(false);
-      return;
-    }
-    lastName.classList.remove("form-error");
-
-    const email = document.getElementById("email");
-    if (
-      !submissionForm.owner?.email ||
-      submissionForm.owner.email.length === 0
-    ) {
-      email.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide the project owner's email.");
-      setSubmittingForm(false);
-      return;
-    }
-    email.classList.remove("form-error");
-
-    const organization = document.getElementById("organization");
-    if (
-      !submissionForm.owner?.organization ||
-      submissionForm.owner.organization.length === 0
-    ) {
-      organization.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(
-        "You forgot to provide the project owner's organization.",
-      );
-      setSubmittingForm(false);
-      return;
-    }
-    organization.classList.remove("form-error");
-
-    try {
-      await createProject(submissionForm, accessToken);
-      setFormError(false);
-      await getProject(submissionForm.name, accessToken);
-      // navigate("/overview");
-    } catch (error) {
-      setFormError(true);
-      setFormErrorMessage(`Failed to create project: ${error.message}`);
+      setFormErrorMessage(validationError.message);
       setSubmittingForm(false);
       return;
     }
 
-    setSubmittingForm(false);
+    createProjectMutation.mutate({
+      data: submissionForm,
+      token: accessToken,
+    });
   };
+
+  // Separate validation logic
+  const validateForm = (formData) => {
+    // Project Title
+    if (!formData.name?.trim()) {
+      return {
+        field: "projectName",
+        message: "You forgot to provide a title for your project.",
+      };
+    }
+
+    // Schedule validation
+    if (!formData.scheduled_start || !formData.scheduled_end) {
+      return {
+        field: "schedule",
+        message: "Both start and end dates are required.",
+      };
+    }
+
+    if (new Date(formData.scheduled_end) < new Date(formData.scheduled_start)) {
+      return {
+        field: "schedule",
+        message: "The end date cannot be before the start date.",
+      };
+    }
+
+    // Owner Information
+    if (!formData.owner?.first_name?.trim()) {
+      return {
+        field: "firstName",
+        message: "You forgot to provide your first name.",
+      };
+    }
+
+    if (!formData.owner?.last_name?.trim()) {
+      return {
+        field: "lastName",
+        message: "You forgot to provide your last name.",
+      };
+    }
+
+    if (!formData.owner?.email?.trim()) {
+      return {
+        field: "email",
+        message: "You forgot to provide the project owner's email.",
+      };
+    }
+
+    if (!formData.owner?.organization?.trim()) {
+      return {
+        field: "organization",
+        message: "You forgot to provide the project owner's organization.",
+      };
+    }
+
+    return null;
+  };
+
+  // In your component, add these mutation-related effects
+  useEffect(() => {
+    console.log("Here");
+    if (createProjectMutation.isSuccess) {
+      setFormError(false);
+      setSubmittingForm(false);
+    }
+  }, [createProjectMutation.isSuccess]);
+
+  useEffect(() => {
+    console.log("Here");
+
+    if (createProjectMutation.isError && createProjectMutation.error) {
+      setFormError(true);
+      setFormErrorMessage(
+        `Failed to create project: ${
+          createProjectMutation.error instanceof Error
+            ? createProjectMutation.error.message
+            : "Unknown error occurred"
+        }`,
+      );
+      setSubmittingForm(false);
+    }
+  }, [createProjectMutation.isError, createProjectMutation.error]);
+
   const [isExpanded, setIsExpanded] = useState(false);
   // Adding definitions
   const [documentation] = useState({
@@ -997,7 +950,6 @@ const CreateProject = () => {
                         key={scenarioIndex}
                         className="border rounded p-3 mb-4"
                       >
-                        {/* Scenario Header with Delete Button */}
                         <div className="d-flex justify-content-between align-items-center mb-3">
                           <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
                             Scenario {scenarioIndex + 1}
@@ -1019,22 +971,21 @@ const CreateProject = () => {
                           </Button>
                         </div>
 
-                        {/* Scenario Name */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`scenario${scenarioIndex}`}
                             type="input"
                             placeholder="Scenario name"
-                            value={form.scenario.name}
-                            onChange={(e) => {
-                              const newScenarios = [...scenarios];
-                              newScenarios[scenarioIndex].name = e.target.value;
-                              setScenarios(newScenarios);
-                            }}
+                            value={scenario.name}
+                            onChange={(e) =>
+                              handleScenarioNameChange(
+                                scenarioIndex,
+                                e.target.value,
+                              )
+                            }
                           />
                         </div>
 
-                        {/* Scenario Description */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`scenarioDescription${scenarioIndex}`}
@@ -1042,22 +993,19 @@ const CreateProject = () => {
                             rows={3}
                             placeholder="Enter description"
                             value={scenario.description[0]}
-                            onChange={(e) => {
-                              const newScenarios = [...scenarios];
-                              newScenarios[scenarioIndex].description = [
+                            onChange={(e) =>
+                              handleScenarioDescriptionChange(
+                                scenarioIndex,
                                 e.target.value,
-                              ];
-                              setScenarios(newScenarios);
-                            }}
+                              )
+                            }
                           />
                         </div>
 
-                        {/* Other Information Section */}
                         <div className="mb-3">
                           <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
                             Other
                           </h5>
-                          {/* Other Key-Value Pairs */}
                           {scenario.other.map((item, otherIndex) => (
                             <Row
                               key={otherIndex}
@@ -1068,17 +1016,15 @@ const CreateProject = () => {
                                   id={`scenarioOther${otherIndex}`}
                                   type="input"
                                   placeholder={`key${otherIndex + 1}`}
-                                  value={item[0] || ""} // Add fallback empty string
-                                  onChange={(e) => {
-                                    const newScenarios = [...scenarios];
-                                    newScenarios[scenarioIndex].other[
-                                      otherIndex
-                                    ] = [
+                                  value={item[0] || ""}
+                                  onChange={(e) =>
+                                    handleOtherInfoChange(
+                                      scenarioIndex,
+                                      otherIndex,
+                                      "key",
                                       e.target.value,
-                                      item[1] || "", // Add fallback empty string
-                                    ];
-                                    setScenarios(newScenarios);
-                                  }}
+                                    )
+                                  }
                                 />
                               </Col>
                               <Col>
@@ -1086,31 +1032,27 @@ const CreateProject = () => {
                                   id={`scenarioOther-${scenarioIndex}`}
                                   type="input"
                                   placeholder="Value"
-                                  value={item[1] || ""} // Add fallback empty string
-                                  onChange={(e) => {
-                                    const newScenarios = [...scenarios];
-                                    newScenarios[scenarioIndex].other[
-                                      otherIndex
-                                    ] = [
-                                      item[0] || "", // Add fallback empty string
+                                  value={item[1] || ""}
+                                  onChange={(e) =>
+                                    handleOtherInfoChange(
+                                      scenarioIndex,
+                                      otherIndex,
+                                      "value",
                                       e.target.value,
-                                    ];
-                                    setScenarios(newScenarios);
-                                  }}
+                                    )
+                                  }
                                 />
                               </Col>
                               <Col xs="auto">
                                 <Button
                                   variant="outline-danger"
                                   size="sm"
-                                  onClick={() => {
-                                    const newScenarios = [...scenarios];
-                                    newScenarios[scenarioIndex].other =
-                                      scenario.other.filter(
-                                        (_, index) => index !== otherIndex,
-                                      );
-                                    setScenarios(newScenarios);
-                                  }}
+                                  onClick={() =>
+                                    handleRemoveOtherInfo(
+                                      scenarioIndex,
+                                      otherIndex,
+                                    )
+                                  }
                                   style={{
                                     width: "32px",
                                     height: "32px",
@@ -1122,8 +1064,7 @@ const CreateProject = () => {
                                 </Button>
                               </Col>
                             </Row>
-                          ))}{" "}
-                          {/* Add Other Information Button */}
+                          ))}
                           <div className="d-flex justify-content-start mt-2">
                             <Button
                               variant="outline-primary"
@@ -1140,7 +1081,7 @@ const CreateProject = () => {
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </div>{" "}
                   <div className="d-flex justify-content-start mt-2">
                     <Button
                       variant="outline-primary"

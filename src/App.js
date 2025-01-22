@@ -96,7 +96,7 @@ function App() {
               <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/create-project" element={<ProjectForm />} />
+              <Route path="/create-project" element={<CreateProject />} />
               <Route path="/create-projectrun" element={<CreateProjectRun />} />
               <Route
                 path="/update-project"
