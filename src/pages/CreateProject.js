@@ -491,43 +491,51 @@ const CreateProject = () => {
     e.preventDefault();
     setFormError(false);
     setSubmittingForm(true);
-    let submissionForm = denormalizeFormData(form);
-    console.log(submissionForm);
 
-    // Validation Section
-    // Validating Project Title
-    const title = document.getElementById("projectName");
-    if (!submissionForm.name || submissionForm.name.length === 0) {
-      title.classList.add("form-error");
+    const retriesLimit = 3;
+
+    // Denormalize the form data to match the backend model
+    const denormalizedForm = denormalizeFormData(form);
+
+    // Required field validation - adapted for denormalized form
+    // Validating Project Name
+    const projectNameElement = document.getElementById("projectName");
+    if (!denormalizedForm.name || denormalizedForm.name.trim().length === 0) {
+      projectNameElement.classList.add("form-error");
       setFormError(true);
-      setFormErrorMessage("You forgot to provide a title for your project.");
+      setFormErrorMessage("You forgot to provide a name for your project.");
       setSubmittingForm(false);
       return;
     }
-    title.classList.remove("form-error");
+    projectNameElement.classList.remove("form-error");
 
     // Validating Schedule
-    const scheduledStart = document.getElementById("scheduledStart");
-    const scheduledEnd = document.getElementById("scheduledEnd");
+    const scheduledStartElement = document.getElementById("scheduledStart");
+    const scheduledEndElement = document.getElementById("scheduledEnd");
     let hasScheduleError = false;
-
-    if (!submissionForm.scheduled_start) {
-      scheduledStart.classList.add("form-error");
+    if (
+      !denormalizedForm.scheduled_start ||
+      denormalizedForm.scheduled_start.trim().length === 0
+    ) {
+      scheduledStartElement.classList.add("form-error");
       hasScheduleError = true;
     }
-    if (!submissionForm.scheduled_end) {
-      scheduledEnd.classList.add("form-error");
+    if (
+      !denormalizedForm.scheduled_end ||
+      denormalizedForm.scheduled_end.trim().length === 0
+    ) {
+      scheduledEndElement.classList.add("form-error");
       hasScheduleError = true;
     }
-    if (submissionForm.scheduled_start && submissionForm.scheduled_end) {
-      if (
-        new Date(submissionForm.scheduled_end) <
-        new Date(submissionForm.scheduled_start)
-      ) {
-        scheduledStart.classList.add("form-error");
-        scheduledEnd.classList.add("form-error");
-        hasScheduleError = true;
-      }
+    if (
+      denormalizedForm.scheduled_start &&
+      denormalizedForm.scheduled_end &&
+      new Date(denormalizedForm.scheduled_end) <
+        new Date(denormalizedForm.scheduled_start)
+    ) {
+      scheduledStartElement.classList.add("form-error");
+      scheduledEndElement.classList.add("form-error");
+      hasScheduleError = true;
     }
     if (hasScheduleError) {
       setFormError(true);
@@ -537,55 +545,56 @@ const CreateProject = () => {
       setSubmittingForm(false);
       return;
     }
-    scheduledStart.classList.remove("form-error");
-    scheduledEnd.classList.remove("form-error");
+    scheduledStartElement.classList.remove("form-error");
+    scheduledEndElement.classList.remove("form-error");
 
-    // Validating Owner Information
-    const firstName = document.getElementById("firstName");
+    // Validating Owner
+    const ownerFirstNameElement = document.getElementById("firstName");
+    const ownerLastNameElement = document.getElementById("lastName");
+    const ownerEmailElement = document.getElementById("email");
+    const ownerOrganizationElement = document.getElementById("organization");
+
     if (
-      !submissionForm.owner?.first_name ||
-      submissionForm.owner.first_name.length === 0
+      !denormalizedForm.owner.first_name ||
+      denormalizedForm.owner.first_name.trim().length === 0
     ) {
-      firstName.classList.add("form-error");
+      ownerFirstNameElement.classList.add("form-error");
       setFormError(true);
       setFormErrorMessage("You forgot to provide your first name.");
       setSubmittingForm(false);
       return;
     }
-    firstName.classList.remove("form-error");
+    ownerFirstNameElement.classList.remove("form-error");
 
-    const lastName = document.getElementById("lastName");
     if (
-      !submissionForm.owner?.last_name ||
-      submissionForm.owner.last_name.length === 0
+      !denormalizedForm.owner.last_name ||
+      denormalizedForm.owner.last_name.trim().length === 0
     ) {
-      lastName.classList.add("form-error");
+      ownerLastNameElement.classList.add("form-error");
       setFormError(true);
       setFormErrorMessage("You forgot to provide your last name.");
       setSubmittingForm(false);
       return;
     }
-    lastName.classList.remove("form-error");
+    ownerLastNameElement.classList.remove("form-error");
 
-    const email = document.getElementById("email");
     if (
-      !submissionForm.owner?.email ||
-      submissionForm.owner.email.length === 0
+      !denormalizedForm.owner.email ||
+      denormalizedForm.owner.email.trim().length === 0
     ) {
-      email.classList.add("form-error");
+      ownerEmailElement.classList.add("form-error");
       setFormError(true);
       setFormErrorMessage("You forgot to provide the project owner's email.");
       setSubmittingForm(false);
       return;
     }
-    email.classList.remove("form-error");
+    ownerEmailElement.classList.remove("form-error");
 
-    const organization = document.getElementById("organization");
     if (
-      !submissionForm.owner?.organization ||
-      submissionForm.owner.organization.length === 0
+      !denormalizedForm.owner.organization ||
+      denormalizedForm.owner.organization.trim().length === 0
     ) {
-      organization.classList.add("form-error");
+      ownerOrganizationElement.classList.add("form-error");
       setFormError(true);
       setFormErrorMessage(
         "You forgot to provide the project owner's organization.",
@@ -593,27 +602,155 @@ const CreateProject = () => {
       setSubmittingForm(false);
       return;
     }
-    organization.classList.remove("form-error");
+    ownerOrganizationElement.classList.remove("form-error");
 
-    try {
-      await createProjectMutation.mutateAsync({
-        data: submissionForm,
-        token: accessToken,
-      });
+    // Validating Milestones
+    for (let i = 0; i < denormalizedForm.milestones.length; i++) {
+      const milestone = denormalizedForm.milestones[i];
+      const milestoneNameElement = document.getElementById(
+        `milestoneName-${i}`,
+      );
+      const milestoneDescriptionElement = document.getElementById(
+        `milestoneDescription-${i}`,
+      );
+      const milestoneDateElement = document.getElementById(
+        `milestoneDate-${i}`,
+      );
 
-      setFormError(false);
-      await getProject(submissionForm.name, accessToken);
-      navigate("/overview");
-    } catch (error) {
-      setFormError(true);
-      setFormErrorMessage(`Failed to create project: ${error.message}`);
-      setSubmittingForm(false);
-      return;
+      if (!milestone.name || milestone.name.trim().length === 0) {
+        milestoneNameElement.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Milestone ${i + 1} is missing a name.`);
+        setSubmittingForm(false);
+        return;
+      }
+      milestoneNameElement.classList.remove("form-error");
+
+      if (!milestone.description || milestone.description.trim().length === 0) {
+        milestoneDescriptionElement.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Milestone ${i + 1} is missing a description.`);
+        setSubmittingForm(false);
+        return;
+      }
+      milestoneDescriptionElement.classList.remove("form-error");
+
+      if (
+        !milestone.milestone_date ||
+        milestone.milestone_date.trim().length === 0
+      ) {
+        milestoneDateElement.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Milestone ${i + 1} is missing a date.`);
+        setSubmittingForm(false);
+        return;
+      }
+      milestoneDateElement.classList.remove("form-error");
     }
 
-    setSubmittingForm(false);
-  };
+    // Validating Scenarios
+    for (let i = 0; i < denormalizedForm.scenarios.length; i++) {
+      const scenario = denormalizedForm.scenarios[i];
+      const scenarioNameElement = document.getElementById(`scenarioName-${i}`);
+      const scenarioDescriptionElement = document.getElementById(
+        `scenarioDescription-${i}`,
+      );
 
+      if (!scenario.name || scenario.name.trim().length === 0) {
+        scenarioNameElement.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Scenario ${i + 1} is missing a name.`);
+        setSubmittingForm(false);
+        return;
+      }
+      scenarioNameElement.classList.remove("form-error");
+
+      if (
+        !scenario.description ||
+        scenario.description.toString().trim().length === 0
+      ) {
+        scenarioDescriptionElement.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Scenario ${i + 1} is missing a description.`);
+        setSubmittingForm(false);
+        return;
+      }
+      scenarioDescriptionElement.classList.remove("form-error");
+    }
+
+    // Validating Sensitivities
+    for (let i = 0; i < denormalizedForm.sensitivities.length; i++) {
+      const sensitivity = denormalizedForm.sensitivities[i];
+      const sensitivityNameElement = document.getElementById(
+        `sensitivityName-${i}`,
+      );
+      const sensitivityDescriptionElement = document.getElementById(
+        `sensitivityDescription-${i}`,
+      );
+
+      if (!sensitivity.name || sensitivity.name.trim().length === 0) {
+        sensitivityNameElement.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Sensitivity ${i + 1} is missing a name.`);
+        setSubmittingForm(false);
+        return;
+      }
+      sensitivityNameElement.classList.remove("form-error");
+
+      if (
+        !sensitivity.description ||
+        sensitivity.description.toString().trim().length === 0
+      ) {
+        sensitivityDescriptionElement.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Sensitivity ${i + 1} is missing a description.`);
+        setSubmittingForm(false);
+        return;
+      }
+      sensitivityDescriptionElement.classList.remove("form-error");
+    }
+
+    // Prepare the payload for the API
+    const payload = {
+      ...denormalizedForm,
+      title: denormalizedForm.name.toLowerCase().replace(/\s+/g, "_"), // Generate title from name
+      scheduled_start: denormalizedForm.scheduled_start,
+      scheduled_end: denormalizedForm.scheduled_end,
+    };
+
+    console.log("Payload to be sent:", JSON.stringify(payload, null, 2));
+
+    // API call with retries
+    for (let attempt = 0; attempt < retriesLimit; attempt++) {
+      try {
+        await createProjectMutation.mutateAsync({
+          projectData: payload,
+          accessToken,
+        });
+        console.log(`Project created successfully on attempt ${attempt + 1}`);
+        break; // Exit loop on success
+      } catch (error) {
+        console.error(
+          `Error creating project (attempt ${attempt + 1}/${retriesLimit}):`,
+          error,
+        );
+        if (attempt < retriesLimit - 1) {
+          setFormError(true);
+          setFormErrorMessage(
+            `Error creating project: ${error.message}. Retrying in 1 second...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } else {
+          setFormError(true);
+          setFormErrorMessage(
+            `Failed to create project after ${retriesLimit} attempts: ${error.message}`,
+          );
+          setSubmittingForm(false);
+          return; // Exit function after final failure
+        }
+      }
+    }
+  };
   // Separate validation logic
   const validateForm = (formData) => {
     // Project Title
