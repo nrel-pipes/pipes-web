@@ -489,22 +489,129 @@ const CreateProject = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError(false);
     setSubmittingForm(true);
-    const submissionForm = denormalizeFormData(form);
+    let submissionForm = denormalizeFormData(form);
+    console.log(submissionForm);
 
-    // Validation checks with early return if invalid
-    const validationError = validateForm(submissionForm);
-    if (validationError) {
+    // Validation Section
+    // Validating Project Title
+    const title = document.getElementById("projectName");
+    if (!submissionForm.name || submissionForm.name.length === 0) {
+      title.classList.add("form-error");
       setFormError(true);
-      setFormErrorMessage(validationError.message);
+      setFormErrorMessage("You forgot to provide a title for your project.");
+      setSubmittingForm(false);
+      return;
+    }
+    title.classList.remove("form-error");
+
+    // Validating Schedule
+    const scheduledStart = document.getElementById("scheduledStart");
+    const scheduledEnd = document.getElementById("scheduledEnd");
+    let hasScheduleError = false;
+
+    if (!submissionForm.scheduled_start) {
+      scheduledStart.classList.add("form-error");
+      hasScheduleError = true;
+    }
+    if (!submissionForm.scheduled_end) {
+      scheduledEnd.classList.add("form-error");
+      hasScheduleError = true;
+    }
+    if (submissionForm.scheduled_start && submissionForm.scheduled_end) {
+      if (
+        new Date(submissionForm.scheduled_end) <
+        new Date(submissionForm.scheduled_start)
+      ) {
+        scheduledStart.classList.add("form-error");
+        scheduledEnd.classList.add("form-error");
+        hasScheduleError = true;
+      }
+    }
+    if (hasScheduleError) {
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
+      );
+      setSubmittingForm(false);
+      return;
+    }
+    scheduledStart.classList.remove("form-error");
+    scheduledEnd.classList.remove("form-error");
+
+    // Validating Owner Information
+    const firstName = document.getElementById("firstName");
+    if (
+      !submissionForm.owner?.first_name ||
+      submissionForm.owner.first_name.length === 0
+    ) {
+      firstName.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide your first name.");
+      setSubmittingForm(false);
+      return;
+    }
+    firstName.classList.remove("form-error");
+
+    const lastName = document.getElementById("lastName");
+    if (
+      !submissionForm.owner?.last_name ||
+      submissionForm.owner.last_name.length === 0
+    ) {
+      lastName.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide your last name.");
+      setSubmittingForm(false);
+      return;
+    }
+    lastName.classList.remove("form-error");
+
+    const email = document.getElementById("email");
+    if (
+      !submissionForm.owner?.email ||
+      submissionForm.owner.email.length === 0
+    ) {
+      email.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide the project owner's email.");
+      setSubmittingForm(false);
+      return;
+    }
+    email.classList.remove("form-error");
+
+    const organization = document.getElementById("organization");
+    if (
+      !submissionForm.owner?.organization ||
+      submissionForm.owner.organization.length === 0
+    ) {
+      organization.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "You forgot to provide the project owner's organization.",
+      );
+      setSubmittingForm(false);
+      return;
+    }
+    organization.classList.remove("form-error");
+
+    try {
+      await createProjectMutation.mutateAsync({
+        data: submissionForm,
+        token: accessToken,
+      });
+
+      setFormError(false);
+      await getProject(submissionForm.name, accessToken);
+      navigate("/overview");
+    } catch (error) {
+      setFormError(true);
+      setFormErrorMessage(`Failed to create project: ${error.message}`);
       setSubmittingForm(false);
       return;
     }
 
-    createProjectMutation.mutate({
-      data: submissionForm,
-      token: accessToken,
-    });
+    setSubmittingForm(false);
   };
 
   // Separate validation logic
