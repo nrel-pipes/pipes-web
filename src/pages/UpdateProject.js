@@ -16,13 +16,13 @@ import { useState, useEffect } from "react";
 import { postProject, getProject } from "./api/ProjectAPI";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const CreateProject = () => {
+const UpdateProject = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { getProjectBasics, currentProject } = useDataStore();
   const queryClient = useQueryClient();
 
-  const createProjectMutation = useMutation({
+  const updateProjectMutation = useMutation({
     mutationFn: postProject,
     onSuccess: async (data, variables) => {
       setFormError(false);
@@ -737,7 +737,7 @@ const CreateProject = () => {
     // API call with retries
     for (let attempt = 0; attempt < retriesLimit; attempt++) {
       try {
-        await createProjectMutation.mutateAsync({
+        await updateProjectMutation.mutateAsync({
           data: payload,
           token: accessToken,
         });
@@ -825,27 +825,27 @@ const CreateProject = () => {
   // In your component, add these mutation-related effects
   useEffect(() => {
     console.log("Here");
-    if (createProjectMutation.isSuccess) {
+    if (updateProjectMutation.isSuccess) {
       setFormError(false);
       setSubmittingForm(false);
     }
-  }, [createProjectMutation.isSuccess]);
+  }, [updateProjectMutation.isSuccess]);
 
   useEffect(() => {
     console.log("Here");
 
-    if (createProjectMutation.isError && createProjectMutation.error) {
+    if (updateProjectMutation.isError && updateProjectMutation.error) {
       setFormError(true);
       setFormErrorMessage(
         `Failed to create project: ${
-          createProjectMutation.error instanceof Error
-            ? createProjectMutation.error.message
+          updateProjectMutation.error instanceof Error
+            ? updateProjectMutation.error.message
             : "Unknown error occurred"
         }`,
       );
       setSubmittingForm(false);
     }
-  }, [createProjectMutation.isError, createProjectMutation.error]);
+  }, [updateProjectMutation.isError, updateProjectMutation.error]);
 
   const [isExpanded, setIsExpanded] = useState(false);
   // Adding definitions
@@ -883,7 +883,7 @@ const CreateProject = () => {
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
-          <PageTitle title={"Create Project"} />
+          <PageTitle title={"Update Project"} />
           <Row className="justify-content-center"></Row>
           <div className="d-flex justify-content-center">
             <Col
@@ -1650,4 +1650,4 @@ const CreateProject = () => {
   );
 };
 
-export default CreateProject;
+export default UpdateProject;

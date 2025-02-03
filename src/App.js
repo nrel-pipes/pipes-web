@@ -1,7 +1,7 @@
 import "./App.css";
 
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import SiteBanner from "./layouts/Banner";
 import SiteNavbar from "./layouts/Navbar";
@@ -23,19 +23,19 @@ import ForgotPassword from "./pages/UserForgotPassword";
 import ResetPassword from "./pages/UserResetPassword";
 import CreateProject from "./pages/CreateProject";
 import ProjectForm from "./pages/ProjectForm";
+import UpdateProject from "./pages/UpdateProject";
+
 import CreateProjectRun from "./pages/createProjectRun";
 
 import useAuthStore from "./pages/stores/AuthStore";
 
 const queryClient = new QueryClient();
 
-
-
 function App() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   return (
-    <QueryClientProvider client={queryClient} >
+    <QueryClientProvider client={queryClient}>
       <div className="App">
         {isLoggedIn ? <SiteNavbarFluid /> : <SiteNavbar />}
 
@@ -50,7 +50,9 @@ function App() {
               <Route
                 path="/projects"
                 exact
-                element={isLoggedIn ? <ProjectList /> : <Navigate to="/login" />}
+                element={
+                  isLoggedIn ? <ProjectList /> : <Navigate to="/login" />
+                }
               />
               <Route
                 path="/overview"
@@ -96,15 +98,9 @@ function App() {
               <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route
-                path="/create-project"
-                element={<ProjectForm create={true} />}
-              />
+              <Route path="/create-project" element={<CreateProject />} />
               <Route path="/create-projectrun" element={<CreateProjectRun />} />
-              <Route
-                path="/update-project"
-                element={<ProjectForm create={false} />}
-              />
+              <Route path="/update-project" element={<UpdateProject />} />
             </Routes>
           </BrowserRouter>
         </div>
