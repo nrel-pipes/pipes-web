@@ -3,13 +3,13 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Image from "react-bootstrap/Image";
 import Card from 'react-bootstrap/Card';
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Image from "react-bootstrap/Image";
+import Row from "react-bootstrap/Row";
 
-import "./PageStyles.css"
+import "./PageStyles.css";
 
 
 const Home = () => {
@@ -101,10 +101,10 @@ const Home = () => {
             </Card.Header>
             <Card.Body>
               <Card.Text className='mt-2' style={{ fontSize: '16px'}}>
-                <span style={{fontSize: '1.1em'}}>Meghan Mooney</span>
+                <span style={{fontSize: '1.1em'}}>NREL PIPES Team</span>
                 <br/>
-                <a href="mailto:Meghan.Mooney@nrel.gov" style={{ textDecoration: 'none'}}>
-                  <FontAwesomeIcon icon={faEnvelope} /> meghan.mooney@nrel.gov
+                <a href="mailto:pipes@nrel.gov" style={{ textDecoration: 'none'}}>
+                  <FontAwesomeIcon icon={faEnvelope} /> pipes@nrel.gov
                 </a>
               </Card.Text>
             </Card.Body>
