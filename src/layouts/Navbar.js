@@ -3,11 +3,11 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 
+import { faCog, faKey, faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faUser, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
 
-import "./Navbar.css"
 import useAuthStore from '../pages/stores/AuthStore';
+import "./Navbar.css";
 
 
 const SiteNavbar = () => {

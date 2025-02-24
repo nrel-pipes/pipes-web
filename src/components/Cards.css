@@ -1,10 +1,9 @@
 .card {
-  margin: 15px 0 15px 15px;
+  margin: 15px 0 15px 0px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   background-color: white;
-  max-width: 1000px;
   width: 100%;
 }
 
@@ -29,10 +28,10 @@
 }
 
 .card:hover {
-  transform: scale(1.03);
+  transform: scale(1.005);
   box-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.2),
-    inset 0 0 8px rgba(0, 0, 0, 0.1);
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    inset 0 0 4px rgba(0, 0, 0, 0.1);
   background-color: #f0f0f0;
 }
 

@@ -1,8 +1,5 @@
 .App {
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
 }
 
 .App-logo {
@@ -29,30 +26,6 @@
 
 .App-link {
   color: #61dafb;
-}
-
-:root {
-  --navbar-height: 65px;
-  --banner-height: 30px;
-}
-
-.navbar {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
-}
-
-.banner {
-  margin-top: var(--navbar-height);
-}
-
-.Content {
-  padding-top: calc(var(--navbar-height) + var(--banner-height));
-}
-
-.logged-in .Content {
-  padding-top: var(--navbar-height);
 }
 
 @keyframes App-logo-spin {

@@ -1,28 +1,27 @@
 import "./App.css";
 
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import SiteBanner from "./layouts/Banner";
+import SiteFooter from "./layouts/Footer";
 import SiteNavbar from "./layouts/Navbar";
 import SiteNavbarFluid from "./layouts/NavbarFluid";
-import SiteFooter from "./layouts/Footer";
 import Home from "./pages/Home";
+import ProjectForm from "./pages/ProjectForm";
 import ProjectList from "./pages/ProjectList";
 import ProjectOverview from "./pages/ProjectOverview";
-import ProjectSchedule from "./pages/ProjectSchedule";
 import ProjectPipeline from "./pages/ProjectPipeline";
 import ProjectRun from "./pages/ProjectRun";
-import Login from "./pages/UserLogin";
-import Logout from "./pages/UserLogout";
-import CognitoTokens from "./pages/UserTokens";
-import UserProfile from "./pages/UserProfile";
-import NewPasswordChallenge from "./pages/UserNewPasswordChallenge";
+import ProjectSchedule from "./pages/ProjectSchedule";
 import ChangePassword from "./pages/UserChangePassword";
 import ForgotPassword from "./pages/UserForgotPassword";
+import Login from "./pages/UserLogin";
+import Logout from "./pages/UserLogout";
+import NewPasswordChallenge from "./pages/UserNewPasswordChallenge";
+import UserProfile from "./pages/UserProfile";
 import ResetPassword from "./pages/UserResetPassword";
-import CreateProject from "./pages/CreateProject";
-import ProjectForm from "./pages/ProjectForm";
+import CognitoTokens from "./pages/UserTokens";
 import CreateProjectRun from "./pages/createProjectRun";
 
 import useAuthStore from "./pages/stores/AuthStore";
@@ -37,11 +36,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient} >
       <div className="App">
+        {isLoggedIn ? "" : <SiteBanner />}
         {isLoggedIn ? <SiteNavbarFluid /> : <SiteNavbar />}
 
         <div className="Content">
-          {isLoggedIn ? "" : <SiteBanner />}
-
           <BrowserRouter>
             <Routes>
               {/* Home route */}

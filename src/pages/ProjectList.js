@@ -1,6 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query"
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,13 +12,13 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
-import { getProjectBasics } from "./api/ProjectAPI";
-import useAuthStore from "./stores/AuthStore";
 import PageTitle from "../components/pageTitle";
 import UpcomingMilestones from "../components/upcomingMilestones";
+import { getProjectBasics } from "./api/ProjectAPI";
+import useAuthStore from "./stores/AuthStore";
 
-import "./PageStyles.css";
 import "../components/Cards.css";
+import "./PageStyles.css";
 
 
 const ProjectList = () => {
@@ -113,13 +113,13 @@ const ProjectList = () => {
       <Row>
         <PageTitle title="Your Projects" />
       </Row>
-      <div className="d-flex flex-column align-items-center">
+      <div className="flex-column align-items-center">
         {projectBasics.map((project) => (
-          <Row className="mb-4 w-100" key={project.name}>
-            <Col sm={12} className="d-flex justify-content-center">
+          <Row className="mb-4 w-full" key={project.name}>
+            <Col sm={12} className="justify-content-center">
               <div
                 className="card"
-                style={{ maxWidth: "1000px", width: "100%" }}
+                style={{ width: "100%" }}
               >
                 <h5
                   className="card-header"
