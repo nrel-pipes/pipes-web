@@ -1,18 +1,18 @@
+import { Minus, Plus } from "lucide-react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import { Plus, Minus } from "lucide-react";
-import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
 import { useNavigate } from "react-router-dom";
 
-import PageTitle from "../components/pageTitle";
-import SideColumn from "../components/form/SideColumn";
-import useDataStore from "../pages/stores/DataStore";
-import useAuthStore from "../pages/stores/AuthStore";
+import { useEffect, useState } from "react";
 import FormError from "../components/form/FormError";
+import SideColumn from "../components/form/SideColumn";
+import PageTitle from "../components/pageTitle";
+import useAuthStore from "../pages/stores/AuthStore";
+import useDataStore from "../pages/stores/DataStore";
 import "./FormStyles.css";
-import { useState, useEffect } from "react";
 
 const CreateProject = () => {
   const navigate = useNavigate();
@@ -528,7 +528,6 @@ const CreateProject = () => {
           <div className="d-flex justify-content-center">
             <Col
               className="justify-content-center mw-600"
-              style={{ maxWidth: "1000px" }}
               xs={12}
               md={9}
             >
