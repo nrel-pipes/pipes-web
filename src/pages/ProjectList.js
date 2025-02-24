@@ -151,9 +151,7 @@ const ProjectList = () => {
           <Col sm={12} className="d-flex justify-content-center">
             <Card
               style={{
-                maxWidth: "1000px",
                 width: "100%",
-                margin: "20px",
                 transition: "all 0.3s ease",
                 boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                 cursor: "pointer",
