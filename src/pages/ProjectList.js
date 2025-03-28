@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,7 +12,7 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
-import { getProjectBasics } from "./api/ProjectAPI";
+import { getProjectBasics, getProject } from "./api/ProjectAPI";
 import useAuthStore from "./stores/AuthStore";
 import PageTitle from "../components/pageTitle";
 import UpcomingMilestones from "../components/upcomingMilestones";
@@ -20,42 +20,79 @@ import UpcomingMilestones from "../components/upcomingMilestones";
 import "./PageStyles.css";
 import "../components/Cards.css";
 
-
 const ProjectList = () => {
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, accessToken } = useAuthStore();
   const navigate = useNavigate();
 
   // React Query: Fetch project basics
   const {
     data: projectBasics = [],
-    isLoading,
-    isError,
-    error
+    isLoading: isLoadingBasics,
+    isError: isErrorBasics,
+    error: errorBasics,
   } = useQuery({
     queryKey: ["projectBasics"],
     queryFn: getProjectBasics,
     enabled: isLoggedIn,
-    retry: 3
+    retry: 3,
+  });
+  const [queryEnabled, setQueryEnabled] = useState(false); // New state variable
+
+  const [fetchTrigger, setFetchTrigger] = useState(null);
+  const [selectedProjectName, setSelectedProjectName] = useState(null);
+
+  // Handle create project click
+  const handleCreateProjectClick = (event, project) => {
+    event.preventDefault();
+    setSelectedProjectName(project.name);
+    setFetchTrigger(project.name);
+  };
+
+  const handleProjectClick = (event, project) => {
+    event.preventDefault();
+    setSelectedProjectName(project.name);
+    setFetchTrigger((prevFetchTrigger) => {
+      const newFetchTrigger = project.name;
+      console.log("New fetchTrigger:", newFetchTrigger);
+      return newFetchTrigger;
+    });
+  };
+  useEffect(() => {
+    setQueryEnabled(isLoggedIn && !!fetchTrigger);
+  }, [isLoggedIn, fetchTrigger]);
+  const {
+    data: project,
+    isLoading: isLoadingProject,
+    isError: isErrorProject,
+    error: errorProject,
+  } = useQuery({
+    queryKey: ["project", fetchTrigger],
+    queryFn: async () => {
+      try {
+        const data = await getProject({
+          projectName: selectedProjectName,
+          accessToken,
+        });
+        console.log("Data from getProject (inside queryFn):", data);
+        console.log("Here ", queryEnabled);
+        return data;
+      } catch (error) {
+        console.error("Error in queryFn:", error);
+        throw error;
+      }
+    },
+    enabled: queryEnabled,
+    retry: 3,
+    onSuccess: (data) => {
+      console.log("useQuery :", data);
+      navigate("/overview", { state: { project: data } });
+    },
+    onError: (error) => {
+      console.error("Error fetching project:", error);
+    },
   });
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-    return;
-  }, [isLoggedIn, navigate]);
-
-  // handlers
-  const handleProjectClick = (event) => {
-    event.preventDefault();
-    navigate(`/overview`);
-  };
-  const handleCreateProjectClick = (event) => {
-    event.preventDefault();
-    navigate(`/create-project`);
-  };
-
-  if (isLoading) {
+  if (isLoadingBasics || isLoadingProject) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -67,12 +104,15 @@ const ProjectList = () => {
     );
   }
 
-  if (isError) {
+  if (isErrorBasics || isErrorProject) {
+    // Include isErrorProject
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p style={{ color: "red" }}>{error.message}</p>
+            <p style={{ color: "red" }}>
+              {isErrorBasics ? errorBasics.message : errorProject.message}
+            </p>
           </Col>
         </Row>
       </Container>
@@ -173,6 +213,6 @@ const ProjectList = () => {
       </div>{" "}
     </Container>
   );
-}
+};
 
 export default ProjectList;

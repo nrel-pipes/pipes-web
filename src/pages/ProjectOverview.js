@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,7 +11,7 @@ import Row from "react-bootstrap/Row";
 import "./PageStyles.css";
 
 import useAuthStore from "./stores/AuthStore";
-import useDataStore from "./stores/DataStore";
+import { getProject, getProjectRuns } from "./api/ProjectAPI"; // Import getProject
 
 import ProjectOverviewAssumptions from "./ProjectOverviewAssumptions";
 import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
@@ -23,127 +23,56 @@ import ProjectOverviewTeam from "../components/ProjectOverviewTeam";
 const ProjectOverview = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const {
-    selectedProjectName,
-    currentProject,
-    getProject,
-    isGettingProject,
-    projectGetError,
-    getProjectRuns,
-    projectRuns,
-    projectRunRetries,
-    isGettingProjectRuns,
-  } = useDataStore();
+  const { projectName } = useParams();
 
-  const [team, setTeam] = useState([
-    {
-      name: "dsgrid",
-      description: null,
-      members: [
-        {
-          email: "sam.molnar@nrel.gov",
-          first_name: "Sam",
-          last_name: "Molnar",
-          organization: "National Renewable Energy Laboratory (NREL)",
-          is_active: true,
-          is_superuser: false,
-        },
-        {
-          email: "Meghan.Mooney@nrel.gov",
-          first_name: "Meghan",
-          last_name: "Mooney",
-          organization: "National Renewable Energy Laboratory (NREL)",
-          is_active: true,
-          is_superuser: false,
-        },
-      ],
-      context: {
-        project: "6762e21cd8b9ddb9ebac2891",
-      },
-    },
-    {
-      name: "dgen",
-      description: null,
-      members: [
-        {
-          email: "Jianli.Gu@nrel.gov",
-          first_name: "Jianli",
-          last_name: "Gu",
-          organization: "National Renewable Energy Laboratory (NREL)",
-          is_active: true,
-          is_superuser: false,
-        },
-        {
-          email: "Jacob.Nunemaker@nrel.gov",
-          first_name: "Jacob",
-          last_name: "Nunemaker",
-          organization: "National Renewable Energy Laboratory (NREL)",
-          is_active: true,
-          is_superuser: false,
-        },
-      ],
-      context: {
-        project: "6762e21cd8b9ddb9ebac2891",
-      },
-    },
-    {
-      name: "rpm",
-      description: null,
-      members: [
-        {
-          email: "Kenny.Gruchalla@nrel.gov",
-          first_name: "Kenny",
-          last_name: "Gruchalla",
-          organization: "National Renewable Energy Laboratory (NREL)",
-          is_active: true,
-          is_superuser: false,
-        },
-        {
-          email: "David.Rager@nrel.gov",
-          first_name: "David",
-          last_name: "Rager",
-          organization: "National Renewable Energy Laboratory (NREL)",
-          is_active: true,
-          is_superuser: false,
-        },
-      ],
-      context: {
-        project: "6762e21cd8b9ddb9ebac2891",
-      },
-    },
+  const [currentProject, setCurrentProject] = useState(null);
+  const [projectRuns, setProjectRuns] = useState();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [team] = useState([
+    /*... your team data... */
   ]);
+
   useEffect(() => {
+    console.log("in overview");
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      console.log("here");
+
+      try {
+        const projectData = await getProject({ projectName, accessToken });
+        setCurrentProject(projectData.data);
+
+        const projectIdentifier =
+          projectData.data.name || projectData.data.id || projectName;
+
+        const runsData = await getProjectRuns(projectIdentifier);
+        setProjectRuns(runsData);
+      } catch (err) {
+        setError(err);
+        console.error("Error in fetchData:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     validateToken(accessToken);
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
-    if (!selectedProjectName || selectedProjectName === null) {
+    console.log("HERE, ", projectName);
+    if (!projectName) {
       navigate("/projects");
       return;
     }
 
-    if (!currentProject || currentProject === null) {
-      getProject(selectedProjectName, accessToken);
-    }
-    if (projectRunRetries > 2) return;
-    if (!projectRuns || projectRuns.length === 0) {
-      getProjectRuns(selectedProjectName, accessToken);
-    }
-  }, [
-    validateToken,
-    isLoggedIn,
-    navigate,
-    accessToken,
-    selectedProjectName,
-    getProject,
-    currentProject,
-    projectRuns,
-    getProjectRuns,
-    projectRunRetries,
-  ]);
+    fetchData();
+  }, [validateToken, isLoggedIn, navigate, accessToken, projectName]);
 
-  if (isGettingProject || isGettingProjectRuns) {
+  if (isLoading) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -155,12 +84,14 @@ const ProjectOverview = () => {
     );
   }
 
-  if (projectGetError) {
+  if (error) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p style={{ color: "red" }}>{projectGetError.message}</p>
+            <p style={{ color: "red" }}>
+              {error?.message || "Error loading data."}
+            </p>{" "}
           </Col>
         </Row>
       </Container>
@@ -172,10 +103,7 @@ const ProjectOverview = () => {
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p>
-              Please go to <a href="/projects">projects</a> and select one of
-              your project.
-            </p>
+            <p>Project not found.</p>
           </Col>
         </Row>
       </Container>

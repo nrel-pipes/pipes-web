@@ -5,32 +5,31 @@ export const getProjectBasics = async () => {
   return response.data;
 };
 
-export const getProject = async ({ name, token }) => {
+export const getProject = async ({ projectName, accessToken }) => {
   try {
-    const response = await pipes.get(`api/projects`, {
-      params: {
-        project: name,
-      },
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+    const response = await pipes.get(`/api/projects`, {
+      params: { project: projectName },
     });
-    return response.data;
+
+    if (!response.data) {
+      // Handle the case where response.data is undefined or null.  Important!
+      throw new Error("No data received from the server.");
+    }
+    console.log("got project");
+    return response.data; // Return ONLY the data from the response
   } catch (error) {
     console.error("Error getting project:", error);
-    if (error.response) {
-      console.error("Error status:", error.response.status);
-      console.error("Error data:", error.response.data);
-    }
-    throw error;
+    throw error; // Important!
   }
 };
+
+// export const getProject = () => {
+//   return Promise.resolve({ name: "Test Project", description: "Test" });
+// };
 
 export const postProject = async ({ data, token }) => {
   try {
     const response = await pipes.post("api/projects", data, {
-      // Remove JSON.stringify
       headers: {
         accept: "application/json",
         "Content-Type": "application/json",
@@ -40,10 +39,19 @@ export const postProject = async ({ data, token }) => {
     return response.data;
   } catch (error) {
     console.error("Error posting project:", error);
-    if (error.response) {
-      console.error("Error status:", error.response.status);
-      console.error("Error data:", error.response.data);
-    }
+    throw error;
+  }
+};
+
+export const getProjectRuns = async (projectIdentifier) => {
+  try {
+    const response = await pipes.get(`/api/projects/${projectIdentifier}/runs`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error getting project runs for ${projectIdentifier}:`,
+      error,
+    );
     throw error;
   }
 };
