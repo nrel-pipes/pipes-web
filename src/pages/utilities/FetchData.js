@@ -1,5 +1,5 @@
 
-import pipesConfig from '../configs/PipesConfig'
+import pipesConfig from '../configs/PipesConfig';
 
 
 function getUrl(path) {
