@@ -17,11 +17,8 @@ pipes.interceptors.request.use(
   (config) => {
     const { accessToken, validateToken, logout } = useAuthStore.getState();
 
-    console.log("Interceptor - accessToken:", accessToken); // Log the token
-
     if (accessToken && validateToken(accessToken)) {
       config.headers.Authorization = `Bearer ${accessToken}`;
-      console.log("Interceptor - Authorization header added"); // Log when header is added
     } else {
       console.warn("Interceptor - Invalid or expired token"); // Log if token is invalid
       logout();

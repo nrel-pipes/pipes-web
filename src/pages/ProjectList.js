@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -36,6 +36,18 @@ const ProjectList = () => {
     enabled: isLoggedIn,
     retry: 3,
   });
+
+  const projectMutation = useMutation({
+    mutationFn: (projectData) => getProject(projectData, accessToken),
+    onSuccess: (data) => {
+      console.log("Project fetch successful:", data);
+      navigate("/overview", { state: { project: data } });
+    },
+    onError: (error) => {
+      console.error("Error fetching project details:", error);
+    },
+  });
+
   const [queryEnabled, setQueryEnabled] = useState(false); // New state variable
 
   const [fetchTrigger, setFetchTrigger] = useState(null);
@@ -50,16 +62,19 @@ const ProjectList = () => {
 
   const handleProjectClick = (event, project) => {
     event.preventDefault();
-    setSelectedProjectName(project.name);
-    setFetchTrigger((prevFetchTrigger) => {
-      const newFetchTrigger = project.name;
-      console.log("New fetchTrigger:", newFetchTrigger);
-      return newFetchTrigger;
+
+    if (!project || !project.name) {
+      console.error("Project data is missing or invalid for click.");
+      return;
+    }
+    console.log(`Loading details for project: ${project.name}`);
+    projectMutation.mutate({
+      projectName: project.name,
+      accessToken: accessToken,
     });
   };
-  useEffect(() => {
-    setQueryEnabled(isLoggedIn && !!fetchTrigger);
-  }, [isLoggedIn, fetchTrigger]);
+
+
   const {
     data: project,
     isLoading: isLoadingProject,
@@ -75,6 +90,7 @@ const ProjectList = () => {
         });
         console.log("Data from getProject (inside queryFn):", data);
         console.log("Here ", queryEnabled);
+        navigate("/overview", { state: { project: data } });
         return data;
       } catch (error) {
         console.error("Error in queryFn:", error);

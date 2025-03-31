@@ -6,6 +6,7 @@ export const getProjectBasics = async () => {
 };
 
 export const getProject = async ({ projectName, accessToken }) => {
+  console.log(projectName, accessToken);
   try {
     const response = await pipes.get(`/api/projects`, {
       params: { project: projectName },
@@ -23,9 +24,7 @@ export const getProject = async ({ projectName, accessToken }) => {
   }
 };
 
-// export const getProject = () => {
-//   return Promise.resolve({ name: "Test Project", description: "Test" });
-// };
+
 
 export const postProject = async ({ data, token }) => {
   try {
@@ -43,13 +42,28 @@ export const postProject = async ({ data, token }) => {
   }
 };
 
-export const getProjectRuns = async (projectIdentifier) => {
+export const getProjectRuns = async ({ projectTitle, accessToken }) => {
+  console.log(projectTitle);
   try {
-    const response = await pipes.get(`/api/projects/${projectIdentifier}/runs`);
-    return response.data;
+    const response = await fetch(
+      `http://localhost:8080/api/projectruns?project=${projectTitle}`,
+      {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
     console.error(
-      `Error getting project runs for ${projectIdentifier}:`,
+      `Error getting project runs for ${projectTitle}:`,
       error,
     );
     throw error;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,7 +12,7 @@ import Row from "react-bootstrap/Row";
 import "./PageStyles.css";
 
 import useAuthStore from "./stores/AuthStore";
-import { getProject, getProjectRuns } from "./api/ProjectAPI"; // Import getProject
+import { getProject, getProjectRuns } from "./api/ProjectAPI";
 
 import ProjectOverviewAssumptions from "./ProjectOverviewAssumptions";
 import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
@@ -22,57 +23,84 @@ import ProjectOverviewTeam from "../components/ProjectOverviewTeam";
 
 const ProjectOverview = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { projectName } = useParams();
 
-  const [currentProject, setCurrentProject] = useState(null);
-  const [projectRuns, setProjectRuns] = useState();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const [team] = useState([
-    /*... your team data... */
-  ]);
+  const projectFromState = location.state?.project;
 
   useEffect(() => {
-    console.log("in overview");
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
-      console.log("here");
-
-      try {
-        const projectData = await getProject({ projectName, accessToken });
-        setCurrentProject(projectData.data);
-
-        const projectIdentifier =
-          projectData.data.name || projectData.data.id || projectName;
-
-        const runsData = await getProjectRuns(projectIdentifier);
-        setProjectRuns(runsData);
-      } catch (err) {
-        setError(err);
-        console.error("Error in fetchData:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     validateToken(accessToken);
     if (!isLoggedIn) {
+      console.log("User not logged in, navigating to login.");
       navigate("/login");
-      return;
     }
-    console.log("HERE, ", projectName);
-    if (!projectName) {
-      navigate("/projects");
-      return;
+  }, [isLoggedIn, navigate, validateToken, accessToken]);
+
+
+  const {
+    data: fetchedProject,
+    isLoading: isLoadingProject,
+    isError: isErrorProject,
+    error: errorProject,
+  } = useQuery({
+    queryKey: ["project", projectName],
+    queryFn: () => {
+      console.log(`Querying project: ${projectName}`);
+      return getProject({ projectName, accessToken });
+    },
+    enabled: isLoggedIn && !!projectName && !projectFromState,
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
+    initialData: projectFromState,
+    onSuccess: (data) => {
+      console.log("Project fetch via useQuery successful! Title:", data?.title);
+    },
+    onError: (error) => {
+      console.error("Error fetching project via useQuery:", error);
     }
+  });
 
-    fetchData();
-  }, [validateToken, isLoggedIn, navigate, accessToken, projectName]);
+  const project = projectFromState || fetchedProject;
 
-  if (isLoading) {
+  console.log("Using project:", project);
+
+  const projectTitle = project?.title;
+
+  const {
+    data: projectRuns,
+    isLoading: isLoadingRuns,
+    isError: isErrorRuns,
+    error: errorRuns,
+  } = useQuery({
+    queryKey: ["projectRuns", projectTitle],
+    queryFn: () => {
+      console.log("Fetching project runs for:", projectTitle);
+      return getProjectRuns({
+        projectTitle,
+        accessToken
+      });
+    },
+
+    enabled: isLoggedIn && !!projectTitle && !!project,
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
+    onSuccess: (data) => {
+      console.log("Project runs fetch successful!", data);
+    },
+    onError: (error) => {
+      console.error("Error fetching project runs:", error);
+    }
+  });
+
+  const isLoading = (!projectFromState && isLoadingProject) || (!!project && isLoadingRuns);
+  const isError = (!projectFromState && isErrorProject) || isErrorRuns;
+  const error = (!projectFromState ? errorProject : null) || errorRuns;
+
+  if (!isLoggedIn || !project) {
+    console.log(project);
+    return null;
+  }  if (isLoading) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -83,6 +111,7 @@ const ProjectOverview = () => {
       </Container>
     );
   }
+  console.log("--- ProjectOverview Render ---");
 
   if (error) {
     return (
@@ -98,7 +127,7 @@ const ProjectOverview = () => {
     );
   }
 
-  if (!currentProject) {
+  if (!project) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -109,22 +138,23 @@ const ProjectOverview = () => {
       </Container>
     );
   }
+  console.log("--- ProjectOverview Render ---");
 
   return (
     <Container className="mainContent" fluid>
       <Row className="text-start">
         <Col>
           <h2 className="display-5 mt-4 mb-4">
-            {currentProject.name} {currentProject.title}
+            {project.name} {project.title}
           </h2>
           <p className="mt-3">
             <b>
-              Project Owner: {currentProject.owner.first_name}{" "}
-              {currentProject.owner.last_name}
+              Project Owner: {project.owner.first_name}{" "}
+              {project.owner.last_name}
             </b>
           </p>
 
-          <p className="mt-4">{currentProject.description}</p>
+          <p className="mt-4">{project.description}</p>
           <hr></hr>
         </Col>
       </Row>
@@ -134,7 +164,7 @@ const ProjectOverview = () => {
             <h3 className="mb-4 smallCaps">Assumptions</h3>
             <Col>
               <ProjectOverviewAssumptions
-                assumptions={currentProject.assumptions}
+                assumptions={project.assumptions}
               />
             </Col>
           </Row>
@@ -143,7 +173,7 @@ const ProjectOverview = () => {
             <h3 className="mb-4 smallCaps">Requirements</h3>
             <Col>
               <ProjectOverviewRequirements
-                requirements={currentProject.requirements}
+                requirements={project.requirements}
               />
             </Col>
           </Row>
@@ -151,7 +181,7 @@ const ProjectOverview = () => {
           <Row className="text-start mt-5">
             <h3 className="mb-4 smallCaps">Scenarios</h3>
             <Col>
-              <ProjectOverviewScenarios scenarios={currentProject.scenarios} />
+              <ProjectOverviewScenarios scenarios={project.scenarios} />
             </Col>
           </Row>
 
@@ -159,16 +189,15 @@ const ProjectOverview = () => {
             <h3 className="mb-4 smallCaps">Schedule</h3>
             <Col>
               <ProjectOverviewSchedule
-                scheduled_start={currentProject.scheduled_start}
-                scheduled_end={currentProject.scheduled_end}
+                scheduled_start={project.scheduled_start}
+                scheduled_end={project.scheduled_end}
               />
             </Col>
           </Row>
-          {/* Hard code for now, since we are switching from zustand to react-query */}
           <Row className="text-start mt-5">
             <h3 className="mb-4 smallCaps">Team</h3>
             <Col>
-              <ProjectOverviewTeam team={team} />
+              <ProjectOverviewTeam team={project.teams} />
             </Col>
           </Row>
         </Col>
