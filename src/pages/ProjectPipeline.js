@@ -204,7 +204,8 @@ const ProjectPipeline = () => {
           stroke: "#0d3d6b",
           strokeWidth: 2,
         },
-        label: "runs"
+        label: "runs",
+        data: {}
       }
       initialEdges.push(prEdge);
 
@@ -244,7 +245,8 @@ const ProjectPipeline = () => {
               stroke: "#31b2cc",
               strokeWidth: 2,
             },
-            label: "requires"
+            label: "requires",
+            data: {}
           }
           initialEdges.push(mEdge);
         }
@@ -327,6 +329,7 @@ const ProjectPipeline = () => {
                 strokeWidth: 2,
                 strokeDasharray: "5,5",
               },
+              data: {}
             }
             initialEdges.push(mrEdge);
           }
