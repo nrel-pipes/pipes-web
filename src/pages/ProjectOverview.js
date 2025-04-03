@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -63,9 +63,6 @@ const ProjectOverview = () => {
 
   const project = projectFromState || fetchedProject;
 
-  console.log("Using project:", project);
-
-  const projectTitle = project?.title;
 
   const {
     data: projectRuns,
@@ -73,16 +70,15 @@ const ProjectOverview = () => {
     isError: isErrorRuns,
     error: errorRuns,
   } = useQuery({
-    queryKey: ["projectRuns", projectTitle],
+    queryKey: ["projectRuns", project?.name],
     queryFn: () => {
-      console.log("Fetching project runs for:", projectTitle);
       return getProjectRuns({
-        projectTitle,
-        accessToken
+        projectName: fetchedProject.name,
+        accessToken: accessToken
       });
     },
 
-    enabled: isLoggedIn && !!projectTitle && !!project,
+    enabled: isLoggedIn && !!project?.name && !!project,
     retry: 1,
     staleTime: 5 * 60 * 1000,
     onSuccess: (data) => {
@@ -111,7 +107,6 @@ const ProjectOverview = () => {
       </Container>
     );
   }
-  console.log("--- ProjectOverview Render ---");
 
   if (error) {
     return (
@@ -138,7 +133,6 @@ const ProjectOverview = () => {
       </Container>
     );
   }
-  console.log("--- ProjectOverview Render ---");
 
   return (
     <Container className="mainContent" fluid>

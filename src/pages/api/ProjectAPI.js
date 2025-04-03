@@ -8,22 +8,19 @@ export const getProjectBasics = async () => {
 export const getProject = async ({ projectName, accessToken }) => {
   console.log(projectName, accessToken);
   try {
-    const response = await pipes.get(`/api/projects`, {
-      params: { project: projectName },
-    });
-
+    const encodedProjectName = encodeURIComponent(projectName);
+    console.log(encodedProjectName);
+    const response = await pipes.get(`/api/projects?project=${encodedProjectName}`);
     if (!response.data) {
-      // Handle the case where response.data is undefined or null.  Important!
       throw new Error("No data received from the server.");
     }
     console.log("got project");
-    return response.data; // Return ONLY the data from the response
+    return response.data;
   } catch (error) {
     console.error("Error getting project:", error);
-    throw error; // Important!
+    throw error;
   }
 };
-
 
 
 export const postProject = async ({ data, token }) => {
@@ -42,11 +39,11 @@ export const postProject = async ({ data, token }) => {
   }
 };
 
-export const getProjectRuns = async ({ projectTitle, accessToken }) => {
-  console.log(projectTitle);
+export const getProjectRuns = async ({ projectName, accessToken }) => {
+  const encodedProjectName = encodeURIComponent(projectName);
   try {
     const response = await fetch(
-      `http://localhost:8080/api/projectruns?project=${projectTitle}`,
+      `http://localhost:8080/api/projectruns?project=${encodedProjectName}`,
       {
         method: 'GET',
         headers: {
@@ -63,7 +60,7 @@ export const getProjectRuns = async ({ projectTitle, accessToken }) => {
     return await response.json();
   } catch (error) {
     console.error(
-      `Error getting project runs for ${projectTitle}:`,
+      `Error getting project runs for ${projectName}:`,
       error,
     );
     throw error;

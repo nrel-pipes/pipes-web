@@ -23,8 +23,6 @@ import "../components/Cards.css";
 const ProjectList = () => {
   const { isLoggedIn, accessToken } = useAuthStore();
   const navigate = useNavigate();
-
-  // React Query: Fetch project basics
   const {
     data: projectBasics = [],
     isLoading: isLoadingBasics,
@@ -42,18 +40,18 @@ const ProjectList = () => {
     onSuccess: (data) => {
       console.log("Project fetch successful:", data);
       navigate("/overview", { state: { project: data } });
+      return data;
     },
     onError: (error) => {
       console.error("Error fetching project details:", error);
     },
   });
 
-  const [queryEnabled, setQueryEnabled] = useState(false); // New state variable
+  const [queryEnabled] = useState(false);
 
   const [fetchTrigger, setFetchTrigger] = useState(null);
   const [selectedProjectName, setSelectedProjectName] = useState(null);
 
-  // Handle create project click
   const handleCreateProjectClick = (event, project) => {
     event.preventDefault();
     setSelectedProjectName(project.name);
@@ -67,13 +65,11 @@ const ProjectList = () => {
       console.error("Project data is missing or invalid for click.");
       return;
     }
-    console.log(`Loading details for project: ${project.name}`);
     projectMutation.mutate({
       projectName: project.name,
       accessToken: accessToken,
     });
   };
-
 
   const {
     data: project,

@@ -824,7 +824,6 @@ const CreateProject = () => {
 
   // In your component, add these mutation-related effects
   useEffect(() => {
-    console.log("Here");
     if (createProjectMutation.isSuccess) {
       setFormError(false);
       setSubmittingForm(false);
@@ -832,7 +831,6 @@ const CreateProject = () => {
   }, [createProjectMutation.isSuccess]);
 
   useEffect(() => {
-    console.log("Here");
 
     if (createProjectMutation.isError && createProjectMutation.error) {
       setFormError(true);
