@@ -3,7 +3,6 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { useNavigate } from "react-router-dom";
 import { Plus, Minus } from "lucide-react";
 
 import PageTitle from "../components/pageTitle";
@@ -15,54 +14,24 @@ import "./FormStyles.css";
 import { useState, useEffect } from "react";
 import { postProject, getProject } from "./api/ProjectAPI";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
-const CreateProject = () => {
-  const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { getProjectBasics, currentProject } = useDataStore();
-  const queryClient = useQueryClient();
+import "./PageStyles.css";
+import "../components/Cards.css";
 
-  const createProjectMutation = useMutation({
-    mutationFn: postProject,
-    onSuccess: async (data, variables) => {
-      setFormError(false);
-      try {
-        // Fetch the newly created project
-        await queryClient.fetchQuery({
-          queryKey: ["project", variables.data.name],
-          queryFn: () =>
-            getProject({
-              name: variables.data.name,
-              token: variables.token,
-            }),
-        });
-        setSubmittingForm(false);
-        navigate("/overview");
-      } catch (error) {
-        console.error("Error fetching project after creation:", error);
-        setFormError(true);
-        setFormErrorMessage("Project created but failed to fetch details");
-        setSubmittingForm(false);
-      }
-    },
-    onError: (error) => {
-      setFormError(true);
-      setFormErrorMessage(
-        `Failed to create project: ${
-          error instanceof Error ? error.message : "Unknown error occurred"
-        }`,
-      );
-      setSubmittingForm(false);
-    },
-  });
-  const initializeForm = () => {
-    return {
+
+  const CreateProject = () => {
+    // Initial form state with empty arrays for list items
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+    const queryClient = useQueryClient();
+
+    const [form, setForm] = useState({
       name: "",
-      title: "",
-      description: "",
-      assumptions: [],
-      leads: [],
-      milestones: [],
+      scheduled_start: "",
+      assumptions: [""], // Initialize as empty array
       owner: {
         email: "",
         first_name: "",
@@ -73,135 +42,116 @@ const CreateProject = () => {
         keys: [],
         values: [],
       },
-      scenarios: [],
-      scheduled_end: "",
-      scheduled_start: "",
-      sensitivities: [],
-      teams: [],
+    });
+
+    // Update a simple string value
+    const handleSetString = (path, value) => {
+      setForm((prevState) => {
+        const keys = path.split(".");
+        const newState = { ...prevState };
+        let current = newState;
+        for (let i = 0; i < keys.length - 1; i++) {
+          current[keys[i]] = { ...current[keys[i]] };
+          current = current[keys[i]];
+        }
+        current[keys[keys.length - 1]] = value;
+        return newState;
+      });
     };
-  };
-  const denormalizeFormData = (normalizedForm) => {
-    const requirements = {};
-    normalizedForm.requirements.keys.forEach((key, index) => {
-      const values = normalizedForm.requirements.values[index];
-      requirements[key] = values.length === 1 ? values[0] : values;
-    });
-    const scenarios = normalizedForm.scenarios.map((scenario) => {
-      const description =
-        Array.isArray(scenario.description) && scenario.description.length === 1
-          ? scenario.description[0]
-          : scenario.description;
-      const other = Array.isArray(scenario.other)
-        ? scenario.other.reduce((acc, [key, value]) => {
-            acc[key] = value;
-            return acc;
-          }, {})
-        : scenario.other;
 
-      return {
-        ...scenario,
-        description,
-        other,
-      };
-    });
-
-    return {
-      ...normalizedForm,
-      requirements,
-      scenarios,
+    const handleAddListItem = (path, newItem) => {
+      setForm((prevState) => {
+        const keys = path.split(".");
+        const newState = { ...prevState };
+        let current = newState;
+        for (let i = 0; i < keys.length - 1; i++) {
+          current[keys[i]] = { ...current[keys[i]] };
+          current = current[keys[i]];
+        }
+        const lastKey = keys[keys.length - 1];
+        current[lastKey] = [...(current[lastKey] || []), newItem];
+        return newState;
+      });
     };
+
+    const handleListItemChange = (path, index, newValue) => {
+      setForm((prevState) => {
+        const keys = path.split(".");
+        const newState = { ...prevState };
+        let current = newState;
+        for (let i = 0; i < keys.length - 1; i++) {
+          current[keys[i]] = { ...current[keys[i]] };
+          current = current[keys[i]];
+        }
+        const lastKey = keys[keys.length - 1];
+        const updatedArray = [...current[lastKey]];
+        updatedArray[index] = newValue;
+        current[lastKey] = updatedArray;
+        return newState;
+      });
+    };
+
+    const handleRemoveListItem = (path, index) => {
+      setForm((prevState) => {
+        const keys = path.split(".");
+        const newState = { ...prevState };
+        let current = newState;
+        for (let i = 0; i < keys.length - 1; i++) {
+          current[keys[i]] = { ...current[keys[i]] };
+          current = current[keys[i]];
+        }
+        const lastKey = keys[keys.length - 1];
+        if (!Array.isArray(current[lastKey])) {
+          console.error(`The property at path "${path}" is not an array:`, current[lastKey]);
+          return newState;
+        }
+        current[lastKey] = [
+          ...current[lastKey].slice(0, index),
+          ...current[lastKey].slice(index + 1)
+        ];
+
+        return newState;
+      });
+    };
+
+
+
+  const formatDateForInput = (isoString) => {
+    if (!isoString) return "";
+    return isoString.split("T")[0];
   };
 
-  const [form, setForm] = useState(() => initializeForm(currentProject));
-  const handleRemoveSensitivity = (index, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      sensitivities: prevForm.sensitivities.filter((_, idx) => idx !== index),
-    }));
-  };
-
-  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      // If the last item is already empty, don't add another
-      if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
-        return prevForm;
-      }
-
-      const newSensitivities = [...(prevForm.sensitivities || [])];
-      newSensitivities[sensitivityIndex].list.push("");
-      return {
-        ...prevForm,
-        sensitivities: newSensitivities,
-      };
+  const handleDateChange = (field, value) => {
+    setForm({
+      ...form,
+      [field]: value,
     });
-  };
-  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      const newSensitivities = [...(prevForm.sensitivities || [])];
-      newSensitivities[sensitivityIndex].list = newSensitivities[
-        sensitivityIndex
-      ].list.filter((_, idx) => idx !== listIndex);
-      return {
-        ...prevForm,
-        sensitivities: newSensitivities,
-      };
-    });
-  };
-  const handleMilestoneDateChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].milestone_date = value;
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
+    console.log(value);
   };
 
-  const handleRemoveScenario = (index, e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      scenarios: prevForm.scenarios.filter((_, idx) => idx !== index),
-    }));
+    mutation.mutate(form);
   };
 
-  const handleAddOtherInfo = (scenarioIndex, e) => {
-    e.preventDefault();
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        other: [...(updatedScenarios[scenarioIndex].other || []), ["", ""]],
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
-    setForm((prevForm) => {
-      const newScenarios = [...prevForm.scenarios];
-      newScenarios[scenarioIndex] = {
-        ...newScenarios[scenarioIndex],
-        other: newScenarios[scenarioIndex].other.filter(
-          (_, idx) => idx !== otherIndex,
-        ),
-      };
-      return {
-        ...prevForm,
-        scenarios: newScenarios,
-      };
-    });
-  };
+  const mutation = useMutation({
+    mutationFn: async (formData) => {
+      console.log("Submitting project data...");
+      // Simulate a 1-second delay for loading state
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return postProject(formData, accessToken);
+    },
+    onSuccess: (data) => {
+      // Invalidate and refetch relevant queries
+      queryClient.invalidateQueries(['projects']);
+      console.log("Project created successfully!");
+      navigate('/projects'); // Navigate to projects page or wherever appropriate
+    },
+    onError: (error) => {
+      console.error("Project creation failed:", error);
+      // You can handle specific error cases here
+    }
+  });
 
   // Usage:
   const handleRequirementNameChange = (index, newName) => {
@@ -303,550 +253,11 @@ const CreateProject = () => {
       };
     });
   };
-  const handleMilestoneNameChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].name = value;
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
-  };
-  const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].description = [value];
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
-  };
 
-  const handleAddMilestone = (e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      milestones: [
-        ...(prevForm.milestones || []),
-        {
-          name: "",
-          description: [""],
-          milestone_date: "",
-        },
-      ],
-    }));
-  };
-  const handleSetString = (path, value) => {
-    setForm((prevState) => {
-      const keys = path.split(".");
-      const newState = { ...prevState };
-      let current = newState;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-      current[keys[keys.length - 1]] = value;
-      return newState;
-    });
-  };
-  const handleAssumptionChange = (index, value) => {
-    setForm((prevState) => ({
-      ...prevState,
-      assumptions: prevState.assumptions.map((item, i) =>
-        i === index ? value : item,
-      ),
-    }));
-  };
-  const handleAddAssumption = () => {
-    setForm((prevState) => ({
-      ...prevState,
-      assumptions: [...prevState.assumptions, ""],
-    }));
-  };
-  const handleRemoveAssumption = (index, e) => {
-    e.preventDefault();
 
-    setForm((prevState) => ({
-      ...prevState,
-      assumptions: prevState.assumptions.filter((_, i) => i !== index),
-    }));
-  };
 
-  const handleDateChange = (field, value) => {
-    setForm({
-      ...form,
-      [field]: value,
-    });
-  };
-  const formatDateForInput = (isoString) => {
-    if (!isoString) return "";
-    return isoString.split("T")[0];
-  };
-
-  useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
-
-  const handleAddScenario = (e) => {
-    e.preventDefault();
-    console.log(form.scenarios);
-    setForm((prevState) => ({
-      ...prevState,
-      scenarios: [
-        ...(prevState.scenarios || []),
-        {
-          name: "",
-          description: [""],
-          other: [],
-        },
-      ],
-    }));
-  };
-
-  // Add the new handler functions here
-  const handleScenarioNameChange = (scenarioIndex, value) => {
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        name: value,
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-  const handleScenarioDescriptionChange = (scenarioIndex, value) => {
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        description: [value], // Keep it as an array with single value since that's your data structure
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-  const handleOtherInfoChange = (
-    scenarioIndex,
-    otherIndex,
-    keyOrValue,
-    value,
-  ) => {
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      const currentOther = [...updatedScenarios[scenarioIndex].other];
-      const currentPair = currentOther[otherIndex] || ["", ""];
-      currentOther[otherIndex] =
-        keyOrValue === "key"
-          ? [value, currentPair[1]]
-          : [currentPair[0], value];
-
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        other: currentOther,
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-
-  const handleAddSensitivity = (e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      sensitivities: [
-        ...(prevForm.sensitivities || []),
-        {
-          name: "",
-          description: [""],
-          list: [""],
-        },
-      ],
-    }));
-  };
-  // Setting Milestones
-
-  const handleRemoveMilestone = (milestoneIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      milestones: prevForm.milestones.filter(
-        (_, index) => index !== milestoneIndex,
-      ),
-    }));
-  };
-  // Setting project Schedule
-  const [formError, setFormError] = useState(false);
-  const [formErrorMessage, setFormErrorMessage] = useState("");
-
-  const [submittingForm, setSubmittingForm] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError(false);
-    setSubmittingForm(true);
-
-    const retriesLimit = 3;
-
-    // Denormalize the form data to match the backend model
-    const denormalizedForm = denormalizeFormData(form);
-
-    // Required field validation - adapted for denormalized form
-    // Validating Project Name
-    const projectNameElement = document.getElementById("projectName");
-    if (!denormalizedForm.name || denormalizedForm.name.trim().length === 0) {
-      projectNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide a name for your project.");
-      setSubmittingForm(false);
-      return;
-    }
-    projectNameElement.classList.remove("form-error");
-
-    // Validating Schedule
-    const scheduledStartElement = document.getElementById("scheduledStart");
-    const scheduledEndElement = document.getElementById("scheduledEnd");
-    let hasScheduleError = false;
-    if (
-      !denormalizedForm.scheduled_start ||
-      denormalizedForm.scheduled_start.trim().length === 0
-    ) {
-      scheduledStartElement.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (
-      !denormalizedForm.scheduled_end ||
-      denormalizedForm.scheduled_end.trim().length === 0
-    ) {
-      scheduledEndElement.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (
-      denormalizedForm.scheduled_start &&
-      denormalizedForm.scheduled_end &&
-      new Date(denormalizedForm.scheduled_end) <
-        new Date(denormalizedForm.scheduled_start)
-    ) {
-      scheduledStartElement.classList.add("form-error");
-      scheduledEndElement.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (hasScheduleError) {
-      setFormError(true);
-      setFormErrorMessage(
-        "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
-      );
-      setSubmittingForm(false);
-      return;
-    }
-    scheduledStartElement.classList.remove("form-error");
-    scheduledEndElement.classList.remove("form-error");
-
-    // Validating Owner
-    const ownerFirstNameElement = document.getElementById("firstName");
-    const ownerLastNameElement = document.getElementById("lastName");
-    const ownerEmailElement = document.getElementById("email");
-    const ownerOrganizationElement = document.getElementById("organization");
-
-    if (
-      !denormalizedForm.owner.first_name ||
-      denormalizedForm.owner.first_name.trim().length === 0
-    ) {
-      ownerFirstNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your first name.");
-      setSubmittingForm(false);
-      return;
-    }
-    ownerFirstNameElement.classList.remove("form-error");
-
-    if (
-      !denormalizedForm.owner.last_name ||
-      denormalizedForm.owner.last_name.trim().length === 0
-    ) {
-      ownerLastNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your last name.");
-      setSubmittingForm(false);
-      return;
-    }
-    ownerLastNameElement.classList.remove("form-error");
-
-    if (
-      !denormalizedForm.owner.email ||
-      denormalizedForm.owner.email.trim().length === 0
-    ) {
-      ownerEmailElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide the project owner's email.");
-      setSubmittingForm(false);
-      return;
-    }
-    ownerEmailElement.classList.remove("form-error");
-
-    if (
-      !denormalizedForm.owner.organization ||
-      denormalizedForm.owner.organization.trim().length === 0
-    ) {
-      ownerOrganizationElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(
-        "You forgot to provide the project owner's organization.",
-      );
-      setSubmittingForm(false);
-      return;
-    }
-    ownerOrganizationElement.classList.remove("form-error");
-
-    // Validating Milestones
-    for (let i = 0; i < denormalizedForm.milestones.length; i++) {
-      const milestone = denormalizedForm.milestones[i];
-      const milestoneNameElement = document.getElementById(
-        `milestoneName-${i}`,
-      );
-      const milestoneDescriptionElement = document.getElementById(
-        `milestoneDescription-${i}`,
-      );
-      const milestoneDateElement = document.getElementById(
-        `milestoneDate-${i}`,
-      );
-
-      if (!milestone.name || milestone.name.trim().length === 0) {
-        milestoneNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Milestone ${i + 1} is missing a name.`);
-        setSubmittingForm(false);
-        return;
-      }
-      milestoneNameElement.classList.remove("form-error");
-
-      if (!milestone.description || milestone.description.trim().length === 0) {
-        milestoneDescriptionElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Milestone ${i + 1} is missing a description.`);
-        setSubmittingForm(false);
-        return;
-      }
-      milestoneDescriptionElement.classList.remove("form-error");
-
-      if (
-        !milestone.milestone_date ||
-        milestone.milestone_date.trim().length === 0
-      ) {
-        milestoneDateElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Milestone ${i + 1} is missing a date.`);
-        setSubmittingForm(false);
-        return;
-      }
-      milestoneDateElement.classList.remove("form-error");
-    }
-
-    // Validating Scenarios
-    for (let i = 0; i < denormalizedForm.scenarios.length; i++) {
-      const scenario = denormalizedForm.scenarios[i];
-      const scenarioNameElement = document.getElementById(`scenarioName-${i}`);
-      const scenarioDescriptionElement = document.getElementById(
-        `scenarioDescription-${i}`,
-      );
-
-      if (!scenario.name || scenario.name.trim().length === 0) {
-        scenarioNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Scenario ${i + 1} is missing a name.`);
-        setSubmittingForm(false);
-        return;
-      }
-      scenarioNameElement.classList.remove("form-error");
-
-      if (
-        !scenario.description ||
-        scenario.description.toString().trim().length === 0
-      ) {
-        scenarioDescriptionElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Scenario ${i + 1} is missing a description.`);
-        setSubmittingForm(false);
-        return;
-      }
-      scenarioDescriptionElement.classList.remove("form-error");
-    }
-
-    // Validating Sensitivities
-    for (let i = 0; i < denormalizedForm.sensitivities.length; i++) {
-      const sensitivity = denormalizedForm.sensitivities[i];
-      const sensitivityNameElement = document.getElementById(
-        `sensitivityName-${i}`,
-      );
-      const sensitivityDescriptionElement = document.getElementById(
-        `sensitivityDescription-${i}`,
-      );
-
-      if (!sensitivity.name || sensitivity.name.trim().length === 0) {
-        sensitivityNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Sensitivity ${i + 1} is missing a name.`);
-        setSubmittingForm(false);
-        return;
-      }
-      sensitivityNameElement.classList.remove("form-error");
-
-      if (
-        !sensitivity.description ||
-        sensitivity.description.toString().trim().length === 0
-      ) {
-        sensitivityDescriptionElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Sensitivity ${i + 1} is missing a description.`);
-        setSubmittingForm(false);
-        return;
-      }
-      sensitivityDescriptionElement.classList.remove("form-error");
-    }
-
-    // Prepare the payload for the API
-    const payload = {
-      ...denormalizedForm,
-      title: denormalizedForm.name.toLowerCase().replace(/\s+/g, "_"), // Generate title from name
-      scheduled_start: denormalizedForm.scheduled_start,
-      scheduled_end: denormalizedForm.scheduled_end,
-    };
-
-    console.log("Payload to be sent:", JSON.stringify(payload, null, 2));
-
-    // API call with retries
-    for (let attempt = 0; attempt < retriesLimit; attempt++) {
-      try {
-        await createProjectMutation.mutateAsync({
-          data: payload,
-          token: accessToken,
-        });
-        console.log(`Project created successfully on attempt ${attempt + 1}`);
-        break; // Exit loop on success
-      } catch (error) {
-        console.error(
-          `Error creating project (attempt ${attempt + 1}/${retriesLimit}):`,
-          error,
-        );
-        if (attempt < retriesLimit - 1) {
-          setFormError(true);
-          setFormErrorMessage(
-            `Error creating project: ${error.message}. Retrying in 1 second...`,
-          );
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        } else {
-          setFormError(true);
-          setFormErrorMessage(
-            `Failed to create project after ${retriesLimit} attempts: ${error.message}`,
-          );
-          setSubmittingForm(false);
-          return; // Exit function after final failure
-        }
-      }
-    }
-  };
-  // Separate validation logic
-  const validateForm = (formData) => {
-    // Project Title
-    if (!formData.name?.trim()) {
-      return {
-        field: "projectName",
-        message: "You forgot to provide a title for your project.",
-      };
-    }
-
-    // Schedule validation
-    if (!formData.scheduled_start || !formData.scheduled_end) {
-      return {
-        field: "schedule",
-        message: "Both start and end dates are required.",
-      };
-    }
-
-    if (new Date(formData.scheduled_end) < new Date(formData.scheduled_start)) {
-      return {
-        field: "schedule",
-        message: "The end date cannot be before the start date.",
-      };
-    }
-
-    // Owner Information
-    if (!formData.owner?.first_name?.trim()) {
-      return {
-        field: "firstName",
-        message: "You forgot to provide your first name.",
-      };
-    }
-
-    if (!formData.owner?.last_name?.trim()) {
-      return {
-        field: "lastName",
-        message: "You forgot to provide your last name.",
-      };
-    }
-
-    if (!formData.owner?.email?.trim()) {
-      return {
-        field: "email",
-        message: "You forgot to provide the project owner's email.",
-      };
-    }
-
-    if (!formData.owner?.organization?.trim()) {
-      return {
-        field: "organization",
-        message: "You forgot to provide the project owner's organization.",
-      };
-    }
-
-    return null;
-  };
-
-  // In your component, add these mutation-related effects
-  useEffect(() => {
-    if (createProjectMutation.isSuccess) {
-      setFormError(false);
-      setSubmittingForm(false);
-    }
-  }, [createProjectMutation.isSuccess]);
-
-  useEffect(() => {
-
-    if (createProjectMutation.isError && createProjectMutation.error) {
-      setFormError(true);
-      setFormErrorMessage(
-        `Failed to create project: ${
-          createProjectMutation.error instanceof Error
-            ? createProjectMutation.error.message
-            : "Unknown error occurred"
-        }`,
-      );
-      setSubmittingForm(false);
-    }
-  }, [createProjectMutation.isError, createProjectMutation.error]);
-
+  // Side bar state
   const [isExpanded, setIsExpanded] = useState(false);
-  // Adding definitions
   const [documentation] = useState({
     description: "This is a sample description of the project creation page",
     definitions: [
@@ -901,8 +312,8 @@ const CreateProject = () => {
                   <Form.Control
                     type="input"
                     id="projectName"
-                    name="projectName"
-                    placeholder="Project Names"
+                    name="name"
+                    placeholder="Project Name"
                     className="mb-4"
                     value={form.name}
                     onChange={(e) => handleSetString("name", e.target.value)}
@@ -1031,15 +442,14 @@ const CreateProject = () => {
                         id={`assumptions${index}`}
                         type="input"
                         placeholder="Enter assumption"
-                        value={form.assumptions[index]} // Changed from assumption to assumptions
-                        onChange={(e) =>
-                          handleAssumptionChange(index, e.target.value)
-                        }
+                        value={form.assumptions[index]}
+                        onChange={(e) => handleListItemChange("assumptions", index, e.target.value)}
+
                       />{" "}
                       <Button
                         variant="outline-danger"
                         size="sm"
-                        onClick={(e) => handleRemoveAssumption(index, e)}
+                        onClick={(e) => handleRemoveListItem("assumptions", index, e)}
                       >
                         <Minus className="w-4 h-4" />
                       </Button>
@@ -1049,7 +459,8 @@ const CreateProject = () => {
                     <Button
                       variant="outline-primary"
                       size="sm"
-                      onClick={handleAddAssumption}
+                      onClick={() => handleAddListItem("assumptions", "")}
+
                       className="mt-2 align-items-left"
                     >
                       <Plus className="w-4 h-4 mr-1" />
@@ -1197,435 +608,14 @@ const CreateProject = () => {
                       Requirement
                     </Button>
                   </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
-                    Scenarios
-                  </Form.Label>
-                  <div className="d-block">
-                    {form.scenarios.map((scenario, scenarioIndex) => (
-                      <div
-                        key={scenarioIndex}
-                        className="border rounded p-3 mb-4"
-                      >
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            Scenario {scenarioIndex + 1}
-                          </h4>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={(e) =>
-                              handleRemoveScenario(scenarioIndex, e)
-                            }
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              padding: "4px",
-                            }}
-                            className="d-flex align-items-center justify-content-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`scenario${scenarioIndex}`}
-                            type="input"
-                            placeholder="Scenario name"
-                            value={scenario.name}
-                            onChange={(e) =>
-                              handleScenarioNameChange(
-                                scenarioIndex,
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`scenarioDescription${scenarioIndex}`}
-                            as="textarea"
-                            rows={3}
-                            placeholder="Enter description"
-                            value={scenario.description[0]}
-                            onChange={(e) =>
-                              handleScenarioDescriptionChange(
-                                scenarioIndex,
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
-                            Other
-                          </h5>
-                          {scenario.other.map((item, otherIndex) => (
-                            <Row
-                              key={otherIndex}
-                              className="mb-2 align-items-center"
-                            >
-                              <Col xs={3}>
-                                <Form.Control
-                                  id={`scenarioOther${otherIndex}`}
-                                  type="input"
-                                  placeholder={`key${otherIndex + 1}`}
-                                  value={item[0] || ""}
-                                  onChange={(e) =>
-                                    handleOtherInfoChange(
-                                      scenarioIndex,
-                                      otherIndex,
-                                      "key",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </Col>
-                              <Col>
-                                <Form.Control
-                                  id={`scenarioOther-${scenarioIndex}`}
-                                  type="input"
-                                  placeholder="Value"
-                                  value={item[1] || ""}
-                                  onChange={(e) =>
-                                    handleOtherInfoChange(
-                                      scenarioIndex,
-                                      otherIndex,
-                                      "value",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </Col>
-                              <Col xs="auto">
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleRemoveOtherInfo(
-                                      scenarioIndex,
-                                      otherIndex,
-                                    )
-                                  }
-                                  style={{
-                                    width: "32px",
-                                    height: "32px",
-                                    padding: "4px",
-                                  }}
-                                  className="d-flex align-items-center justify-content-center"
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              </Col>
-                            </Row>
-                          ))}
-                          <div className="d-flex justify-content-start mt-2">
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={(e) =>
-                                handleAddOtherInfo(scenarioIndex, e)
-                              }
-                              className="d-flex align-items-center gap-1"
-                            >
-                              <Plus className="w-4 h-4" />
-                              Other Information
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>{" "}
-                  <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={handleAddScenario}
-                      className="mt-2 align-items-left"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Scenario
-                    </Button>
-                  </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
-                    Milestones
-                  </Form.Label>
-                  <div className="d-block">
-                    {form.milestones.map((milestone, milestoneIndex) => (
-                      <div
-                        key={milestoneIndex}
-                        className="border rounded p-3 mb-4"
-                      >
-                        {/* Milestone Header with Delete Button */}
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            {" "}
-                            {/* Set font size to 1.0rem */}
-                            Milestone {milestoneIndex + 1}
-                          </h4>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={(e) =>
-                              handleRemoveMilestone(milestoneIndex, e)
-                            }
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              padding: "4px",
-                            }}
-                            className="d-flex align-items-center justify-content-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        {/* Milestone Name */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`milestoneName-${milestoneIndex}`}
-                            type="input"
-                            placeholder="Milestone name"
-                            value={milestone.name}
-                            onChange={(e) => {
-                              handleMilestoneNameChange(
-                                milestoneIndex,
-                                e.target.value,
-                              );
-                            }}
-                          />
-                        </div>
-
-                        {/* Milestone Description */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`milestoneDescription-${milestoneIndex}`}
-                            as="textarea"
-                            rows={3}
-                            placeholder="Enter description"
-                            value={milestone.description[0]}
-                            onChange={(e) =>
-                              handleMilestoneDescriptionChange(
-                                milestoneIndex,
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        {/* Milestone Date */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Group
-                            id={`milestone-date-${milestoneIndex}`}
-                            className="w-100"
-                          >
-                            <Form.Label
-                              className="d-block text-start"
-                              style={{ fontSize: "1.0rem" }}
-                            >
-                              Milestone Date (YYYY-MM-DD)
-                            </Form.Label>
-                            <Form.Control
-                              id={`milestoneDate-${milestoneIndex}`}
-                              type="date"
-                              value={
-                                formatDateForInput(
-                                  form.milestones[milestoneIndex]
-                                    ?.milestone_date,
-                                ) || ""
-                              }
-                              onChange={(e) =>
-                                handleMilestoneDateChange(
-                                  milestoneIndex,
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </Form.Group>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={handleAddMilestone}
-                      className="mt-2 align-items-left"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Scenario
-                    </Button>
-                  </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
-                    Sensitivities
-                  </Form.Label>
-                  <div className="d-block">
-                    {form.sensitivities.map((sensitivity, sensitivityIndex) => (
-                      <div
-                        key={sensitivityIndex}
-                        className="border rounded p-3 mb-4"
-                      >
-                        {/* Sensitivity Header with Delete Button */}
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            {" "}
-                            {/* Set font size to 1.0rem */}
-                            Sensitivity {sensitivityIndex + 1}
-                          </h4>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={(e) =>
-                              handleRemoveSensitivity(sensitivityIndex, e)
-                            }
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              padding: "4px",
-                            }}
-                            className="d-flex align-items-center justify-content-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        {/* Sensitivity Name */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`sensitivityName-${sensitivityIndex}`}
-                            type="input"
-                            placeholder="Sensitivity name"
-                            value={sensitivity.name}
-                            onChange={(e) => {
-                              setForm((prevForm) => {
-                                const newSensitivities = [
-                                  ...(prevForm.sensitivities || []),
-                                ];
-                                newSensitivities[sensitivityIndex].name =
-                                  e.target.value;
-                                return {
-                                  ...prevForm,
-                                  sensitivities: newSensitivities,
-                                };
-                              });
-                            }}
-                          />{" "}
-                        </div>
-                        {/* Sensitivity Description */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`sensitivityDescription-${sensitivityIndex}`}
-                            as="textarea"
-                            rows={3}
-                            placeholder="Enter description"
-                            value={sensitivity.description[0]}
-                            onChange={(e) => {
-                              setForm((prevForm) => {
-                                const newSensitivities = [
-                                  ...(prevForm.sensitivities || []),
-                                ];
-                                newSensitivities[sensitivityIndex].description =
-                                  [e.target.value];
-                                return {
-                                  ...prevForm,
-                                  sensitivities: newSensitivities,
-                                };
-                              });
-                            }}
-                          />{" "}
-                        </div>
-                        {/* Sensitivity List Items */}
-                        <div className="mb-3">
-                          {sensitivity.list.map((item, listIndex) => (
-                            <div
-                              key={listIndex}
-                              className="d-flex mb-2 align-items-center gap-2"
-                            >
-                              <Form.Control
-                                id={`senstivityItem-${sensitivityIndex}`}
-                                type="input"
-                                placeholder="Enter sensitivity item"
-                                value={item}
-                                onChange={(e) => {
-                                  setForm((prevForm) => {
-                                    const newSensitivities = [
-                                      ...(prevForm.sensitivities || []),
-                                    ];
-                                    newSensitivities[sensitivityIndex].list[
-                                      listIndex
-                                    ] = e.target.value;
-                                    return {
-                                      ...prevForm,
-                                      sensitivities: newSensitivities,
-                                    };
-                                  });
-                                }}
-                              />
-                              {sensitivity.list.length > 1 && (
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={(e) =>
-                                    handleRemoveSensitivityListItem(
-                                      sensitivityIndex,
-                                      listIndex,
-                                      e,
-                                    )
-                                  }
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-
-                          {/* Add List Item Button */}
-                          <div className="d-flex justify-content-start mt-2">
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={(e) =>
-                                handleAddSensitivityListItem(
-                                  sensitivityIndex,
-                                  e,
-                                )
-                              }
-                              className="d-flex align-items-center gap-1"
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Item
-                            </Button>
-                          </div>
-                        </div>{" "}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={handleAddSensitivity}
-                      className="mt-2 align-items-left"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Sensitivity
-                    </Button>
-                  </div>
+                  <Button
+                    variant="primary"
+                    disabled={mutation.isPending}
+                    type="submit"
+                  >
+                    {mutation.isPending ? "Submitting..." : "Submit"}
+                  </Button>
                 </Form.Group>
-                <Row>
-                  {formError ? (
-                    <FormError errorMessage={formErrorMessage} />
-                  ) : null}
-                </Row>
-                <Button
-                  variant="primary"
-                  disabled={submittingForm}
-                  type="submit"
-                >
-                  {submittingForm ? "Submitted" : "Submit"}
-                </Button>
               </Form>
             </Col>
           </div>

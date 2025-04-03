@@ -54,8 +54,7 @@ const ProjectList = () => {
 
   const handleCreateProjectClick = (event, project) => {
     event.preventDefault();
-    setSelectedProjectName(project.name);
-    setFetchTrigger(project.name);
+    navigate("/create-project")
   };
 
   const handleProjectClick = (event, project) => {
