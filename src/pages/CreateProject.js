@@ -31,17 +31,21 @@ import "../components/Cards.css";
     const [form, setForm] = useState({
       name: "",
       scheduled_start: "",
-      assumptions: [""], // Initialize as empty array
+      assumptions: [""],
+      milestones: [],
       owner: {
         email: "",
         first_name: "",
         last_name: "",
         organization: "",
       },
+      scenarios: [],
       requirements: {
         keys: [],
         values: [],
       },
+      sensitivities: [],
+
     });
 
     // Update a simple string value
@@ -126,7 +130,6 @@ import "../components/Cards.css";
       ...form,
       [field]: value,
     });
-    console.log(value);
   };
 
   const handleSubmit = async (e) => {
@@ -254,7 +257,238 @@ import "../components/Cards.css";
     });
   };
 
+  const handleAddOtherInfo = (scenarioIndex, e) => {
+    e.preventDefault();
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        other: [...(updatedScenarios[scenarioIndex].other || []), ["", ""]],
+      };
 
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
+  const handleRemoveScenario = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      scenarios: prevForm.scenarios.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleScenarioDescriptionChange = (scenarioIndex, value) => {
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        description: [value], // Keep it as an array with single value since that's your data structure
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
+
+  const handleOtherInfoChange = (
+    scenarioIndex,
+    otherIndex,
+    keyOrValue,
+    value,
+  ) => {
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      const currentOther = [...updatedScenarios[scenarioIndex].other];
+      const currentPair = currentOther[otherIndex] || ["", ""];
+      currentOther[otherIndex] =
+        keyOrValue === "key"
+          ? [value, currentPair[1]]
+          : [currentPair[0], value];
+
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        other: currentOther,
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
+
+  const handleScenarioNameChange = (scenarioIndex, value) => {
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        name: value,
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
+
+  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+    setForm((prevForm) => {
+      const newScenarios = [...prevForm.scenarios];
+      newScenarios[scenarioIndex] = {
+        ...newScenarios[scenarioIndex],
+        other: newScenarios[scenarioIndex].other.filter(
+          (_, idx) => idx !== otherIndex,
+        ),
+      };
+      return {
+        ...prevForm,
+        scenarios: newScenarios,
+      };
+    });
+  };
+
+  const handleAddScenario = (e) => {
+    e.preventDefault();
+    console.log(form.scenarios);
+    setForm((prevState) => ({
+      ...prevState,
+      scenarios: [
+        ...(prevState.scenarios || []),
+        {
+          name: "",
+          description: [""],
+          other: [],
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveMilestone = (milestoneIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      milestones: prevForm.milestones.filter(
+        (_, index) => index !== milestoneIndex,
+      ),
+    }));
+  };
+
+  const handleMilestoneNameChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].name = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+
+  const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].description = [value];
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+
+  const handleMilestoneDateChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].milestone_date = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
+
+  const handleAddMilestone = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      milestones: [
+        ...(prevForm.milestones || []),
+        {
+          name: "",
+          description: [""],
+          milestone_date: "",
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveSensitivity = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: prevForm.sensitivities.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list = newSensitivities[
+        sensitivityIndex
+      ].list.filter((_, idx) => idx !== listIndex);
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
+
+  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      // If the last item is already empty, don't add another
+      if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
+        return prevForm;
+      }
+
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list.push("");
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
+
+  const handleAddSensitivity = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: [
+        ...(prevForm.sensitivities || []),
+        {
+          name: "",
+          description: [""],
+          list: [""],
+        },
+      ],
+    }));
+  };
 
   // Side bar state
   const [isExpanded, setIsExpanded] = useState(false);
@@ -598,14 +832,431 @@ import "../components/Cards.css";
                     })}
                   </div>{" "}
                   <div className="d-flex justify-content-start mt-2">
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={(e) => handleAddRequirement(e)}
+                    className="d-flex align-items-center me-2"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Requirement
+                  </Button>
+
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Scenarios
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.scenarios.map((scenario, scenarioIndex) => (
+                      <div
+                        key={scenarioIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            Scenario {scenarioIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveScenario(scenarioIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`scenario${scenarioIndex}`}
+                            type="input"
+                            placeholder="Scenario name"
+                            value={scenario.name}
+                            onChange={(e) =>
+                              handleScenarioNameChange(
+                                scenarioIndex,
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`scenarioDescription${scenarioIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={scenario.description[0]}
+                            onChange={(e) =>
+                              handleScenarioDescriptionChange(
+                                scenarioIndex,
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className="mb-3">
+                          <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
+                            Other
+                          </h5>
+                          {scenario.other.map((item, otherIndex) => (
+                            <Row
+                              key={otherIndex}
+                              className="mb-2 align-items-center"
+                            >
+                              <Col xs={3}>
+                                <Form.Control
+                                  id={`scenarioOther${otherIndex}`}
+                                  type="input"
+                                  placeholder={`key${otherIndex + 1}`}
+                                  value={item[0] || ""}
+                                  onChange={(e) =>
+                                    handleOtherInfoChange(
+                                      scenarioIndex,
+                                      otherIndex,
+                                      "key",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </Col>
+                              <Col>
+                                <Form.Control
+                                  id={`scenarioOther-${scenarioIndex}`}
+                                  type="input"
+                                  placeholder="Value"
+                                  value={item[1] || ""}
+                                  onChange={(e) =>
+                                    handleOtherInfoChange(
+                                      scenarioIndex,
+                                      otherIndex,
+                                      "value",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </Col>
+                              <Col xs="auto">
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleRemoveOtherInfo(
+                                      scenarioIndex,
+                                      otherIndex,
+                                    )
+                                  }
+                                  style={{
+                                    width: "32px",
+                                    height: "32px",
+                                    padding: "4px",
+                                  }}
+                                  className="d-flex align-items-center justify-content-center"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              </Col>
+                            </Row>
+                          ))}
+                          <div className="d-flex justify-content-start mt-2">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={(e) =>
+                                handleAddOtherInfo(scenarioIndex, e)
+                              }
+                              className="d-flex align-items-center gap-1"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Other Information
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>{" "}
+                  <div className="d-flex justify-content-start mt-2">
                     <Button
                       variant="outline-primary"
                       size="sm"
-                      onClick={(e) => handleAddRequirement(e)}
-                      className="d-flex align-items-center me-2"
+                      onClick={handleAddScenario}
+                      className="mt-2 align-items-left"
                     >
                       <Plus className="w-4 h-4 mr-1" />
-                      Requirement
+                      Scenario
+                    </Button>
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Milestones
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.milestones.map((milestone, milestoneIndex) => (
+                      <div
+                        key={milestoneIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Milestone Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
+                            Milestone {milestoneIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveMilestone(milestoneIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Milestone Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`milestoneName-${milestoneIndex}`}
+                            type="input"
+                            placeholder="Milestone name"
+                            value={milestone.name}
+                            onChange={(e) => {
+                              handleMilestoneNameChange(
+                                milestoneIndex,
+                                e.target.value,
+                              );
+                            }}
+                          />
+                        </div>
+
+                        {/* Milestone Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`milestoneDescription-${milestoneIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={milestone.description[0]}
+                            onChange={(e) =>
+                              handleMilestoneDescriptionChange(
+                                milestoneIndex,
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        {/* Milestone Date */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Group
+                            id={`milestone-date-${milestoneIndex}`}
+                            className="w-100"
+                          >
+                            <Form.Label
+                              className="d-block text-start"
+                              style={{ fontSize: "1.0rem" }}
+                            >
+                              Milestone Date (YYYY-MM-DD)
+                            </Form.Label>
+                            <Form.Control
+                              id={`milestoneDate-${milestoneIndex}`}
+                              type="date"
+                              value={
+                                formatDateForInput(
+                                  form.milestones[milestoneIndex]
+                                    ?.milestone_date,
+                                ) || ""
+                              }
+                              onChange={(e) =>
+                                handleMilestoneDateChange(
+                                  milestoneIndex,
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </Form.Group>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddMilestone}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Scenario
+                    </Button>
+                  </div>
+                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
+                    Sensitivities
+                  </Form.Label>
+                  <div className="d-block">
+                    {form.sensitivities.map((sensitivity, sensitivityIndex) => (
+                      <div
+                        key={sensitivityIndex}
+                        className="border rounded p-3 mb-4"
+                      >
+                        {/* Sensitivity Header with Delete Button */}
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
+                            Sensitivity {sensitivityIndex + 1}
+                          </h4>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={(e) =>
+                              handleRemoveSensitivity(sensitivityIndex, e)
+                            }
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              padding: "4px",
+                            }}
+                            className="d-flex align-items-center justify-content-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {/* Sensitivity Name */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`sensitivityName-${sensitivityIndex}`}
+                            type="input"
+                            placeholder="Sensitivity name"
+                            value={sensitivity.name}
+                            onChange={(e) => {
+                              setForm((prevForm) => {
+                                const newSensitivities = [
+                                  ...(prevForm.sensitivities || []),
+                                ];
+                                newSensitivities[sensitivityIndex].name =
+                                  e.target.value;
+                                return {
+                                  ...prevForm,
+                                  sensitivities: newSensitivities,
+                                };
+                              });
+                            }}
+                          />{" "}
+                        </div>
+                        {/* Sensitivity Description */}
+                        <div className="d-flex mb-3 align-items-center gap-2">
+                          <Form.Control
+                            id={`sensitivityDescription-${sensitivityIndex}`}
+                            as="textarea"
+                            rows={3}
+                            placeholder="Enter description"
+                            value={sensitivity.description[0]}
+                            onChange={(e) => {
+                              setForm((prevForm) => {
+                                const newSensitivities = [
+                                  ...(prevForm.sensitivities || []),
+                                ];
+                                newSensitivities[sensitivityIndex].description =
+                                  [e.target.value];
+                                return {
+                                  ...prevForm,
+                                  sensitivities: newSensitivities,
+                                };
+                              });
+                            }}
+                          />{" "}
+                        </div>
+                        {/* Sensitivity List Items */}
+                        <div className="mb-3">
+                          {sensitivity.list.map((item, listIndex) => (
+                            <div
+                              key={listIndex}
+                              className="d-flex mb-2 align-items-center gap-2"
+                            >
+                              <Form.Control
+                                id={`senstivityItem-${sensitivityIndex}`}
+                                type="input"
+                                placeholder="Enter sensitivity item"
+                                value={item}
+                                onChange={(e) => {
+                                  setForm((prevForm) => {
+                                    const newSensitivities = [
+                                      ...(prevForm.sensitivities || []),
+                                    ];
+                                    newSensitivities[sensitivityIndex].list[
+                                      listIndex
+                                    ] = e.target.value;
+                                    return {
+                                      ...prevForm,
+                                      sensitivities: newSensitivities,
+                                    };
+                                  });
+                                }}
+                              />
+                              {sensitivity.list.length > 1 && (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={(e) =>
+                                    handleRemoveSensitivityListItem(
+                                      sensitivityIndex,
+                                      listIndex,
+                                      e,
+                                    )
+                                  }
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+
+                          {/* Add List Item Button */}
+                          <div className="d-flex justify-content-start mt-2">
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={(e) =>
+                                handleAddSensitivityListItem(
+                                  sensitivityIndex,
+                                  e,
+                                )
+                              }
+                              className="d-flex align-items-center gap-1"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Item
+                            </Button>
+                          </div>
+                        </div>{" "}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-start mt-2">
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={handleAddSensitivity}
+                      className="mt-2 align-items-left"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Sensitivity
                     </Button>
                   </div>
                   <Button
