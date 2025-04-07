@@ -6,10 +6,8 @@ export const getProjectBasics = async () => {
 };
 
 export const getProject = async ({ projectName, accessToken }) => {
-  console.log(projectName, accessToken);
   try {
     const encodedProjectName = encodeURIComponent(projectName);
-    console.log(encodedProjectName);
     const response = await pipes.get(`/api/projects?project=${encodedProjectName}`);
     if (!response.data) {
       throw new Error("No data received from the server.");

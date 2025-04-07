@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,14 +21,67 @@ import ProjectOverviewSchedule from "./ProjectOverviewSchedule";
 import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
 import ProjectOverviewTeam from "../components/ProjectOverviewTeam";
 
+// Helper function to get cached project from localStorage
+const getCachedProject = (projectName) => {
+  try {
+    const cachedData = localStorage.getItem(`project_${projectName}`);
+    if (cachedData) {
+      const project = JSON.parse(cachedData);
+      // Check if the cache is still valid (e.g., not expired)
+      const cacheTime = localStorage.getItem(`project_${projectName}_time`);
+      const isExpired = cacheTime && (Date.now() - parseInt(cacheTime)) > (30 * 60 * 1000); // 30 minutes
+
+      if (!isExpired) {
+        console.log("Using cached project data");
+        return project;
+      }
+    }
+  } catch (e) {
+    console.error("Error retrieving cached project:", e);
+  }
+  return null;
+};
+
+// Helper function to cache project in localStorage
+const cacheProject = (projectName, data) => {
+  try {
+    localStorage.setItem(`project_${projectName}`, JSON.stringify(data));
+    localStorage.setItem(`project_${projectName}_time`, Date.now().toString());
+    console.log("Project cached successfully");
+  } catch (e) {
+    console.error("Error caching project:", e);
+  }
+};
+
 const ProjectOverview = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { projectName } = useParams();
-
   const projectFromState = location.state?.project;
 
+  // Initial empty project template
+  const emptyProjectTemplate = {
+    name: "",
+    title: "",
+    description: "",
+    assumptions: [],
+    milestones: [],
+    owner: {
+      email: "",
+      first_name: "",
+      last_name: ""
+    },
+    requirements: {},
+    scenarios: [],
+    scheduled_end: null,
+    scheduled_start: null,
+    sensitivities: [],
+    teams: []
+  };
+
+  // Auth check effect
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
@@ -37,33 +90,54 @@ const ProjectOverview = () => {
     }
   }, [isLoggedIn, navigate, validateToken, accessToken]);
 
+  // Check for cached project on first render
+  useEffect(() => {
+    const effectiveProjectName = projectFromState?.name || projectName;
 
+    if (effectiveProjectName) {
+      // Try to get project from cache
+      const cachedProject = getCachedProject(effectiveProjectName);
+
+      if (cachedProject) {
+        // Pre-populate the query cache with the cached data
+        queryClient.setQueryData(['project', effectiveProjectName], cachedProject);
+      }
+    }
+  }, [queryClient, projectName, projectFromState]);
+
+  // Determine which project name to use
+  const effectiveProjectName = projectFromState?.name || projectName;
+
+  // Project data query
   const {
-    data: fetchedProject,
-    isLoading: isLoadingProject,
-    isError: isErrorProject,
-    error: errorProject,
+    data: project,
+    isLoading,
+    isError,
+    error,
   } = useQuery({
-    queryKey: ["project", projectName],
+    queryKey: ["project", effectiveProjectName],
     queryFn: () => {
-      console.log(`Querying project: ${projectName}`);
-      return getProject({ projectName, accessToken });
+      console.log(`Querying project: ${effectiveProjectName}`);
+      return getProject({ projectName: effectiveProjectName, accessToken });
     },
-    enabled: isLoggedIn && !!projectName && !projectFromState,
-    retry: 1,
-    staleTime: 5 * 60 * 1000,
-    initialData: projectFromState,
+    enabled: isLoggedIn && !!effectiveProjectName,
+    retry: 3,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    cacheTime: 60 * 60 * 1000, // 1 hour
+    initialData: projectFromState || getCachedProject(effectiveProjectName) || emptyProjectTemplate,
     onSuccess: (data) => {
       console.log("Project fetch via useQuery successful! Title:", data?.title);
+      // Cache the project when successfully fetched
+      if (data && data.name) {
+        cacheProject(data.name, data);
+      }
     },
     onError: (error) => {
       console.error("Error fetching project via useQuery:", error);
     }
   });
 
-  const project = projectFromState || fetchedProject;
-
-
+  // Project runs query
   const {
     data: projectRuns,
     isLoading: isLoadingRuns,
@@ -73,12 +147,12 @@ const ProjectOverview = () => {
     queryKey: ["projectRuns", project?.name],
     queryFn: () => {
       return getProjectRuns({
-        projectName: fetchedProject.name,
+        projectName: project.name,
         accessToken: accessToken
       });
     },
-
-    enabled: isLoggedIn && !!project?.name && !!project,
+    initialData: [],
+    enabled: isLoggedIn && !!project?.name,
     retry: 1,
     staleTime: 5 * 60 * 1000,
     onSuccess: (data) => {
@@ -89,14 +163,11 @@ const ProjectOverview = () => {
     }
   });
 
-  const isLoading = (!projectFromState && isLoadingProject) || (!!project && isLoadingRuns);
-  const isError = (!projectFromState && isErrorProject) || isErrorRuns;
-  const error = (!projectFromState ? errorProject : null) || errorRuns;
-
-  if (!isLoggedIn || !project) {
-    console.log(project);
+  if (!isLoggedIn) {
     return null;
-  }  if (isLoading) {
+  }
+
+  if (isLoading && !projectFromState) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -108,14 +179,14 @@ const ProjectOverview = () => {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
             <p style={{ color: "red" }}>
               {error?.message || "Error loading data."}
-            </p>{" "}
+            </p>
           </Col>
         </Row>
       </Container>
@@ -143,8 +214,8 @@ const ProjectOverview = () => {
           </h2>
           <p className="mt-3">
             <b>
-              Project Owner: {project.owner.first_name}{" "}
-              {project.owner.last_name}
+              Project Owner: {project.owner?.first_name || ""}{" "}
+              {project.owner?.last_name || ""}
             </b>
           </p>
 
@@ -158,7 +229,7 @@ const ProjectOverview = () => {
             <h3 className="mb-4 smallCaps">Assumptions</h3>
             <Col>
               <ProjectOverviewAssumptions
-                assumptions={project.assumptions}
+                assumptions={project.assumptions || []}
               />
             </Col>
           </Row>
@@ -167,7 +238,7 @@ const ProjectOverview = () => {
             <h3 className="mb-4 smallCaps">Requirements</h3>
             <Col>
               <ProjectOverviewRequirements
-                requirements={project.requirements}
+                requirements={project.requirements || {}}
               />
             </Col>
           </Row>
@@ -175,7 +246,7 @@ const ProjectOverview = () => {
           <Row className="text-start mt-5">
             <h3 className="mb-4 smallCaps">Scenarios</h3>
             <Col>
-              <ProjectOverviewScenarios scenarios={project.scenarios} />
+              <ProjectOverviewScenarios scenarios={project.scenarios || []} />
             </Col>
           </Row>
 
@@ -191,7 +262,7 @@ const ProjectOverview = () => {
           <Row className="text-start mt-5">
             <h3 className="mb-4 smallCaps">Team</h3>
             <Col>
-              <ProjectOverviewTeam team={project.teams} />
+              <ProjectOverviewTeam team={project.teams || []} />
             </Col>
           </Row>
         </Col>
@@ -199,7 +270,7 @@ const ProjectOverview = () => {
         <Col md={4} className="border-start">
           <Row className="mt-4">
             <Col>
-              <ProjectOverviewProjectRuns projectRuns={projectRuns} />
+              <ProjectOverviewProjectRuns projectRuns={projectRuns || []} />
             </Col>
           </Row>
         </Col>
