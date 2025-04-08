@@ -56,25 +56,21 @@ const ProjectOverviewTeam = ({ team }) => {
           <tr>
             <th>Team</th>
             <th>Name</th>
-            <th>Email</th>
           </tr>
         </thead>
         <tbody>
-          {team.map((teamGroup) =>
-            teamGroup.members.map((member) => (
-              <tr key={`${teamGroup.name}-${member.email}`}>
-                <td>{teamGroup.name}</td>
-                <td>{`${member.first_name} ${member.last_name}`}</td>
-                <td>{member.email}</td>
-              </tr>
-            )),
-          )}
+          {team.map((team) => (
+            <tr key={team.name}>
+              <td>{team.name}</td>
+              <td>{team.description || 'No description'}</td>
+            </tr>
+          ))}
           <tr
             onClick={handleShow}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <td colSpan={3} style={addTeamStyle}>
+            <td colSpan={2} style={addTeamStyle}>
               + Team to Project
             </td>
           </tr>

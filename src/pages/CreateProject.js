@@ -45,7 +45,6 @@ import "../components/Cards.css";
         values: [],
       },
       sensitivities: [],
-
     });
 
     // Update a simple string value
