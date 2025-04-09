@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient,useMutation } from "@tanstack/react-query";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,6 +23,7 @@ import "../components/Cards.css";
 const ProjectList = () => {
   const { isLoggedIn, accessToken } = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const {
     data: projectBasics = [],
     isLoading: isLoadingBasics,
@@ -36,16 +37,17 @@ const ProjectList = () => {
   });
 
   const projectMutation = useMutation({
-    mutationFn: (projectData) => getProject(projectData, accessToken),
+    mutationFn: (projectData) => getProject(projectData),
     onSuccess: (data) => {
       console.log("Project fetch successful:", data);
+      queryClient.setQueryData(['project', data.name], data);
       navigate("/overview", { state: { project: data } });
-      return data;
     },
     onError: (error) => {
       console.error("Error fetching project details:", error);
     },
   });
+
 
   const [queryEnabled] = useState(false);
 
@@ -64,11 +66,17 @@ const ProjectList = () => {
       console.error("Project data is missing or invalid for click.");
       return;
     }
+
+    // Pre-populate the query cache with the project data we already have
+    queryClient.setQueryData(['project', project.name], project);
+
+    // Use the mutation to fetch the latest data and navigate
     projectMutation.mutate({
       projectName: project.name,
       accessToken: accessToken,
     });
   };
+
 
   const {
     data: project,
