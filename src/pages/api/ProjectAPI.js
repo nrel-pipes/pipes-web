@@ -22,6 +22,7 @@ export const getProject = async ({ projectName, accessToken }) => {
 
 
 export const postProject = async ({ data, token }) => {
+  console.log(data);
   try {
     const response = await pipes.post("api/projects", data, {
       headers: {

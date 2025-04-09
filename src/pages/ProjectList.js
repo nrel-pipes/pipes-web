@@ -54,7 +54,7 @@ const ProjectList = () => {
 
   const handleCreateProjectClick = (event, project) => {
     event.preventDefault();
-    navigate("/create-project")
+    navigate("/create-project", {state: {projectBasics: projectBasics}})
   };
 
   const handleProjectClick = (event, project) => {
