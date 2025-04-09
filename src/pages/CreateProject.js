@@ -351,130 +351,230 @@ import "../components/Cards.css";
     return false;
   }
 
-// Validate scenarios
-let hasEmptyScenarioName = false;
-let hasDuplicateScenarioName = false;
-let duplicateScenarioName = "";
-let hasEmptyScenarioDescription = false;
-let hasEmptyOtherKey = false;
-let hasDuplicateOtherKey = false;
-let duplicateOtherKeyName = "";
-let hasEmptyOtherValue = false;
+  // Validate scenarios
+  let hasEmptyScenarioName = false;
+  let hasDuplicateScenarioName = false;
+  let duplicateScenarioName = "";
+  let hasEmptyScenarioDescription = false;
+  let hasEmptyOtherKey = false;
+  let hasDuplicateOtherKey = false;
+  let duplicateOtherKeyName = "";
+  let hasEmptyOtherValue = false;
 
-// Create a set to track unique scenario names (case-insensitive)
-const scenarioNameSet = new Set();
+  // Create a set to track unique scenario names (case-insensitive)
+  const scenarioNameSet = new Set();
 
-// Check for empty or duplicate scenario names
-formData.scenarios.forEach((scenario, index) => {
-  const scenarioNameElement = document.getElementById(`scenario${index}`);
-  const scenarioDescriptionElement = document.getElementById(`scenarioDescription${index}`);
+  // Check for empty or duplicate scenario names
+  formData.scenarios.forEach((scenario, index) => {
+    const scenarioNameElement = document.getElementById(`scenario${index}`);
+    const scenarioDescriptionElement = document.getElementById(`scenarioDescription${index}`);
 
-  // Check for empty scenario names
-  if (!scenario.name || scenario.name.trim().length === 0) {
-    scenarioNameElement.classList.add("form-error");
-    hasEmptyScenarioName = true;
-  } else {
-    // Check for duplicate scenario names (case-insensitive)
-    const normalizedName = scenario.name.trim().toLowerCase();
-
-    if (scenarioNameSet.has(normalizedName)) {
+    // Check for empty scenario names
+    if (!scenario.name || scenario.name.trim().length === 0) {
       scenarioNameElement.classList.add("form-error");
-      hasDuplicateScenarioName = true;
-      duplicateScenarioName = scenario.name;
+      hasEmptyScenarioName = true;
     } else {
-      scenarioNameElement.classList.remove("form-error");
-      scenarioNameSet.add(normalizedName);
+      // Check for duplicate scenario names (case-insensitive)
+      const normalizedName = scenario.name.trim().toLowerCase();
+
+      if (scenarioNameSet.has(normalizedName)) {
+        scenarioNameElement.classList.add("form-error");
+        hasDuplicateScenarioName = true;
+        duplicateScenarioName = scenario.name;
+      } else {
+        scenarioNameElement.classList.remove("form-error");
+        scenarioNameSet.add(normalizedName);
+      }
     }
-  }
 
-  // Check for empty description
-  if (!scenario.description || !scenario.description[0] || scenario.description[0].trim().length === 0) {
-    scenarioDescriptionElement.classList.add("form-error");
-    hasEmptyScenarioDescription = true;
-  } else {
-    scenarioDescriptionElement.classList.remove("form-error");
-  }
+    // Check for empty description
+    if (!scenario.description || !scenario.description[0] || scenario.description[0].trim().length === 0) {
+      scenarioDescriptionElement.classList.add("form-error");
+      hasEmptyScenarioDescription = true;
+    } else {
+      scenarioDescriptionElement.classList.remove("form-error");
+    }
 
-  // Check the "other" key-value pairs
-  if (scenario.other && scenario.other.length > 0) {
-    // Create a set to track unique keys within this scenario (case-insensitive)
-    const otherKeySet = new Set();
+    // Check the "other" key-value pairs
+    if (scenario.other && scenario.other.length > 0) {
+      // Create a set to track unique keys within this scenario (case-insensitive)
+      const otherKeySet = new Set();
 
-    scenario.other.forEach((item, otherIndex) => {
-      const otherKeyElement = document.getElementById(`scenarioOther${otherIndex}`);
-      const otherValueElement = document.getElementById(`scenarioOther-${index}`);
+      scenario.other.forEach((item, otherIndex) => {
+        const otherKeyElement = document.getElementById(`scenarioOther${otherIndex}`);
+        const otherValueElement = document.getElementById(`scenarioOther-${index}`);
 
-      // Check for empty keys
-      if (!item[0] || item[0].trim().length === 0) {
-        otherKeyElement.classList.add("form-error");
-        hasEmptyOtherKey = true;
-      } else {
-        // Check for duplicate keys within this scenario
-        const normalizedKey = item[0].trim().toLowerCase();
-
-        if (otherKeySet.has(normalizedKey)) {
+        // Check for empty keys
+        if (!item[0] || item[0].trim().length === 0) {
           otherKeyElement.classList.add("form-error");
-          hasDuplicateOtherKey = true;
-          duplicateOtherKeyName = item[0];
+          hasEmptyOtherKey = true;
         } else {
-          otherKeyElement.classList.remove("form-error");
-          otherKeySet.add(normalizedKey);
+          // Check for duplicate keys within this scenario
+          const normalizedKey = item[0].trim().toLowerCase();
+
+          if (otherKeySet.has(normalizedKey)) {
+            otherKeyElement.classList.add("form-error");
+            hasDuplicateOtherKey = true;
+            duplicateOtherKeyName = item[0];
+          } else {
+            otherKeyElement.classList.remove("form-error");
+            otherKeySet.add(normalizedKey);
+          }
         }
-      }
 
-      // Check for empty values
-      if (!item[1] || item[1].trim().length === 0) {
-        otherValueElement.classList.add("form-error");
-        hasEmptyOtherValue = true;
-      } else {
-        otherValueElement.classList.remove("form-error");
-      }
-    });
+        // Check for empty values
+        if (!item[1] || item[1].trim().length === 0) {
+          otherValueElement.classList.add("form-error");
+          hasEmptyOtherValue = true;
+        } else {
+          otherValueElement.classList.remove("form-error");
+        }
+      });
+    }
+  });
+
+  // Handle validation errors for scenarios
+  if (hasEmptyScenarioName) {
+    setFormError(true);
+    setFormErrorMessage("Scenario names cannot be empty. Please fill in all scenario names.");
+    setSubmittingForm(false);
+    return false;
   }
-});
 
-// Handle validation errors for scenarios
-if (hasEmptyScenarioName) {
-  setFormError(true);
-  setFormErrorMessage("Scenario names cannot be empty. Please fill in all scenario names.");
-  setSubmittingForm(false);
-  return false;
-}
+  if (hasDuplicateScenarioName) {
+    setFormError(true);
+    setFormErrorMessage(`Duplicate scenario name found: "${duplicateScenarioName}". Please use unique names for scenarios.`);
+    setSubmittingForm(false);
+    return false;
+  }
 
-if (hasDuplicateScenarioName) {
-  setFormError(true);
-  setFormErrorMessage(`Duplicate scenario name found: "${duplicateScenarioName}". Please use unique names for scenarios.`);
-  setSubmittingForm(false);
-  return false;
-}
+  if (hasEmptyScenarioDescription) {
+    setFormError(true);
+    setFormErrorMessage("Scenario descriptions cannot be empty. Please fill in all scenario descriptions.");
+    setSubmittingForm(false);
+    return false;
+  }
 
-if (hasEmptyScenarioDescription) {
-  setFormError(true);
-  setFormErrorMessage("Scenario descriptions cannot be empty. Please fill in all scenario descriptions.");
-  setSubmittingForm(false);
-  return false;
-}
+  if (hasEmptyOtherKey) {
+    setFormError(true);
+    setFormErrorMessage("Scenario 'Other Information' keys cannot be empty. Please fill in all keys or remove the empty entries.");
+    setSubmittingForm(false);
+    return false;
+  }
 
-if (hasEmptyOtherKey) {
-  setFormError(true);
-  setFormErrorMessage("Scenario 'Other Information' keys cannot be empty. Please fill in all keys or remove the empty entries.");
-  setSubmittingForm(false);
-  return false;
-}
+  if (hasDuplicateOtherKey) {
+    setFormError(true);
+    setFormErrorMessage(`Duplicate 'Other Information' key found: "${duplicateOtherKeyName}" in a scenario. Please use unique keys.`);
+    setSubmittingForm(false);
+    return false;
+  }
 
-if (hasDuplicateOtherKey) {
-  setFormError(true);
-  setFormErrorMessage(`Duplicate 'Other Information' key found: "${duplicateOtherKeyName}" in a scenario. Please use unique keys.`);
-  setSubmittingForm(false);
-  return false;
-}
+  if (hasEmptyOtherValue) {
+    setFormError(true);
+    setFormErrorMessage("Scenario 'Other Information' values cannot be empty. Please fill in all values or remove the empty entries.");
+    setSubmittingForm(false);
+    return false;
+  }
+  // Validate milestones
+  let hasEmptyMilestoneName = false;
+  let hasDuplicateMilestoneName = false;
+  let duplicateMilestoneName = "";
+  let hasEmptyMilestoneDescription = false;
+  let hasEmptyMilestoneDate = false;
+  let hasMilestoneDateOutOfRange = false;
+  let outOfRangeMilestoneIndex = -1;
 
-if (hasEmptyOtherValue) {
-  setFormError(true);
-  setFormErrorMessage("Scenario 'Other Information' values cannot be empty. Please fill in all values or remove the empty entries.");
-  setSubmittingForm(false);
-  return false;
-}
+  // Create a set to track unique milestone names (case-insensitive)
+  const milestoneNameSet = new Set();
+
+  // Check each milestone
+  formData.milestones.forEach((milestone, index) => {
+    const milestoneNameElement = document.getElementById(`milestoneName-${index}`);
+    const milestoneDescriptionElement = document.getElementById(`milestoneDescription-${index}`);
+    const milestoneDateElement = document.getElementById(`milestoneDate-${index}`);
+
+    // Check for empty milestone name
+    if (!milestone.name || milestone.name.trim().length === 0) {
+      milestoneNameElement.classList.add("form-error");
+      hasEmptyMilestoneName = true;
+    } else {
+      // Check for duplicate milestone names (case-insensitive)
+      const normalizedName = milestone.name.trim().toLowerCase();
+
+      if (milestoneNameSet.has(normalizedName)) {
+        milestoneNameElement.classList.add("form-error");
+        hasDuplicateMilestoneName = true;
+        duplicateMilestoneName = milestone.name;
+      } else {
+        milestoneNameElement.classList.remove("form-error");
+        milestoneNameSet.add(normalizedName);
+      }
+    }
+
+    // Check for empty milestone description
+    if (!milestone.description || !milestone.description[0] || milestone.description[0].trim().length === 0) {
+      milestoneDescriptionElement.classList.add("form-error");
+      hasEmptyMilestoneDescription = true;
+    } else {
+      milestoneDescriptionElement.classList.remove("form-error");
+    }
+
+    // Check for empty milestone date
+    if (!milestone.milestone_date || milestone.milestone_date.trim().length === 0) {
+      milestoneDateElement.classList.add("form-error");
+      hasEmptyMilestoneDate = true;
+    } else {
+      // Check if the milestone date is within the project's scheduled start and end dates
+      const milestoneDate = new Date(milestone.milestone_date);
+      const projectStartDate = new Date(formData.scheduled_start);
+      const projectEndDate = new Date(formData.scheduled_end);
+
+      if (milestoneDate < projectStartDate || milestoneDate > projectEndDate) {
+        milestoneDateElement.classList.add("form-error");
+        hasMilestoneDateOutOfRange = true;
+        if (outOfRangeMilestoneIndex === -1) outOfRangeMilestoneIndex = index;
+      } else {
+        milestoneDateElement.classList.remove("form-error");
+      }
+    }
+  });
+
+  // Handle validation errors for milestones
+  if (hasEmptyMilestoneName) {
+    setFormError(true);
+    setFormErrorMessage("Milestone names cannot be empty. Please fill in all milestone names.");
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasDuplicateMilestoneName) {
+    setFormError(true);
+    setFormErrorMessage(`Duplicate milestone name found: "${duplicateMilestoneName}". Please use unique names for milestones.`);
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasEmptyMilestoneDescription) {
+    setFormError(true);
+    setFormErrorMessage("Milestone descriptions cannot be empty. Please fill in all milestone descriptions.");
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasEmptyMilestoneDate) {
+    setFormError(true);
+    setFormErrorMessage("Milestone dates cannot be empty. Please set a date for each milestone.");
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasMilestoneDateOutOfRange) {
+    setFormError(true);
+    setFormErrorMessage(`Milestone ${outOfRangeMilestoneIndex + 1} date is outside the project schedule. All milestones must be between the project's scheduled start and end dates.`);
+    setSubmittingForm(false);
+    return false;
+  }
+
 
   setFormError(false);
   return true;
