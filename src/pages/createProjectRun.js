@@ -5,7 +5,7 @@ import { Plus, Minus } from "lucide-react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useNavigate } from "react-router-dom";
-
+import { useQuery } from "@tanstack/react-query";
 import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/form/SideColumn";
 import useDataStore from "../pages/stores/DataStore";
@@ -13,20 +13,39 @@ import useAuthStore from "../pages/stores/AuthStore";
 import FormError from "../components/form/FormError";
 import "./FormStyles.css";
 import "./createProjectRun.css";
+import { postProject, getProjectBasics, getProject } from "./api/ProjectAPI";
+
+import { useMutation, useQueryClient,  } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
 const CreateProjectRun = () => {
   // Notice, project data will be set the bounds for scheduledStart and end in validation
+  // What we need to do. Start from projectOverview. Go to createProjectRun. Inherit data about current project.
+  /*
+  Go likely from projectOverview to createProjectRun
+  => Inherit project
+  => Inherit projectBasics
+  => Create list of projects to select from as parameters to create project run
+  => Add validation to each field
+  */
+
   const navigate = useNavigate();
   const createProjectRun = useDataStore((state) => state.createProjectRun);
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const queryClient = useQueryClient();
+
   const {
-    getProjectBasics,
-    getProject,
-    currentProject,
-    setCurrentProjectRunName,
-    setCurrentProjectRun,
-  } = useDataStore();
+    data: projectBasics = [],
+    isLoading: isLoadingBasics,
+    isError: isErrorBasics,
+    error: errorBasics,
+  } = useQuery({
+    queryKey: ["projectBasics"],
+    queryFn: getProjectBasics,
+    enabled: isLoggedIn,
+    retry: 3,
+  });
+
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [formError, setFormError] = useState(false);
@@ -35,24 +54,7 @@ const CreateProjectRun = () => {
 
   const [scenarioNames, setScenarioNames] = useState([]);
 
-  useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-    getProjectBasics(accessToken);
-    if (currentProject?.scenarios) {
-      const names = currentProject.scenarios.map((scenario) => scenario.name);
-      setScenarioNames(names);
-    }
-  }, [
-    isLoggedIn,
-    navigate,
-    getProjectBasics,
-    accessToken,
-    validateToken,
-    currentProject,
-  ]);
+
 
   // State Variables
   const [formData, setFormData] = useState({

@@ -685,7 +685,6 @@ import "../components/Cards.css";
     return false;
   }
 
-
   setFormError(false);
   return true;
   }

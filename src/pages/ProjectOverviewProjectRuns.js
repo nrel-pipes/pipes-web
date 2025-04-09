@@ -13,7 +13,7 @@ import "../components/Cards.css";
 const ProjectOverviewProjectRuns = ({ projectRuns }) => {
   const { setCurrentProjectRunName, setCurrentProjectRun } = useDataStore();
   const navigate = useNavigate();
-  console.log(projectRuns);
+
   const handleClick = (projectRun) => {
     setCurrentProjectRunName(projectRun.name);
     setCurrentProjectRun(projectRun);

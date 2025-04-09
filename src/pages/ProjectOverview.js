@@ -141,117 +141,114 @@ const ProjectOverview = () => {
   const effectiveProjectName = projectFromState?.name || projectName;
 
   // Project data query
-// Modify the project query's onSuccess handler to trigger project runs refetch
-const {
-  data: project,
-  isLoading,
-  isError,
-  error,
-} = useQuery({
-  queryKey: ["project", effectiveProjectName],
-  queryFn: () => {
-    console.log(`Querying project: ${effectiveProjectName}`);
-    return getProject({ projectName: effectiveProjectName, accessToken });
-  },
-  enabled: isLoggedIn && !!effectiveProjectName,
-  retry: 3,
-  staleTime: 30 * 60 * 1000,
-  cacheTime: 60 * 60 * 1000,
-  initialData: projectFromState || getCachedProject(effectiveProjectName) || emptyProjectTemplate,
-  onSuccess: (data) => {
-    console.log("Project fetch via useQuery successful! Title:", data?.title);
-    // Cache the project when successfully fetched
-    if (data && data.name) {
-      cacheProject(data.name, data);
+  // Modify the project query's onSuccess handler to trigger project runs refetch
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["project", effectiveProjectName],
+    queryFn: () => {
+      console.log(`Querying project: ${effectiveProjectName}`);
+      return getProject({ projectName: effectiveProjectName, accessToken });
+    },
+    enabled: isLoggedIn && !!effectiveProjectName,
+    retry: 3,
+    staleTime: 30 * 60 * 1000,
+    cacheTime: 60 * 60 * 1000,
+    initialData: projectFromState || getCachedProject(effectiveProjectName) || emptyProjectTemplate,
+    onSuccess: (data) => {
+      console.log("Project fetch via useQuery successful! Title:", data?.title);
+      // Cache the project when successfully fetched
+      if (data && data.name) {
+        cacheProject(data.name, data);
 
-      // Trigger a refetch of project runs when project data is successfully fetched
-      queryClient.invalidateQueries({
-        queryKey: ["projectRuns", data.name],
-      });
-    }
-  },
-  onError: (error) => {
-    console.error("Error fetching project via useQuery:", error);
-  }
-});
-
-const {
-  data: projectRuns,
-  isLoading: isLoadingRuns,
-  isError: isErrorRuns,
-  error: errorRuns,
-  refetch: refetchProjectRuns
-} = useQuery({
-  queryKey: ["projectRuns", project?.name],
-  queryFn: async () => {
-    // Make sure we have a valid project name
-    if (!project?.name) {
-      console.log("No project name available, skipping project runs query");
-      return [];
-    }
-
-    console.log(`Querying project runs for: ${project.name}`);
-
-    // Try to get cached runs first
-    const cachedRuns = getCachedProjectRuns(project.name);
-
-    try {
-      console.log("Getting project runs", project.name)
-      // Always fetch fresh data from the API
-      const freshData = await getProjectRuns({
-        projectName: project.name,
-        accessToken: accessToken
-      });
-      console.log(freshData);
-      // Return the fresh data from the API
-      return freshData;
-    } catch (error) {
-      console.error("Error fetching project runs, using cached data if available:", error);
-      // Fall back to cached data on error
-      return cachedRuns || [];
-    }
-  },
-  initialData: () => {
-    // Use the cached data as initial data
-    if (project?.name) {
-      const cachedRuns = getCachedProjectRuns(project.name);
-      if (cachedRuns) {
-        console.log("Using cached project runs as initial data");
-        return cachedRuns;
+        // Trigger a refetch of project runs when project data is successfully fetched
+        queryClient.invalidateQueries({
+          queryKey: ["projectRuns", data.name],
+        });
       }
+    },
+    onError: (error) => {
+      console.error("Error fetching project via useQuery:", error);
     }
-    return [];
-  },
-  enabled: isLoggedIn &&
-           !!project?.name &&
-           project.name !== "" &&
-           project !== emptyProjectTemplate,
-  retry: 1,
-  staleTime: 15 * 60 * 1000, // 15 minutes
-  cacheTime: 30 * 60 * 1000, // 30 minutes
-  onSuccess: (data) => {
-    console.log("Project runs fetch successful!", data);
-    // Cache the project runs when successfully fetched
-    if (data && project?.name) {
-      cacheProjectRuns(project.name, data);
-    }
-  },
-  onError: (error) => {
-    console.error("Error fetching project runs:", error);
-  }
-});
+  });
 
-// Add an effect to handle refetching project runs when project changes
-useEffect(() => {
-  if (
-    project?.name &&
-    project !== emptyProjectTemplate &&
-    !isLoading // Only when project loading is complete
-  ) {
-    // Trigger a refetch of project runs when project data changes
-    refetchProjectRuns();
-  }
-}, [project, refetchProjectRuns, isLoading]);
+  const {
+    data: projectRuns,
+    isLoading: isLoadingRuns,
+    isError: isErrorRuns,
+    error: errorRuns,
+    refetch: refetchProjectRuns
+  } = useQuery({
+    queryKey: ["projectRuns", project?.name],
+    queryFn: async () => {
+      // Make sure we have a valid project name
+      if (!project?.name) {
+        console.log("No project name available, skipping project runs query");
+        return [];
+      }
+      console.log(`Querying project runs for: ${project.name}`);
+      // Try to get cached runs first
+      const cachedRuns = getCachedProjectRuns(project.name);
+      try {
+        console.log("Getting project runs", project.name)
+        // Always fetch fresh data from the API
+        const freshData = await getProjectRuns({
+          projectName: project.name,
+          accessToken: accessToken
+        });
+        console.log(freshData);
+        // Return the fresh data from the API
+        return freshData;
+      } catch (error) {
+        console.error("Error fetching project runs, using cached data if available:", error);
+        // Fall back to cached data on error
+        return cachedRuns || [];
+      }
+    },
+    initialData: () => {
+      // Use the cached data as initial data
+      if (project?.name) {
+        const cachedRuns = getCachedProjectRuns(project.name);
+        if (cachedRuns) {
+          console.log("Using cached project runs as initial data");
+          return cachedRuns;
+        }
+      }
+      return [];
+    },
+    enabled: isLoggedIn &&
+            !!project?.name &&
+            project.name !== "" &&
+            project !== emptyProjectTemplate,
+    retry: 3,
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    onSuccess: (data) => {
+      console.log("Project runs fetch successful!", data);
+      // Cache the project runs when successfully fetched
+      if (data && project?.name) {
+        cacheProjectRuns(project.name, data);
+      }
+    },
+    onError: (error) => {
+      console.error("Error fetching project runs:", error);
+    }
+  });
+
+  // Add an effect to handle refetching project runs when project changes
+  useEffect(() => {
+    if (
+      project?.name &&
+      project !== emptyProjectTemplate &&
+      !isLoading // Only when project loading is complete
+    ) {
+      // Trigger a refetch of project runs when project data changes
+      refetchProjectRuns();
+    }
+  }, [project, refetchProjectRuns, isLoading]);
 
 
 
