@@ -575,6 +575,116 @@ import "../components/Cards.css";
     return false;
   }
 
+    // Validate sensitivities
+  let hasEmptySensitivityName = false;
+  let hasDuplicateSensitivityName = false;
+  let duplicateSensitivityName = "";
+  let hasEmptySensitivityDescription = false;
+  let hasEmptySensitivityListItem = false;
+  let hasDuplicateSensitivityListItems = false;
+  let duplicateListItemValue = "";
+  let sensitivityWithDuplicateItems = -1;
+
+  // Create a set to track unique sensitivity names (case-insensitive)
+  const sensitivityNameSet = new Set();
+
+  // Check each sensitivity
+  formData.sensitivities.forEach((sensitivity, index) => {
+    const sensitivityNameElement = document.getElementById(`sensitivityName-${index}`);
+    const sensitivityDescriptionElement = document.getElementById(`sensitivityDescription-${index}`);
+
+    // Check for empty sensitivity name
+    if (!sensitivity.name || sensitivity.name.trim().length === 0) {
+      sensitivityNameElement.classList.add("form-error");
+      hasEmptySensitivityName = true;
+    } else {
+      // Check for duplicate sensitivity names (case-insensitive)
+      const normalizedName = sensitivity.name.trim().toLowerCase();
+
+      if (sensitivityNameSet.has(normalizedName)) {
+        sensitivityNameElement.classList.add("form-error");
+        hasDuplicateSensitivityName = true;
+        duplicateSensitivityName = sensitivity.name;
+      } else {
+        sensitivityNameElement.classList.remove("form-error");
+        sensitivityNameSet.add(normalizedName);
+      }
+    }
+
+    // Check for empty sensitivity description
+    if (!sensitivity.description || !sensitivity.description[0] || sensitivity.description[0].trim().length === 0) {
+      sensitivityDescriptionElement.classList.add("form-error");
+      hasEmptySensitivityDescription = true;
+    } else {
+      sensitivityDescriptionElement.classList.remove("form-error");
+    }
+
+    // Check sensitivity list items
+    if (sensitivity.list && sensitivity.list.length > 0) {
+      // Create a set to track unique list items within this sensitivity (case-insensitive)
+      const listItemSet = new Set();
+
+      sensitivity.list.forEach((item, listIndex) => {
+        const sensitivityItemElement = document.getElementById(`senstivityItem-${index}`);
+
+        // Check for empty list items
+        if (!item || item.trim().length === 0) {
+          sensitivityItemElement.classList.add("form-error");
+          hasEmptySensitivityListItem = true;
+        } else {
+          // Check for duplicate list items within this sensitivity (case-insensitive)
+          const normalizedItem = item.trim().toLowerCase();
+
+          if (listItemSet.has(normalizedItem)) {
+            sensitivityItemElement.classList.add("form-error");
+            hasDuplicateSensitivityListItems = true;
+            duplicateListItemValue = item;
+            sensitivityWithDuplicateItems = index;
+          } else {
+            sensitivityItemElement.classList.remove("form-error");
+            listItemSet.add(normalizedItem);
+          }
+        }
+      });
+    }
+  });
+
+  // Handle validation errors for sensitivities
+  if (hasEmptySensitivityName) {
+    setFormError(true);
+    setFormErrorMessage("Sensitivity names cannot be empty. Please fill in all sensitivity names.");
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasDuplicateSensitivityName) {
+    setFormError(true);
+    setFormErrorMessage(`Duplicate sensitivity name found: "${duplicateSensitivityName}". Please use unique names for sensitivities.`);
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasEmptySensitivityDescription) {
+    setFormError(true);
+    setFormErrorMessage("Sensitivity descriptions cannot be empty. Please fill in all sensitivity descriptions.");
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasEmptySensitivityListItem) {
+    setFormError(true);
+    setFormErrorMessage("Sensitivity list items cannot be empty. Please fill in all items or remove them.");
+    setSubmittingForm(false);
+    return false;
+  }
+
+  if (hasDuplicateSensitivityListItems) {
+    setFormError(true);
+    setFormErrorMessage(`Duplicate list item "${duplicateListItemValue}" found in Sensitivity ${sensitivityWithDuplicateItems + 1}. Please ensure all items within a sensitivity are unique.`);
+    setSubmittingForm(false);
+    return false;
+  }
+
 
   setFormError(false);
   return true;
