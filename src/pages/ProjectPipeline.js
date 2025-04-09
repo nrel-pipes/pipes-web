@@ -1,25 +1,25 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 
-import { MarkerType } from "reactflow";
 import dagre from "dagre";
+import { MarkerType } from "reactflow";
 
 import 'reactflow/dist/style.css';
-import "./PageStyles.css"
-import "./ReactflowStyles.css"
+import "./PageStyles.css";
+import "./ReactflowStyles.css";
 
 import useAuthStore from "./stores/AuthStore";
 import useDataStore from "./stores/DataStore";
 
-import ProjectPipelineGraphView from "./ProjectPipelineGraphView";
 import ProjectPipelineDataView from "./ProjectPipelineDataView";
+import ProjectPipelineGraphView from "./ProjectPipelineGraphView";
 
 const nodeColors = {
   project: "#0079C2",
@@ -45,7 +45,10 @@ const ProjectPipeline = () => {
     isGettingModels,
     modelRuns,
     getModelRuns,
-    isGettingModelRuns
+    isGettingModelRuns,
+    handoffs,
+    getHandoffs,
+    isGettingHandoffs
   } = useDataStore();
 
   const [clickedElementData, setClickedElementedData] = useState({});
@@ -64,7 +67,7 @@ const ProjectPipeline = () => {
 
     getModels(currentProject.name, null, accessToken);
 
-    getModelRuns(currentProject.name, null, null, accessToken);
+    getHandoffs(currentProject.name, null, accessToken);
 
   }, [
     isLoggedIn,
@@ -74,7 +77,34 @@ const ProjectPipeline = () => {
     selectedProjectName,
     currentProject,
     getModels,
-    getModelRuns
+    getHandoffs
+  ]);
+
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+
+    if (currentProject === null || currentProject.name !== selectedProjectName) {
+      navigate('/projects')
+      return;
+    }
+
+    if (modelRuns.length === 0) {
+      getModelRuns(currentProject.name, null, null, accessToken);
+    }
+
+  }, [
+    isLoggedIn,
+    navigate,
+    accessToken,
+    validateToken,
+    selectedProjectName,
+    currentProject,
+    modelRuns,
+    getModelRuns,
   ]);
 
   const pipesGraph = useMemo(() => {
@@ -104,6 +134,18 @@ const ProjectPipeline = () => {
     }
 
     if (isGettingModelRuns) {
+      return (
+        <Container className="mainContent">
+          <Row className="mt-5">
+            <Col>
+              <FontAwesomeIcon icon={faSpinner} spin size="xl" />
+            </Col>
+          </Row>
+        </Container>
+      )
+    }
+
+    if (isGettingHandoffs) {
       return (
         <Container className="mainContent">
           <Row className="mt-5">
@@ -157,13 +199,20 @@ const ProjectPipeline = () => {
         markerEnd: {
           type: MarkerType.ArrowClosed,
         },
-        type: 'default'
+        type: 'default',
+        style: {
+          stroke: "#0d3d6b",
+          strokeWidth: 2,
+        },
+        label: "runs",
+        data: {}
       }
       initialEdges.push(prEdge);
 
       // Push model nodes & edges
-      models.forEach((model) => {
-        const mNodeId = 'n-m-' + model.name;
+      let modelNodeIdMapping = new Map();
+      models.forEach((model, index) => {
+        const mNodeId = 'n-m-' + model.name + '-' + index;
         if (model.context.projectrun === projectRun.name) {
           const mNode = {
             id: mNodeId,
@@ -175,6 +224,7 @@ const ProjectPipeline = () => {
               backgroundColor: nodeColors.model
             }
           }
+          modelNodeIdMapping.set(model.name, mNodeId);
           initialNodes.push(mNode);
 
           const mEdgeId = 'e-' + prNodeId + '-' + mNodeId;
@@ -186,25 +236,69 @@ const ProjectPipeline = () => {
             sourceHandle: mEdgeHandle,
             markerEnd: {
               type: MarkerType.ArrowClosed,
+              width: 12,
+              height: 12,
+              style: { stroke: "#ff0000", fill: "#ff0000" }
             },
-            type: 'default'
+            type: 'default',
+            style: {
+              stroke: "#31b2cc",
+              strokeWidth: 2,
+            },
+            label: "requires",
+            data: {}
           }
           initialEdges.push(mEdge);
         }
+      });
 
-        function generateRandomString(length) {
-          const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-          let result = '';
-          const charactersLength = characters.length;
-          for (let i = 0; i < length; i++) {
-              result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      // Push handoffs nodes and edges.
+      models.forEach((model, index1) => {
+        handoffs.forEach((handoff, index2) => {
+          const hEdgeId = 'e-handoff-' + projectRun.name + '-from-' + model.name + '-to-' + handoff.to_model + '-' + handoff.name + '-' + index1 + index2;
+          if (handoff.context.projectrun === projectRun.name && handoff.from_model === model.name) {
+            const hEdgeHandle = 'h-' + hEdgeId;
+            const hEdge = {
+              id: hEdgeId,
+              source: modelNodeIdMapping.get(handoff.from_model),
+              target: modelNodeIdMapping.get(handoff.to_model),
+              sourceHandle: hEdgeHandle,
+              markerEnd: {
+                type: MarkerType.ArrowClosed,
+                width: 10,
+                height: 10,
+                style: { stroke: "#4c9b2f", fill: "#4c9b2f" },
+              },
+              type: 'default',
+              style: {
+                stroke: "#4c9b2f",
+                strokeWidth: 2,
+                strokeDasharray: "5,5",
+              },
+              label: "informs",
+              data: handoff
+            }
+            initialEdges.push(hEdge);
           }
-          return result;
+        });
+      });
+
+      // Push model run nodes & edges
+      function generateRandomString(length) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
       }
 
-        // Push model run nodes & edges
-        modelRuns.forEach((modelRun, index) => {
-          const mrNodeId = 'n-mr-' + projectRun.name + '-' + model.name + '-' + modelRun.name + '-' + index;
+      // Push model run nodes & edges
+      models.forEach((model, index1) => {
+        const mNodeId = modelNodeIdMapping.get(model.name);
+        modelRuns.forEach((modelRun, index2) => {
+          const mrNodeId = 'n-mr-' + projectRun.name + '-' + model.name + '-' + index1 + '-' + modelRun.name + '-' + index2;
           if (modelRun.context.projectrun === projectRun.name && modelRun.context.model === model.name) {
             const mrNode = {
               id: mrNodeId,
@@ -215,10 +309,10 @@ const ProjectPipeline = () => {
               style: {
                 backgroundColor: nodeColors.modelRun
               }
-            }
+            };
             initialNodes.push(mrNode);
 
-            const mrEdgeId = 'e-' + prNodeId + '-' + mNodeId + '-' + mrNodeId + '-i' + index + generateRandomString(5);
+            const mrEdgeId = 'e-' + prNodeId + '-' + mNodeId + '-' + mrNodeId + '-i' + index1 + index2 + generateRandomString(5);
             const mrEdgeHandle = 'h-' + mrEdgeId;
             const mrEdge = {
               id: mrEdgeId,
@@ -228,12 +322,20 @@ const ProjectPipeline = () => {
               markerEnd: {
                 type: MarkerType.ArrowClosed,
               },
-              type: 'default'
+              type: 'default',
+              label: 'performs',
+              style: {
+                stroke: "#c1d7af",
+                strokeWidth: 2,
+                strokeDasharray: "5,5",
+              },
+              data: {}
             }
             initialEdges.push(mrEdge);
           }
         });
       });
+
     });
 
     // Generate dagre graph layout
@@ -241,7 +343,7 @@ const ProjectPipeline = () => {
 
     return {nodes: layoutedNodes, edges: layoutedEdges}
 
-  }, [currentProject, projectRuns, isGettingModels, models, modelRuns, isGettingModelRuns]);
+  }, [currentProject, projectRuns, isGettingModels, models, modelRuns, isGettingModelRuns, handoffs, isGettingHandoffs]);
 
   return (
     <Container className="mainContent" fluid>

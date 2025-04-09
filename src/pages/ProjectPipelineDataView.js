@@ -20,7 +20,7 @@ function ProjectPipelineDataView({ data }) {
     <div>
       {d.map((entry, i) => {
         return (
-          <details key={"node_data_" + i} className="mb-3" open>
+          <details key={"object_data_" + i} className="mb-3" open>
             <summary className="checkin_description h5">{entry[0]}</summary>
             {_determine_output(entry[1])}
           </details>
