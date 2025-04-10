@@ -52,7 +52,7 @@ export const postProjectRun = async ({ projectName, projectRunData, accessToken 
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/projectruns?project=${encodeURIComponent(projectName)}`, {
+    const response = await pipes.post(`/projectruns?project=${encodeURIComponent(projectName)}`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',

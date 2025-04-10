@@ -13,7 +13,9 @@ import useAuthStore from "../pages/stores/AuthStore";
 import FormError from "../components/form/FormError";
 import "./FormStyles.css";
 import "./createProjectRun.css";
-import { postProject, getProjectBasics, getProject } from "./api/ProjectAPI";
+
+
+import { postProject, postProjectRun, getProjectBasics, getProject } from "./api/ProjectAPI";
 
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -25,30 +27,16 @@ const CreateProjectRun = () => {
   const createProjectRun = useDataStore((state) => state.createProjectRun);
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
 
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      console.log("User not logged in, navigating to login.");
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate, validateToken, accessToken]);
+
   // Get the project name from location state
   const projectName = location.state?.currentProject?.name || location.state?.projectName;
-
-  // Use React Query directly to access the project data
-  const {
-    data: currentProject,
-    isLoading: isLoadingProject,
-    isError: isErrorProject,
-    error: errorProject
-  } = useQuery({
-    // Use the same query key structure as in ProjectOverview
-    queryKey: ["project", projectName],
-    queryFn: () => getProject({ projectName, accessToken }),
-    // Only enable if we have a project name and user is logged in
-    enabled: isLoggedIn && !!projectName,
-    // Use cache data from React Query
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 60 * 60 * 1000,    // 1 hour
-    onError: (error) => {
-      console.error("Error fetching project:", error);
-    }
-  });
-
-  // Fetch projectBasics for dropdown selections
   const {
     data: projectBasics = [],
     isLoading: isLoadingBasics,
@@ -61,16 +49,33 @@ const CreateProjectRun = () => {
     retry: 3,
   });
 
-  // Auth check effect
-  useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      console.log("User not logged in, navigating to login.");
-      navigate("/login");
+  // Use React Query directly to access the project data
+  const {
+    data: currentProject,
+    isLoading: isLoadingProject,
+    isError: isErrorProject,
+    error: errorProject
+  } = useQuery({
+    queryKey: ["project", projectName],
+    queryFn: () => getProject({ projectName, accessToken }),
+    enabled: isLoggedIn && !!projectName,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    onError: (error) => {
+      console.error("Error fetching project:", error);
     }
-  }, [isLoggedIn, navigate, validateToken, accessToken]);
+  });
 
-  // Redirect if no project is available and not loading
+  const {
+    data: projectRuns,
+    isLoading: isLoadingRuns,
+    isError: isErrorRuns,
+    error: errorRuns,
+    refetch: refetchProjectRuns
+  } = useQuery({
+    queryKey: ["projectRuns", currentProject?.name],
+  });
+
   useEffect(() => {
     if (!isLoadingProject && !currentProject && !projectName) {
       console.log("No project data available, navigating to projects list.");
@@ -78,7 +83,6 @@ const CreateProjectRun = () => {
     }
   }, [isLoadingProject, currentProject, projectName, navigate]);
 
-  // State variables for form
   const [isExpanded, setIsExpanded] = useState(false);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
@@ -235,19 +239,18 @@ const CreateProjectRun = () => {
   };
 
   // Project information
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  function validateProjectData(formData) {
+    // Reset previous errors
     setFormError(false);
-    setSubmittingForm(true);
+    setFormErrorMessage("");
 
     // Validate Project Run name
     const projectRunName = document.getElementById("projectRunName");
     if (!formData.name) {
       projectRunName.classList.add("form-error");
-      setSubmittingForm(false);
       setFormError(true);
       setFormErrorMessage("Project run name is required");
-      return;
+      return false;
     }
     projectRunName.classList.remove("form-error");
 
@@ -284,99 +287,120 @@ const CreateProjectRun = () => {
       scheduledEndElem.classList.add("form-error");
       setFormError(true);
       setFormErrorMessage("Start date must be before end date");
-      setSubmittingForm(false);
-      return;
+      return false;
     }
 
     // Check if dates are within project date constraints
     if (
       currentProject?.scheduled_start &&
-      formData.scheduledStart &&
-      new Date(formData.scheduledStart) < new Date(currentProject.scheduled_start)
+      formData.scheduledStart
     ) {
-      scheduledStartElem.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(`Start date must be after project start date (${new Date(currentProject.scheduled_start).toLocaleDateString()})`);
-      setSubmittingForm(false);
-      return;
+      const projectStartTime = new Date(currentProject.scheduled_start).getTime();
+      const scheduledStartTime = new Date(formData.scheduledStart).getTime();
+      console.log(projectStartTime, scheduledStartTime)
+      if (scheduledStartTime < projectStartTime) {
+        scheduledStartElem.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`Start date must be on or after project start date (${new Date(currentProject.scheduled_start).toLocaleDateString()})`);
+        return false;
+      }
     }
 
     if (
       currentProject?.scheduled_end &&
-      formData.scheduledEnd &&
-      new Date(formData.scheduledEnd) > new Date(currentProject.scheduled_end)
+      formData.scheduledEnd
     ) {
-      scheduledEndElem.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(`End date must be before project end date (${new Date(currentProject.scheduled_end).toLocaleDateString()})`);
-      setSubmittingForm(false);
-      return;
+      const projectEndTime = new Date(currentProject.scheduled_end).getTime();
+      const scheduledEndTime = new Date(formData.scheduledEnd).getTime();
+
+      if (scheduledEndTime > projectEndTime) {
+        scheduledEndElem.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`End date must be on or before project end date (${new Date(currentProject.scheduled_end).toLocaleDateString()})`);
+        return false;
+      }
     }
 
     if (hasScheduleError) {
       setFormError(true);
-      setSubmittingForm(false);
-      return;
+      return false;
     }
 
     // Validate requirements keys
-    const hasEmptyRequirementKey = Object.keys(formData.requirements).some(
-      (key) => !key.trim(),
-    );
-    if (hasEmptyRequirementKey) {
-      setFormError(true);
-      setFormErrorMessage("Requirements cannot have empty keys");
-      setSubmittingForm(false);
-      return;
+    if (formData.requirements) {
+      const hasEmptyRequirementKey = Object.keys(formData.requirements).some(
+        (key) => !key.trim()
+      );
+      if (hasEmptyRequirementKey) {
+        setFormError(true);
+        setFormErrorMessage("Requirements cannot have empty keys");
+        return false;
+      }
     }
 
     // Validate Scenarios: empty
-    console.log(formData.scenarios);
-    for (let i = 0; i < formData.scenarios.length; i++) {
-      let scenario = document.getElementById(`scenarios${i}`);
-      if (formData.scenarios[i] === "") {
-        if (scenario) {
-          scenario.classList.add("form-error");
+    if (formData.scenarios && formData.scenarios.length > 0) {
+      for (let i = 0; i < formData.scenarios.length; i++) {
+        let scenario = document.getElementById(`scenarios${i}`);
+        if (formData.scenarios[i] === "") {
+          if (scenario) {
+            scenario.classList.add("form-error");
+          }
+          setFormError(true);
+          setFormErrorMessage("You must either delete or fill in a scenario.");
+          return false;
         }
-        setFormError(true);
-        setFormErrorMessage("You must either delete or fill in a scenario.");
-        setSubmittingForm(false);
-        return;
-      }
-      if (scenario) {
-        scenario.classList.remove("form-error");
+        if (scenario) {
+          scenario.classList.remove("form-error");
+        }
       }
     }
 
-    try {
+    return true;
+  }
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    mutation.mutate(formData);
+  };
+  const mutation = useMutation({
+    mutationFn: async (formData) => {
+      setSubmittingForm(true);
+      setFormError(false);
+
+      // Validation function call commented out as requested
+      const isValid = validateProjectData(formData);
+      if (!isValid) {
+        setSubmittingForm(false);
+        throw new Error("Validation failed");
+      }
+
       if (!currentProject || !currentProject.name) {
         throw new Error("No current project selected");
       }
 
-      const createdProjectRun = await createProjectRun(
+      return await createProjectRun(
         currentProject.name,
         formData,
-        accessToken,
+        accessToken
       );
-      console.log("Project run created successfully", createdProjectRun);
-
-      // Update any relevant state or stores
-      // (Your state management for currentProjectRun)
-
-      setFormError(false);
+    },
+    onSuccess: (data) => {
+      console.log("Project run created successfully", data);
       setSubmittingForm(false);
-
-      // Navigate after successful creation
-      navigate("/projectrun");
-    } catch (error) {
+      queryClient.invalidateQueries(['projectRuns']);
+      // navigate("/projectrun");
+    },
+    onError: (error) => {
       console.error("Error creating project run:", error);
       setFormError(true);
       setFormErrorMessage(
-        `Failed to create project run: ${error.message}. Please try again later.`,
+        `Failed to create project run: ${error.message}. Please try again later.`
       );
       setSubmittingForm(false);
     }
-  };
+  });
 
   // Adding definitions
   const [documentation] = useState({
