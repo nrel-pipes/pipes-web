@@ -4,8 +4,8 @@ import Form from "react-bootstrap/Form";
 import { Plus, Minus } from "lucide-react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/form/SideColumn";
 import useDataStore from "../pages/stores/DataStore";
@@ -15,25 +15,40 @@ import "./FormStyles.css";
 import "./createProjectRun.css";
 import { postProject, getProjectBasics, getProject } from "./api/ProjectAPI";
 
-import { useMutation, useQueryClient,  } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
 const CreateProjectRun = () => {
-  // Notice, project data will be set the bounds for scheduledStart and end in validation
-  // What we need to do. Start from projectOverview. Go to createProjectRun. Inherit data about current project.
-  /*
-  Go likely from projectOverview to createProjectRun
-  => Inherit project
-  => Inherit projectBasics
-  => Create list of projects to select from as parameters to create project run
-  => Add validation to each field
-  */
-
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
   const createProjectRun = useDataStore((state) => state.createProjectRun);
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const queryClient = useQueryClient();
 
+  // Get the project name from location state
+  const projectName = location.state?.currentProject?.name || location.state?.projectName;
+
+  // Use React Query directly to access the project data
+  const {
+    data: currentProject,
+    isLoading: isLoadingProject,
+    isError: isErrorProject,
+    error: errorProject
+  } = useQuery({
+    // Use the same query key structure as in ProjectOverview
+    queryKey: ["project", projectName],
+    queryFn: () => getProject({ projectName, accessToken }),
+    // Only enable if we have a project name and user is logged in
+    enabled: isLoggedIn && !!projectName,
+    // Use cache data from React Query
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000,    // 1 hour
+    onError: (error) => {
+      console.error("Error fetching project:", error);
+    }
+  });
+
+  // Fetch projectBasics for dropdown selections
   const {
     data: projectBasics = [],
     isLoading: isLoadingBasics,
@@ -46,26 +61,61 @@ const CreateProjectRun = () => {
     retry: 3,
   });
 
+  // Auth check effect
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      console.log("User not logged in, navigating to login.");
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate, validateToken, accessToken]);
 
+  // Redirect if no project is available and not loading
+  useEffect(() => {
+    if (!isLoadingProject && !currentProject && !projectName) {
+      console.log("No project data available, navigating to projects list.");
+      navigate("/projects");
+    }
+  }, [isLoadingProject, currentProject, projectName, navigate]);
+
+  // State variables for form
   const [isExpanded, setIsExpanded] = useState(false);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [submittingForm, setSubmittingForm] = useState(false);
-
   const [scenarioNames, setScenarioNames] = useState([]);
 
+  // Extract scenario names when project data is available
+  useEffect(() => {
+    if (currentProject?.scenarios) {
+      const names = currentProject.scenarios.map(scenario =>
+        typeof scenario === 'string' ? scenario : scenario.name
+      );
+      setScenarioNames(names);
+    }
+  }, [currentProject]);
 
-
-  // State Variables
+  // Initialize form data with defaults
   const [formData, setFormData] = useState({
-    name: "example prun name",
-    description: "This is an example description",
+    name: "",
+    description: "",
     assumptions: [""],
     requirements: {},
     scenarios: [""],
-    scheduledStart: "2024-11-03",
-    scheduledEnd: "2024-11-30",
+    scheduledStart: "",
+    scheduledEnd: "",
   });
+
+  // Update form data when currentProject changes
+  useEffect(() => {
+    if (currentProject?.scheduled_start || currentProject?.scheduled_end) {
+      setFormData(prevState => ({
+        ...prevState,
+        scheduledStart: currentProject.scheduled_start ? new Date(currentProject.scheduled_start).toISOString().split('T')[0] : prevState.scheduledStart,
+        scheduledEnd: currentProject.scheduled_end ? new Date(currentProject.scheduled_end).toISOString().split('T')[0] : prevState.scheduledEnd,
+      }));
+    }
+  }, [currentProject]);
 
   const handleSetString = (key, value) => {
     setFormData((prevState) => ({
@@ -238,6 +288,31 @@ const CreateProjectRun = () => {
       return;
     }
 
+    // Check if dates are within project date constraints
+    if (
+      currentProject?.scheduled_start &&
+      formData.scheduledStart &&
+      new Date(formData.scheduledStart) < new Date(currentProject.scheduled_start)
+    ) {
+      scheduledStartElem.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(`Start date must be after project start date (${new Date(currentProject.scheduled_start).toLocaleDateString()})`);
+      setSubmittingForm(false);
+      return;
+    }
+
+    if (
+      currentProject?.scheduled_end &&
+      formData.scheduledEnd &&
+      new Date(formData.scheduledEnd) > new Date(currentProject.scheduled_end)
+    ) {
+      scheduledEndElem.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(`End date must be before project end date (${new Date(currentProject.scheduled_end).toLocaleDateString()})`);
+      setSubmittingForm(false);
+      return;
+    }
+
     if (hasScheduleError) {
       setFormError(true);
       setSubmittingForm(false);
@@ -272,22 +347,26 @@ const CreateProjectRun = () => {
         scenario.classList.remove("form-error");
       }
     }
+
     try {
+      if (!currentProject || !currentProject.name) {
+        throw new Error("No current project selected");
+      }
+
       const createdProjectRun = await createProjectRun(
         currentProject.name,
         formData,
         accessToken,
       );
-      console.log("Project run created successfully");
+      console.log("Project run created successfully", createdProjectRun);
 
-      // Set the store with the actual server response data
-      setCurrentProjectRunName(createdProjectRun.name);
-      setCurrentProjectRun(createdProjectRun);
+      // Update any relevant state or stores
+      // (Your state management for currentProjectRun)
 
       setFormError(false);
       setSubmittingForm(false);
 
-      // Navigate after store is updated with correct data
+      // Navigate after successful creation
       navigate("/projectrun");
     } catch (error) {
       console.error("Error creating project run:", error);
@@ -298,6 +377,7 @@ const CreateProjectRun = () => {
       setSubmittingForm(false);
     }
   };
+
   // Adding definitions
   const [documentation] = useState({
     description: "This is a sample description of the project creation page",
@@ -329,11 +409,28 @@ const CreateProjectRun = () => {
     ],
   });
 
+  // Show loading state while project data is being fetched
+  if (isLoadingProject) {
+    return (
+      <Container className="mt-5 text-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Loading project data...</p>
+      </Container>
+    );
+  }
+
   return (
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
           <PageTitle title="Create Project Run" />
+          {currentProject?.name && (
+            <div className="text-center mb-3">
+              <p className="lead">Creating a run for project: <strong>{currentProject.title || currentProject.name || currentProject.projectBasics}</strong></p>
+            </div>
+          )}
           <Row className="justify-content-center"></Row>
           <div className="d-flex justify-content-center">
             <Col
@@ -380,12 +477,14 @@ const CreateProjectRun = () => {
                         <Form.Label className="d-block text-start custom-form-label requiredField">
                           Scheduled Start
                         </Form.Label>
-                        <Form.Text className="text-muted align-left">
-                          Date must be after{" "}
-                          {new Date(
-                            currentProject.scheduled_start,
-                          ).toLocaleDateString()}
-                        </Form.Text>
+                        {currentProject?.scheduled_start && (
+                          <Form.Text className="text-muted d-block text-start">
+                            Date must be after{" "}
+                            {new Date(
+                              currentProject.scheduled_start,
+                            ).toLocaleDateString()}
+                          </Form.Text>
+                        )}
                         <Form.Control
                           id="scheduledStart"
                           name="scheduledStart"
@@ -415,12 +514,14 @@ const CreateProjectRun = () => {
                         <Form.Label className="d-block text-start custom-form-label requiredField">
                           Scheduled End
                         </Form.Label>
-                        <Form.Text className="text-muted">
-                          Date must be before{" "}
-                          {new Date(
-                            currentProject.scheduled_end,
-                          ).toLocaleDateString()}
-                        </Form.Text>
+                        {currentProject?.scheduled_end && (
+                          <Form.Text className="text-muted d-block text-start">
+                            Date must be before{" "}
+                            {new Date(
+                              currentProject.scheduled_end,
+                            ).toLocaleDateString()}
+                          </Form.Text>
+                        )}
                         <Form.Control
                           id="scheduledEnd"
                           name="scheduledEnd"
@@ -682,7 +783,7 @@ const CreateProjectRun = () => {
                   disabled={submittingForm}
                   type="submit"
                 >
-                  {submittingForm ? "Submitted" : "Submit"}
+                  {submittingForm ? "Submitting..." : "Submit"}
                 </Button>
               </Form>
             </Col>

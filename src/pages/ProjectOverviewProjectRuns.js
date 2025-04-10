@@ -5,7 +5,11 @@ import { Plus, RefreshCw } from "lucide-react";
 import Button from "react-bootstrap/Button";
 import { faCircleArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import useAuthStore from "./stores/AuthStore";
+import { getProject, getProjectRuns } from "./api/ProjectAPI";
+import { useEffect } from "react";
 
 import useDataStore from "./stores/DataStore";
 import "../components/Cards.css";
@@ -13,18 +17,59 @@ import "../components/Cards.css";
 const ProjectOverviewProjectRuns = ({ projectRuns }) => {
   const { setCurrentProjectRunName, setCurrentProjectRun } = useDataStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+
+  // Auth check effect
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      console.log("User not logged in, navigating to login.");
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate, validateToken, accessToken]);
+
+  // Get the project name from location if needed
+  const location = useLocation();
+  const projectFromState = location.state?.project;
+  const effectiveProjectName = projectFromState?.name;
+
+  // Access the existing query data instead of creating a duplicate query
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["project", effectiveProjectName],
+    enabled: isLoggedIn && !!effectiveProjectName,
+  });
 
   const handleClick = (projectRun) => {
     setCurrentProjectRunName(projectRun.name);
     setCurrentProjectRun(projectRun);
     navigate("/projectrun"); // Add navigation after setting store values
   };
+
   const handleUpdateProjectClick = () => {
     navigate("/update-project");
   };
+
   const handleCreateProjectRunClick = () => {
-    navigate("/create-projectrun");
+    // Verify we have a valid project
+    if (!project || !project.name) {
+      console.error("Cannot create project run: No valid project data");
+      return;
+    }
+
+    // Navigate to create project run screen, passing the project name
+    navigate("/create-projectrun", {
+      state: {
+        projectName: project.name
+      }
+    });
   };
+
 
   return (
     <div className="d-flex flex-column align-items-center">

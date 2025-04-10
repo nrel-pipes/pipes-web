@@ -39,7 +39,6 @@ const ProjectList = () => {
   const projectMutation = useMutation({
     mutationFn: (projectData) => getProject(projectData),
     onSuccess: (data) => {
-      console.log("Project fetch successful:", data);
       queryClient.setQueryData(['project', data.name], data);
       navigate("/overview", { state: { project: data } });
     },

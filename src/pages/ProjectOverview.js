@@ -79,13 +79,12 @@ const ProjectOverview = () => {
     },
     enabled: isLoggedIn && !!effectiveProjectName,
     retry: 3,
-    staleTime: 30 * 60 * 1000,  // 30 minutes
-    gcTime: 60 * 60 * 1000,     // 1 hour (renamed from cacheTime in newer versions)
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     initialData: projectFromState || emptyProjectTemplate,
     onSuccess: (data) => {
       console.log("Project fetch via useQuery successful! Title:", data?.title);
 
-      // If we have valid data, invalidate project runs to trigger a refresh
       if (data && data.name) {
         queryClient.invalidateQueries({
           queryKey: ["projectRuns", data.name],
@@ -241,7 +240,13 @@ const ProjectOverview = () => {
         <Col md={4} className="border-start">
           <Row className="mt-4">
             <Col>
-              <ProjectOverviewProjectRuns projectRuns={projectRuns || []} />
+              <ProjectOverviewProjectRuns
+                projectRuns={projectRuns || []}
+                isLoading={isLoadingRuns}
+                isError={isErrorRuns}
+                error={errorRuns}
+                // project={project}
+              />
             </Col>
           </Row>
         </Col>
