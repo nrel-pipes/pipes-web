@@ -1,19 +1,19 @@
 import React, { useEffect } from "react";
 import ReactFlow, {
-  ReactFlowProvider,
-  useNodesState,
-  useEdgesState,
-  Controls,
   Background,
-  MiniMap
+  Controls,
+  MiniMap,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState
 } from "reactflow";
 
 import AnnotationNode from "./graph/AnnotationNode";
+import ButtonEdge from "./graph/ButtonEdge";
 import CircleNode from "./graph/CircleNode";
-import ToolbarNode from "./graph/ToolbarNode";
 import ResizerNode from "./graph/ResizerNode";
 import TextNode from "./graph/TextNode";
-import ButtonEdge from "./graph/ButtonEdge";
+import ToolbarNode from "./graph/ToolbarNode";
 
 
 const nodeTypes = {
@@ -46,6 +46,10 @@ const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData
     setClickedElementData(node.data);
   }
 
+  const onEdgeClick = (event, edge) => {
+    setClickedElementData(edge.data);
+  }
+
   const nodeClassName = (node) => node.type;
   return (
     <div style={{ width: "100%", height: 900 }}>
@@ -60,6 +64,7 @@ const ProjectPipelineGraphView = ({graphNodes, graphEdges, setClickedElementData
           edgeTypes={edgeTypes}
           className="pipeline-flowview"
           onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
           fitView
         >
           <MiniMap zoomable pannable nodeClassName={nodeClassName} />
