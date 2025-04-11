@@ -1,23 +1,22 @@
+import { Minus, Plus } from "lucide-react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import { Plus, Minus } from "lucide-react";
 
-import PageTitle from "../components/pageTitle";
 import SideColumn from "../components/form/SideColumn";
-import useDataStore from "./stores/DataStore";
+import PageTitle from "../components/pageTitle";
 import useAuthStore from "./stores/AuthStore";
-import FormError from "../components/form/FormError";
-import "./FormStyles.css";
-import { useState, useEffect } from "react";
-import { postProject, getProjectBasics, getProject } from "./api/ProjectAPI";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import "./PageStyles.css";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../components/Cards.css";
+import FormError from "../components/form/FormError";
+import { getProject, getProjectBasics, postProject } from "./api/ProjectAPI";
+import "./FormStyles.css";
+import "./PageStyles.css";
 
 
   const CreateProject = () => {
@@ -1091,7 +1090,6 @@ import "../components/Cards.css";
           <div className="d-flex justify-content-center">
             <Col
               className="justify-content-center mw-600"
-              style={{ maxWidth: "1000px" }}
               xs={12}
               md={9}
             >

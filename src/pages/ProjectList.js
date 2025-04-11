@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient,useMutation } from "@tanstack/react-query";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,13 +12,14 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
-import { getProjectBasics, getProject } from "./api/ProjectAPI";
+import { getProject, getProjectBasics } from "./api/ProjectAPI";
 import useAuthStore from "./stores/AuthStore";
+
 import PageTitle from "../components/pageTitle";
 import UpcomingMilestones from "../components/upcomingMilestones";
 
-import "./PageStyles.css";
 import "../components/Cards.css";
+import "./PageStyles.css";
 
 const ProjectList = () => {
   const { isLoggedIn, accessToken } = useAuthStore();
@@ -171,13 +172,13 @@ const ProjectList = () => {
       <Row>
         <PageTitle title="Your Projects" />
       </Row>
-      <div className="d-flex flex-column align-items-center">
+      <div className="flex-column align-items-center">
         {projectBasics.map((project) => (
-          <Row className="mb-4 w-100" key={project.name}>
-            <Col sm={12} className="d-flex justify-content-center">
+          <Row className="mb-4 w-full" key={project.name}>
+            <Col sm={12} className="justify-content-center">
               <div
                 className="card"
-                style={{ maxWidth: "1000px", width: "100%" }}
+                style={{ width: "100%" }}
               >
                 <h5
                   className="card-header"
@@ -209,9 +210,7 @@ const ProjectList = () => {
           <Col sm={12} className="d-flex justify-content-center">
             <Card
               style={{
-                maxWidth: "1000px",
                 width: "100%",
-                margin: "20px",
                 transition: "all 0.3s ease",
                 boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                 cursor: "pointer",

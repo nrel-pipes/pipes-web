@@ -1,18 +1,18 @@
+import { Minus, Plus } from "lucide-react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import { useNavigate } from "react-router-dom";
-import { Plus, Minus } from "lucide-react";
 
-import PageTitle from "../components/pageTitle";
-import SideColumn from "../components/form/SideColumn";
-import useDataStore from "./stores/DataStore";
-import useAuthStore from "./stores/AuthStore";
+import { useEffect, useState } from "react";
 import FormError from "../components/form/FormError";
+import SideColumn from "../components/form/SideColumn";
+import PageTitle from "../components/pageTitle";
 import "./FormStyles.css";
-import { useState, useEffect } from "react";
+import useAuthStore from "./stores/AuthStore";
+import useDataStore from "./stores/DataStore";
 
 const ProjectForm = ({ create }) => {
   // Create is true if we are creating a new project, is false if we are updating
@@ -29,7 +29,6 @@ const ProjectForm = ({ create }) => {
         assumptions: [],
         leads: [],
         milestones: [],
-        name: "", // This appears to be duplicated in your structure
         owner: {
           email: "",
           first_name: "",
@@ -44,8 +43,7 @@ const ProjectForm = ({ create }) => {
         scheduled_end: "",
         scheduled_start: "",
         sensitivities: [],
-        teams: [],
-        title: "", // This appears to be duplicated in your structure
+        teams: []
       };
     }
 
@@ -460,13 +458,13 @@ const ProjectForm = ({ create }) => {
   }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
 
   // Handle loading project data when we have a project name
-  useEffect(() => {
-    // console.log(JSON.stringify(currentProject, null, 2));
+  // useEffect(() => {
+  //   // console.log(JSON.stringify(currentProject, null, 2));
 
-    if (projectName) {
-      getProject(currentProject.name, accessToken);
-    }
-  }, [currentProject, getProject, accessToken]);
+  //   if (projectName) {
+  //     getProject(currentProject.name, accessToken);
+  //   }
+  // }, [currentProject, getProject, accessToken]);
 
   // Update form when project data loads
 
@@ -559,7 +557,6 @@ const ProjectForm = ({ create }) => {
     setFormError(false);
     setSubmittingForm(true);
     let submissionForm = denormalizeFormData(form);
-    console.log(submissionForm);
 
     // Validation Section
     // Validating Project Title
@@ -718,7 +715,6 @@ const ProjectForm = ({ create }) => {
           <div className="d-flex justify-content-center">
             <Col
               className="justify-content-center mw-600"
-              style={{ maxWidth: "1000px" }}
               xs={12}
               md={9}
             >
@@ -1300,7 +1296,7 @@ const ProjectForm = ({ create }) => {
                       className="mt-2 align-items-left"
                     >
                       <Plus className="w-4 h-4 mr-1" />
-                      Scenario
+                      Milestone
                     </Button>
                   </div>
                   <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
