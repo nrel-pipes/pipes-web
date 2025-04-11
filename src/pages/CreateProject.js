@@ -170,13 +170,10 @@ import "./PageStyles.css";
       }
       const projectBasicsFromCache = queryClient.getQueryData(["projectBasics"]);
       const names = projectBasicsFromCache.map(projectBasic => projectBasic.name);
-      console.log(names);
-      console.log(formData.name);
       if (names.includes(formData.name)){
         projectNameElement.classList.add("form-error");
         setFormError(true);
         setFormErrorMessage(`Project with ${formData.name} already exists. Please choose unique name.`);
-        console.log(formData.name);
         return false;
       }
       // Validate owner information
@@ -914,7 +911,6 @@ import "./PageStyles.css";
 
   const handleAddScenario = (e) => {
     e.preventDefault();
-    console.log(form.scenarios);
     setForm((prevState) => ({
       ...prevState,
       scenarios: [

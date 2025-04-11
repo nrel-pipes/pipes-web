@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,15 +11,15 @@ import Row from "react-bootstrap/Row";
 
 import "./PageStyles.css";
 
-import useAuthStore from "./stores/AuthStore";
 import { getProject, getProjectRuns } from "./api/ProjectAPI";
+import useAuthStore from "./stores/AuthStore";
 
+import ProjectOverviewTeam from "../components/ProjectOverviewTeam";
 import ProjectOverviewAssumptions from "./ProjectOverviewAssumptions";
+import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
 import ProjectOverviewRequirements from "./ProjectOverviewRequirements";
 import ProjectOverviewScenarios from "./ProjectOverviewScenarios";
 import ProjectOverviewSchedule from "./ProjectOverviewSchedule";
-import ProjectOverviewProjectRuns from "./ProjectOverviewProjectRuns";
-import ProjectOverviewTeam from "../components/ProjectOverviewTeam";
 
 const ProjectOverview = () => {
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ const ProjectOverview = () => {
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
-      console.log("User not logged in, navigating to login.");
       navigate("/login");
     }
   }, [isLoggedIn, navigate, validateToken, accessToken]);
@@ -74,7 +73,6 @@ const ProjectOverview = () => {
   } = useQuery({
     queryKey: ["project", effectiveProjectName],
     queryFn: () => {
-      console.log(`Querying project: ${effectiveProjectName}`);
       return getProject({ projectName: effectiveProjectName, accessToken });
     },
     enabled: isLoggedIn && !!effectiveProjectName,
@@ -83,7 +81,6 @@ const ProjectOverview = () => {
     gcTime: 60 * 60 * 1000,
     initialData: projectFromState || emptyProjectTemplate,
     onSuccess: (data) => {
-      console.log("Project fetch via useQuery successful! Title:", data?.title);
 
       if (data && data.name) {
         queryClient.invalidateQueries({
@@ -106,19 +103,14 @@ const ProjectOverview = () => {
     queryKey: ["projectRuns", project?.name],
     queryFn: async () => {
       if (!project?.name) {
-        console.log("No project name available, skipping project runs query");
         return [];
       }
 
-      console.log(`Querying project runs for: ${project.name}`);
-
       try {
-        console.log("Getting project runs", project.name);
         const freshData = await getProjectRuns({
           projectName: project.name,
           accessToken: accessToken
         });
-        console.log(freshData);
         return freshData;
       } catch (error) {
         console.error("Error fetching project runs:", error);

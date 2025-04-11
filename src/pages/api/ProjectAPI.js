@@ -12,7 +12,6 @@ export const getProject = async ({ projectName, accessToken }) => {
     if (!response.data) {
       throw new Error("No data received from the server.");
     }
-    console.log("got project");
     return response.data;
   } catch (error) {
     console.error("Error getting project:", error);
@@ -22,7 +21,6 @@ export const getProject = async ({ projectName, accessToken }) => {
 
 
 export const postProject = async ({ data, token }) => {
-  console.log(data);
   try {
     const response = await pipes.post("api/projects", data, {
       headers: {

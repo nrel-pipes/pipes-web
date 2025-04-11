@@ -1,16 +1,16 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Minus, Plus } from "lucide-react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import { Plus, Minus } from "lucide-react";
-import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import PageTitle from "../components/pageTitle";
-import SideColumn from "../components/form/SideColumn";
-import useDataStore from "../pages/stores/DataStore";
-import useAuthStore from "../pages/stores/AuthStore";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import { useLocation, useNavigate } from "react-router-dom";
 import FormError from "../components/form/FormError";
+import SideColumn from "../components/form/SideColumn";
+import PageTitle from "../components/pageTitle";
+import useAuthStore from "../pages/stores/AuthStore";
+import useDataStore from "../pages/stores/DataStore";
 import "./FormStyles.css";
 import "./createProjectRun.css";
 
@@ -18,7 +18,7 @@ import "./createProjectRun.css";
 import { getProject } from "./api/ProjectAPI";
 
 import { useMutation } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const CreateProjectRun = () => {
   const navigate = useNavigate();
@@ -30,7 +30,6 @@ const CreateProjectRun = () => {
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
-      console.log("User not logged in, navigating to login.");
       navigate("/login");
     }
   }, [isLoggedIn, navigate, validateToken, accessToken]);
@@ -62,7 +61,6 @@ const CreateProjectRun = () => {
 
   useEffect(() => {
     if (!isLoadingProject && !currentProject && !projectName) {
-      console.log("No project data available, navigating to projects list.");
       navigate("/projects");
     }
   }, [isLoadingProject, currentProject, projectName, navigate]);
@@ -220,7 +218,6 @@ const CreateProjectRun = () => {
       },
     }));
   };
-  console.log(projectRuns);
   function validateProjectData(formData, projectRuns) {
     const formDataValidated = JSON.parse(JSON.stringify(formData));
 
@@ -287,8 +284,6 @@ const CreateProjectRun = () => {
       return false;
     }
 
-    console.log(currentProject.scheduled_start, formDataValidated.scheduledStart);
-
     // Check if dates are within project date constraints
     if (
       currentProject?.scheduled_start &&
@@ -296,7 +291,6 @@ const CreateProjectRun = () => {
     ) {
       // Normalize date formats to handle cases where one might be a date string without time
       const projectStartRaw = currentProject.scheduled_start;
-      console.log("Project start raw:", projectStartRaw, "type:", typeof projectStartRaw);
 
       // Create normalized dates for proper comparison (just date parts, no time)
       const projectStartDate = new Date(projectStartRaw);
@@ -306,33 +300,17 @@ const CreateProjectRun = () => {
       const projectStartDateOnly = projectStartDate.toISOString().split('T')[0];
       const scheduledStartDateOnly = scheduledStartDate.toISOString().split('T')[0];
 
-      console.log("Comparing dates:", {
-        projectStartDateOnly,
-        scheduledStartDateOnly,
-        isSameDay: projectStartDateOnly === scheduledStartDateOnly
-      });
-
       // Check if same day (comparing date parts only)
       const isSameDay = projectStartDateOnly === scheduledStartDateOnly;
 
       // If same day, make the times exactly match by using the project start time
       if (isSameDay) {
-        console.log("Same day detected - setting to exact same time");
         formDataValidated.scheduledStart = projectStartRaw;
-        console.log("Updated scheduledStart to:", formDataValidated.scheduledStart);
       }
       else {
         // Only do the time comparison if not the same day
         const projectStartTime = projectStartDate.getTime();
         const scheduledStartTime = scheduledStartDate.getTime();
-
-        console.log("Date comparison:", {
-          projectStart: projectStartDate.toISOString(),
-          scheduledStart: scheduledStartDate.toISOString(),
-          projectStartTime,
-          scheduledStartTime,
-          isSameDay
-        });
 
         if (scheduledStartTime < projectStartTime) {
           scheduledStartElem.classList.add("form-error");
@@ -349,7 +327,6 @@ const CreateProjectRun = () => {
     ) {
       // Normalize date formats to handle cases where one might be a date string without time
       const projectEndRaw = currentProject.scheduled_end;
-      console.log("Project end raw:", projectEndRaw, "type:", typeof projectEndRaw);
 
       // Create normalized dates for proper comparison (just date parts, no time)
       const projectEndDate = new Date(projectEndRaw);
@@ -359,20 +336,12 @@ const CreateProjectRun = () => {
       const projectEndDateOnly = projectEndDate.toISOString().split('T')[0];
       const scheduledEndDateOnly = scheduledEndDate.toISOString().split('T')[0];
 
-      console.log("Comparing end dates:", {
-        projectEndDateOnly,
-        scheduledEndDateOnly,
-        isSameDay: projectEndDateOnly === scheduledEndDateOnly
-      });
-
       // Check if same day (comparing date parts only)
       const isSameDay = projectEndDateOnly === scheduledEndDateOnly;
 
       // If same day, make the times exactly match by using the project end time
       if (isSameDay) {
-        console.log("Same end day detected - setting to exact same time");
         formDataValidated.scheduledEnd = projectEndRaw;
-        console.log("Updated scheduledEnd to:", formDataValidated.scheduledEnd);
       }
       else {
         // Only do the time comparison if not the same day
@@ -454,7 +423,6 @@ const mutation = useMutation({
     );
   },
   onSuccess: (data) => {
-    console.log("Project run created successfully", data);
     setSubmittingForm(false);
     queryClient.invalidateQueries(['projectRuns']);
     navigate("/projectrun");

@@ -1,18 +1,17 @@
+import { faCircleArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, RefreshCw } from "lucide-react";
+import { useEffect } from "react";
+import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { Plus, RefreshCw } from "lucide-react";
-import Button from "react-bootstrap/Button";
-import { faCircleArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "./stores/AuthStore";
-import { getProject, getProjectRuns } from "./api/ProjectAPI";
-import { useEffect } from "react";
 
-import useDataStore from "./stores/DataStore";
 import "../components/Cards.css";
+import useDataStore from "./stores/DataStore";
 
 const ProjectOverviewProjectRuns = ({ projectRuns }) => {
   const { setCurrentProjectRunName, setCurrentProjectRun } = useDataStore();
@@ -24,7 +23,6 @@ const ProjectOverviewProjectRuns = ({ projectRuns }) => {
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
-      console.log("User not logged in, navigating to login.");
       navigate("/login");
     }
   }, [isLoggedIn, navigate, validateToken, accessToken]);
