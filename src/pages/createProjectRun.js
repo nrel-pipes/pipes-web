@@ -15,7 +15,7 @@ import "./FormStyles.css";
 import "./createProjectRun.css";
 
 
-import { postProject, postProjectRun, getProjectBasics, getProject } from "./api/ProjectAPI";
+import { getProject } from "./api/ProjectAPI";
 
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -37,24 +37,12 @@ const CreateProjectRun = () => {
 
   // Get the project name from location state
   const projectName = location.state?.currentProject?.name || location.state?.projectName;
-  const {
-    data: projectBasics = [],
-    isLoading: isLoadingBasics,
-    isError: isErrorBasics,
-    error: errorBasics,
-  } = useQuery({
-    queryKey: ["projectBasics"],
-    queryFn: getProjectBasics,
-    enabled: isLoggedIn,
-    retry: 3,
-  });
+
 
   // Use React Query directly to access the project data
   const {
     data: currentProject,
     isLoading: isLoadingProject,
-    isError: isErrorProject,
-    error: errorProject
   } = useQuery({
     queryKey: ["project", projectName],
     queryFn: () => getProject({ projectName, accessToken }),
@@ -68,10 +56,6 @@ const CreateProjectRun = () => {
 
   const {
     data: projectRuns,
-    isLoading: isLoadingRuns,
-    isError: isErrorRuns,
-    error: errorRuns,
-    refetch: refetchProjectRuns
   } = useQuery({
     queryKey: ["projectRuns", currentProject?.name],
   });
@@ -103,9 +87,9 @@ const CreateProjectRun = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    assumptions: [""],
+    assumptions: [],
     requirements: {},
-    scenarios: [""],
+    scenarios: [],
     scheduledStart: "",
     scheduledEnd: "",
   });
@@ -225,7 +209,6 @@ const CreateProjectRun = () => {
     });
   };
 
-  // Update requirement value
   const handleRequirementValueChange = (name, index, value) => {
     setFormData((prevState) => ({
       ...prevState,
@@ -237,21 +220,35 @@ const CreateProjectRun = () => {
       },
     }));
   };
+  console.log(projectRuns);
+  function validateProjectData(formData, projectRuns) {
+    const formDataValidated = JSON.parse(JSON.stringify(formData));
 
-  // Project information
-  function validateProjectData(formData) {
-    // Reset previous errors
     setFormError(false);
     setFormErrorMessage("");
 
-    // Validate Project Run name
     const projectRunName = document.getElementById("projectRunName");
-    if (!formData.name) {
+    if (!formDataValidated.name) {
       projectRunName.classList.add("form-error");
       setFormError(true);
       setFormErrorMessage("Project run name is required");
       return false;
     }
+
+    if (projectRuns) {
+      const projectRunsArray = Array.isArray(projectRuns) ? projectRuns : [];
+      const nameExists = projectRunsArray.some(run => {
+        return run && run.name === formDataValidated.name;
+      });
+
+      if (nameExists) {
+        projectRunName.classList.add("form-error");
+        setFormError(true);
+        setFormErrorMessage(`You have an existing project run with name: ${formDataValidated.name}`);
+        return false;
+      }
+    }
+
     projectRunName.classList.remove("form-error");
 
     // Validate Schedule
@@ -260,7 +257,7 @@ const CreateProjectRun = () => {
     let hasScheduleError = false;
 
     // Validate Scheduled Start
-    if (!formData.scheduledStart || isNaN(new Date(formData.scheduledStart))) {
+    if (!formDataValidated.scheduledStart || isNaN(new Date(formDataValidated.scheduledStart))) {
       scheduledStartElem.classList.add("form-error");
       hasScheduleError = true;
       setFormErrorMessage("Valid start date is required");
@@ -269,7 +266,7 @@ const CreateProjectRun = () => {
     }
 
     // Validate Scheduled End
-    if (!formData.scheduledEnd || isNaN(new Date(formData.scheduledEnd))) {
+    if (!formDataValidated.scheduledEnd || isNaN(new Date(formDataValidated.scheduledEnd))) {
       scheduledEndElem.classList.add("form-error");
       hasScheduleError = true;
       setFormErrorMessage("Valid end date is required");
@@ -279,9 +276,9 @@ const CreateProjectRun = () => {
 
     // Check if Start Date is Before End Date
     if (
-      formData.scheduledStart &&
-      formData.scheduledEnd &&
-      new Date(formData.scheduledStart) > new Date(formData.scheduledEnd)
+      formDataValidated.scheduledStart &&
+      formDataValidated.scheduledEnd &&
+      new Date(formDataValidated.scheduledStart) > new Date(formDataValidated.scheduledEnd)
     ) {
       scheduledStartElem.classList.add("form-error");
       scheduledEndElem.classList.add("form-error");
@@ -290,34 +287,104 @@ const CreateProjectRun = () => {
       return false;
     }
 
+    console.log(currentProject.scheduled_start, formDataValidated.scheduledStart);
+
     // Check if dates are within project date constraints
     if (
       currentProject?.scheduled_start &&
-      formData.scheduledStart
+      formDataValidated.scheduledStart
     ) {
-      const projectStartTime = new Date(currentProject.scheduled_start).getTime();
-      const scheduledStartTime = new Date(formData.scheduledStart).getTime();
-      console.log(projectStartTime, scheduledStartTime)
-      if (scheduledStartTime < projectStartTime) {
-        scheduledStartElem.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Start date must be on or after project start date (${new Date(currentProject.scheduled_start).toLocaleDateString()})`);
-        return false;
+      // Normalize date formats to handle cases where one might be a date string without time
+      const projectStartRaw = currentProject.scheduled_start;
+      console.log("Project start raw:", projectStartRaw, "type:", typeof projectStartRaw);
+
+      // Create normalized dates for proper comparison (just date parts, no time)
+      const projectStartDate = new Date(projectStartRaw);
+      const scheduledStartDate = new Date(formDataValidated.scheduledStart);
+
+      // Create date-only strings for comparison (YYYY-MM-DD)
+      const projectStartDateOnly = projectStartDate.toISOString().split('T')[0];
+      const scheduledStartDateOnly = scheduledStartDate.toISOString().split('T')[0];
+
+      console.log("Comparing dates:", {
+        projectStartDateOnly,
+        scheduledStartDateOnly,
+        isSameDay: projectStartDateOnly === scheduledStartDateOnly
+      });
+
+      // Check if same day (comparing date parts only)
+      const isSameDay = projectStartDateOnly === scheduledStartDateOnly;
+
+      // If same day, make the times exactly match by using the project start time
+      if (isSameDay) {
+        console.log("Same day detected - setting to exact same time");
+        formDataValidated.scheduledStart = projectStartRaw;
+        console.log("Updated scheduledStart to:", formDataValidated.scheduledStart);
+      }
+      else {
+        // Only do the time comparison if not the same day
+        const projectStartTime = projectStartDate.getTime();
+        const scheduledStartTime = scheduledStartDate.getTime();
+
+        console.log("Date comparison:", {
+          projectStart: projectStartDate.toISOString(),
+          scheduledStart: scheduledStartDate.toISOString(),
+          projectStartTime,
+          scheduledStartTime,
+          isSameDay
+        });
+
+        if (scheduledStartTime < projectStartTime) {
+          scheduledStartElem.classList.add("form-error");
+          setFormError(true);
+          setFormErrorMessage(`Start date must be on or after project start date (${new Date(currentProject.scheduled_start).toLocaleDateString()})`);
+          return false;
+        }
       }
     }
 
     if (
       currentProject?.scheduled_end &&
-      formData.scheduledEnd
+      formDataValidated.scheduledEnd
     ) {
-      const projectEndTime = new Date(currentProject.scheduled_end).getTime();
-      const scheduledEndTime = new Date(formData.scheduledEnd).getTime();
+      // Normalize date formats to handle cases where one might be a date string without time
+      const projectEndRaw = currentProject.scheduled_end;
+      console.log("Project end raw:", projectEndRaw, "type:", typeof projectEndRaw);
 
-      if (scheduledEndTime > projectEndTime) {
-        scheduledEndElem.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`End date must be on or before project end date (${new Date(currentProject.scheduled_end).toLocaleDateString()})`);
-        return false;
+      // Create normalized dates for proper comparison (just date parts, no time)
+      const projectEndDate = new Date(projectEndRaw);
+      const scheduledEndDate = new Date(formDataValidated.scheduledEnd);
+
+      // Create date-only strings for comparison (YYYY-MM-DD)
+      const projectEndDateOnly = projectEndDate.toISOString().split('T')[0];
+      const scheduledEndDateOnly = scheduledEndDate.toISOString().split('T')[0];
+
+      console.log("Comparing end dates:", {
+        projectEndDateOnly,
+        scheduledEndDateOnly,
+        isSameDay: projectEndDateOnly === scheduledEndDateOnly
+      });
+
+      // Check if same day (comparing date parts only)
+      const isSameDay = projectEndDateOnly === scheduledEndDateOnly;
+
+      // If same day, make the times exactly match by using the project end time
+      if (isSameDay) {
+        console.log("Same end day detected - setting to exact same time");
+        formDataValidated.scheduledEnd = projectEndRaw;
+        console.log("Updated scheduledEnd to:", formDataValidated.scheduledEnd);
+      }
+      else {
+        // Only do the time comparison if not the same day
+        const projectEndTime = projectEndDate.getTime();
+        const scheduledEndTime = scheduledEndDate.getTime();
+
+        if (scheduledEndTime > projectEndTime) {
+          scheduledEndElem.classList.add("form-error");
+          setFormError(true);
+          setFormErrorMessage(`End date must be on or before project end date (${new Date(currentProject.scheduled_end).toLocaleDateString()})`);
+          return false;
+        }
       }
     }
 
@@ -327,8 +394,8 @@ const CreateProjectRun = () => {
     }
 
     // Validate requirements keys
-    if (formData.requirements) {
-      const hasEmptyRequirementKey = Object.keys(formData.requirements).some(
+    if (formDataValidated.requirements) {
+      const hasEmptyRequirementKey = Object.keys(formDataValidated.requirements).some(
         (key) => !key.trim()
       );
       if (hasEmptyRequirementKey) {
@@ -339,10 +406,10 @@ const CreateProjectRun = () => {
     }
 
     // Validate Scenarios: empty
-    if (formData.scenarios && formData.scenarios.length > 0) {
-      for (let i = 0; i < formData.scenarios.length; i++) {
+    if (formDataValidated.scenarios && formDataValidated.scenarios.length > 0) {
+      for (let i = 0; i < formDataValidated.scenarios.length; i++) {
         let scenario = document.getElementById(`scenarios${i}`);
-        if (formData.scenarios[i] === "") {
+        if (formDataValidated.scenarios[i] === "") {
           if (scenario) {
             scenario.classList.add("form-error");
           }
@@ -356,51 +423,52 @@ const CreateProjectRun = () => {
       }
     }
 
-    return true;
+    return formDataValidated;
   }
 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  mutation.mutate(formData);
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    mutation.mutate(formData);
-  };
-  const mutation = useMutation({
-    mutationFn: async (formData) => {
-      setSubmittingForm(true);
-      setFormError(false);
+const mutation = useMutation({
+  mutationFn: async (originalFormData) => {
+    setSubmittingForm(true);
+    setFormError(false);
 
-      // Validation function call commented out as requested
-      const isValid = validateProjectData(formData);
-      if (!isValid) {
-        setSubmittingForm(false);
-        throw new Error("Validation failed");
-      }
+    const validatedFormData = validateProjectData(originalFormData, projectRuns);
 
-      if (!currentProject || !currentProject.name) {
-        throw new Error("No current project selected");
-      }
-
-      return await createProjectRun(
-        currentProject.name,
-        formData,
-        accessToken
-      );
-    },
-    onSuccess: (data) => {
-      console.log("Project run created successfully", data);
+    if (validatedFormData === false) {
       setSubmittingForm(false);
-      queryClient.invalidateQueries(['projectRuns']);
-      // navigate("/projectrun");
-    },
-    onError: (error) => {
-      console.error("Error creating project run:", error);
-      setFormError(true);
-      setFormErrorMessage(
-        `Failed to create project run: ${error.message}. Please try again later.`
-      );
-      setSubmittingForm(false);
+      throw new Error("Validation failed");
     }
-  });
+
+    if (!currentProject || !currentProject.name) {
+      throw new Error("No current project selected");
+    }
+
+    return await createProjectRun(
+      currentProject.name,
+      validatedFormData,
+      accessToken
+    );
+  },
+  onSuccess: (data) => {
+    console.log("Project run created successfully", data);
+    setSubmittingForm(false);
+    queryClient.invalidateQueries(['projectRuns']);
+    navigate("/projectrun");
+  },
+  onError: (error) => {
+    console.error("Error creating project run:", error);
+    setFormError(true);
+    setFormErrorMessage(
+      `Failed to create project run: ${error.message}. Please try again later.`
+    );
+    setSubmittingForm(false);
+  }
+});
+
 
   // Adding definitions
   const [documentation] = useState({
