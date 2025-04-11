@@ -459,8 +459,6 @@ const ProjectForm = ({ create }) => {
 
   // Handle loading project data when we have a project name
   // useEffect(() => {
-  //   // console.log(JSON.stringify(currentProject, null, 2));
-
   //   if (projectName) {
   //     getProject(currentProject.name, accessToken);
   //   }

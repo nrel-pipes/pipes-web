@@ -91,8 +91,6 @@ const ProjectList = () => {
           projectName: selectedProjectName,
           accessToken,
         });
-        console.log("Data from getProject (inside queryFn):", data);
-        console.log("Here ", queryEnabled);
         navigate("/overview", { state: { project: data } });
         return data;
       } catch (error) {
@@ -103,7 +101,6 @@ const ProjectList = () => {
     enabled: queryEnabled,
     retry: 3,
     onSuccess: (data) => {
-      console.log("useQuery :", data);
       navigate("/overview", { state: { project: data } });
     },
     onError: (error) => {

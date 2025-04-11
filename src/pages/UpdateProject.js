@@ -1,20 +1,20 @@
+import { Minus, Plus } from "lucide-react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import { useNavigate } from "react-router-dom";
-import { Plus, Minus } from "lucide-react";
 
-import PageTitle from "../components/pageTitle";
-import SideColumn from "../components/form/SideColumn";
-import useDataStore from "./stores/DataStore";
-import useAuthStore from "./stores/AuthStore";
-import FormError from "../components/form/FormError";
-import "./FormStyles.css";
-import { useState, useEffect } from "react";
-import { postProject, getProject } from "./api/ProjectAPI";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import FormError from "../components/form/FormError";
+import SideColumn from "../components/form/SideColumn";
+import PageTitle from "../components/pageTitle";
+import { getProject, postProject } from "./api/ProjectAPI";
+import "./FormStyles.css";
+import useAuthStore from "./stores/AuthStore";
+import useDataStore from "./stores/DataStore";
 
 const UpdateProject = () => {
   const navigate = useNavigate();
@@ -400,7 +400,6 @@ const UpdateProject = () => {
 
   const handleAddScenario = (e) => {
     e.preventDefault();
-    console.log(form.scenarios);
     setForm((prevState) => ({
       ...prevState,
       scenarios: [
@@ -732,8 +731,6 @@ const UpdateProject = () => {
       scheduled_end: denormalizedForm.scheduled_end,
     };
 
-    console.log("Payload to be sent:", JSON.stringify(payload, null, 2));
-
     // API call with retries
     for (let attempt = 0; attempt < retriesLimit; attempt++) {
       try {
@@ -741,7 +738,6 @@ const UpdateProject = () => {
           data: payload,
           token: accessToken,
         });
-        console.log(`Project created successfully on attempt ${attempt + 1}`);
         break; // Exit loop on success
       } catch (error) {
         console.error(

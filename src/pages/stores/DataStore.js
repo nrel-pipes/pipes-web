@@ -239,7 +239,6 @@ const useDataStore = create(
 
       createProjectRun: async (projectName, projectRunData, accessToken) => {
         set({ isCreatingProjectRun: true, projectRunCreateError: null });
-        console.log("Project Name received:", projectName); // Add this log
 
         try {
           // Encode project name properly
