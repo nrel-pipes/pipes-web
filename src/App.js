@@ -7,6 +7,7 @@ import SiteBanner from "./layouts/Banner";
 import SiteFooter from "./layouts/Footer";
 import SiteNavbar from "./layouts/Navbar";
 import SiteNavbarFluid from "./layouts/NavbarFluid";
+import Sidebar from "./layouts/Sidebar";
 import CreateProject from "./pages/CreateProject";
 import CreateProjectRun from "./pages/createProjectRun";
 import Home from "./pages/Home";
@@ -38,69 +39,72 @@ function App() {
         {isLoggedIn ? "" : <SiteBanner />}
         {isLoggedIn ? <SiteNavbarFluid /> : <SiteNavbar />}
 
-        <div className="Content">
-          <BrowserRouter>
-            <Routes>
-              {/* Home route */}
-              <Route exact path="/" element={<Home />} />
-              {/* Project routes*/}
-              <Route
-                path="/projects"
-                exact
-                element={
-                  isLoggedIn ? <ProjectList /> : <Navigate to="/login" />
-                }
-              />
-              <Route
-                path="/overview"
-                exact
-                element={
-                  isLoggedIn ? <ProjectOverview /> : <Navigate to="/login" />
-                }
-              />
-              <Route
-                path="/schedule"
-                exact
-                element={
-                  isLoggedIn ? <ProjectSchedule /> : <Navigate to="/login" />
-                }
-              />
-              <Route
-                path="/pipeline"
-                exact
-                element={
-                  isLoggedIn ? <ProjectPipeline /> : <Navigate to="/login" />
-                }
-              />
+        <BrowserRouter>
+          <div className="app-container">
+            {isLoggedIn && <Sidebar />}
+            <div className="Content">
+              <Routes>
+                {/* Home route */}
+                <Route exact path="/" element={<Home />} />
+                {/* Project routes*/}
+                <Route
+                  path="/projects"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectList /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/overview"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectOverview /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/schedule"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectSchedule /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/pipeline"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectPipeline /> : <Navigate to="/login" />
+                  }
+                />
 
-              {/* Project run route */}
-              <Route
-                path="/projectrun"
-                exect
-                element={isLoggedIn ? <ProjectRun /> : <Navigate to="/login" />}
-              />
+                {/* Project run route */}
+                <Route
+                  path="/projectrun"
+                  exect
+                  element={isLoggedIn ? <ProjectRun /> : <Navigate to="/login" />}
+                />
 
-              {/* User auth routes */}
-              <Route
-                path="/login"
-                element={isLoggedIn ? <Navigate to="/projects" /> : <Login />}
-              />
-              <Route path="/logout" element={<Logout />} />
-              <Route path="/tokens" element={<CognitoTokens />} />
-              <Route path="/profile" element={<UserProfile />} />
-              <Route
-                path="/new-password-challenge"
-                element={<NewPasswordChallenge />}
-              />
-              <Route path="/change-password" element={<ChangePassword />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/create-project" element={<CreateProject />} />
-              <Route path="/create-projectrun" element={<CreateProjectRun />} />
-              <Route path="/update-project" element={<UpdateProject />} />
-            </Routes>
-          </BrowserRouter>
-        </div>
+                {/* User auth routes */}
+                <Route
+                  path="/login"
+                  element={isLoggedIn ? <Navigate to="/projects" /> : <Login />}
+                />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="/tokens" element={<CognitoTokens />} />
+                <Route path="/profile" element={<UserProfile />} />
+                <Route
+                  path="/new-password-challenge"
+                  element={<NewPasswordChallenge />}
+                />
+                <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/create-project" element={<CreateProject />} />
+                <Route path="/create-projectrun" element={<CreateProjectRun />} />
+                <Route path="/update-project" element={<UpdateProject />} />
+              </Routes>
+            </div>
+          </div>
+        </BrowserRouter>
         {isLoggedIn ? "" : <SiteFooter />}
       </div>
     </QueryClientProvider>
