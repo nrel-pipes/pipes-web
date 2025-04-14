@@ -1,0 +1,96 @@
+/* Model data view styles */
+.data-overview {
+  padding: 5px;
+}
+
+.model-title {
+  padding: 10px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #333;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.info-section {
+  margin-bottom: 30px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 12px 15px;
+  background-color: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+}
+
+.section-header h6 {
+  margin: 0;
+  font-weight: 600;
+  color: #495057;
+  flex-grow: 1;
+}
+
+.section-content {
+  padding: 15px;
+}
+
+/* Dataset styles */
+.checkin {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  background-color: #fcfcfc;
+}
+
+.checkin_description {
+  font-weight: 500;
+  cursor: pointer;
+  padding: 10px;
+  background-color: #f5f5f5;
+}
+
+.checkin_handoff, .data_validated, .data_unvalidated {
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.checkin_handoff {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.data_validated {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.data_unvalidated {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.checkin_details {
+  padding: 10px;
+}
+
+.checkin_comments {
+  padding: 5px 0;
+  color: #666;
+}
+
+.checkin_footer {
+  background-color: #f5f5f5;
+  padding: 8px;
+  border-top: 1px solid #eee;
+  font-size: 0.85rem;
+}

@@ -49,7 +49,6 @@
 
 .Content {
   flex: 1;  /* Take up remaining space */
-  padding: 20px;
   transition: margin-left 0.3s;
   overflow-y: auto;
 }

@@ -18,7 +18,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useNavigate } from "react-router-dom";
 
-import PageTitle from "../components/pageTitle";
+import ContentHeader from "../components/ContentHeader";
 import SideColumn from "../components/form/SideColumn";
 import useDataStore from "../pages/stores/DataStore";
 import useAuthStore from "../pages/stores/AuthStore";

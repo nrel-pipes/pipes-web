@@ -1,0 +1,55 @@
+.banner {
+  height: 142px;
+  width: 100%;
+}
+
+.banner-pipes-name {
+  margin-top: 20px;
+  font-size: 38px;
+  font-weight: bold;
+  text-align: left
+}
+
+.banner-pipes-name a {
+  text-decoration: none;
+  color: #4B545A;
+}
+
+.banner-pipes-container {
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+
+.banner-pipes-image {
+  max-height: 100px;
+}
+
+.banner-nrel-container {
+  text-align: right;
+  display: flex;
+  align-items: center;
+}
+
+.banner-nrel-image {
+  margin-right: -20px;
+}
+
+.pipes-full-name {
+  margin-left: 15px;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .pipes-full-name {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .pipes-full-name {
+    display: none;
+  }
+}

@@ -1,32 +1,53 @@
 import "./App.css";
 
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import SiteBanner from "./layouts/Banner";
 import SiteFooter from "./layouts/Footer";
-import SiteNavbar from "./layouts/Navbar";
 import SiteNavbarFluid from "./layouts/NavbarFluid";
-import Sidebar from "./layouts/Sidebar";
-import CreateProject from "./pages/CreateProject";
-import CreateProjectRun from "./pages/createProjectRun";
-import Home from "./pages/Home";
-import ProjectList from "./pages/ProjectList";
-import ProjectOverview from "./pages/ProjectOverview";
-import ProjectPipeline from "./pages/ProjectPipeline";
-import ProjectRun from "./pages/ProjectRun";
-import ProjectSchedule from "./pages/ProjectSchedule";
-import UpdateProject from "./pages/UpdateProject";
-import ChangePassword from "./pages/UserChangePassword";
-import ForgotPassword from "./pages/UserForgotPassword";
-import Login from "./pages/UserLogin";
-import Logout from "./pages/UserLogout";
-import NewPasswordChallenge from "./pages/UserNewPasswordChallenge";
-import UserProfile from "./pages/UserProfile";
-import ResetPassword from "./pages/UserResetPassword";
-import CognitoTokens from "./pages/UserTokens";
+import Sidebar from "./layouts/NavbarSide";
+import SiteNavbar from "./layouts/NavbarTop";
 
-import useAuthStore from "./pages/stores/AuthStore";
+// Home
+import Home from "./pages/Home/Home";
+
+// Project
+import CreateProject from "./pages/Project/CreateProject";
+import UpdateProject from "./pages/Project/UpdateProject";
+
+// Projects
+import ProjectBasicsPage from "./pages/Projects/ProjectBasicsPage";
+
+// Project Milestones
+import ProjectMilestones from "./pages/Milestones/ProjectMilestones";
+
+// Project Dashboard
+import ProjectDashboardPage from "./pages/Dashboard/ProjectDashboardPage";
+
+// Project Run
+import CreateProjectRun from "./pages/ProjectRun/CreateProjectRun";
+import ProjectRunPage from "./pages/ProjectRun/ProjectRunPage";
+
+// Project Pipeline
+import ProjectPipeline from "./pages/Pipeline/ProjectPipelinePage";
+
+// Project Schedule
+import ProjectSchedulePage from "./pages/Schedule/ProjectSchedulePage";
+
+// User
+import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
+import ForgotPasswordPage from "./pages/Account/ForgotPasswordPage";
+import LoginPage from "./pages/Account/LoginPage";
+import LogoutPage from "./pages/Account/LogoutPage";
+import NewPasswordChallengePage from "./pages/Account/NewPasswordChallengePage";
+import ProfilePage from "./pages/Account/ProfilePage";
+import ResetPasswordPage from "./pages/Account/ResetPasswordPage";
+import TokensPage from "./pages/Account/TokensPage";
+
+import useAuthStore from "./stores/AuthStore";
 
 const queryClient = new QueryClient();
 
@@ -51,21 +72,21 @@ function App() {
                   path="/projects"
                   exact
                   element={
-                    isLoggedIn ? <ProjectList /> : <Navigate to="/login" />
+                    isLoggedIn ? <ProjectBasicsPage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
-                  path="/overview"
+                  path="/project"
                   exact
                   element={
-                    isLoggedIn ? <ProjectOverview /> : <Navigate to="/login" />
+                    isLoggedIn ? <ProjectDashboardPage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
                   path="/schedule"
                   exact
                   element={
-                    isLoggedIn ? <ProjectSchedule /> : <Navigate to="/login" />
+                    isLoggedIn ? <ProjectSchedulePage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
@@ -80,24 +101,27 @@ function App() {
                 <Route
                   path="/projectrun"
                   exect
-                  element={isLoggedIn ? <ProjectRun /> : <Navigate to="/login" />}
+                  element={isLoggedIn ? <ProjectRunPage /> : <Navigate to="/login" />}
                 />
+
+                {/* Milestones route */}
+                <Route path="/milestones" element={<ProjectMilestones />} />
 
                 {/* User auth routes */}
                 <Route
                   path="/login"
-                  element={isLoggedIn ? <Navigate to="/projects" /> : <Login />}
+                  element={isLoggedIn ? <Navigate to="/projects" /> : <LoginPage />}
                 />
-                <Route path="/logout" element={<Logout />} />
-                <Route path="/tokens" element={<CognitoTokens />} />
-                <Route path="/profile" element={<UserProfile />} />
+                <Route path="/logout" element={<LogoutPage />} />
+                <Route path="/tokens" element={<TokensPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route
                   path="/new-password-challenge"
-                  element={<NewPasswordChallenge />}
+                  element={<NewPasswordChallengePage />}
                 />
-                <Route path="/change-password" element={<ChangePassword />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/change-password" element={<ChangePasswordPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/create-project" element={<CreateProject />} />
                 <Route path="/create-projectrun" element={<CreateProjectRun />} />
                 <Route path="/update-project" element={<UpdateProject />} />
@@ -107,6 +131,7 @@ function App() {
         </BrowserRouter>
         {isLoggedIn ? "" : <SiteFooter />}
       </div>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
