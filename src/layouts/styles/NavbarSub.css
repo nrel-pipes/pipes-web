@@ -1,0 +1,75 @@
+.navbar-sub {
+  width: 100%;
+  border-bottom: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+  padding: 0;
+  margin: 0;
+  height: 50px; /* Increased height to match sidebar items */
+  display: flex;
+  align-items: center;
+}
+
+.navbar-sub-instance {
+  min-height: 48px;
+  width: 100%;
+  padding: 0.5rem 1rem;
+}
+
+.navbar-sub-instance .navbar-collapse {
+  flex-grow: 1;
+}
+
+.navbar-sub .navbar-nav {
+  padding-left: 15px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-sub-link {
+  color: #6c757d;
+  padding: 0 0.5rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 13px; /* Slightly larger font size */
+}
+
+.navbar-sub-link:hover {
+  color: #495057;
+}
+
+.navbar-sub-link.active {
+  color: rgb(71, 148, 218);
+}
+
+.navbar-sub-chevron {
+  margin: 0 0.5rem;
+  font-size: 0.75rem;
+  color: #adb5bd;
+}
+
+.rounded-box {
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  padding: 5px 15px;
+  transition: background-color 0.2s ease;
+}
+
+.rounded-box:hover {
+  background-color: rgb(71, 148, 218);
+  color: #fff !important;
+}
+
+.navbar-sub-link:hover .rounded-box {
+  background-color: #d9eaff;  /* light blue color */
+}
+
+.navbar-sub-circle {
+  font-size: 3px;
+  color: #333;
+  margin: 0 8px;
+}

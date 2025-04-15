@@ -1,0 +1,304 @@
+.dashboard-header {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.5rem 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.project-title {
+  font-size: 2.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #212529;
+}
+
+.project-name {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #6610f2; /* Purple color like in ProjectBasics list */
+  margin-bottom: 0.75rem;
+}
+
+.project-owner {
+  font-size: 1rem;
+  color: #198754; /* Green color to highlight the owner */
+}
+
+.project-owner strong {
+  font-weight: 600;
+  color: #495057;
+}
+
+.project-subtitle {
+  font-size: 1.3rem;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.project-badge {
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.project-owner-name {
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.project-description {
+  color: #495057;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-top: 15px;
+}
+
+.summary-title {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 15px;
+}
+
+.dashboard-card {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 0.5rem;
+  transition: none;
+  cursor: default;
+}
+
+.dashboard-card:hover {
+  transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  cursor: default;
+}
+
+.dashboard-summary-card {
+  border-radius: 0.5rem;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  transition: none;
+  cursor: default;
+}
+
+.dashboard-summary-card:hover {
+  transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  cursor: default;
+}
+
+/* Remove hover effects on cards */
+.dashboard-card:hover,
+.dashboard-summary-card:hover {
+  transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  cursor: default;
+}
+
+.smallCaps {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.dashboard-grid {
+  margin-right: -8px;
+  margin-left: -8px;
+}
+
+.dashboard-grid > [class*="col-"] {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+
+.nav-tabs {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: #6c757d;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: #007bff;
+  border-bottom: 2px solid #007bff;
+  background-color: transparent;
+}
+
+.team-label {
+  color: #0d6efd;
+  font-weight: 400;
+}
+
+/* Project metadata styling */
+.project-metadata {
+  margin-bottom: 1.5rem;
+}
+
+.metadata-item {
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.metadata-label {
+  font-weight: 600;
+  color: #495057;
+  min-width: 100px;
+  margin-right: 0.5rem;
+}
+
+.metadata-value {
+  color: #212529;
+  flex: 1;
+}
+
+.team-badge {
+  font-weight: 400;
+  font-size: 0.85rem;
+  border: 1px solid rgba(13, 110, 253, 0.2);
+  padding: 0.35rem 0.65rem;
+}
+
+/* Section headers */
+.section-title {
+  font-size: 1.8rem;
+  color: #495057;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Highlight card for project runs */
+.highlight-card {
+  border-left: none; /* Remove blue line on left edge */
+}
+
+.highlight-header {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Project attributes cards */
+.attribute-card {
+  height: 100%;
+}
+
+/* Lighter headers for Requirements, Assumptions, Scenarios */
+.attribute-card .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* Specific header for Project Runs */
+.highlight-card .card-header,
+.highlight-header {
+  background-color: rgb(71, 148, 218);
+  color: white;
+}
+
+.highlight-card .card-header .badge {
+  background-color: white !important;
+  color: rgb(71, 148, 218) !important;
+}
+
+/* Improve responsiveness for scenarios */
+.scenarios-container {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.scenarios-container .table-responsive {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.scenarios-container table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.scenarios-container td {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenarios-container td:first-child {
+  font-weight: 500;
+}
+
+/* Make the table more compact on smaller screens */
+@media (max-width: 768px) {
+  .scenarios-container .table-sm td,
+  .scenarios-container .table-sm th {
+    padding: 0.3rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Fix scenarios table responsiveness */
+.responsive-table-container {
+  width: 100%;
+  overflow-x: auto;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.responsive-table-container table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.responsive-table-container th:first-child {
+  width: 35%;
+}
+
+.scenario-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .responsive-table-container {
+    max-height: 200px;
+  }
+}
+
+/* Create Project Run button styling */
+.create-run-button {
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  background-color: rgb(71, 148, 218) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.create-run-button:hover {
+  background-color: rgb(63, 133, 196) !important;
+}
+
+.create-run-button:active {
+  background-color: rgb(56, 119, 176) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}

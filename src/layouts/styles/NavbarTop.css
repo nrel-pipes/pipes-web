@@ -1,0 +1,88 @@
+:root {
+  --navbar-height: 65px;
+}
+
+.navbar-instance {
+  background-color: #ededed;
+  color: #5e6a71;
+  height: var(--navbar-height);
+  font-weight: bold;
+  z-index: 1030;
+  width: 100%;
+}
+
+.navbar-menu-container {
+  background-color: #ededed;
+  color: #5e6a71;
+  font-weight: bold;
+  height: 100%;
+}
+
+.navbar-nav .nav-link {
+  color: #5e6a71;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #000;
+}
+
+.divider {
+  border-left: 1px solid #a0a2a3;
+  height: 25px;
+  align-self: center;
+  margin: 0 10px;
+}
+
+.fluid-image {
+  height: var(--navbar-height);
+  width: "100%";
+}
+
+.main-content-wrapper {
+  padding-top: var(--navbar-height);
+  width: 100%;
+  min-height: 100vh;
+}
+
+.pipes-full-name {
+  font-size: 1.3rem;
+  color: #0c354e;
+  font-weight: 300;
+  white-space: nowrap;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.nrel-logo-container {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  right: 15px; /* Reduced from 60px to remove the gap */
+  top: 0;
+  height: 100%;
+}
+
+.navbar-toggle-button {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none; /* Hide the toggle button to eliminate the gap */
+}
+
+.login-link {
+  padding: 8px 15px;
+  font-weight: bold;
+}
+
+@media (max-width: 992px) {
+  .fluid-image {
+    height: calc(var(--navbar-height) * 0.7);
+  }
+
+  .pipes-full-name {
+    display: none;
+  }
+}

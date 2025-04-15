@@ -1,113 +1,137 @@
 import "./App.css";
 
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import SiteBanner from "./layouts/Banner";
 import SiteFooter from "./layouts/Footer";
-import SiteNavbar from "./layouts/Navbar";
 import SiteNavbarFluid from "./layouts/NavbarFluid";
-import Home from "./pages/Home";
-import ProjectForm from "./pages/ProjectForm";
-import ProjectList from "./pages/ProjectList";
-import ProjectOverview from "./pages/ProjectOverview";
-import ProjectPipeline from "./pages/ProjectPipeline";
-import ProjectRun from "./pages/ProjectRun";
-import ProjectSchedule from "./pages/ProjectSchedule";
-import ChangePassword from "./pages/UserChangePassword";
-import ForgotPassword from "./pages/UserForgotPassword";
-import Login from "./pages/UserLogin";
-import Logout from "./pages/UserLogout";
-import NewPasswordChallenge from "./pages/UserNewPasswordChallenge";
-import UserProfile from "./pages/UserProfile";
-import ResetPassword from "./pages/UserResetPassword";
-import CognitoTokens from "./pages/UserTokens";
-import CreateProjectRun from "./pages/createProjectRun";
+import Sidebar from "./layouts/NavbarSide";
+import SiteNavbar from "./layouts/NavbarTop";
 
-import useAuthStore from "./pages/stores/AuthStore";
+// Home
+import Home from "./pages/Home/Home";
+
+// Project
+import CreateProjectPage from "./pages/Project/CreateProjectPage";
+import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
+
+// Projects
+import ProjectBasicsPage from "./pages/Projects/ProjectBasicsPage";
+
+// Project Milestones
+import ProjectMilestones from "./pages/Milestones/ProjectMilestones";
+
+// Project Dashboard
+import ProjectDashboardPage from "./pages/Dashboard/ProjectDashboardPage";
+
+// Project Run
+import CreateProjectRunPage from "./pages/ProjectRun/CreateProjectRunPage";
+import ProjectRunPage from "./pages/ProjectRun/ProjectRunPage";
+
+// Project Pipeline
+import ProjectPipeline from "./pages/Pipeline/ProjectPipelinePage";
+
+// Project Schedule
+import ProjectSchedulePage from "./pages/Schedule/ProjectSchedulePage";
+
+// User
+import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
+import ForgotPasswordPage from "./pages/Account/ForgotPasswordPage";
+import LoginPage from "./pages/Account/LoginPage";
+import LogoutPage from "./pages/Account/LogoutPage";
+import NewPasswordChallengePage from "./pages/Account/NewPasswordChallengePage";
+import ProfilePage from "./pages/Account/ProfilePage";
+import ResetPasswordPage from "./pages/Account/ResetPasswordPage";
+import TokensPage from "./pages/Account/TokensPage";
+
+import useAuthStore from "./stores/AuthStore";
 
 const queryClient = new QueryClient();
-
-
 
 function App() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   return (
-    <QueryClientProvider client={queryClient} >
+    <QueryClientProvider client={queryClient}>
       <div className="App">
         {isLoggedIn ? "" : <SiteBanner />}
         {isLoggedIn ? <SiteNavbarFluid /> : <SiteNavbar />}
 
-        <div className="Content">
-          <BrowserRouter>
-            <Routes>
-              {/* Home route */}
-              <Route exact path="/" element={<Home />} />
-              {/* Project routes*/}
-              <Route
-                path="/projects"
-                exact
-                element={isLoggedIn ? <ProjectList /> : <Navigate to="/login" />}
-              />
-              <Route
-                path="/overview"
-                exact
-                element={
-                  isLoggedIn ? <ProjectOverview /> : <Navigate to="/login" />
-                }
-              />
-              <Route
-                path="/schedule"
-                exact
-                element={
-                  isLoggedIn ? <ProjectSchedule /> : <Navigate to="/login" />
-                }
-              />
-              <Route
-                path="/pipeline"
-                exact
-                element={
-                  isLoggedIn ? <ProjectPipeline /> : <Navigate to="/login" />
-                }
-              />
+        <BrowserRouter>
+          <div className="app-container">
+            {isLoggedIn && <Sidebar />}
+            <div className="Content">
+              <Routes>
+                {/* Home route */}
+                <Route exact path="/" element={<Home />} />
+                {/* Project routes*/}
+                <Route
+                  path="/projects"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectBasicsPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/project/dashboard"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectDashboardPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/project/schedule"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectSchedulePage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/project/pipeline"
+                  exact
+                  element={
+                    isLoggedIn ? <ProjectPipeline /> : <Navigate to="/login" />
+                  }
+                />
 
-              {/* Project run route */}
-              <Route
-                path="/projectrun"
-                exect
-                element={isLoggedIn ? <ProjectRun /> : <Navigate to="/login" />}
-              />
+                {/* Project run route */}
+                <Route
+                  path="/projectrun"
+                  exect
+                  element={isLoggedIn ? <ProjectRunPage /> : <Navigate to="/login" />}
+                />
 
-              {/* User auth routes */}
-              <Route
-                path="/login"
-                element={isLoggedIn ? <Navigate to="/projects" /> : <Login />}
-              />
-              <Route path="/logout" element={<Logout />} />
-              <Route path="/tokens" element={<CognitoTokens />} />
-              <Route path="/profile" element={<UserProfile />} />
-              <Route
-                path="/new-password-challenge"
-                element={<NewPasswordChallenge />}
-              />
-              <Route path="/change-password" element={<ChangePassword />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route
-                path="/create-project"
-                element={<ProjectForm create={true} />}
-              />
-              <Route path="/create-projectrun" element={<CreateProjectRun />} />
-              <Route
-                path="/update-project"
-                element={<ProjectForm create={false} />}
-              />
-            </Routes>
-          </BrowserRouter>
-        </div>
+                {/* Milestones route */}
+                <Route path="/milestones" element={<ProjectMilestones />} />
+
+                {/* User auth routes */}
+                <Route
+                  path="/login"
+                  element={isLoggedIn ? <Navigate to="/projects" /> : <LoginPage />}
+                />
+                <Route path="/logout" element={<LogoutPage />} />
+                <Route path="/account/tokens" element={<TokensPage />} />
+                <Route path="/account/profile" element={<ProfilePage />} />
+                <Route
+                  path="/new-password-challenge"
+                  element={<NewPasswordChallengePage />}
+                />
+                <Route path="/account/change-password" element={<ChangePasswordPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/create-project" element={<CreateProjectPage />} />
+                <Route path="/create-projectrun" element={<CreateProjectRunPage />} />
+                <Route path="/update-project" element={<UpdateProjectPage />} />
+              </Routes>
+            </div>
+          </div>
+        </BrowserRouter>
         {isLoggedIn ? "" : <SiteFooter />}
       </div>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
