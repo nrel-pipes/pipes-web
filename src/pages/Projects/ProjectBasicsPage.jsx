@@ -131,7 +131,8 @@ const ProjectBasicsPage = () => {
     <NavbarSub navData={{pAll: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
-        <ContentHeader title="Your Projects" showCreateProjectButton={true} cornerMark={projectBasics.length} />
+        {/* TODO: Could be enabled when we have a project creation page */}
+        <ContentHeader title="Your Projects" showCreateProjectButton={false} cornerMark={projectBasics.length} />
       </Row>
       <div className="project-list-container">
         {projectBasics.map((project) => (

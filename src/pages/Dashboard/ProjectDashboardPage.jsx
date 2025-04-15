@@ -111,7 +111,8 @@ const ProjectDashboardPage = () => {
       <NavbarSub navData={{ pAll: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Project Dashboard" showUpdateProjectButton={true}/>
+          {/* TODO: Enabled this when we have the project update page */}
+          <ContentHeader title="Project Dashboard" showUpdateProjectButton={false}/>
         </Row>
         {/* Project Header with Overview */}
         <Row className="dashboard-header mb-4">
@@ -122,12 +123,17 @@ const ProjectDashboardPage = () => {
               <div className="project-metadata mt-3">
                 <div className="metadata-item">
                   <span className="metadata-label">Name:</span>
-                  <span className="metadata-value">{project.name}</span>
+                  <span className="metadata-value">
+                    <label className="project-name">{project.name}</label>
+                  </span>
                 </div>
-
                 <div className="metadata-item">
                   <span className="metadata-label">Owner:</span>
-                  <span className="metadata-value">{project.owner?.first_name || ""} {project.owner?.last_name || ""}</span>
+                  <span className="metadata-value mb-2">
+                    <label style={{ color: "green"}} className="project-name">
+                    {project.owner?.first_name || ""} {project.owner?.last_name || ""}
+                    </label>
+                  </span>
                 </div>
 
                 <div className="metadata-item">
@@ -139,7 +145,7 @@ const ProjectDashboardPage = () => {
                           key={idx}
                           bg="light"
                           text="primary"
-                          className="team-badge me-2 mb-1"
+                          className="team-badge me-2 mb-2"
                         >
                           {typeof team === 'string' ? team : (
                             team.name || team.id || JSON.stringify(team)
@@ -201,7 +207,7 @@ const ProjectDashboardPage = () => {
           <Col lg={12} className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
               <h3 className="section-title">Activities</h3>
-              <button
+              {/* <button
                 className="btn create-run-button"
                 style={{
                   backgroundColor: 'rgb(71, 148, 218)',
@@ -216,7 +222,7 @@ const ProjectDashboardPage = () => {
                 })}
               >
                 + Create project run
-              </button>
+              </button> */}
             </div>
             <Card className="dashboard-card highlight-card">
               <Card.Header className="d-flex justify-content-between align-items-center highlight-header">
@@ -243,7 +249,7 @@ const ProjectDashboardPage = () => {
             </div>
             <Row>
               {/* Requirements Section */}
-              <Col md={12} lg={4} className="mb-4">
+              <Col md={12} lg={6} className="mb-4">
                 <Card className="dashboard-card attribute-card">
                   <Card.Header className="d-flex justify-content-between align-items-center">
                     <h4 className="smallCaps mb-0">Requirements</h4>
@@ -260,7 +266,7 @@ const ProjectDashboardPage = () => {
               </Col>
 
               {/* Assumptions Section */}
-              <Col md={12} lg={4} className="mb-4">
+              <Col md={12} lg={6} className="mb-4">
                 <Card className="dashboard-card attribute-card">
                   <Card.Header className="d-flex justify-content-between align-items-center">
                     <h4 className="smallCaps mb-0">Assumptions</h4>
@@ -273,9 +279,11 @@ const ProjectDashboardPage = () => {
                   </Card.Body>
                 </Card>
               </Col>
+            </Row>
 
+            <Row>
               {/* Scenarios Section */}
-              <Col md={12} lg={4} className="mb-4">
+              <Col md={12} lg={12} className="mb-4">
                 <Card className="dashboard-card attribute-card">
                   <Card.Header className="d-flex justify-content-between align-items-center">
                     <h4 className="smallCaps mb-0">Scenarios</h4>
@@ -290,7 +298,6 @@ const ProjectDashboardPage = () => {
               </Col>
             </Row>
           </Col>
-
         </Row>
 
       </Container>

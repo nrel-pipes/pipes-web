@@ -26,7 +26,7 @@ const ScenarioRow = ({ name, description, other }) => {
           <small style={{fontSize: '12px'}}>{name}</small>
         </h5>
       </td>
-      <td>{description}</td>
+      <td className="text-start">{description}</td>
     </tr>
   );
 };
@@ -37,7 +37,7 @@ const ScenariosCompoent = ({scenarios}) => {
         <thead>
           <tr>
             <th>Scenario</th>
-            <th>Descriptipon</th>
+            <th>Description</th>
           </tr>
         </thead>
         <tbody>

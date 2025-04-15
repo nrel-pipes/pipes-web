@@ -37,7 +37,7 @@ const ProfilePage = () => {
   const { data: currentUser, isLoading } = useGetUserQuery(userEmail);
 
   // Determine user role
-  const userRole = currentUser?.is_superuser ? 'pipes administrator' : 'pipes user';
+  const userRole = currentUser?.is_superuser ? 'Administrator' : 'User';
 
   return (
     <>
