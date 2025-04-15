@@ -689,7 +689,7 @@ const CreateProjectPage = () => {
       setEffectivePname(data.name);
     }
 
-    navigate("/project");
+    navigate("/project/dashboard");
   };
 
   const onCreateError = (error) => {

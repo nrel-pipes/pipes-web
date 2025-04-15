@@ -18,7 +18,7 @@ const UpcomingMilestones = ({ projectBasics }) => {
       setEffectivePname(projectName);
       // Prefetch the project data
       queryClient.prefetchQuery(["project", projectName]);
-      navigate("/project");
+      navigate("/project/dashboard");
     },
     [setEffectivePname, queryClient, navigate],
   );

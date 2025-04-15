@@ -76,21 +76,21 @@ function App() {
                   }
                 />
                 <Route
-                  path="/project"
+                  path="/project/dashboard"
                   exact
                   element={
                     isLoggedIn ? <ProjectDashboardPage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
-                  path="/schedule"
+                  path="/project/schedule"
                   exact
                   element={
                     isLoggedIn ? <ProjectSchedulePage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
-                  path="/pipeline"
+                  path="/project/pipeline"
                   exact
                   element={
                     isLoggedIn ? <ProjectPipeline /> : <Navigate to="/login" />
@@ -113,13 +113,13 @@ function App() {
                   element={isLoggedIn ? <Navigate to="/projects" /> : <LoginPage />}
                 />
                 <Route path="/logout" element={<LogoutPage />} />
-                <Route path="/tokens" element={<TokensPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/account/tokens" element={<TokensPage />} />
+                <Route path="/account/profile" element={<ProfilePage />} />
                 <Route
                   path="/new-password-challenge"
                   element={<NewPasswordChallengePage />}
                 />
-                <Route path="/change-password" element={<ChangePasswordPage />} />
+                <Route path="/account/change-password" element={<ChangePasswordPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/create-project" element={<CreateProjectPage />} />

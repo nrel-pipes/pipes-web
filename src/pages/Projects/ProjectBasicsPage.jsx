@@ -46,7 +46,7 @@ const ProjectBasicsPage = () => {
     // Set the project in the store
     setEffectivePname(project.name);
     // Navigate to the project dashboard
-    navigate("/project");
+    navigate("/project/dashboard");
   };
 
   const handleCreateProjectClick = () => {

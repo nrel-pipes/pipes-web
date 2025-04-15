@@ -46,13 +46,13 @@ const Sidebar = () => {
   // Function to determine if a link should be disabled
   const getNavItemClass = (path) => {
     // Check if this is a project-specific page that should be disabled
-    const shouldDisable = ['/project', '/pipeline', '/schedule'].includes(path) && !projectSelected;
+    const shouldDisable = ['/project/dashboard', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected;
     return `${isActive(path)} ${shouldDisable ? 'disabled' : ''}`;
   };
 
   // Function to handle click on disabled links
   const handleNavClick = (e, path) => {
-    if (['/project', '/pipeline', '/schedule'].includes(path) && !projectSelected) {
+    if (['/project/dashboard', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected) {
       e.preventDefault();
     }
   };
@@ -84,10 +84,10 @@ const Sidebar = () => {
 
           <li>
             <Link
-              to="/project"
-              className={getNavItemClass("/project")}
+              to="/project/dashboard"
+              className={getNavItemClass("/project/dashboard")}
               title={projectSelected ? "Dashboard" : "Select a project first"}
-              onClick={(e) => handleNavClick(e, "/project")}
+              onClick={(e) => handleNavClick(e, "/project/dashboard")}
             >
               <span className="icon"><FaTachometerAlt /></span>
               {expanded && <span className="nav-text">Dashboard</span>}
@@ -95,10 +95,10 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
-              to="/pipeline"
-              className={getNavItemClass("/pipeline")}
+              to="/project/pipeline"
+              className={getNavItemClass("/project/pipeline")}
               title={projectSelected ? "Pipeline" : "Select a project first"}
-              onClick={(e) => handleNavClick(e, "/pipeline")}
+              onClick={(e) => handleNavClick(e, "/project/pipeline")}
             >
               <span className="icon"><FaProjectDiagram /></span>
               {expanded && <span className="nav-text">Pipeline</span>}
@@ -106,10 +106,10 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
-              to="/schedule"
-              className={getNavItemClass("/schedule")}
+              to="/project/schedule"
+              className={getNavItemClass("/project/schedule")}
               title={projectSelected ? "Schedule" : "Select a project first"}
-              onClick={(e) => handleNavClick(e, "/schedule")}
+              onClick={(e) => handleNavClick(e, "/project/schedule")}
             >
               <span className="icon"><FaCalendarAlt /></span>
               {expanded && <span className="nav-text">Schedule</span>}
@@ -119,19 +119,19 @@ const Sidebar = () => {
           <li className="separator"></li>
 
           <li>
-            <Link to="/profile" className={isActive("/profile")} title="Profile">
+            <Link to="/account/profile" className={isActive("/account/profile")} title="Profile">
               <span className="icon"><FaUser /></span>
               {expanded && <span className="nav-text">Profile</span>}
             </Link>
           </li>
           <li>
-            <Link to="/tokens" className={isActive("/tokens")} title="Tokens">
+            <Link to="/account/tokens" className={isActive("/account/tokens")} title="Tokens">
               <span className="icon"><FaKey /></span>
               {expanded && <span className="nav-text">Tokens</span>}
             </Link>
           </li>
           <li>
-            <Link to="/change-password" className={isActive("/change-password")} title="Password">
+            <Link to="/account/change-password" className={isActive("/account/change-password")} title="Password">
               <span className="icon"><FaLock /></span>
               {expanded && <span className="nav-text">Password</span>}
             </Link>

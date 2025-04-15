@@ -46,7 +46,7 @@ const NavbarSub = ({ navData = {} }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/project`}
+                    to={`/project/dashboard`}
                     className="active rounded-box"
                   >
                     Project ({pName})
@@ -86,7 +86,7 @@ const NavbarSub = ({ navData = {} }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/pipeline`}
+                    to={`/project/pipeline`}
                     className="active rounded-box"
                   >
                     Pipeline
@@ -107,7 +107,7 @@ const NavbarSub = ({ navData = {} }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/schedule`}
+                    to={`/project/schedule`}
                     className="active rounded-box"
                   >
                     Schedule
