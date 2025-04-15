@@ -16,7 +16,7 @@ import FormError from "../Components/form/FormError";
 import SideColumn from "../Components/form/SideColumn";
 import "../FormStyles.css";
 
-const UpdateProject = () => {
+const UpdateProjectPage = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { currentProject } = useDataStore();
@@ -1514,4 +1514,4 @@ const UpdateProject = () => {
   );
 };
 
-export default UpdateProject;
+export default UpdateProjectPage;

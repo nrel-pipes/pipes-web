@@ -15,7 +15,9 @@ import "../PageStyles.css";
 
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import useProjectStore from "../../stores/ProjectStore";
+
+import { useGetModelsQuery } from "../../hooks/useModelQuery";
+import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
 import ContentHeader from "../Components/ContentHeader";
 import EventsComponent from "./Components/EventsComponent";
@@ -23,12 +25,20 @@ import TimelineComponent from "./Components/TimelineComponent";
 
 import NavbarSub from "../../layouts/NavbarSub";
 
-
 const ProjectSchedulePage = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { selectedProjectName, currentProject, models, getModels, isGettingModels} = useDataStore();
-  const { effectiveProject } = useProjectStore();
+  const { effectivePname } = useDataStore();
+
+  const {
+    data: currentProject,
+    isLoading: isLoadingProject
+  } = useGetProjectQuery(effectivePname);
+
+  const {
+    data: models = [],
+    isLoading: isLoadingModels
+  } = useGetModelsQuery(effectivePname, null);
 
   // page state
   const [viewMode, setViewMode] = useState("Week");
@@ -49,38 +59,31 @@ const ProjectSchedulePage = () => {
       return;
     }
 
-    if (currentProject === null || currentProject.name !== selectedProjectName) {
-      navigate('/projects')
+    if (!effectivePname) {
+      navigate('/projects');
       return;
-    }
-
-    if (!models || models === null || models.length === 0) {
-      getModels(currentProject.name, null, accessToken);
     }
   }, [
     isLoggedIn,
     navigate,
     accessToken,
     validateToken,
-    selectedProjectName,
-    currentProject,
-    models,
-    getModels
+    effectivePname
   ]);
 
-  if ( !currentProject || currentProject === null) {
+  if (isLoadingProject || !currentProject) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
           <Col>
-            <p>Please go to <a href="/projects">projects</a> and select one of your project.</p>
+            <FontAwesomeIcon icon={faSpinner} spin size="xl" />
           </Col>
         </Row>
       </Container>
     )
   }
 
-  if (isGettingModels) {
+  if (isLoadingModels) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -94,7 +97,7 @@ const ProjectSchedulePage = () => {
 
   return (
     <>
-    <NavbarSub navData={{pAll: true, pName: effectiveProject, pSchedule: true}} />
+    <NavbarSub navData={{pAll: true, pName: effectivePname, pSchedule: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Project Schedule" />
@@ -153,6 +156,5 @@ const ProjectSchedulePage = () => {
     </>
   );
 };
-
 
 export default ProjectSchedulePage;

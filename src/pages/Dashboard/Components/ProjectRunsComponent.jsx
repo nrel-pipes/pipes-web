@@ -1,6 +1,5 @@
 import { faCalendarAlt, faCircleArrowRight, faLightbulb, faListUl } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
@@ -9,12 +8,11 @@ import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../../stores/AuthStore";
 import useDataStore from "../../../stores/DataStore";
 import "../../Components/Cards.css";
-import "../ProjectRunsComponent.css";
+import "./ProjectRunsComponent.css";
 
-const ProjectRunsComponent = ({ projectRuns, isLoading, isError }) => {
-  const { setCurrentProjectRunName, setCurrentProjectRun } = useDataStore();
+const ProjectRunsComponent = ({ projectRuns, isLoading: isLoadingProjectRuns, isError }) => {
+  const { setEffectivePRname } = useDataStore();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
 
   // Auth check effect
@@ -25,13 +23,25 @@ const ProjectRunsComponent = ({ projectRuns, isLoading, isError }) => {
     }
   }, [isLoggedIn, navigate, validateToken, accessToken]);
 
-  const handleClick = (projectRun) => {
-    setCurrentProjectRunName(projectRun.name);
-    setCurrentProjectRun(projectRun);
-    navigate("/projectrun"); // Add navigation after setting store values
+  const handleProjectRunClick = (projectRun) => {
+    // Force a re-render by using a timeout to ensure state is updated before navigation
+    if (projectRun && projectRun.name) {
+      setEffectivePRname(projectRun.name);
+      setTimeout(() => {
+        navigate("/projectrun", {
+          state: {
+            projectRun: projectRun,
+            timestamp: Date.now() // Add timestamp to force unique state object
+          },
+          replace: true // Replace the history entry to avoid back button issues
+        });
+      }, 50);
+    } else {
+      console.error("Invalid project run object:", projectRun);
+    }
   };
 
-  if (isLoading) {
+  if (isLoadingProjectRuns) {
     return <div className="text-center">Loading project runs...</div>;
   }
 
@@ -57,7 +67,7 @@ const ProjectRunsComponent = ({ projectRuns, isLoading, isError }) => {
           </thead>
           <tbody>
             {projectRuns.map((projectRun, index) => (
-              <tr key={`run-${index}`} className="align-middle">
+              <tr key={`run-${projectRun.name}-${index}`} className="align-middle">
                 <td className="run-name">{projectRun.name}</td>
                 <td className="run-description text-truncate">{projectRun.description}</td>
                 <td className="run-details">
@@ -79,8 +89,9 @@ const ProjectRunsComponent = ({ projectRuns, isLoading, isError }) => {
                   <Button
                     variant="outline-primary"
                     className="action-button"
-                    onClick={() => handleClick(projectRun)}
-                    title="Go to Project Run"
+                    onClick={() => handleProjectRunClick(projectRun)}
+                    title={`Go to ${projectRun.name}`}
+                    data-run-name={projectRun.name} // Add data attribute for debugging
                   >
                     <FontAwesomeIcon icon={faCircleArrowRight} className="me-2" />
                     View this Run

@@ -15,8 +15,8 @@ import SiteNavbar from "./layouts/NavbarTop";
 import Home from "./pages/Home/Home";
 
 // Project
-import CreateProject from "./pages/Project/CreateProject";
-import UpdateProject from "./pages/Project/UpdateProject";
+import CreateProjectPage from "./pages/Project/CreateProjectPage";
+import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 
 // Projects
 import ProjectBasicsPage from "./pages/Projects/ProjectBasicsPage";
@@ -28,7 +28,7 @@ import ProjectMilestones from "./pages/Milestones/ProjectMilestones";
 import ProjectDashboardPage from "./pages/Dashboard/ProjectDashboardPage";
 
 // Project Run
-import CreateProjectRun from "./pages/ProjectRun/CreateProjectRun";
+import CreateProjectRunPage from "./pages/ProjectRun/CreateProjectRunPage";
 import ProjectRunPage from "./pages/ProjectRun/ProjectRunPage";
 
 // Project Pipeline
@@ -122,9 +122,9 @@ function App() {
                 <Route path="/change-password" element={<ChangePasswordPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/create-project" element={<CreateProject />} />
-                <Route path="/create-projectrun" element={<CreateProjectRun />} />
-                <Route path="/update-project" element={<UpdateProject />} />
+                <Route path="/create-project" element={<CreateProjectPage />} />
+                <Route path="/create-projectrun" element={<CreateProjectRunPage />} />
+                <Route path="/update-project" element={<UpdateProjectPage />} />
               </Routes>
             </div>
           </div>

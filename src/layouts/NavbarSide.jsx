@@ -13,16 +13,16 @@ import {
   FaUser
 } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
-import useProjectStore from '../stores/ProjectStore';
+import useDataStore from '../stores/DataStore';
 import './styles/NavbarSide.css';
 
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(true);
   const location = useLocation();
-  const { effectiveProject } = useProjectStore();
+  const { effectivePname } = useDataStore();
 
   // Check if a project is selected
-  const projectSelected = !!effectiveProject;
+  const projectSelected = !!effectivePname;
 
   const toggleSidebar = () => {
     setExpanded(!expanded);

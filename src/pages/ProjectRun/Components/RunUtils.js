@@ -1,5 +1,5 @@
-import { MarkerType } from "reactflow";
 import { graphlib, layout } from "dagre";
+import { MarkerType } from "reactflow";
 
 import * as d3 from "d3";
 

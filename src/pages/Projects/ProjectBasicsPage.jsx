@@ -1,6 +1,7 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Plus } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Col from "react-bootstrap/Col";
@@ -8,7 +9,8 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
 import { useProjectBasicsQuery } from "../../hooks/useProjectQuery";
-import useProjectStore from "../../stores/ProjectStore";
+import useAuthStore from "../../stores/AuthStore";
+import useDataStore from "../../stores/DataStore";
 
 import NavbarSub from "../../layouts/NavbarSub";
 import ContentHeader from "../Components/ContentHeader";
@@ -19,9 +21,18 @@ import "./ProjectBasicsPage.css";
 
 
 const ProjectBasicsPage = () => {
-  const { setEffectiveProject } = useProjectStore();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { setEffectivePname } = useDataStore();
 
   const navigate = useNavigate();
+
+  // Auth check effect
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate, validateToken, accessToken]);
 
   const {
     data: projectBasics = [],
@@ -33,7 +44,7 @@ const ProjectBasicsPage = () => {
   const handleProjectClick = (event, project) => {
     event.preventDefault();
     // Set the project in the store
-    setEffectiveProject(project.name);
+    setEffectivePname(project.name);
     // Navigate to the project dashboard
     navigate("/project");
   };

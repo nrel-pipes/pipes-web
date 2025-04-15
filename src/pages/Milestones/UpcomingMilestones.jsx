@@ -1,23 +1,26 @@
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useCallback, useMemo } from "react";
 import Table from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
 import "../PageStyles.css";
-import "./UpcomingMilestones.css"; // Add this import
+import "./UpcomingMilestones.css";
 
 const UpcomingMilestones = ({ projectBasics }) => {
   const navigate = useNavigate();
-  const { getProject } = useDataStore();
-  const { accessToken } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { setEffectivePname } = useDataStore();
 
   const handleProjectClick = useCallback(
     (event, projectName) => {
       event.preventDefault();
-      getProject(projectName, accessToken);
+      // Set the effective project before navigation
+      setEffectivePname(projectName);
+      // Prefetch the project data
+      queryClient.prefetchQuery(["project", projectName]);
       navigate("/project");
     },
-    [getProject, accessToken, navigate],
+    [setEffectivePname, queryClient, navigate],
   );
 
   const milestones = useMemo(() => {

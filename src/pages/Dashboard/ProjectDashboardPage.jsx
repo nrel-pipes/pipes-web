@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -14,47 +13,28 @@ import Row from "react-bootstrap/Row";
 import "../PageStyles.css";
 import "./ProjectDashboardPage.css";
 
-import { getProjectRuns } from "../../api/ProjectAPI";
 import useAuthStore from "../../stores/AuthStore";
 
 import NavbarSub from "../../layouts/NavbarSub";
-import AssumptionsComponent from "./Components/Assumptions";
-import ProjectRunsComponent from "./Components/ProjectRuns";
-import RequirementsComponent from "./Components/Requirements";
-import ScenariosComponent from "./Components/Scenarios";
-import ScheduleComponent from "./Components/Schedule";
+import AssumptionsComponent from "./Components/AssumptionsComponent";
+import ProjectRunsComponent from "./Components/ProjectRunsComponent";
+import RequirementsComponent from "./Components/RequirementsComponent";
+import ScenariosComponent from "./Components/ScenariosComponent";
+import ScheduleComponent from "./Components/ScheduleComponent";
 
-import useProjectStore from "../../stores/ProjectStore";
+import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
+import useDataStore from "../../stores/DataStore";
 
 import ContentHeader from "../Components/ContentHeader";
 
-import { useProjectDetailQuery } from "../../hooks/useProjectQuery";
+import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
 const ProjectDashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
 
-  const { effectiveProject } = useProjectStore();
-
-  const emptyProjectTemplate = {
-    name: "",
-    title: "",
-    description: "",
-    assumptions: [],
-    milestones: [],
-    owner: {
-      email: "",
-      first_name: "",
-      last_name: ""
-    },
-    requirements: {},
-    scenarios: [],
-    scheduled_end: null,
-    scheduled_start: null,
-    sensitivities: [],
-    teams: []
-  };
+  const { effectivePname } = useDataStore();
 
   // Auth check effect
   useEffect(() => {
@@ -64,58 +44,29 @@ const ProjectDashboardPage = () => {
     }
   }, [isLoggedIn, navigate, validateToken, accessToken]);
 
+  // fetch project data
   const {
     data: project,
     isLoading,
     isError,
     error
-  } = useProjectDetailQuery(effectiveProject);
+  } = useGetProjectQuery(effectivePname);
 
+  // fetch project runs data
   const {
     data: projectRuns,
     isLoading: isLoadingRuns,
     isError: isErrorRuns,
     error: errorRuns,
-    refetch: refetchProjectRuns
-  } = useQuery({
-    queryKey: ["projectRuns", project?.name],
-    queryFn: async () => {
-      if (!project?.name) {
-        return [];
-      }
-
-      try {
-        const freshData = await getProjectRuns({
-          projectName: project.name,
-          accessToken: accessToken
-        });
-        return freshData;
-      } catch (error) {
-        console.error("Error fetching project runs:", error);
-        throw error; // Properly throw the error for refetch handling
-      }
-    },
-    enabled: isLoggedIn && !!project?.name && project.name !== "",
-    retry: 1, // Reduce retry attempts
-    staleTime: 0, // Force refetch when returning to page
-    refetchOnMount: true, // Always refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    onError: (error) => {
-      console.error("Error fetching project runs:", error);
-      // Auto-retry once after a brief delay if there's an error
-      setTimeout(() => {
-        refetchProjectRuns();
-      }, 500);
-    }
-  });
+    refetch: refetchRuns
+  } = useGetProjectRunsQuery(effectivePname)
 
   // Add effect to refetch when returning to the page
   useEffect(() => {
-    // If we have a project and the query previously errored, refetch
     if (project?.name && isErrorRuns) {
-      refetchProjectRuns();
+      refetchRuns();
     }
-  }, [project, isErrorRuns, refetchProjectRuns]);
+  }, [project, isErrorRuns, refetchRuns]);
 
   if (isLoading) {
     return (
@@ -157,7 +108,7 @@ const ProjectDashboardPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pAll: true, pName: effectiveProject }} />
+      <NavbarSub navData={{ pAll: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Project Dashboard" showUpdateProjectButton={true}/>

@@ -5,15 +5,20 @@ import ReactFlow, {
   useNodesState,
 } from "reactflow";
 
+import { useGetProjectQuery } from "../../../hooks/useProjectQuery";
 import useDataStore from "../../../stores/DataStore";
 import useUIStore from "../../../stores/UIStore";
-import { createScenarioEdges, createScenarioNodes } from "../../../utilities/RunUtils";
 import { ScenarioNode } from "../../Components/graph/DecoratedNode";
+import { createScenarioEdges, createScenarioNodes } from "./RunUtils";
 
 export default function ScenarioMappingComponent({ data }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const scenarios = useDataStore((state) => state.currentProject.scenarios);
+
+  const { effectivePname } = useDataStore();
+  const { data: project } = useGetProjectQuery(effectivePname);
+  const scenarios = project?.scenarios || [];
+
   const scenarioColors = useUIStore((state) => state.colors);
 
   const nodeTypes = useMemo(

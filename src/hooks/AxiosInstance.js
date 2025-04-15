@@ -3,7 +3,7 @@ import axios from "axios";
 import pipesConfig from "../configs/PipesConfig";
 import useAuthStore from "../stores/AuthStore";
 
-const axiosClient = axios.create({
+const AxiosInstance = axios.create({
   baseURL: pipesConfig.apiOrigin,
   timeout: 10000,
   headers: {
@@ -13,7 +13,7 @@ const axiosClient = axios.create({
 });
 
 // Add interceptors for handling authorization and errors
-axiosClient.interceptors.request.use(
+AxiosInstance.interceptors.request.use(
   (config) => {
     const { accessToken, validateToken, logout } = useAuthStore.getState();
 
@@ -31,7 +31,7 @@ axiosClient.interceptors.request.use(
   },
 );
 
-axiosClient.interceptors.response.use(
+AxiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
@@ -73,4 +73,4 @@ axiosClient.interceptors.response.use(
   },
 );
 
-export default axiosClient;
+export default AxiosInstance;

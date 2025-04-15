@@ -5,21 +5,42 @@ import React, { useEffect, useMemo } from "react";
 import "./DataViewComponent.css";
 
 // Internal imports
-import useDataStore from "../../../stores/DataStore";
 import useUIStore from "../../../stores/UIStore";
 import { makeBullets } from "../../Pipeline/Components/DataViewComponent";
 import ScenarioMappingComponent from "./ScenarioMappingComponent";
 
+import { useGetModelsQuery } from "../../../hooks/useModelQuery";
+import { useGetModelRunsQuery } from "../../../hooks/useModelRunQuery";
+
+import useDataStore from "../../../stores/DataStore";
+
 export default function DataViewComponent({ selected }) {
-  const models = useDataStore((state) => state.models);
-  const modelRuns = useDataStore((state) => state.modelRuns);
+  const { effectivePname, effectivePRname } = useDataStore();
+
+  // Only run the query once both values are available
+  const shouldFetchData = Boolean(effectivePname) && Boolean(effectivePRname);
+
+  const {
+    data: models = [],
+    isLoading: isLoadingModels,
+  } = useGetModelsQuery(effectivePname, effectivePRname, {
+    enabled: shouldFetchData,
+  });
+
+  const {
+    data: modelRuns = [],
+    isLoading: isLoadingModelRuns,
+  } = useGetModelRunsQuery(effectivePname, effectivePRname, null, {
+    enabled: !!effectivePname && !!effectivePRname,
+  });
 
   const getColor = useUIStore((state) => state.getColor);
   const scenarioColors = useUIStore((state) => state.scenarios);
 
   const model = useMemo(() => {
-    if (selected) return models.find((model) => model.name === selected.id);
-
+    if (selected && models && models.length > 0) {
+      return models.find((model) => model.name === selected.id);
+    }
     return null;
   }, [selected, models]);
 
@@ -50,12 +71,18 @@ export default function DataViewComponent({ selected }) {
   }, [selected, modelRuns]);
 
   useEffect(() => {
-    models.forEach((model) => {
-      model.scenario_mappings.forEach((mapping) => {
-        getColor(mapping.model_scenario);
+    // Add null check to prevent the forEach on undefined
+    if (models && models.length > 0) {
+      models.forEach((model) => {
+        // Add null check for scenario_mappings
+        if (model.scenario_mappings) {
+          model.scenario_mappings.forEach((mapping) => {
+            getColor(mapping.model_scenario);
+          });
+        }
       });
-    });
-  });
+    }
+  }, [models, getColor]); // Add proper dependencies
 
   //
   // Render

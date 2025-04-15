@@ -17,12 +17,16 @@ import "./ProjectPipelinePage.css";
 
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import useProjectStore from "../../stores/ProjectStore";
 
 import ContentHeader from "../Components/ContentHeader";
 import DataViewComponent from "./Components/DataViewComponent";
 import GraphViewComponent from "./Components/GraphViewComponent";
 
+import { useGetHandoffsQuery } from "../../hooks/useHandoffQuery";
+import { useGetModelsQuery } from "../../hooks/useModelQuery";
+import { useGetModelRunsQuery } from "../../hooks/useModelRunQuery";
+import { useGetProjectQuery } from "../../hooks/useProjectQuery";
+import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 
 const nodeColors = {
@@ -36,25 +40,66 @@ const nodeColors = {
 const nodeWidth = 45;
 const nodeHeight = 45;
 
-
 const ProjectPipelinePage = () => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { effectiveProject } = useProjectStore();
+  const { effectivePname } = useDataStore();
+
+  const shouldFetchData = !!effectivePname && isLoggedIn;
+
   const {
-    selectedProjectName,
-    currentProject,
-    projectRuns,
-    models,
-    getModels,
-    isGettingModels,
-    modelRuns,
-    getModelRuns,
-    isGettingModelRuns,
-    handoffs,
-    getHandoffs,
-    isGettingHandoffs
-  } = useDataStore();
+    data: project,
+    isLoading: isLoadingProject,
+  } = useGetProjectQuery(effectivePname, {
+    enabled: shouldFetchData
+  });
+
+  const {
+    data: projectRuns = [],
+    isLoading: isLoadingProjectRuns
+  } = useGetProjectRunsQuery(effectivePname, {
+    enabled: shouldFetchData
+  });
+
+  const projectDataAvailable = shouldFetchData && !!project;
+
+  const {
+    data: models = [],
+    isLoading: isLoadingModels
+  } = useGetModelsQuery(
+    effectivePname,
+    null,
+    {
+      enabled: projectDataAvailable
+    }
+  );
+
+  const {
+    data: modelRuns = [],
+    isLoading: isLoadingModelRuns
+  } = useGetModelRunsQuery(
+    effectivePname,
+    null,
+    null,
+    {
+      enabled: projectDataAvailable
+    }
+  );
+
+  const {
+    data: handoffs = [],
+    isLoading: isLoadingHandoffs
+  } = useGetHandoffsQuery(
+    effectivePname,
+    null,
+    {
+      enabled: projectDataAvailable
+    }
+  );
+
+  const isLoading = isLoadingProject || isLoadingProjectRuns ||
+                   isLoadingModels || isLoadingModelRuns ||
+                   isLoadingHandoffs;
 
   const [clickedElementData, setClickedElementedData] = useState({});
 
@@ -65,56 +110,32 @@ const ProjectPipelinePage = () => {
       return;
     }
 
-    if (currentProject === null || currentProject.name !== selectedProjectName) {
-      navigate('/projects')
+    if (!effectivePname) {
+      navigate('/projects');
       return;
     }
-
-    getModels(currentProject.name, null, accessToken);
-
-    getHandoffs(currentProject.name, null, accessToken);
-
   }, [
     isLoggedIn,
     navigate,
     accessToken,
     validateToken,
-    selectedProjectName,
-    currentProject,
-    getModels,
-    getHandoffs
-  ]);
-
-  useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
-    if (currentProject === null || currentProject.name !== selectedProjectName) {
-      navigate('/projects')
-      return;
-    }
-
-    if (modelRuns.length === 0) {
-      getModelRuns(currentProject.name, null, null, accessToken);
-    }
-
-  }, [
-    isLoggedIn,
-    navigate,
-    accessToken,
-    validateToken,
-    selectedProjectName,
-    currentProject,
-    modelRuns,
-    getModelRuns,
+    effectivePname
   ]);
 
   const pipesGraph = useMemo(() => {
+    if (isLoading) {
+      return (
+        <Container className="mainContent">
+          <Row className="mt-5">
+            <Col>
+              <FontAwesomeIcon icon={faSpinner} spin size="xl" />
+            </Col>
+          </Row>
+        </Container>
+      )
+    }
 
-    if ( !currentProject || currentProject === null) {
+    if (!project) {
       return (
         <Container className="mainContent">
           <Row className="mt-5">
@@ -126,60 +147,22 @@ const ProjectPipelinePage = () => {
       )
     }
 
-    if (isGettingModels) {
-      return (
-        <Container className="mainContent">
-          <Row className="mt-5">
-            <Col>
-              <FontAwesomeIcon icon={faSpinner} spin size="xl" />
-            </Col>
-          </Row>
-        </Container>
-      )
-    }
-
-    if (isGettingModelRuns) {
-      return (
-        <Container className="mainContent">
-          <Row className="mt-5">
-            <Col>
-              <FontAwesomeIcon icon={faSpinner} spin size="xl" />
-            </Col>
-          </Row>
-        </Container>
-      )
-    }
-
-    if (isGettingHandoffs) {
-      return (
-        <Container className="mainContent">
-          <Row className="mt-5">
-            <Col>
-              <FontAwesomeIcon icon={faSpinner} spin size="xl" />
-            </Col>
-          </Row>
-        </Container>
-      )
-    }
-
     let initialNodes = []
     let initialEdges = []
 
-    // Add project node
-    const pNodeId = 'n-p-' + currentProject.name;
+    const pNodeId = 'n-p-' + project.name;
     const pNode = {
       id: pNodeId,
       type: 'circle',
       label: 'Project',
       position: {x: 0, y: 0},
-      data: currentProject,
+      data: project,
       style: {
         backgroundColor: nodeColors.project
       }
     }
     initialNodes.push(pNode);
 
-    // Add project run nodes & edges
     projectRuns.forEach((projectRun) => {
       const prNodeId = 'n-pr-' + projectRun.name;
       const prNode = {
@@ -214,7 +197,6 @@ const ProjectPipelinePage = () => {
       }
       initialEdges.push(prEdge);
 
-      // Push model nodes & edges
       let modelNodeIdMapping = new Map();
       models.forEach((model, index) => {
         const mNodeId = 'n-m-' + model.name + '-' + index;
@@ -257,7 +239,6 @@ const ProjectPipelinePage = () => {
         }
       });
 
-      // Push handoffs nodes and edges.
       models.forEach((model, index1) => {
         handoffs.forEach((handoff, index2) => {
           const hEdgeId = 'e-handoff-' + projectRun.name + '-from-' + model.name + '-to-' + handoff.to_model + '-' + handoff.name + '-' + index1 + index2;
@@ -288,7 +269,6 @@ const ProjectPipelinePage = () => {
         });
       });
 
-      // Push model run nodes & edges
       function generateRandomString(length) {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
@@ -299,7 +279,6 @@ const ProjectPipelinePage = () => {
         return result;
       }
 
-      // Push model run nodes & edges
       models.forEach((model, index1) => {
         const mNodeId = modelNodeIdMapping.get(model.name);
         modelRuns.forEach((modelRun, index2) => {
@@ -343,16 +322,15 @@ const ProjectPipelinePage = () => {
 
     });
 
-    // Generate dagre graph layout
     const {layoutedNodes, layoutedEdges} = getDagreLayoutedElements(initialNodes, initialEdges);
 
     return {nodes: layoutedNodes, edges: layoutedEdges}
 
-  }, [currentProject, projectRuns, isGettingModels, models, modelRuns, isGettingModelRuns, handoffs, isGettingHandoffs]);
+  }, [project, projectRuns, models, modelRuns, handoffs, isLoading]);
 
   return (
     <>
-    <NavbarSub navData={{pAll: true, pName: effectiveProject, pGraph: true}} />
+    <NavbarSub navData={{pAll: true, pName: effectivePname, pGraph: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Project Pipeline" />
@@ -405,8 +383,6 @@ function getDagreLayoutedElements(nodes, edges) {
     node.targetPosition = isHorizontal ? 'left' : 'top';
     node.sourcePosition = isHorizontal ? 'right' : 'bottom';
 
-    // We are shifting the dagre node position (anchor=center center) to the top left
-    // so it matches the React Flow node anchor point (top left).
     let size = 0.5
     if (node.label === 'ProjectRun') {
       node.position = {

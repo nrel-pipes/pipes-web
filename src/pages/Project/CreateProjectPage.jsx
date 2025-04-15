@@ -4,172 +4,712 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import { useNavigate } from "react-router-dom";
 
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { useUpdateProjectMutation } from "../../hooks/useProjectQuery";
+import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
 import ContentHeader from "../Components/ContentHeader";
-import FormError from "../Components/form/FormError";
 import SideColumn from "../Components/form/SideColumn";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import "../Components/Cards.css";
+import FormError from "../Components/form/FormError";
 import "../FormStyles.css";
+import "../PageStyles.css";
 
-const UpdateProject = () => {
+const CreateProjectPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { currentProject } = useDataStore();
   const queryClient = useQueryClient();
+  const { setEffectivePname } = useDataStore();
 
-  const updateProjectMutation = useUpdateProjectMutation();
+  // Auth check effect
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate, validateToken, accessToken]);
 
-  const initializeForm = () => {
-    return {
-      name: "",
-      title: "",
-      description: "",
-      assumptions: [],
-      leads: [],
-      milestones: [],
-      owner: {
-        email: "",
-        first_name: "",
-        last_name: "",
-        organization: "",
-      },
-      requirements: {
-        keys: [],
-        values: [],
-      },
-      scenarios: [],
-      scheduled_end: "",
-      scheduled_start: "",
-      sensitivities: [],
-      teams: [],
-    };
-  };
-  const denormalizeFormData = (normalizedForm) => {
-    const requirements = {};
-    normalizedForm.requirements.keys.forEach((key, index) => {
-      const values = normalizedForm.requirements.values[index];
-      requirements[key] = values.length === 1 ? values[0] : values;
-    });
-    const scenarios = normalizedForm.scenarios.map((scenario) => {
-      const description =
-        Array.isArray(scenario.description) && scenario.description.length === 1
-          ? scenario.description[0]
-          : scenario.description;
-      const other = Array.isArray(scenario.other)
-        ? scenario.other.reduce((acc, [key, value]) => {
-            acc[key] = value;
-            return acc;
-          }, {})
-        : scenario.other;
+  const [form, setForm] = useState({
+    name: "",
+    scheduled_start: "",
+    assumptions: [],
+    milestones: [],
+    owner: {
+      email: "",
+      first_name: "",
+      last_name: "",
+      organization: "",
+    },
+    scenarios: [],
+    requirements: {
+      keys: [],
+      values: [],
+    },
+    sensitivities: [],
+  });
 
-      return {
-        ...scenario,
-        description,
-        other,
-      };
-    });
-
-    return {
-      ...normalizedForm,
-      requirements,
-      scenarios,
-    };
-  };
-
-  const [form, setForm] = useState(() => initializeForm(currentProject));
-  const handleRemoveSensitivity = (index, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      sensitivities: prevForm.sensitivities.filter((_, idx) => idx !== index),
-    }));
-  };
-
-  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
-        return prevForm;
-      }
-
-      const newSensitivities = [...(prevForm.sensitivities || [])];
-      newSensitivities[sensitivityIndex].list.push("");
-      return {
-        ...prevForm,
-        sensitivities: newSensitivities,
-      };
-    });
-  };
-  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      const newSensitivities = [...(prevForm.sensitivities || [])];
-      newSensitivities[sensitivityIndex].list = newSensitivities[
-        sensitivityIndex
-      ].list.filter((_, idx) => idx !== listIndex);
-      return {
-        ...prevForm,
-        sensitivities: newSensitivities,
-      };
-    });
-  };
-  const handleMilestoneDateChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].milestone_date = value;
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
-  };
-
-  const handleRemoveScenario = (index, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      scenarios: prevForm.scenarios.filter((_, idx) => idx !== index),
-    }));
-  };
-
-  const handleAddOtherInfo = (scenarioIndex, e) => {
-    e.preventDefault();
+  const handleSetString = (path, value) => {
     setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        other: [...(updatedScenarios[scenarioIndex].other || []), ["", ""]],
-      };
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = value;
+      return newState;
+    });
+  };
 
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
+  const handleAddListItem = (path, newItem) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      const lastKey = keys[keys.length - 1];
+      current[lastKey] = [...(current[lastKey] || []), newItem];
+      return newState;
     });
   };
-  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
-    setForm((prevForm) => {
-      const newScenarios = [...prevForm.scenarios];
-      newScenarios[scenarioIndex] = {
-        ...newScenarios[scenarioIndex],
-        other: newScenarios[scenarioIndex].other.filter(
-          (_, idx) => idx !== otherIndex,
-        ),
-      };
-      return {
-        ...prevForm,
-        scenarios: newScenarios,
-      };
+
+  const handleListItemChange = (path, index, newValue) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      const lastKey = keys[keys.length - 1];
+      const updatedArray = [...current[lastKey]];
+      updatedArray[index] = newValue;
+      current[lastKey] = updatedArray;
+      return newState;
     });
   };
+
+  const handleRemoveListItem = (path, index) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      const lastKey = keys[keys.length - 1];
+      if (!Array.isArray(current[lastKey])) {
+        console.error(`The property at path "${path}" is not an array:`, current[lastKey]);
+        return newState;
+      }
+      current[lastKey] = [
+        ...current[lastKey].slice(0, index),
+        ...current[lastKey].slice(index + 1)
+      ];
+
+      return newState;
+    });
+  };
+
+  const formatDateForInput = (isoString) => {
+    if (!isoString) return "";
+    return isoString.split("T")[0];
+  };
+
+  const handleDateChange = (field, value) => {
+    setForm({
+      ...form,
+      [field]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    mutation.mutate({ data: form });
+  };
+
+  const [formError, setFormError] = useState(false);
+  const [formErrorMessage, setFormErrorMessage] = useState("");
+  const [submittingForm, setSubmittingForm] = useState(false);
+
+  function validateProjectData(formData) {
+    // Reset previous errors
+    setFormError(false);
+    setFormErrorMessage("");
+
+    // Get DOM elements for adding/removing error classes
+    const projectNameElement = document.getElementById("projectName");
+
+    // Validate project name
+    if (!formData.name || formData.name.trim().length === 0) {
+      projectNameElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide a name for your project.");
+      return false;
+    } else {
+      projectNameElement.classList.remove("form-error");
+    }
+    const projectBasicsFromCache = queryClient.getQueryData(["projectBasics"]);
+    const names = projectBasicsFromCache.map(projectBasic => projectBasic.name);
+    if (names.includes(formData.name)) {
+      projectNameElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(`Project with ${formData.name} already exists. Please choose unique name.`);
+      return false;
+    }
+    // Validate owner information
+    const firstNameElement = document.getElementById("firstName");
+    const lastNameElement = document.getElementById("lastName");
+    const emailElement = document.getElementById("email");
+    const organizationElement = document.getElementById("organization");
+
+    let hasOwnerError = false;
+
+    // Check first name
+    if (!formData.owner.first_name || formData.owner.first_name.trim().length === 0) {
+      firstNameElement.classList.add("form-error");
+      hasOwnerError = true;
+    } else {
+      firstNameElement.classList.remove("form-error");
+    }
+
+    // Check last name
+    if (!formData.owner.last_name || formData.owner.last_name.trim().length === 0) {
+      lastNameElement.classList.add("form-error");
+      hasOwnerError = true;
+    } else {
+      lastNameElement.classList.remove("form-error");
+    }
+
+    // Check email
+    if (!formData.owner.email || formData.owner.email.trim().length === 0) {
+      emailElement.classList.add("form-error");
+      hasOwnerError = true;
+    } else {
+      emailElement.classList.remove("form-error");
+    }
+
+    // Check organization
+    if (!formData.owner.organization || formData.owner.organization.trim().length === 0) {
+      organizationElement.classList.add("form-error");
+      hasOwnerError = true;
+    } else {
+      organizationElement.classList.remove("form-error");
+    }
+
+    if (hasOwnerError) {
+      setFormError(true);
+      setFormErrorMessage("Please fill in all owner information fields.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    const scheduledStartElement = document.getElementById("scheduledStart");
+    const scheduledEndElement = document.getElementById("scheduledEnd");
+
+    if (!formData.scheduled_start || formData.scheduled_start.trim().length === 0) {
+      scheduledStartElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Please fill in Scheduled Start.",
+      );
+      setSubmittingForm(false);
+      return false;
+    }
+    scheduledStartElement.classList.remove("form-error");
+
+    if (!formData.scheduled_end || formData.scheduled_end.trim().length === 0) {
+      scheduledEndElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Please fill in Scheduled End.",
+      );
+      setSubmittingForm(false);
+      return false;
+    }
+
+    const startDate = new Date(formData.scheduled_start);
+    const endDate = new Date(formData.scheduled_end);
+    if (startDate > endDate) {
+      scheduledStartElement.classList.add("form-error");
+      scheduledEndElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Ensure Scheduled End is after Scheduled Start."
+      );
+      setSubmittingForm(false);
+      return false;
+    }
+    scheduledStartElement.classList.remove("form-error");
+    scheduledEndElement.classList.remove("form-error");
+
+    // Check for empty assumptions
+    let hasEmptyAssumption = false;
+    formData.assumptions.forEach((assumption, index) => {
+      const assumptionElement = document.getElementById(`assumptions${index}`);
+      if (!assumption || assumption.trim().length === 0) {
+        assumptionElement.classList.add("form-error");
+        hasEmptyAssumption = true;
+      } else {
+        assumptionElement.classList.remove("form-error");
+      }
+    });
+
+    if (hasEmptyAssumption) {
+      setFormError(true);
+      setFormErrorMessage("Please fill in all assumptions or remove empty ones.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    // Validate requirements
+    const requirementKeys = formData.requirements.keys;
+    let hasEmptyRequirementKey = false;
+    let hasDuplicateRequirementKey = false;
+    let duplicateKeyName = "";
+
+    // Check for empty keys
+    requirementKeys.forEach((key, index) => {
+      const requirementElement = document.getElementById(`requirement-${index}`);
+      if (!key || key.trim().length === 0) {
+        requirementElement.classList.add("form-error");
+        hasEmptyRequirementKey = true;
+      } else {
+        requirementElement.classList.remove("form-error");
+      }
+    });
+
+    if (hasEmptyRequirementKey) {
+      setFormError(true);
+      setFormErrorMessage("Requirement names cannot be empty. Please fill in all requirement names.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    // Check for duplicate keys
+    const keySet = new Set();
+    requirementKeys.forEach((key, index) => {
+      const requirementElement = document.getElementById(`requirement-${index}`);
+      const normalizedKey = key.trim().toLowerCase(); // Normalize for case-insensitive comparison
+
+      if (keySet.has(normalizedKey)) {
+        requirementElement.classList.add("form-error");
+        hasDuplicateRequirementKey = true;
+        duplicateKeyName = key;
+      } else {
+        keySet.add(normalizedKey);
+      }
+    });
+
+    if (hasDuplicateRequirementKey) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate requirement name found: "${duplicateKeyName}". Please use unique names for requirements.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    // Optional: Check for empty requirement values if needed
+    let hasEmptyRequirementValue = false;
+    formData.requirements.values.forEach((values, keyIndex) => {
+      values.forEach((value, valueIndex) => {
+        const valueElement = document.getElementById(`value-${keyIndex}-${valueIndex}`);
+        if (!value || value.trim().length === 0) {
+          valueElement.classList.add("form-error");
+          hasEmptyRequirementValue = true;
+        } else {
+          valueElement.classList.remove("form-error");
+        }
+      });
+    });
+
+    if (hasEmptyRequirementValue) {
+      setFormError(true);
+      setFormErrorMessage("Requirement values cannot be empty. Please fill in all values or remove them.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    // Validate scenarios
+    let hasEmptyScenarioName = false;
+    let hasDuplicateScenarioName = false;
+    let duplicateScenarioName = "";
+    let hasEmptyScenarioDescription = false;
+    let hasEmptyOtherKey = false;
+    let hasDuplicateOtherKey = false;
+    let duplicateOtherKeyName = "";
+    let hasEmptyOtherValue = false;
+
+    // Create a set to track unique scenario names (case-insensitive)
+    const scenarioNameSet = new Set();
+
+    // Check for empty or duplicate scenario names
+    formData.scenarios.forEach((scenario, index) => {
+      const scenarioNameElement = document.getElementById(`scenario${index}`);
+      const scenarioDescriptionElement = document.getElementById(`scenarioDescription${index}`);
+
+      // Check for empty scenario names
+      if (!scenario.name || scenario.name.trim().length === 0) {
+        scenarioNameElement.classList.add("form-error");
+        hasEmptyScenarioName = true;
+      } else {
+        // Check for duplicate scenario names (case-insensitive)
+        const normalizedName = scenario.name.trim().toLowerCase();
+
+        if (scenarioNameSet.has(normalizedName)) {
+          scenarioNameElement.classList.add("form-error");
+          hasDuplicateScenarioName = true;
+          duplicateScenarioName = scenario.name;
+        } else {
+          scenarioNameElement.classList.remove("form-error");
+          scenarioNameSet.add(normalizedName);
+        }
+      }
+
+      // Check for empty description
+      if (!scenario.description || !scenario.description[0] || scenario.description[0].trim().length === 0) {
+        scenarioDescriptionElement.classList.add("form-error");
+        hasEmptyScenarioDescription = true;
+      } else {
+        scenarioDescriptionElement.classList.remove("form-error");
+      }
+
+      // Check the "other" key-value pairs
+      if (scenario.other && scenario.other.length > 0) {
+        // Create a set to track unique keys within this scenario (case-insensitive)
+        const otherKeySet = new Set();
+
+        scenario.other.forEach((item, otherIndex) => {
+          const otherKeyElement = document.getElementById(`scenarioOther${otherIndex}`);
+          const otherValueElement = document.getElementById(`scenarioOther-${index}`);
+
+          // Check for empty keys
+          if (!item[0] || item[0].trim().length === 0) {
+            otherKeyElement.classList.add("form-error");
+            hasEmptyOtherKey = true;
+          } else {
+            // Check for duplicate keys within this scenario
+            const normalizedKey = item[0].trim().toLowerCase();
+
+            if (otherKeySet.has(normalizedKey)) {
+              otherKeyElement.classList.add("form-error");
+              hasDuplicateOtherKey = true;
+              duplicateOtherKeyName = item[0];
+            } else {
+              otherKeyElement.classList.remove("form-error");
+              otherKeySet.add(normalizedKey);
+            }
+          }
+
+          // Check for empty values
+          if (!item[1] || item[1].trim().length === 0) {
+            otherValueElement.classList.add("form-error");
+            hasEmptyOtherValue = true;
+          } else {
+            otherValueElement.classList.remove("form-error");
+          }
+        });
+      }
+    });
+
+    // Handle validation errors for scenarios
+    if (hasEmptyScenarioName) {
+      setFormError(true);
+      setFormErrorMessage("Scenario names cannot be empty. Please fill in all scenario names.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateScenarioName) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate scenario name found: "${duplicateScenarioName}". Please use unique names for scenarios.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyScenarioDescription) {
+      setFormError(true);
+      setFormErrorMessage("Scenario descriptions cannot be empty. Please fill in all scenario descriptions.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyOtherKey) {
+      setFormError(true);
+      setFormErrorMessage("Scenario 'Other Information' keys cannot be empty. Please fill in all keys or remove the empty entries.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateOtherKey) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate 'Other Information' key found: "${duplicateOtherKeyName}" in a scenario. Please use unique keys.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyOtherValue) {
+      setFormError(true);
+      setFormErrorMessage("Scenario 'Other Information' values cannot be empty. Please fill in all values or remove the empty entries.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    // Validate milestones
+    let hasEmptyMilestoneName = false;
+    let hasDuplicateMilestoneName = false;
+    let duplicateMilestoneName = "";
+    let hasEmptyMilestoneDescription = false;
+    let hasEmptyMilestoneDate = false;
+    let hasMilestoneDateOutOfRange = false;
+    let outOfRangeMilestoneIndex = -1;
+
+    // Create a set to track unique milestone names (case-insensitive)
+    const milestoneNameSet = new Set();
+
+    // Check each milestone
+    formData.milestones.forEach((milestone, index) => {
+      const milestoneNameElement = document.getElementById(`milestoneName-${index}`);
+      const milestoneDescriptionElement = document.getElementById(`milestoneDescription-${index}`);
+      const milestoneDateElement = document.getElementById(`milestoneDate-${index}`);
+
+      // Check for empty milestone name
+      if (!milestone.name || milestone.name.trim().length === 0) {
+        milestoneNameElement.classList.add("form-error");
+        hasEmptyMilestoneName = true;
+      } else {
+        // Check for duplicate milestone names (case-insensitive)
+        const normalizedName = milestone.name.trim().toLowerCase();
+
+        if (milestoneNameSet.has(normalizedName)) {
+          milestoneNameElement.classList.add("form-error");
+          hasDuplicateMilestoneName = true;
+          duplicateMilestoneName = milestone.name;
+        } else {
+          milestoneNameElement.classList.remove("form-error");
+          milestoneNameSet.add(normalizedName);
+        }
+      }
+
+      // Check for empty milestone description
+      if (!milestone.description || !milestone.description[0] || milestone.description[0].trim().length === 0) {
+        milestoneDescriptionElement.classList.add("form-error");
+        hasEmptyMilestoneDescription = true;
+      } else {
+        milestoneDescriptionElement.classList.remove("form-error");
+      }
+
+      // Check for empty milestone date
+      if (!milestone.milestone_date || milestone.milestone_date.trim().length === 0) {
+        milestoneDateElement.classList.add("form-error");
+        hasEmptyMilestoneDate = true;
+      } else {
+        // Check if the milestone date is within the project's scheduled start and end dates
+        const milestoneDate = new Date(milestone.milestone_date);
+        const projectStartDate = new Date(formData.scheduled_start);
+        const projectEndDate = new Date(formData.scheduled_end);
+
+        if (milestoneDate < projectStartDate || milestoneDate > projectEndDate) {
+          milestoneDateElement.classList.add("form-error");
+          hasMilestoneDateOutOfRange = true;
+          if (outOfRangeMilestoneIndex === -1) outOfRangeMilestoneIndex = index;
+        } else {
+          milestoneDateElement.classList.remove("form-error");
+        }
+      }
+    });
+
+    // Handle validation errors for milestones
+    if (hasEmptyMilestoneName) {
+      setFormError(true);
+      setFormErrorMessage("Milestone names cannot be empty. Please fill in all milestone names.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateMilestoneName) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate milestone name found: "${duplicateMilestoneName}". Please use unique names for milestones.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyMilestoneDescription) {
+      setFormError(true);
+      setFormErrorMessage("Milestone descriptions cannot be empty. Please fill in all milestone descriptions.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyMilestoneDate) {
+      setFormError(true);
+      setFormErrorMessage("Milestone dates cannot be empty. Please set a date for each milestone.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasMilestoneDateOutOfRange) {
+      setFormError(true);
+      setFormErrorMessage(`Milestone ${outOfRangeMilestoneIndex + 1} date is outside the project schedule. All milestones must be between the project's scheduled start and end dates.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    // Validate sensitivities
+    let hasEmptySensitivityName = false;
+    let hasDuplicateSensitivityName = false;
+    let duplicateSensitivityName = "";
+    let hasEmptySensitivityDescription = false;
+    let hasEmptySensitivityListItem = false;
+    let hasDuplicateSensitivityListItems = false;
+    let duplicateListItemValue = "";
+    let sensitivityWithDuplicateItems = -1;
+
+    // Create a set to track unique sensitivity names (case-insensitive)
+    const sensitivityNameSet = new Set();
+
+    // Check each sensitivity
+    formData.sensitivities.forEach((sensitivity, index) => {
+      const sensitivityNameElement = document.getElementById(`sensitivityName-${index}`);
+      const sensitivityDescriptionElement = document.getElementById(`sensitivityDescription-${index}`);
+
+      // Check for empty sensitivity name
+      if (!sensitivity.name || sensitivity.name.trim().length === 0) {
+        sensitivityNameElement.classList.add("form-error");
+        hasEmptySensitivityName = true;
+      } else {
+        // Check for duplicate sensitivity names (case-insensitive)
+        const normalizedName = sensitivity.name.trim().toLowerCase();
+
+        if (sensitivityNameSet.has(normalizedName)) {
+          sensitivityNameElement.classList.add("form-error");
+          hasDuplicateSensitivityName = true;
+          duplicateSensitivityName = sensitivity.name;
+        } else {
+          sensitivityNameElement.classList.remove("form-error");
+          sensitivityNameSet.add(normalizedName);
+        }
+      }
+
+      // Check for empty sensitivity description
+      if (!sensitivity.description || !sensitivity.description[0] || sensitivity.description[0].trim().length === 0) {
+        sensitivityDescriptionElement.classList.add("form-error");
+        hasEmptySensitivityDescription = true;
+      } else {
+        sensitivityDescriptionElement.classList.remove("form-error");
+      }
+
+      // Check sensitivity list items
+      if (sensitivity.list && sensitivity.list.length > 0) {
+        // Create a set to track unique list items within this sensitivity (case-insensitive)
+        const listItemSet = new Set();
+
+        sensitivity.list.forEach((item, listIndex) => {
+          const sensitivityItemElement = document.getElementById(`senstivityItem-${index}`);
+
+          // Check for empty list items
+          if (!item || item.trim().length === 0) {
+            sensitivityItemElement.classList.add("form-error");
+            hasEmptySensitivityListItem = true;
+          } else {
+            // Check for duplicate list items within this sensitivity (case-insensitive)
+            const normalizedItem = item.trim().toLowerCase();
+
+            if (listItemSet.has(normalizedItem)) {
+              sensitivityItemElement.classList.add("form-error");
+              hasDuplicateSensitivityListItems = true;
+              duplicateListItemValue = item;
+              sensitivityWithDuplicateItems = index;
+            } else {
+              sensitivityItemElement.classList.remove("form-error");
+              listItemSet.add(normalizedItem);
+            }
+          }
+        });
+      }
+    });
+
+    // Handle validation errors for sensitivities
+    if (hasEmptySensitivityName) {
+      setFormError(true);
+      setFormErrorMessage("Sensitivity names cannot be empty. Please fill in all sensitivity names.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateSensitivityName) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate sensitivity name found: "${duplicateSensitivityName}". Please use unique names for sensitivities.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptySensitivityDescription) {
+      setFormError(true);
+      setFormErrorMessage("Sensitivity descriptions cannot be empty. Please fill in all sensitivity descriptions.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptySensitivityListItem) {
+      setFormError(true);
+      setFormErrorMessage("Sensitivity list items cannot be empty. Please fill in all items or remove them.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateSensitivityListItems) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate list item "${duplicateListItemValue}" found in Sensitivity ${sensitivityWithDuplicateItems + 1}. Please ensure all items within a sensitivity are unique.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    setFormError(false);
+    return true;
+  }
+
+  const mutation = useCreateProjectMutation();
+
+  const onCreateSuccess = (data) => {
+    setSubmittingForm(false);
+
+    if (data && data.name) {
+      setEffectivePname(data.name);
+    }
+
+    navigate("/project");
+  };
+
+  const onCreateError = (error) => {
+    setSubmittingForm(false);
+    if (error.message !== "Validation failed") {
+      setFormError(true);
+      setFormErrorMessage("Failed to create project. Please try again.");
+      console.error("Project creation failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (mutation.isSuccess && mutation.data) {
+      onCreateSuccess(mutation.data);
+    }
+
+    if (mutation.isError && mutation.error) {
+      onCreateError(mutation.error);
+    }
+  }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error]);
 
   const handleRequirementNameChange = (index, newName) => {
     setForm((prevForm) => {
@@ -270,122 +810,14 @@ const UpdateProject = () => {
       };
     });
   };
-  const handleMilestoneNameChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].name = value;
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
-  };
-  const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].description = [value];
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
-  };
 
-  const handleAddMilestone = (e) => {
+  const handleAddOtherInfo = (scenarioIndex, e) => {
     e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      milestones: [
-        ...(prevForm.milestones || []),
-        {
-          name: "",
-          description: [""],
-          milestone_date: "",
-        },
-      ],
-    }));
-  };
-  const handleSetString = (path, value) => {
-    setForm((prevState) => {
-      const keys = path.split(".");
-      const newState = { ...prevState };
-      let current = newState;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-      current[keys[keys.length - 1]] = value;
-      return newState;
-    });
-  };
-  const handleAssumptionChange = (index, value) => {
-    setForm((prevState) => ({
-      ...prevState,
-      assumptions: prevState.assumptions.map((item, i) =>
-        i === index ? value : item,
-      ),
-    }));
-  };
-  const handleAddAssumption = () => {
-    setForm((prevState) => ({
-      ...prevState,
-      assumptions: [...prevState.assumptions, ""],
-    }));
-  };
-  const handleRemoveAssumption = (index, e) => {
-    e.preventDefault();
-
-    setForm((prevState) => ({
-      ...prevState,
-      assumptions: prevState.assumptions.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleDateChange = (field, value) => {
-    setForm({
-      ...form,
-      [field]: value,
-    });
-  };
-  const formatDateForInput = (isoString) => {
-    if (!isoString) return "";
-    return isoString.split("T")[0];
-  };
-
-  useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, accessToken, validateToken]);
-
-  const handleAddScenario = (e) => {
-    e.preventDefault();
-    setForm((prevState) => ({
-      ...prevState,
-      scenarios: [
-        ...(prevState.scenarios || []),
-        {
-          name: "",
-          description: [""],
-          other: [],
-        },
-      ],
-    }));
-  };
-
-  const handleScenarioNameChange = (scenarioIndex, value) => {
     setForm((prevState) => {
       const updatedScenarios = [...prevState.scenarios];
       updatedScenarios[scenarioIndex] = {
         ...updatedScenarios[scenarioIndex],
-        name: value,
+        other: [...(updatedScenarios[scenarioIndex].other || []), ["", ""]],
       };
 
       return {
@@ -394,12 +826,20 @@ const UpdateProject = () => {
       };
     });
   };
+  const handleRemoveScenario = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      scenarios: prevForm.scenarios.filter((_, idx) => idx !== index),
+    }));
+  };
+
   const handleScenarioDescriptionChange = (scenarioIndex, value) => {
     setForm((prevState) => {
       const updatedScenarios = [...prevState.scenarios];
       updatedScenarios[scenarioIndex] = {
         ...updatedScenarios[scenarioIndex],
-        description: [value],
+        description: [value], // Keep it as an array with single value since that's your data structure
       };
 
       return {
@@ -408,6 +848,7 @@ const UpdateProject = () => {
       };
     });
   };
+
   const handleOtherInfoChange = (
     scenarioIndex,
     otherIndex,
@@ -435,16 +876,47 @@ const UpdateProject = () => {
     });
   };
 
-  const handleAddSensitivity = (e) => {
+  const handleScenarioNameChange = (scenarioIndex, value) => {
+    setForm((prevState) => {
+      const updatedScenarios = [...prevState.scenarios];
+      updatedScenarios[scenarioIndex] = {
+        ...updatedScenarios[scenarioIndex],
+        name: value,
+      };
+
+      return {
+        ...prevState,
+        scenarios: updatedScenarios,
+      };
+    });
+  };
+
+  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
+    setForm((prevForm) => {
+      const newScenarios = [...prevForm.scenarios];
+      newScenarios[scenarioIndex] = {
+        ...newScenarios[scenarioIndex],
+        other: newScenarios[scenarioIndex].other.filter(
+          (_, idx) => idx !== otherIndex,
+        ),
+      };
+      return {
+        ...prevForm,
+        scenarios: newScenarios,
+      };
+    });
+  };
+
+  const handleAddScenario = (e) => {
     e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      sensitivities: [
-        ...(prevForm.sensitivities || []),
+    setForm((prevState) => ({
+      ...prevState,
+      scenarios: [
+        ...(prevState.scenarios || []),
         {
           name: "",
           description: [""],
-          list: [""],
+          other: [],
         },
       ],
     }));
@@ -460,269 +932,118 @@ const UpdateProject = () => {
     }));
   };
 
-  const [formError, setFormError] = useState(false);
-  const [formErrorMessage, setFormErrorMessage] = useState("");
-
-  const [submittingForm, setSubmittingForm] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError(false);
-    setSubmittingForm(true);
-
-    const denormalizedForm = denormalizeFormData(form);
-
-    const projectNameElement = document.getElementById("projectName");
-    if (!denormalizedForm.name || denormalizedForm.name.trim().length === 0) {
-      projectNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide a name for your project.");
-      setSubmittingForm(false);
-      return;
-    }
-    projectNameElement.classList.remove("form-error");
-
-    const scheduledStartElement = document.getElementById("scheduledStart");
-    const scheduledEndElement = document.getElementById("scheduledEnd");
-    let hasScheduleError = false;
-    if (
-      !denormalizedForm.scheduled_start ||
-      denormalizedForm.scheduled_start.trim().length === 0
-    ) {
-      scheduledStartElement.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (
-      !denormalizedForm.scheduled_end ||
-      denormalizedForm.scheduled_end.trim().length === 0
-    ) {
-      scheduledEndElement.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (
-      denormalizedForm.scheduled_start &&
-      denormalizedForm.scheduled_end &&
-      new Date(denormalizedForm.scheduled_end) <
-        new Date(denormalizedForm.scheduled_start)
-    ) {
-      scheduledStartElement.classList.add("form-error");
-      scheduledEndElement.classList.add("form-error");
-      hasScheduleError = true;
-    }
-    if (hasScheduleError) {
-      setFormError(true);
-      setFormErrorMessage(
-        "The schedule is invalid. Please ensure both dates are provided and the end date is not before the start date.",
-      );
-      setSubmittingForm(false);
-      return;
-    }
-    scheduledStartElement.classList.remove("form-error");
-    scheduledEndElement.classList.remove("form-error");
-
-    const ownerFirstNameElement = document.getElementById("firstName");
-    const ownerLastNameElement = document.getElementById("lastName");
-    const ownerEmailElement = document.getElementById("email");
-    const ownerOrganizationElement = document.getElementById("organization");
-
-    if (
-      !denormalizedForm.owner.first_name ||
-      denormalizedForm.owner.first_name.trim().length === 0
-    ) {
-      ownerFirstNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your first name.");
-      setSubmittingForm(false);
-      return;
-    }
-    ownerFirstNameElement.classList.remove("form-error");
-
-    if (
-      !denormalizedForm.owner.last_name ||
-      denormalizedForm.owner.last_name.trim().length === 0
-    ) {
-      ownerLastNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide your last name.");
-      setSubmittingForm(false);
-      return;
-    }
-    ownerLastNameElement.classList.remove("form-error");
-
-    if (
-      !denormalizedForm.owner.email ||
-      denormalizedForm.owner.email.trim().length === 0
-    ) {
-      ownerEmailElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide the project owner's email.");
-      setSubmittingForm(false);
-      return;
-    }
-    ownerEmailElement.classList.remove("form-error");
-
-    if (
-      !denormalizedForm.owner.organization ||
-      denormalizedForm.owner.organization.trim().length === 0
-    ) {
-      ownerOrganizationElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(
-        "You forgot to provide the project owner's organization.",
-      );
-      setSubmittingForm(false);
-      return;
-    }
-    ownerOrganizationElement.classList.remove("form-error");
-
-    for (let i = 0; i < denormalizedForm.milestones.length; i++) {
-      const milestone = denormalizedForm.milestones[i];
-      const milestoneNameElement = document.getElementById(
-        `milestoneName-${i}`,
-      );
-      const milestoneDescriptionElement = document.getElementById(
-        `milestoneDescription-${i}`,
-      );
-      const milestoneDateElement = document.getElementById(
-        `milestoneDate-${i}`,
-      );
-
-      if (!milestone.name || milestone.name.trim().length === 0) {
-        milestoneNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Milestone ${i + 1} is missing a name.`);
-        setSubmittingForm(false);
-        return;
+  const handleMilestoneNameChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
       }
-      milestoneNameElement.classList.remove("form-error");
-
-      if (!milestone.description || milestone.description.trim().length === 0) {
-        milestoneDescriptionElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Milestone ${i + 1} is missing a description.`);
-        setSubmittingForm(false);
-        return;
-      }
-      milestoneDescriptionElement.classList.remove("form-error");
-
-      if (
-        !milestone.milestone_date ||
-        milestone.milestone_date.trim().length === 0
-      ) {
-        milestoneDateElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Milestone ${i + 1} is missing a date.`);
-        setSubmittingForm(false);
-        return;
-      }
-      milestoneDateElement.classList.remove("form-error");
-    }
-
-    for (let i = 0; i < denormalizedForm.scenarios.length; i++) {
-      const scenario = denormalizedForm.scenarios[i];
-      const scenarioNameElement = document.getElementById(`scenarioName-${i}`);
-      const scenarioDescriptionElement = document.getElementById(
-        `scenarioDescription-${i}`,
-      );
-
-      if (!scenario.name || scenario.name.trim().length === 0) {
-        scenarioNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Scenario ${i + 1} is missing a name.`);
-        setSubmittingForm(false);
-        return;
-      }
-      scenarioNameElement.classList.remove("form-error");
-
-      if (
-        !scenario.description ||
-        scenario.description.toString().trim().length === 0
-      ) {
-        scenarioDescriptionElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Scenario ${i + 1} is missing a description.`);
-        setSubmittingForm(false);
-        return;
-      }
-      scenarioDescriptionElement.classList.remove("form-error");
-    }
-
-    for (let i = 0; i < denormalizedForm.sensitivities.length; i++) {
-      const sensitivity = denormalizedForm.sensitivities[i];
-      const sensitivityNameElement = document.getElementById(
-        `sensitivityName-${i}`,
-      );
-      const sensitivityDescriptionElement = document.getElementById(
-        `sensitivityDescription-${i}`,
-      );
-
-      if (!sensitivity.name || sensitivity.name.trim().length === 0) {
-        sensitivityNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Sensitivity ${i + 1} is missing a name.`);
-        setSubmittingForm(false);
-        return;
-      }
-      sensitivityNameElement.classList.remove("form-error");
-
-      if (
-        !sensitivity.description ||
-        sensitivity.description.toString().trim().length === 0
-      ) {
-        sensitivityDescriptionElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Sensitivity ${i + 1} is missing a description.`);
-        setSubmittingForm(false);
-        return;
-      }
-      sensitivityDescriptionElement.classList.remove("form-error");
-    }
-
-    const payload = {
-      ...denormalizedForm,
-      title: denormalizedForm.name.toLowerCase().replace(/\s+/g, "_"),
-      scheduled_start: denormalizedForm.scheduled_start,
-      scheduled_end: denormalizedForm.scheduled_end,
-    };
-
-    try {
-      await updateProjectMutation.mutateAsync({
-        projectName: currentProject.name,
-        data: payload,
-      });
-    } catch (error) {
-      if (error.message !== "Validation failed") {
-        setFormError(true);
-        setFormErrorMessage("Failed to update project. Please try again.");
-        console.error("Project update failed:", error);
-      }
-      setSubmittingForm(false);
-    }
+      newMilestones[milestoneIndex].name = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
   };
 
-  useEffect(() => {
-    if (updateProjectMutation.isSuccess) {
-      setFormError(false);
-      setSubmittingForm(false);
-    }
+  const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].description = [value];
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
 
-    if (updateProjectMutation.isError) {
-      setFormError(true);
-      setFormErrorMessage(
-        `Failed to update project: ${
-          updateProjectMutation.error instanceof Error
-            ? updateProjectMutation.error.message
-            : "Unknown error occurred"
-        }`,
-      );
-      setSubmittingForm(false);
-    }
-  }, [
-    updateProjectMutation.isSuccess,
-    updateProjectMutation.isError,
-    updateProjectMutation.error,
-  ]);
+  const handleMilestoneDateChange = (milestoneIndex, value) => {
+    setForm((prevForm) => {
+      const newMilestones = [...(prevForm.milestones || [])];
+      if (!newMilestones[milestoneIndex]) {
+        newMilestones[milestoneIndex] = {};
+      }
+      newMilestones[milestoneIndex].milestone_date = value;
+      return {
+        ...prevForm,
+        milestones: newMilestones,
+      };
+    });
+  };
 
+  const handleAddMilestone = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      milestones: [
+        ...(prevForm.milestones || []),
+        {
+          name: "",
+          description: [""],
+          milestone_date: "",
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveSensitivity = (index, e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: prevForm.sensitivities.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list = newSensitivities[
+        sensitivityIndex
+      ].list.filter((_, idx) => idx !== listIndex);
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
+
+  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
+    e.preventDefault();
+    setForm((prevForm) => {
+      // If the last item is already empty, don't add another
+      if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
+        return prevForm;
+      }
+
+      const newSensitivities = [...(prevForm.sensitivities || [])];
+      newSensitivities[sensitivityIndex].list.push("");
+      return {
+        ...prevForm,
+        sensitivities: newSensitivities,
+      };
+    });
+  };
+
+  const handleAddSensitivity = (e) => {
+    e.preventDefault();
+    setForm((prevForm) => ({
+      ...prevForm,
+      sensitivities: [
+        ...(prevForm.sensitivities || []),
+        {
+          name: "",
+          description: [""],
+          list: [""],
+        },
+      ],
+    }));
+  };
+
+  // Side bar state
   const [isExpanded, setIsExpanded] = useState(false);
   const [documentation] = useState({
     description: "This is a sample description of the project creation page",
@@ -758,12 +1079,11 @@ const UpdateProject = () => {
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
-          <ContentHeader title={"Update Project"} />
+          <ContentHeader title={"Create Project"} />
           <Row className="justify-content-center"></Row>
           <div className="d-flex justify-content-center">
             <Col
               className="justify-content-center mw-600"
-              style={{ maxWidth: "1000px" }}
               xs={12}
               md={9}
             >
@@ -778,8 +1098,8 @@ const UpdateProject = () => {
                   <Form.Control
                     type="input"
                     id="projectName"
-                    name="projectName"
-                    placeholder="Project Names"
+                    name="name"
+                    placeholder="Project Name"
                     className="mb-4"
                     value={form.name}
                     onChange={(e) => handleSetString("name", e.target.value)}
@@ -909,14 +1229,13 @@ const UpdateProject = () => {
                         type="input"
                         placeholder="Enter assumption"
                         value={form.assumptions[index]}
-                        onChange={(e) =>
-                          handleAssumptionChange(index, e.target.value)
-                        }
+                        onChange={(e) => handleListItemChange("assumptions", index, e.target.value)}
+
                       />{" "}
                       <Button
                         variant="outline-danger"
                         size="sm"
-                        onClick={(e) => handleRemoveAssumption(index, e)}
+                        onClick={(e) => handleRemoveListItem("assumptions", index, e)}
                       >
                         <Minus className="w-4 h-4" />
                       </Button>
@@ -926,7 +1245,8 @@ const UpdateProject = () => {
                     <Button
                       variant="outline-primary"
                       size="sm"
-                      onClick={handleAddAssumption}
+                      onClick={() => handleAddListItem("assumptions", "")}
+
                       className="mt-2 align-items-left"
                     >
                       <Plus className="w-4 h-4 mr-1" />
@@ -1064,15 +1384,16 @@ const UpdateProject = () => {
                     })}
                   </div>{" "}
                   <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={(e) => handleAddRequirement(e)}
-                      className="d-flex align-items-center me-2"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Requirement
-                    </Button>
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={(e) => handleAddRequirement(e)}
+                    className="d-flex align-items-center me-2"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Requirement
+                  </Button>
+
                   </div>
                   <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
                     Scenarios
@@ -1235,8 +1556,11 @@ const UpdateProject = () => {
                         key={milestoneIndex}
                         className="border rounded p-3 mb-4"
                       >
+                        {/* Milestone Header with Delete Button */}
                         <div className="d-flex justify-content-between align-items-center mb-3">
                           <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
                             Milestone {milestoneIndex + 1}
                           </h4>
                           <Button
@@ -1256,6 +1580,7 @@ const UpdateProject = () => {
                           </Button>
                         </div>
 
+                        {/* Milestone Name */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`milestoneName-${milestoneIndex}`}
@@ -1271,6 +1596,7 @@ const UpdateProject = () => {
                           />
                         </div>
 
+                        {/* Milestone Description */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`milestoneDescription-${milestoneIndex}`}
@@ -1287,6 +1613,7 @@ const UpdateProject = () => {
                           />
                         </div>
 
+                        {/* Milestone Date */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Group
                             id={`milestone-date-${milestoneIndex}`}
@@ -1339,8 +1666,11 @@ const UpdateProject = () => {
                         key={sensitivityIndex}
                         className="border rounded p-3 mb-4"
                       >
+                        {/* Sensitivity Header with Delete Button */}
                         <div className="d-flex justify-content-between align-items-center mb-3">
                           <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
+                            {" "}
+                            {/* Set font size to 1.0rem */}
                             Sensitivity {sensitivityIndex + 1}
                           </h4>
                           <Button
@@ -1359,6 +1689,7 @@ const UpdateProject = () => {
                             <Minus className="w-4 h-4" />
                           </Button>
                         </div>
+                        {/* Sensitivity Name */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`sensitivityName-${sensitivityIndex}`}
@@ -1380,6 +1711,7 @@ const UpdateProject = () => {
                             }}
                           />{" "}
                         </div>
+                        {/* Sensitivity Description */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`sensitivityDescription-${sensitivityIndex}`}
@@ -1402,6 +1734,7 @@ const UpdateProject = () => {
                             }}
                           />{" "}
                         </div>
+                        {/* Sensitivity List Items */}
                         <div className="mb-3">
                           {sensitivity.list.map((item, listIndex) => (
                             <div
@@ -1446,6 +1779,7 @@ const UpdateProject = () => {
                             </div>
                           ))}
 
+                          {/* Add List Item Button */}
                           <div className="d-flex justify-content-start mt-2">
                             <Button
                               variant="outline-primary"
@@ -1477,21 +1811,19 @@ const UpdateProject = () => {
                       Sensitivity
                     </Button>
                   </div>
+                  <Button
+                    variant="primary"
+                    disabled={mutation.isPending}
+                    type="submit"
+                  >
+                    {mutation.isPending ? "Submitting..." : "Submit"}
+                  </Button>
                 </Form.Group>
                 <Row>
                   {formError ? (
                     <FormError errorMessage={formErrorMessage} />
                   ) : null}
                 </Row>
-                <Button
-                  variant="primary"
-                  disabled={updateProjectMutation.isPending || submittingForm}
-                  type="submit"
-                >
-                  {updateProjectMutation.isPending || submittingForm
-                    ? "Updating..."
-                    : "Update Project"}
-                </Button>
               </Form>
             </Col>
           </div>
@@ -1514,4 +1846,4 @@ const UpdateProject = () => {
   );
 };
 
-export default UpdateProject;
+export default CreateProjectPage;

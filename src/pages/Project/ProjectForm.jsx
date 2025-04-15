@@ -7,18 +7,21 @@ import Row from "react-bootstrap/Row";
 import { useNavigate } from "react-router-dom";
 
 import { useEffect, useState } from "react";
+import { useCreateProjectMutation, useGetProjectQuery } from "../../hooks/useProjectQuery";
 import ContentHeader from "../Components/ContentHeader";
 import FormError from "../Components/form/FormError";
 import SideColumn from "../Components/form/SideColumn";
 import "../FormStyles.css";
 import useAuthStore from "./stores/AuthStore";
-import useDataStore from "./stores/DataStore";
+import useDataStore from "./stores/ProjectStore";
 
 const ProjectForm = ({ create }) => {
-  // Create is true if we are creating a new project, is false if we are updating
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-  const { getProjectBasics, getProject, currentProject } = useDataStore();
+  const { effectivePname } = useDataStore();
+
+  const { data: currentProject } = useGetProjectQuery(effectivePname);
+  const createProjectMutation = useCreateProjectMutation();
 
   const initializeForm = (form) => {
     if (create) {
@@ -47,7 +50,6 @@ const ProjectForm = ({ create }) => {
       };
     }
 
-    // Rest of your normalization logic remains the same
     const keys = Object.keys(form.requirements || {});
     const values = keys.map((key) => {
       const value = form.requirements[key];
@@ -83,6 +85,7 @@ const ProjectForm = ({ create }) => {
       scenarios: normalizedScenarios,
     };
   };
+
   const denormalizeFormData = (normalizedForm) => {
     const requirements = {};
     normalizedForm.requirements.keys.forEach((key, index) => {
@@ -108,7 +111,6 @@ const ProjectForm = ({ create }) => {
       };
     });
 
-    // Return denormalized form
     return {
       ...normalizedForm,
       requirements,
@@ -119,6 +121,7 @@ const ProjectForm = ({ create }) => {
   const [form, setForm] = useState(() =>
     initializeForm(currentProject, create),
   );
+
   const handleRemoveSensitivity = (index, e) => {
     e.preventDefault();
     setForm((prevForm) => ({
@@ -130,7 +133,6 @@ const ProjectForm = ({ create }) => {
   const handleAddSensitivityListItem = (sensitivityIndex, e) => {
     e.preventDefault();
     setForm((prevForm) => {
-      // If the last item is already empty, don't add another
       if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
         return prevForm;
       }
@@ -143,6 +145,7 @@ const ProjectForm = ({ create }) => {
       };
     });
   };
+
   const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
     e.preventDefault();
     setForm((prevForm) => {
@@ -156,6 +159,7 @@ const ProjectForm = ({ create }) => {
       };
     });
   };
+
   const handleMilestoneDateChange = (milestoneIndex, value) => {
     setForm((prevForm) => {
       const newMilestones = [...(prevForm.milestones || [])];
@@ -220,6 +224,7 @@ const ProjectForm = ({ create }) => {
     newScenarios[scenarioIndex].other.push(["", ""]);
     setScenarios(newScenarios);
   };
+
   const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
     setForm((prevForm) => {
       const newScenarios = [...prevForm.scenarios];
@@ -236,22 +241,18 @@ const ProjectForm = ({ create }) => {
     });
   };
 
-  // Add a new other info item to a scenario
   const handleSetArrayValue = (arrayPath, index, value) => {
     setForm((prevState) => {
       const keys = arrayPath.split(".");
       const newState = { ...prevState };
       let current = newState;
 
-      // Navigate to the array
       for (let i = 0; i < keys.length - 1; i++) {
         current[keys[i]] = { ...current[keys[i]] };
         current = current[keys[i]];
       }
 
-      // Get the array name from the last key
       const arrayName = keys[keys.length - 1];
-      // Create new array with updated value
       const newArray = [...current[arrayName]];
       newArray[index] = value;
       current[arrayName] = newArray;
@@ -260,7 +261,6 @@ const ProjectForm = ({ create }) => {
     });
   };
 
-  // Usage:
   const handleRequirementNameChange = (index, newName) => {
     setForm((prevForm) => {
       const newKeys = [...prevForm.requirements.keys];
@@ -360,6 +360,7 @@ const ProjectForm = ({ create }) => {
       };
     });
   };
+
   const handleMilestoneNameChange = (milestoneIndex, value) => {
     setForm((prevForm) => {
       const newMilestones = [...(prevForm.milestones || [])];
@@ -373,6 +374,7 @@ const ProjectForm = ({ create }) => {
       };
     });
   };
+
   const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
     setForm((prevForm) => {
       const newMilestones = [...(prevForm.milestones || [])];
@@ -396,11 +398,12 @@ const ProjectForm = ({ create }) => {
         {
           name: "",
           description: [""],
-          milestone_date: "", // Will be in YYYY-MM-DD format
+          milestone_date: "",
         },
       ],
     }));
   };
+
   const handleSetString = (path, value) => {
     setForm((prevState) => {
       const keys = path.split(".");
@@ -414,6 +417,7 @@ const ProjectForm = ({ create }) => {
       return newState;
     });
   };
+
   const handleAssumptionChange = (index, value) => {
     setForm((prevState) => ({
       ...prevState,
@@ -422,12 +426,14 @@ const ProjectForm = ({ create }) => {
       ),
     }));
   };
+
   const handleAddAssumption = () => {
     setForm((prevState) => ({
       ...prevState,
       assumptions: [...prevState.assumptions, ""],
     }));
   };
+
   const handleRemoveAssumption = (index, e) => {
     e.preventDefault();
 
@@ -443,111 +449,21 @@ const ProjectForm = ({ create }) => {
       [field]: value,
     });
   };
+
   const formatDateForInput = (isoString) => {
     if (!isoString) return "";
     return isoString.split("T")[0];
   };
 
-  // Handle auth and initial data loading
   useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
       navigate("/login");
     }
-    getProjectBasics(accessToken);
-  }, [isLoggedIn, navigate, getProjectBasics, accessToken, validateToken]);
+  }, [isLoggedIn, navigate, accessToken, validateToken]);
 
-  // Handle loading project data when we have a project name
-  // useEffect(() => {
-  //   if (projectName) {
-  //     getProject(currentProject.name, accessToken);
-  //   }
-  // }, [currentProject, getProject, accessToken]);
-
-  // Update form when project data loads
-
-  // Project information
-  const [projectName, setProjectName] = useState("example project");
-
-  // Owner information
-  const [ownerFirstName] = useState("Jordan");
-  const [ownerLastName] = useState("Eisenman");
-  const [ownerEmail] = useState("Jordan.Eisenman@nrel.gov");
-  const [ownerOrganization] = useState("NREL");
-
-  // Requirement state
-  const [requirements] = useState([{ KeyRequirement: ["Value1"] }]);
-
-  // Adding scenario
-  const [scenarios, setScenarios] = useState([
-    {
-      name: "Base Scenario",
-      description: ["Description of the base scenario"],
-      other: [{ key: "Parameter1", value: "Value1" }],
-    },
-  ]);
-
-  const handleAddScenario = (e) => {
-    e.preventDefault();
-    setScenarios([
-      ...scenarios,
-      {
-        name: "",
-        description: [""],
-        other: [],
-      },
-    ]);
-  };
-  const [sensitivities, setSensitivities] = useState([
-    {
-      name: "Default Sensitivity",
-      description: ["Description of sensitivity"],
-      list: ["Sensitivity factor 1"],
-    },
-  ]);
-
-  const handleAddSensitivity = (e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      sensitivities: [
-        ...(prevForm.sensitivities || []),
-        {
-          name: "",
-          description: [""],
-          list: [""],
-        },
-      ],
-    }));
-  };
-  // Setting Milestones
-  const [milestones, setMilestones] = useState([
-    {
-      name: "Milestone 1",
-      description: ["First major project milestone"],
-      milestone_date: "2023-02-01",
-    },
-  ]);
-
-  const handleRemoveMilestone = (milestoneIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      milestones: prevForm.milestones.filter(
-        (_, index) => index !== milestoneIndex,
-      ),
-    }));
-  };
-  // Setting project Schedule
-  const [schedule, setSchedule] = useState({
-    scheduledStart: "2023-01-01",
-    scheduledEnd: "2023-12-31",
-  });
-
-  const createProject = useDataStore((state) => state.createProject);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
-
   const [submittingForm, setSubmittingForm] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -556,8 +472,6 @@ const ProjectForm = ({ create }) => {
     setSubmittingForm(true);
     let submissionForm = denormalizeFormData(form);
 
-    // Validation Section
-    // Validating Project Title
     const title = document.getElementById("projectName");
     if (!submissionForm.name || submissionForm.name.length === 0) {
       title.classList.add("form-error");
@@ -568,7 +482,6 @@ const ProjectForm = ({ create }) => {
     }
     title.classList.remove("form-error");
 
-    // Validating Schedule
     const scheduledStart = document.getElementById("scheduledStart");
     const scheduledEnd = document.getElementById("scheduledEnd");
     let hasScheduleError = false;
@@ -602,7 +515,6 @@ const ProjectForm = ({ create }) => {
     scheduledStart.classList.remove("form-error");
     scheduledEnd.classList.remove("form-error");
 
-    // Validating Owner Information
     const firstName = document.getElementById("firstName");
     if (
       !submissionForm.owner?.first_name ||
@@ -658,10 +570,8 @@ const ProjectForm = ({ create }) => {
     organization.classList.remove("form-error");
 
     try {
-      await createProject(submissionForm, accessToken);
+      await createProjectMutation.mutateAsync({ data: submissionForm });
       setFormError(false);
-      await getProject(submissionForm.name, accessToken);
-      // navigate("/project");
     } catch (error) {
       setFormError(true);
       setFormErrorMessage(`Failed to create project: ${error.message}`);
@@ -671,8 +581,9 @@ const ProjectForm = ({ create }) => {
 
     setSubmittingForm(false);
   };
+
   const [isExpanded, setIsExpanded] = useState(false);
-  // Adding definitions
+
   const [documentation] = useState({
     description: "This is a sample description of the project creation page",
     definitions: [
@@ -857,7 +768,7 @@ const ProjectForm = ({ create }) => {
                         id={`assumptions${index}`}
                         type="input"
                         placeholder="Enter assumption"
-                        value={form.assumptions[index]} // Changed from assumption to assumptions
+                        value={form.assumptions[index]}
                         onChange={(e) =>
                           handleAssumptionChange(index, e.target.value)
                         }
@@ -1032,7 +943,6 @@ const ProjectForm = ({ create }) => {
                         key={scenarioIndex}
                         className="border rounded p-3 mb-4"
                       >
-                        {/* Scenario Header with Delete Button */}
                         <div className="d-flex justify-content-between align-items-center mb-3">
                           <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
                             Scenario {scenarioIndex + 1}
@@ -1054,7 +964,6 @@ const ProjectForm = ({ create }) => {
                           </Button>
                         </div>
 
-                        {/* Scenario Name */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`scenario${scenarioIndex}`}
@@ -1069,7 +978,6 @@ const ProjectForm = ({ create }) => {
                           />
                         </div>
 
-                        {/* Scenario Description */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`scenarioDescription${scenarioIndex}`}
@@ -1087,12 +995,10 @@ const ProjectForm = ({ create }) => {
                           />
                         </div>
 
-                        {/* Other Information Section */}
                         <div className="mb-3">
                           <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
                             Other
                           </h5>
-                          {/* Other Key-Value Pairs */}
                           {scenario.other.map((item, otherIndex) => (
                             <Row
                               key={otherIndex}
@@ -1103,14 +1009,14 @@ const ProjectForm = ({ create }) => {
                                   id={`scenarioOther${otherIndex}`}
                                   type="input"
                                   placeholder={`key${otherIndex + 1}`}
-                                  value={item[0] || ""} // Add fallback empty string
+                                  value={item[0] || ""}
                                   onChange={(e) => {
                                     const newScenarios = [...scenarios];
                                     newScenarios[scenarioIndex].other[
                                       otherIndex
                                     ] = [
                                       e.target.value,
-                                      item[1] || "", // Add fallback empty string
+                                      item[1] || "",
                                     ];
                                     setScenarios(newScenarios);
                                   }}
@@ -1121,13 +1027,13 @@ const ProjectForm = ({ create }) => {
                                   id={`scenarioOther-${scenarioIndex}`}
                                   type="input"
                                   placeholder="Value"
-                                  value={item[1] || ""} // Add fallback empty string
+                                  value={item[1] || ""}
                                   onChange={(e) => {
                                     const newScenarios = [...scenarios];
                                     newScenarios[scenarioIndex].other[
                                       otherIndex
                                     ] = [
-                                      item[0] || "", // Add fallback empty string
+                                      item[0] || "",
                                       e.target.value,
                                     ];
                                     setScenarios(newScenarios);
@@ -1158,7 +1064,6 @@ const ProjectForm = ({ create }) => {
                               </Col>
                             </Row>
                           ))}{" "}
-                          {/* Add Other Information Button */}
                           <div className="d-flex justify-content-start mt-2">
                             <Button
                               variant="outline-primary"
@@ -1196,11 +1101,8 @@ const ProjectForm = ({ create }) => {
                         key={milestoneIndex}
                         className="border rounded p-3 mb-4"
                       >
-                        {/* Milestone Header with Delete Button */}
                         <div className="d-flex justify-content-between align-items-center mb-3">
                           <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            {" "}
-                            {/* Set font size to 1.0rem */}
                             Milestone {milestoneIndex + 1}
                           </h4>
                           <Button
@@ -1220,7 +1122,6 @@ const ProjectForm = ({ create }) => {
                           </Button>
                         </div>
 
-                        {/* Milestone Name */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`milestoneName-${milestoneIndex}`}
@@ -1236,7 +1137,6 @@ const ProjectForm = ({ create }) => {
                           />
                         </div>
 
-                        {/* Milestone Description */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`milestoneDescription-${milestoneIndex}`}
@@ -1253,7 +1153,6 @@ const ProjectForm = ({ create }) => {
                           />
                         </div>
 
-                        {/* Milestone Date */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Group
                             id={`milestone-date-${milestoneIndex}`}
@@ -1306,11 +1205,8 @@ const ProjectForm = ({ create }) => {
                         key={sensitivityIndex}
                         className="border rounded p-3 mb-4"
                       >
-                        {/* Sensitivity Header with Delete Button */}
                         <div className="d-flex justify-content-between align-items-center mb-3">
                           <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            {" "}
-                            {/* Set font size to 1.0rem */}
                             Sensitivity {sensitivityIndex + 1}
                           </h4>
                           <Button
@@ -1329,7 +1225,6 @@ const ProjectForm = ({ create }) => {
                             <Minus className="w-4 h-4" />
                           </Button>
                         </div>
-                        {/* Sensitivity Name */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`sensitivityName-${sensitivityIndex}`}
@@ -1351,7 +1246,6 @@ const ProjectForm = ({ create }) => {
                             }}
                           />{" "}
                         </div>
-                        {/* Sensitivity Description */}
                         <div className="d-flex mb-3 align-items-center gap-2">
                           <Form.Control
                             id={`sensitivityDescription-${sensitivityIndex}`}
@@ -1374,7 +1268,6 @@ const ProjectForm = ({ create }) => {
                             }}
                           />{" "}
                         </div>
-                        {/* Sensitivity List Items */}
                         <div className="mb-3">
                           {sensitivity.list.map((item, listIndex) => (
                             <div
@@ -1419,7 +1312,6 @@ const ProjectForm = ({ create }) => {
                             </div>
                           ))}
 
-                          {/* Add List Item Button */}
                           <div className="d-flex justify-content-start mt-2">
                             <Button
                               variant="outline-primary"

@@ -65,7 +65,7 @@ const GraphViewComponent = ({graphNodes, graphEdges, setClickedElementData}) => 
     <div
       style={{
         width: "100%",
-        height: `${viewportHeight - 190}px`,
+        height: `${viewportHeight - 205}px`,
       }}
     >
       <ReactFlowProvider>

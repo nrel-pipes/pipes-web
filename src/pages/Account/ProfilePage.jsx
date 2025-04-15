@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row';
 
 import "../PageStyles.css";
 
-import { useUserDetailQuery } from '../../hooks/useUserQuery';
+import { useGetUserQuery } from '../../hooks/useUserQuery';
 import NavbarSub from '../../layouts/NavbarSub';
 import useAuthStore from '../../stores/AuthStore';
 
@@ -34,7 +34,7 @@ const ProfilePage = () => {
   }, [isLoggedIn, navigate, idToken]);
 
   // Fetch user details with React Query
-  const { data: currentUser, isLoading } = useUserDetailQuery(userEmail);
+  const { data: currentUser, isLoading } = useGetUserQuery(userEmail);
 
   // Determine user role
   const userRole = currentUser?.is_superuser ? 'pipes administrator' : 'pipes user';

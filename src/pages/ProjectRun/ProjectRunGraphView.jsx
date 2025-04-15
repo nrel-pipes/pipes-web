@@ -12,21 +12,17 @@ import Col from "react-bootstrap/Col";
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
 
-import { useGetHandoffsQuery } from "../../../hooks/useHandoffQuery";
-import { useGetModelsQuery } from "../../../hooks/useModelQuery";
-import { useGetModelRunsQuery } from "../../../hooks/useModelRunQuery";
-import useAuthStore from "../../../stores/AuthStore";
-import useDataStore from "../../../stores/DataStore";
-import useUIStore from "../../../stores/UIStore";
-import { DecoratedNode } from "../../Components/graph/DecoratedNode";
-import { createEdgesOverview, createNodesOverview } from "./RunUtils";
+import useAuthStore from "../../stores/AuthStore";
+import useDataStore from "../../stores/DataStore";
+import useUIStore from "../../stores/UIStore";
+import { DecoratedNode } from "../Components/graph/DecoratedNode";
+import { createEdgesOverview, createNodesOverview } from "./Components/RunUtils";
 
 
-const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
+const ProjectRunGraphView = ({selectedModel, setSelectedModel}) => {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const getModelColor = useUIStore(state => state.getModelColor);
-  const { effectivePname, effectivePRname } = useDataStore();
 
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
 
@@ -48,21 +44,18 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState();
 
   const {
-    data: models = [],
-    isLoading: isLoadingModels
-  } = useGetModelsQuery(effectivePname, effectivePRname);
-
-  const {
-    data: modelRuns = [],
-    isLoading: isLoadingModelRuns
-  } = useGetModelRunsQuery(effectivePname, effectivePRname, null);
-
-  const {
-    data: handoffs = [],
-    isLoading: isLoadingHandoffs
-  } = useGetHandoffsQuery(effectivePname, effectivePRname);
-
-  const [lastCheckIns, setLastCheckIns] = useState({});
+    currentProject,
+    currentProjectRunName,
+    models,
+    getModels,
+    isGettingModels,
+    lastCheckIns,
+    modelRuns,
+    getModelRuns,
+    isGettingModelRuns,
+    handoffs,
+    getHandoffs,
+  } = useDataStore();
 
   function onSelect(s) {
     if (selectedModel) {
@@ -91,47 +84,60 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
       return;
     }
 
-    if (!isLoadingModels && !isLoadingModelRuns && !isLoadingHandoffs) {
-      let prModels = [];
-      models.forEach((model) => {
-        const color = getModelColor(model.name);
-        model.other = model.other || {};
-        model.other.color = color;
-        if (model.context && model.context.projectrun === effectivePRname) {
-          prModels.push(model);
-        }
-      });
-
-      const dcNodes = createNodesOverview(
-        prModels,
-        modelRuns,
-        lastCheckIns,
-        handoffs
-      );
-      setNodes(dcNodes);
-
-      const dcEdges = createEdgesOverview(handoffs);
-      setEdges(dcEdges);
+    if (!handoffs || handoffs === null || handoffs.length === 0) {
+      getHandoffs(currentProject.name, null, accessToken);
     }
+
+    if (!models || models === null || models.length === 0) {
+      getModels(currentProject.name, null, accessToken);
+    }
+
+    if (!modelRuns || modelRuns === null || modelRuns.length === 0) {
+      getModelRuns(currentProject.name, null, null, accessToken);
+    }
+
+    let prModels = [];
+    models.forEach((model) => {
+      const color = getModelColor(model.name);
+      model.other.color = color;
+      if (model.context.projectrun === currentProjectRunName ) {
+        prModels.push(model);
+      }
+    });
+
+    // Set nodes
+    const dcNodes = createNodesOverview(
+      prModels,
+      modelRuns,
+      lastCheckIns,
+      handoffs
+    );
+    setNodes(dcNodes);
+
+    // Set edges
+    const dcEdges = createEdgesOverview(handoffs);
+    setEdges(dcEdges);
+
   }, [
     isLoggedIn,
     accessToken,
     navigate,
     validateToken,
-    effectivePRname,
-    models,
-    modelRuns,
-    handoffs,
-    isLoadingModels,
-    isLoadingModelRuns,
-    isLoadingHandoffs,
-    getModelColor,
-    setNodes,
-    setEdges,
-    lastCheckIns
   ]);
 
-  if (isLoadingModels || isLoadingModelRuns || isLoadingHandoffs) {
+  if (isGettingModels) {
+    return (
+      <Container className="mainContent">
+        <Row className="mt-5">
+          <Col>
+            <FontAwesomeIcon icon={faSpinner} spin size="xl" />
+          </Col>
+        </Row>
+      </Container>
+    )
+  }
+
+  if (isGettingModelRuns) {
     return (
       <Container className="mainContent">
         <Row className="mt-5">
@@ -144,7 +150,7 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
   }
 
   return (
-    <div style={{ width: "100%", height: `${viewportHeight - 210}px` }}>
+    <div style={{ width: "100%", height: `${viewportHeight - 150}px` }}>
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes}
@@ -168,4 +174,4 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
 
 }
 
-export default GraphViewComponent;
+export default ProjectRunGraphView;

@@ -5,125 +5,123 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
+import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
 import useAuthStore from "../../stores/AuthStore";
+import useDataStore from "../../stores/DataStore";
 import ContentHeader from "../Components/ContentHeader";
 import SideColumn from "../Components/form/SideColumn";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getProject, postProject } from "../../api/ProjectAPI";
-import { useProjectBasicsQuery } from "../../hooks/useProjectQuery";
+
 import "../Components/Cards.css";
 import FormError from "../Components/form/FormError";
 import "../FormStyles.css";
 import "../PageStyles.css";
 
+const CreateProject = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { setEffectiveProject } = useDataStore();
 
-  const CreateProject = () => {
-    // Initial form state with empty arrays for list items
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-    const queryClient = useQueryClient();
+  // Auth check effect
+  useEffect(() => {
+    validateToken(accessToken);
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [isLoggedIn, navigate, validateToken, accessToken]);
 
-    const {
-      data: projectBasics = [],
-      isLoading: isLoadingBasics,
-      isError: isErrorBasics,
-      error: errorBasics,
-    } = useProjectBasicsQuery();
+  const [form, setForm] = useState({
+    name: "",
+    scheduled_start: "",
+    assumptions: [],
+    milestones: [],
+    owner: {
+      email: "",
+      first_name: "",
+      last_name: "",
+      organization: "",
+    },
+    scenarios: [],
+    requirements: {
+      keys: [],
+      values: [],
+    },
+    sensitivities: [],
+  });
 
-    const [form, setForm] = useState({
-      name: "",
-      scheduled_start: "",
-      assumptions: [],
-      milestones: [],
-      owner: {
-        email: "",
-        first_name: "",
-        last_name: "",
-        organization: "",
-      },
-      scenarios: [],
-      requirements: {
-        keys: [],
-        values: [],
-      },
-      sensitivities: [],
+  const handleSetString = (path, value) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = value;
+      return newState;
     });
+  };
 
-    // Update a simple string value
-    const handleSetString = (path, value) => {
-      setForm((prevState) => {
-        const keys = path.split(".");
-        const newState = { ...prevState };
-        let current = newState;
-        for (let i = 0; i < keys.length - 1; i++) {
-          current[keys[i]] = { ...current[keys[i]] };
-          current = current[keys[i]];
-        }
-        current[keys[keys.length - 1]] = value;
+  const handleAddListItem = (path, newItem) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      const lastKey = keys[keys.length - 1];
+      current[lastKey] = [...(current[lastKey] || []), newItem];
+      return newState;
+    });
+  };
+
+  const handleListItemChange = (path, index, newValue) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      const lastKey = keys[keys.length - 1];
+      const updatedArray = [...current[lastKey]];
+      updatedArray[index] = newValue;
+      current[lastKey] = updatedArray;
+      return newState;
+    });
+  };
+
+  const handleRemoveListItem = (path, index) => {
+    setForm((prevState) => {
+      const keys = path.split(".");
+      const newState = { ...prevState };
+      let current = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      const lastKey = keys[keys.length - 1];
+      if (!Array.isArray(current[lastKey])) {
+        console.error(`The property at path "${path}" is not an array:`, current[lastKey]);
         return newState;
-      });
-    };
+      }
+      current[lastKey] = [
+        ...current[lastKey].slice(0, index),
+        ...current[lastKey].slice(index + 1)
+      ];
 
-    const handleAddListItem = (path, newItem) => {
-      setForm((prevState) => {
-        const keys = path.split(".");
-        const newState = { ...prevState };
-        let current = newState;
-        for (let i = 0; i < keys.length - 1; i++) {
-          current[keys[i]] = { ...current[keys[i]] };
-          current = current[keys[i]];
-        }
-        const lastKey = keys[keys.length - 1];
-        current[lastKey] = [...(current[lastKey] || []), newItem];
-        return newState;
-      });
-    };
-
-    const handleListItemChange = (path, index, newValue) => {
-      setForm((prevState) => {
-        const keys = path.split(".");
-        const newState = { ...prevState };
-        let current = newState;
-        for (let i = 0; i < keys.length - 1; i++) {
-          current[keys[i]] = { ...current[keys[i]] };
-          current = current[keys[i]];
-        }
-        const lastKey = keys[keys.length - 1];
-        const updatedArray = [...current[lastKey]];
-        updatedArray[index] = newValue;
-        current[lastKey] = updatedArray;
-        return newState;
-      });
-    };
-
-    const handleRemoveListItem = (path, index) => {
-      setForm((prevState) => {
-        const keys = path.split(".");
-        const newState = { ...prevState };
-        let current = newState;
-        for (let i = 0; i < keys.length - 1; i++) {
-          current[keys[i]] = { ...current[keys[i]] };
-          current = current[keys[i]];
-        }
-        const lastKey = keys[keys.length - 1];
-        if (!Array.isArray(current[lastKey])) {
-          console.error(`The property at path "${path}" is not an array:`, current[lastKey]);
-          return newState;
-        }
-        current[lastKey] = [
-          ...current[lastKey].slice(0, index),
-          ...current[lastKey].slice(index + 1)
-        ];
-
-        return newState;
-      });
-    };
-
-
+      return newState;
+    });
+  };
 
   const formatDateForInput = (isoString) => {
     if (!isoString) return "";
@@ -139,7 +137,7 @@ import "../PageStyles.css";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    mutation.mutate(form);
+    mutation.mutate({ data: form });
   };
 
   const [formError, setFormError] = useState(false);
@@ -147,568 +145,572 @@ import "../PageStyles.css";
   const [submittingForm, setSubmittingForm] = useState(false);
 
   function validateProjectData(formData) {
-      // Reset previous errors
-      setFormError(false);
-      setFormErrorMessage("");
+    // Reset previous errors
+    setFormError(false);
+    setFormErrorMessage("");
 
-      // Get DOM elements for adding/removing error classes
-      const projectNameElement = document.getElementById("projectName");
+    // Get DOM elements for adding/removing error classes
+    const projectNameElement = document.getElementById("projectName");
 
-      // Validate project name
-
-      if (!formData.name || formData.name.trim().length === 0) {
-        projectNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage("You forgot to provide a name for your project.");
-        return false;
-      } else {
-        projectNameElement.classList.remove("form-error");
-      }
-      const projectBasicsFromCache = queryClient.getQueryData(["projectBasics"]);
-      const names = projectBasicsFromCache.map(projectBasic => projectBasic.name);
-      if (names.includes(formData.name)){
-        projectNameElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(`Project with ${formData.name} already exists. Please choose unique name.`);
-        return false;
-      }
-      // Validate owner information
-      const firstNameElement = document.getElementById("firstName");
-      const lastNameElement = document.getElementById("lastName");
-      const emailElement = document.getElementById("email");
-      const organizationElement = document.getElementById("organization");
-
-      let hasOwnerError = false;
-
-      // Check first name
-      if (!formData.owner.first_name || formData.owner.first_name.trim().length === 0) {
-        firstNameElement.classList.add("form-error");
-        hasOwnerError = true;
-      } else {
-        firstNameElement.classList.remove("form-error");
-      }
-
-      // Check last name
-      if (!formData.owner.last_name || formData.owner.last_name.trim().length === 0) {
-        lastNameElement.classList.add("form-error");
-        hasOwnerError = true;
-      } else {
-        lastNameElement.classList.remove("form-error");
-      }
-
-      // Check email
-      if (!formData.owner.email || formData.owner.email.trim().length === 0) {
-        emailElement.classList.add("form-error");
-        hasOwnerError = true;
-      } else {
-        emailElement.classList.remove("form-error");
-      }
-
-      // Check organization
-      if (!formData.owner.organization || formData.owner.organization.trim().length === 0) {
-        organizationElement.classList.add("form-error");
-        hasOwnerError = true;
-      } else {
-        organizationElement.classList.remove("form-error");
-      }
-
-      if (hasOwnerError) {
-        setFormError(true);
-        setFormErrorMessage("Please fill in all owner information fields.");
-        setSubmittingForm(false);
-        return false;
-      }
-
-      const scheduledStartElement = document.getElementById("scheduledStart");
-      const scheduledEndElement = document.getElementById("scheduledEnd");
-
-      if (!formData.scheduled_start || formData.scheduled_start.trim().length === 0){
-        scheduledStartElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(
-          "The schedule is invalid. Please fill in Scheduled Start.",
-        );
-        setSubmittingForm(false);
-        return false;
-      }
-      scheduledStartElement.classList.remove("form-error");
-
-      if (!formData.scheduled_end || formData.scheduled_end.trim().length === 0){
-        scheduledEndElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(
-          "The schedule is invalid. Please fill in Scheduled End.",
-        );
-        setSubmittingForm(false);
-        return false;
-      }
-
-      const startDate = new Date(formData.scheduled_start);
-      const endDate = new Date(formData.scheduled_end);
-      if (startDate > endDate) {
-        scheduledStartElement.classList.add("form-error");
-        scheduledEndElement.classList.add("form-error");
-        setFormError(true);
-        setFormErrorMessage(
-          "The schedule is invalid. Ensure Scheduled End is after Scheduled Start."
-        );
-        setSubmittingForm(false);
-        return false;
-      }
-      scheduledStartElement.classList.remove("form-error");
-      scheduledEndElement.classList.remove("form-error");
-
-      // Check for empty assumptions
-      let hasEmptyAssumption = false;
-      formData.assumptions.forEach((assumption, index) => {
-        const assumptionElement = document.getElementById(`assumptions${index}`);
-        if (!assumption || assumption.trim().length === 0) {
-          assumptionElement.classList.add("form-error");
-          hasEmptyAssumption = true;
-        } else {
-          assumptionElement.classList.remove("form-error");
-        }
-      });
-
-      if (hasEmptyAssumption) {
-        setFormError(true);
-        setFormErrorMessage("Please fill in all assumptions or remove empty ones.");
-        setSubmittingForm(false);
-        return false;
-      }
-  // Validate requirements
-  const requirementKeys = formData.requirements.keys;
-  let hasEmptyRequirementKey = false;
-  let hasDuplicateRequirementKey = false;
-  let duplicateKeyName = "";
-
-  // Check for empty keys
-  requirementKeys.forEach((key, index) => {
-    const requirementElement = document.getElementById(`requirement-${index}`);
-    if (!key || key.trim().length === 0) {
-      requirementElement.classList.add("form-error");
-      hasEmptyRequirementKey = true;
+    // Validate project name
+    if (!formData.name || formData.name.trim().length === 0) {
+      projectNameElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage("You forgot to provide a name for your project.");
+      return false;
     } else {
-      requirementElement.classList.remove("form-error");
+      projectNameElement.classList.remove("form-error");
     }
-  });
+    const projectBasicsFromCache = queryClient.getQueryData(["projectBasics"]);
+    const names = projectBasicsFromCache.map(projectBasic => projectBasic.name);
+    if (names.includes(formData.name)) {
+      projectNameElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(`Project with ${formData.name} already exists. Please choose unique name.`);
+      return false;
+    }
+    // Validate owner information
+    const firstNameElement = document.getElementById("firstName");
+    const lastNameElement = document.getElementById("lastName");
+    const emailElement = document.getElementById("email");
+    const organizationElement = document.getElementById("organization");
 
-  if (hasEmptyRequirementKey) {
-    setFormError(true);
-    setFormErrorMessage("Requirement names cannot be empty. Please fill in all requirement names.");
-    setSubmittingForm(false);
-    return false;
-  }
+    let hasOwnerError = false;
 
-  // Check for duplicate keys
-  const keySet = new Set();
-  requirementKeys.forEach((key, index) => {
-    const requirementElement = document.getElementById(`requirement-${index}`);
-    const normalizedKey = key.trim().toLowerCase(); // Normalize for case-insensitive comparison
-
-    if (keySet.has(normalizedKey)) {
-      requirementElement.classList.add("form-error");
-      hasDuplicateRequirementKey = true;
-      duplicateKeyName = key;
+    // Check first name
+    if (!formData.owner.first_name || formData.owner.first_name.trim().length === 0) {
+      firstNameElement.classList.add("form-error");
+      hasOwnerError = true;
     } else {
-      keySet.add(normalizedKey);
+      firstNameElement.classList.remove("form-error");
     }
-  });
 
-  if (hasDuplicateRequirementKey) {
-    setFormError(true);
-    setFormErrorMessage(`Duplicate requirement name found: "${duplicateKeyName}". Please use unique names for requirements.`);
-    setSubmittingForm(false);
-    return false;
-  }
+    // Check last name
+    if (!formData.owner.last_name || formData.owner.last_name.trim().length === 0) {
+      lastNameElement.classList.add("form-error");
+      hasOwnerError = true;
+    } else {
+      lastNameElement.classList.remove("form-error");
+    }
 
-  // Optional: Check for empty requirement values if needed
-  let hasEmptyRequirementValue = false;
-  formData.requirements.values.forEach((values, keyIndex) => {
-    values.forEach((value, valueIndex) => {
-      const valueElement = document.getElementById(`value-${keyIndex}-${valueIndex}`);
-      if (!value || value.trim().length === 0) {
-        valueElement.classList.add("form-error");
-        hasEmptyRequirementValue = true;
+    // Check email
+    if (!formData.owner.email || formData.owner.email.trim().length === 0) {
+      emailElement.classList.add("form-error");
+      hasOwnerError = true;
+    } else {
+      emailElement.classList.remove("form-error");
+    }
+
+    // Check organization
+    if (!formData.owner.organization || formData.owner.organization.trim().length === 0) {
+      organizationElement.classList.add("form-error");
+      hasOwnerError = true;
+    } else {
+      organizationElement.classList.remove("form-error");
+    }
+
+    if (hasOwnerError) {
+      setFormError(true);
+      setFormErrorMessage("Please fill in all owner information fields.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    const scheduledStartElement = document.getElementById("scheduledStart");
+    const scheduledEndElement = document.getElementById("scheduledEnd");
+
+    if (!formData.scheduled_start || formData.scheduled_start.trim().length === 0) {
+      scheduledStartElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Please fill in Scheduled Start.",
+      );
+      setSubmittingForm(false);
+      return false;
+    }
+    scheduledStartElement.classList.remove("form-error");
+
+    if (!formData.scheduled_end || formData.scheduled_end.trim().length === 0) {
+      scheduledEndElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Please fill in Scheduled End.",
+      );
+      setSubmittingForm(false);
+      return false;
+    }
+
+    const startDate = new Date(formData.scheduled_start);
+    const endDate = new Date(formData.scheduled_end);
+    if (startDate > endDate) {
+      scheduledStartElement.classList.add("form-error");
+      scheduledEndElement.classList.add("form-error");
+      setFormError(true);
+      setFormErrorMessage(
+        "The schedule is invalid. Ensure Scheduled End is after Scheduled Start."
+      );
+      setSubmittingForm(false);
+      return false;
+    }
+    scheduledStartElement.classList.remove("form-error");
+    scheduledEndElement.classList.remove("form-error");
+
+    // Check for empty assumptions
+    let hasEmptyAssumption = false;
+    formData.assumptions.forEach((assumption, index) => {
+      const assumptionElement = document.getElementById(`assumptions${index}`);
+      if (!assumption || assumption.trim().length === 0) {
+        assumptionElement.classList.add("form-error");
+        hasEmptyAssumption = true;
       } else {
-        valueElement.classList.remove("form-error");
+        assumptionElement.classList.remove("form-error");
       }
     });
-  });
 
-  if (hasEmptyRequirementValue) {
-    setFormError(true);
-    setFormErrorMessage("Requirement values cannot be empty. Please fill in all values or remove them.");
-    setSubmittingForm(false);
-    return false;
-  }
+    if (hasEmptyAssumption) {
+      setFormError(true);
+      setFormErrorMessage("Please fill in all assumptions or remove empty ones.");
+      setSubmittingForm(false);
+      return false;
+    }
 
-  // Validate scenarios
-  let hasEmptyScenarioName = false;
-  let hasDuplicateScenarioName = false;
-  let duplicateScenarioName = "";
-  let hasEmptyScenarioDescription = false;
-  let hasEmptyOtherKey = false;
-  let hasDuplicateOtherKey = false;
-  let duplicateOtherKeyName = "";
-  let hasEmptyOtherValue = false;
+    // Validate requirements
+    const requirementKeys = formData.requirements.keys;
+    let hasEmptyRequirementKey = false;
+    let hasDuplicateRequirementKey = false;
+    let duplicateKeyName = "";
 
-  // Create a set to track unique scenario names (case-insensitive)
-  const scenarioNameSet = new Set();
-
-  // Check for empty or duplicate scenario names
-  formData.scenarios.forEach((scenario, index) => {
-    const scenarioNameElement = document.getElementById(`scenario${index}`);
-    const scenarioDescriptionElement = document.getElementById(`scenarioDescription${index}`);
-
-    // Check for empty scenario names
-    if (!scenario.name || scenario.name.trim().length === 0) {
-      scenarioNameElement.classList.add("form-error");
-      hasEmptyScenarioName = true;
-    } else {
-      // Check for duplicate scenario names (case-insensitive)
-      const normalizedName = scenario.name.trim().toLowerCase();
-
-      if (scenarioNameSet.has(normalizedName)) {
-        scenarioNameElement.classList.add("form-error");
-        hasDuplicateScenarioName = true;
-        duplicateScenarioName = scenario.name;
+    // Check for empty keys
+    requirementKeys.forEach((key, index) => {
+      const requirementElement = document.getElementById(`requirement-${index}`);
+      if (!key || key.trim().length === 0) {
+        requirementElement.classList.add("form-error");
+        hasEmptyRequirementKey = true;
       } else {
-        scenarioNameElement.classList.remove("form-error");
-        scenarioNameSet.add(normalizedName);
+        requirementElement.classList.remove("form-error");
       }
+    });
+
+    if (hasEmptyRequirementKey) {
+      setFormError(true);
+      setFormErrorMessage("Requirement names cannot be empty. Please fill in all requirement names.");
+      setSubmittingForm(false);
+      return false;
     }
 
-    // Check for empty description
-    if (!scenario.description || !scenario.description[0] || scenario.description[0].trim().length === 0) {
-      scenarioDescriptionElement.classList.add("form-error");
-      hasEmptyScenarioDescription = true;
-    } else {
-      scenarioDescriptionElement.classList.remove("form-error");
+    // Check for duplicate keys
+    const keySet = new Set();
+    requirementKeys.forEach((key, index) => {
+      const requirementElement = document.getElementById(`requirement-${index}`);
+      const normalizedKey = key.trim().toLowerCase(); // Normalize for case-insensitive comparison
+
+      if (keySet.has(normalizedKey)) {
+        requirementElement.classList.add("form-error");
+        hasDuplicateRequirementKey = true;
+        duplicateKeyName = key;
+      } else {
+        keySet.add(normalizedKey);
+      }
+    });
+
+    if (hasDuplicateRequirementKey) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate requirement name found: "${duplicateKeyName}". Please use unique names for requirements.`);
+      setSubmittingForm(false);
+      return false;
     }
 
-    // Check the "other" key-value pairs
-    if (scenario.other && scenario.other.length > 0) {
-      // Create a set to track unique keys within this scenario (case-insensitive)
-      const otherKeySet = new Set();
-
-      scenario.other.forEach((item, otherIndex) => {
-        const otherKeyElement = document.getElementById(`scenarioOther${otherIndex}`);
-        const otherValueElement = document.getElementById(`scenarioOther-${index}`);
-
-        // Check for empty keys
-        if (!item[0] || item[0].trim().length === 0) {
-          otherKeyElement.classList.add("form-error");
-          hasEmptyOtherKey = true;
+    // Optional: Check for empty requirement values if needed
+    let hasEmptyRequirementValue = false;
+    formData.requirements.values.forEach((values, keyIndex) => {
+      values.forEach((value, valueIndex) => {
+        const valueElement = document.getElementById(`value-${keyIndex}-${valueIndex}`);
+        if (!value || value.trim().length === 0) {
+          valueElement.classList.add("form-error");
+          hasEmptyRequirementValue = true;
         } else {
-          // Check for duplicate keys within this scenario
-          const normalizedKey = item[0].trim().toLowerCase();
-
-          if (otherKeySet.has(normalizedKey)) {
-            otherKeyElement.classList.add("form-error");
-            hasDuplicateOtherKey = true;
-            duplicateOtherKeyName = item[0];
-          } else {
-            otherKeyElement.classList.remove("form-error");
-            otherKeySet.add(normalizedKey);
-          }
-        }
-
-        // Check for empty values
-        if (!item[1] || item[1].trim().length === 0) {
-          otherValueElement.classList.add("form-error");
-          hasEmptyOtherValue = true;
-        } else {
-          otherValueElement.classList.remove("form-error");
+          valueElement.classList.remove("form-error");
         }
       });
+    });
+
+    if (hasEmptyRequirementValue) {
+      setFormError(true);
+      setFormErrorMessage("Requirement values cannot be empty. Please fill in all values or remove them.");
+      setSubmittingForm(false);
+      return false;
     }
-  });
 
-  // Handle validation errors for scenarios
-  if (hasEmptyScenarioName) {
-    setFormError(true);
-    setFormErrorMessage("Scenario names cannot be empty. Please fill in all scenario names.");
-    setSubmittingForm(false);
-    return false;
-  }
+    // Validate scenarios
+    let hasEmptyScenarioName = false;
+    let hasDuplicateScenarioName = false;
+    let duplicateScenarioName = "";
+    let hasEmptyScenarioDescription = false;
+    let hasEmptyOtherKey = false;
+    let hasDuplicateOtherKey = false;
+    let duplicateOtherKeyName = "";
+    let hasEmptyOtherValue = false;
 
-  if (hasDuplicateScenarioName) {
-    setFormError(true);
-    setFormErrorMessage(`Duplicate scenario name found: "${duplicateScenarioName}". Please use unique names for scenarios.`);
-    setSubmittingForm(false);
-    return false;
-  }
+    // Create a set to track unique scenario names (case-insensitive)
+    const scenarioNameSet = new Set();
 
-  if (hasEmptyScenarioDescription) {
-    setFormError(true);
-    setFormErrorMessage("Scenario descriptions cannot be empty. Please fill in all scenario descriptions.");
-    setSubmittingForm(false);
-    return false;
-  }
+    // Check for empty or duplicate scenario names
+    formData.scenarios.forEach((scenario, index) => {
+      const scenarioNameElement = document.getElementById(`scenario${index}`);
+      const scenarioDescriptionElement = document.getElementById(`scenarioDescription${index}`);
 
-  if (hasEmptyOtherKey) {
-    setFormError(true);
-    setFormErrorMessage("Scenario 'Other Information' keys cannot be empty. Please fill in all keys or remove the empty entries.");
-    setSubmittingForm(false);
-    return false;
-  }
+      // Check for empty scenario names
+      if (!scenario.name || scenario.name.trim().length === 0) {
+        scenarioNameElement.classList.add("form-error");
+        hasEmptyScenarioName = true;
+      } else {
+        // Check for duplicate scenario names (case-insensitive)
+        const normalizedName = scenario.name.trim().toLowerCase();
 
-  if (hasDuplicateOtherKey) {
-    setFormError(true);
-    setFormErrorMessage(`Duplicate 'Other Information' key found: "${duplicateOtherKeyName}" in a scenario. Please use unique keys.`);
-    setSubmittingForm(false);
-    return false;
-  }
+        if (scenarioNameSet.has(normalizedName)) {
+          scenarioNameElement.classList.add("form-error");
+          hasDuplicateScenarioName = true;
+          duplicateScenarioName = scenario.name;
+        } else {
+          scenarioNameElement.classList.remove("form-error");
+          scenarioNameSet.add(normalizedName);
+        }
+      }
 
-  if (hasEmptyOtherValue) {
-    setFormError(true);
-    setFormErrorMessage("Scenario 'Other Information' values cannot be empty. Please fill in all values or remove the empty entries.");
-    setSubmittingForm(false);
-    return false;
-  }
-  // Validate milestones
-  let hasEmptyMilestoneName = false;
-  let hasDuplicateMilestoneName = false;
-  let duplicateMilestoneName = "";
-  let hasEmptyMilestoneDescription = false;
-  let hasEmptyMilestoneDate = false;
-  let hasMilestoneDateOutOfRange = false;
-  let outOfRangeMilestoneIndex = -1;
+      // Check for empty description
+      if (!scenario.description || !scenario.description[0] || scenario.description[0].trim().length === 0) {
+        scenarioDescriptionElement.classList.add("form-error");
+        hasEmptyScenarioDescription = true;
+      } else {
+        scenarioDescriptionElement.classList.remove("form-error");
+      }
 
-  // Create a set to track unique milestone names (case-insensitive)
-  const milestoneNameSet = new Set();
+      // Check the "other" key-value pairs
+      if (scenario.other && scenario.other.length > 0) {
+        // Create a set to track unique keys within this scenario (case-insensitive)
+        const otherKeySet = new Set();
 
-  // Check each milestone
-  formData.milestones.forEach((milestone, index) => {
-    const milestoneNameElement = document.getElementById(`milestoneName-${index}`);
-    const milestoneDescriptionElement = document.getElementById(`milestoneDescription-${index}`);
-    const milestoneDateElement = document.getElementById(`milestoneDate-${index}`);
+        scenario.other.forEach((item, otherIndex) => {
+          const otherKeyElement = document.getElementById(`scenarioOther${otherIndex}`);
+          const otherValueElement = document.getElementById(`scenarioOther-${index}`);
 
-    // Check for empty milestone name
-    if (!milestone.name || milestone.name.trim().length === 0) {
-      milestoneNameElement.classList.add("form-error");
-      hasEmptyMilestoneName = true;
-    } else {
-      // Check for duplicate milestone names (case-insensitive)
-      const normalizedName = milestone.name.trim().toLowerCase();
+          // Check for empty keys
+          if (!item[0] || item[0].trim().length === 0) {
+            otherKeyElement.classList.add("form-error");
+            hasEmptyOtherKey = true;
+          } else {
+            // Check for duplicate keys within this scenario
+            const normalizedKey = item[0].trim().toLowerCase();
 
-      if (milestoneNameSet.has(normalizedName)) {
+            if (otherKeySet.has(normalizedKey)) {
+              otherKeyElement.classList.add("form-error");
+              hasDuplicateOtherKey = true;
+              duplicateOtherKeyName = item[0];
+            } else {
+              otherKeyElement.classList.remove("form-error");
+              otherKeySet.add(normalizedKey);
+            }
+          }
+
+          // Check for empty values
+          if (!item[1] || item[1].trim().length === 0) {
+            otherValueElement.classList.add("form-error");
+            hasEmptyOtherValue = true;
+          } else {
+            otherValueElement.classList.remove("form-error");
+          }
+        });
+      }
+    });
+
+    // Handle validation errors for scenarios
+    if (hasEmptyScenarioName) {
+      setFormError(true);
+      setFormErrorMessage("Scenario names cannot be empty. Please fill in all scenario names.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateScenarioName) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate scenario name found: "${duplicateScenarioName}". Please use unique names for scenarios.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyScenarioDescription) {
+      setFormError(true);
+      setFormErrorMessage("Scenario descriptions cannot be empty. Please fill in all scenario descriptions.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyOtherKey) {
+      setFormError(true);
+      setFormErrorMessage("Scenario 'Other Information' keys cannot be empty. Please fill in all keys or remove the empty entries.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateOtherKey) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate 'Other Information' key found: "${duplicateOtherKeyName}" in a scenario. Please use unique keys.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptyOtherValue) {
+      setFormError(true);
+      setFormErrorMessage("Scenario 'Other Information' values cannot be empty. Please fill in all values or remove the empty entries.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    // Validate milestones
+    let hasEmptyMilestoneName = false;
+    let hasDuplicateMilestoneName = false;
+    let duplicateMilestoneName = "";
+    let hasEmptyMilestoneDescription = false;
+    let hasEmptyMilestoneDate = false;
+    let hasMilestoneDateOutOfRange = false;
+    let outOfRangeMilestoneIndex = -1;
+
+    // Create a set to track unique milestone names (case-insensitive)
+    const milestoneNameSet = new Set();
+
+    // Check each milestone
+    formData.milestones.forEach((milestone, index) => {
+      const milestoneNameElement = document.getElementById(`milestoneName-${index}`);
+      const milestoneDescriptionElement = document.getElementById(`milestoneDescription-${index}`);
+      const milestoneDateElement = document.getElementById(`milestoneDate-${index}`);
+
+      // Check for empty milestone name
+      if (!milestone.name || milestone.name.trim().length === 0) {
         milestoneNameElement.classList.add("form-error");
-        hasDuplicateMilestoneName = true;
-        duplicateMilestoneName = milestone.name;
+        hasEmptyMilestoneName = true;
       } else {
-        milestoneNameElement.classList.remove("form-error");
-        milestoneNameSet.add(normalizedName);
+        // Check for duplicate milestone names (case-insensitive)
+        const normalizedName = milestone.name.trim().toLowerCase();
+
+        if (milestoneNameSet.has(normalizedName)) {
+          milestoneNameElement.classList.add("form-error");
+          hasDuplicateMilestoneName = true;
+          duplicateMilestoneName = milestone.name;
+        } else {
+          milestoneNameElement.classList.remove("form-error");
+          milestoneNameSet.add(normalizedName);
+        }
       }
-    }
 
-    // Check for empty milestone description
-    if (!milestone.description || !milestone.description[0] || milestone.description[0].trim().length === 0) {
-      milestoneDescriptionElement.classList.add("form-error");
-      hasEmptyMilestoneDescription = true;
-    } else {
-      milestoneDescriptionElement.classList.remove("form-error");
-    }
+      // Check for empty milestone description
+      if (!milestone.description || !milestone.description[0] || milestone.description[0].trim().length === 0) {
+        milestoneDescriptionElement.classList.add("form-error");
+        hasEmptyMilestoneDescription = true;
+      } else {
+        milestoneDescriptionElement.classList.remove("form-error");
+      }
 
-    // Check for empty milestone date
-    if (!milestone.milestone_date || milestone.milestone_date.trim().length === 0) {
-      milestoneDateElement.classList.add("form-error");
-      hasEmptyMilestoneDate = true;
-    } else {
-      // Check if the milestone date is within the project's scheduled start and end dates
-      const milestoneDate = new Date(milestone.milestone_date);
-      const projectStartDate = new Date(formData.scheduled_start);
-      const projectEndDate = new Date(formData.scheduled_end);
-
-      if (milestoneDate < projectStartDate || milestoneDate > projectEndDate) {
+      // Check for empty milestone date
+      if (!milestone.milestone_date || milestone.milestone_date.trim().length === 0) {
         milestoneDateElement.classList.add("form-error");
-        hasMilestoneDateOutOfRange = true;
-        if (outOfRangeMilestoneIndex === -1) outOfRangeMilestoneIndex = index;
+        hasEmptyMilestoneDate = true;
       } else {
-        milestoneDateElement.classList.remove("form-error");
+        // Check if the milestone date is within the project's scheduled start and end dates
+        const milestoneDate = new Date(milestone.milestone_date);
+        const projectStartDate = new Date(formData.scheduled_start);
+        const projectEndDate = new Date(formData.scheduled_end);
+
+        if (milestoneDate < projectStartDate || milestoneDate > projectEndDate) {
+          milestoneDateElement.classList.add("form-error");
+          hasMilestoneDateOutOfRange = true;
+          if (outOfRangeMilestoneIndex === -1) outOfRangeMilestoneIndex = index;
+        } else {
+          milestoneDateElement.classList.remove("form-error");
+        }
       }
+    });
+
+    // Handle validation errors for milestones
+    if (hasEmptyMilestoneName) {
+      setFormError(true);
+      setFormErrorMessage("Milestone names cannot be empty. Please fill in all milestone names.");
+      setSubmittingForm(false);
+      return false;
     }
-  });
 
-  // Handle validation errors for milestones
-  if (hasEmptyMilestoneName) {
-    setFormError(true);
-    setFormErrorMessage("Milestone names cannot be empty. Please fill in all milestone names.");
-    setSubmittingForm(false);
-    return false;
-  }
+    if (hasDuplicateMilestoneName) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate milestone name found: "${duplicateMilestoneName}". Please use unique names for milestones.`);
+      setSubmittingForm(false);
+      return false;
+    }
 
-  if (hasDuplicateMilestoneName) {
-    setFormError(true);
-    setFormErrorMessage(`Duplicate milestone name found: "${duplicateMilestoneName}". Please use unique names for milestones.`);
-    setSubmittingForm(false);
-    return false;
-  }
+    if (hasEmptyMilestoneDescription) {
+      setFormError(true);
+      setFormErrorMessage("Milestone descriptions cannot be empty. Please fill in all milestone descriptions.");
+      setSubmittingForm(false);
+      return false;
+    }
 
-  if (hasEmptyMilestoneDescription) {
-    setFormError(true);
-    setFormErrorMessage("Milestone descriptions cannot be empty. Please fill in all milestone descriptions.");
-    setSubmittingForm(false);
-    return false;
-  }
+    if (hasEmptyMilestoneDate) {
+      setFormError(true);
+      setFormErrorMessage("Milestone dates cannot be empty. Please set a date for each milestone.");
+      setSubmittingForm(false);
+      return false;
+    }
 
-  if (hasEmptyMilestoneDate) {
-    setFormError(true);
-    setFormErrorMessage("Milestone dates cannot be empty. Please set a date for each milestone.");
-    setSubmittingForm(false);
-    return false;
-  }
-
-  if (hasMilestoneDateOutOfRange) {
-    setFormError(true);
-    setFormErrorMessage(`Milestone ${outOfRangeMilestoneIndex + 1} date is outside the project schedule. All milestones must be between the project's scheduled start and end dates.`);
-    setSubmittingForm(false);
-    return false;
-  }
+    if (hasMilestoneDateOutOfRange) {
+      setFormError(true);
+      setFormErrorMessage(`Milestone ${outOfRangeMilestoneIndex + 1} date is outside the project schedule. All milestones must be between the project's scheduled start and end dates.`);
+      setSubmittingForm(false);
+      return false;
+    }
 
     // Validate sensitivities
-  let hasEmptySensitivityName = false;
-  let hasDuplicateSensitivityName = false;
-  let duplicateSensitivityName = "";
-  let hasEmptySensitivityDescription = false;
-  let hasEmptySensitivityListItem = false;
-  let hasDuplicateSensitivityListItems = false;
-  let duplicateListItemValue = "";
-  let sensitivityWithDuplicateItems = -1;
+    let hasEmptySensitivityName = false;
+    let hasDuplicateSensitivityName = false;
+    let duplicateSensitivityName = "";
+    let hasEmptySensitivityDescription = false;
+    let hasEmptySensitivityListItem = false;
+    let hasDuplicateSensitivityListItems = false;
+    let duplicateListItemValue = "";
+    let sensitivityWithDuplicateItems = -1;
 
-  // Create a set to track unique sensitivity names (case-insensitive)
-  const sensitivityNameSet = new Set();
+    // Create a set to track unique sensitivity names (case-insensitive)
+    const sensitivityNameSet = new Set();
 
-  // Check each sensitivity
-  formData.sensitivities.forEach((sensitivity, index) => {
-    const sensitivityNameElement = document.getElementById(`sensitivityName-${index}`);
-    const sensitivityDescriptionElement = document.getElementById(`sensitivityDescription-${index}`);
+    // Check each sensitivity
+    formData.sensitivities.forEach((sensitivity, index) => {
+      const sensitivityNameElement = document.getElementById(`sensitivityName-${index}`);
+      const sensitivityDescriptionElement = document.getElementById(`sensitivityDescription-${index}`);
 
-    // Check for empty sensitivity name
-    if (!sensitivity.name || sensitivity.name.trim().length === 0) {
-      sensitivityNameElement.classList.add("form-error");
-      hasEmptySensitivityName = true;
-    } else {
-      // Check for duplicate sensitivity names (case-insensitive)
-      const normalizedName = sensitivity.name.trim().toLowerCase();
-
-      if (sensitivityNameSet.has(normalizedName)) {
+      // Check for empty sensitivity name
+      if (!sensitivity.name || sensitivity.name.trim().length === 0) {
         sensitivityNameElement.classList.add("form-error");
-        hasDuplicateSensitivityName = true;
-        duplicateSensitivityName = sensitivity.name;
+        hasEmptySensitivityName = true;
       } else {
-        sensitivityNameElement.classList.remove("form-error");
-        sensitivityNameSet.add(normalizedName);
-      }
-    }
+        // Check for duplicate sensitivity names (case-insensitive)
+        const normalizedName = sensitivity.name.trim().toLowerCase();
 
-    // Check for empty sensitivity description
-    if (!sensitivity.description || !sensitivity.description[0] || sensitivity.description[0].trim().length === 0) {
-      sensitivityDescriptionElement.classList.add("form-error");
-      hasEmptySensitivityDescription = true;
-    } else {
-      sensitivityDescriptionElement.classList.remove("form-error");
-    }
-
-    // Check sensitivity list items
-    if (sensitivity.list && sensitivity.list.length > 0) {
-      // Create a set to track unique list items within this sensitivity (case-insensitive)
-      const listItemSet = new Set();
-
-      sensitivity.list.forEach((item, listIndex) => {
-        const sensitivityItemElement = document.getElementById(`senstivityItem-${index}`);
-
-        // Check for empty list items
-        if (!item || item.trim().length === 0) {
-          sensitivityItemElement.classList.add("form-error");
-          hasEmptySensitivityListItem = true;
+        if (sensitivityNameSet.has(normalizedName)) {
+          sensitivityNameElement.classList.add("form-error");
+          hasDuplicateSensitivityName = true;
+          duplicateSensitivityName = sensitivity.name;
         } else {
-          // Check for duplicate list items within this sensitivity (case-insensitive)
-          const normalizedItem = item.trim().toLowerCase();
-
-          if (listItemSet.has(normalizedItem)) {
-            sensitivityItemElement.classList.add("form-error");
-            hasDuplicateSensitivityListItems = true;
-            duplicateListItemValue = item;
-            sensitivityWithDuplicateItems = index;
-          } else {
-            sensitivityItemElement.classList.remove("form-error");
-            listItemSet.add(normalizedItem);
-          }
+          sensitivityNameElement.classList.remove("form-error");
+          sensitivityNameSet.add(normalizedName);
         }
-      });
-    }
-  });
+      }
 
-  // Handle validation errors for sensitivities
-  if (hasEmptySensitivityName) {
-    setFormError(true);
-    setFormErrorMessage("Sensitivity names cannot be empty. Please fill in all sensitivity names.");
-    setSubmittingForm(false);
-    return false;
-  }
+      // Check for empty sensitivity description
+      if (!sensitivity.description || !sensitivity.description[0] || sensitivity.description[0].trim().length === 0) {
+        sensitivityDescriptionElement.classList.add("form-error");
+        hasEmptySensitivityDescription = true;
+      } else {
+        sensitivityDescriptionElement.classList.remove("form-error");
+      }
 
-  if (hasDuplicateSensitivityName) {
-    setFormError(true);
-    setFormErrorMessage(`Duplicate sensitivity name found: "${duplicateSensitivityName}". Please use unique names for sensitivities.`);
-    setSubmittingForm(false);
-    return false;
-  }
+      // Check sensitivity list items
+      if (sensitivity.list && sensitivity.list.length > 0) {
+        // Create a set to track unique list items within this sensitivity (case-insensitive)
+        const listItemSet = new Set();
 
-  if (hasEmptySensitivityDescription) {
-    setFormError(true);
-    setFormErrorMessage("Sensitivity descriptions cannot be empty. Please fill in all sensitivity descriptions.");
-    setSubmittingForm(false);
-    return false;
-  }
+        sensitivity.list.forEach((item, listIndex) => {
+          const sensitivityItemElement = document.getElementById(`senstivityItem-${index}`);
 
-  if (hasEmptySensitivityListItem) {
-    setFormError(true);
-    setFormErrorMessage("Sensitivity list items cannot be empty. Please fill in all items or remove them.");
-    setSubmittingForm(false);
-    return false;
-  }
+          // Check for empty list items
+          if (!item || item.trim().length === 0) {
+            sensitivityItemElement.classList.add("form-error");
+            hasEmptySensitivityListItem = true;
+          } else {
+            // Check for duplicate list items within this sensitivity (case-insensitive)
+            const normalizedItem = item.trim().toLowerCase();
 
-  if (hasDuplicateSensitivityListItems) {
-    setFormError(true);
-    setFormErrorMessage(`Duplicate list item "${duplicateListItemValue}" found in Sensitivity ${sensitivityWithDuplicateItems + 1}. Please ensure all items within a sensitivity are unique.`);
-    setSubmittingForm(false);
-    return false;
-  }
+            if (listItemSet.has(normalizedItem)) {
+              sensitivityItemElement.classList.add("form-error");
+              hasDuplicateSensitivityListItems = true;
+              duplicateListItemValue = item;
+              sensitivityWithDuplicateItems = index;
+            } else {
+              sensitivityItemElement.classList.remove("form-error");
+              listItemSet.add(normalizedItem);
+            }
+          }
+        });
+      }
+    });
 
-  setFormError(false);
-  return true;
-  }
-
-  const mutation = useMutation({
-    mutationFn: async (formData) => {
-      setSubmittingForm(true);
+    // Handle validation errors for sensitivities
+    if (hasEmptySensitivityName) {
       setFormError(true);
-      const isValid = validateProjectData(formData);
-      if (!isValid) {
-        setSubmittingForm(false);
-        throw new Error("Validation failed");
-      }
-      await postProject({data: formData, accessToken});
-      return getProject({projectName: formData.name, accessToken});
-    },
-    onSuccess: (data) => {
+      setFormErrorMessage("Sensitivity names cannot be empty. Please fill in all sensitivity names.");
       setSubmittingForm(false);
-      queryClient.invalidateQueries(['projects']);
-      navigate("/project", { state: { project: data } });
-    },
-    onError: (error) => {
-      setSubmittingForm(false);
-      if (error.message !== "Validation failed") {
-        setFormError(true);
-        setFormErrorMessage("Failed to create project. Please try again.");
-        console.error("Project creation failed:", error);
-      }
+      return false;
     }
-  });
 
-  // Usage:
+    if (hasDuplicateSensitivityName) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate sensitivity name found: "${duplicateSensitivityName}". Please use unique names for sensitivities.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptySensitivityDescription) {
+      setFormError(true);
+      setFormErrorMessage("Sensitivity descriptions cannot be empty. Please fill in all sensitivity descriptions.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasEmptySensitivityListItem) {
+      setFormError(true);
+      setFormErrorMessage("Sensitivity list items cannot be empty. Please fill in all items or remove them.");
+      setSubmittingForm(false);
+      return false;
+    }
+
+    if (hasDuplicateSensitivityListItems) {
+      setFormError(true);
+      setFormErrorMessage(`Duplicate list item "${duplicateListItemValue}" found in Sensitivity ${sensitivityWithDuplicateItems + 1}. Please ensure all items within a sensitivity are unique.`);
+      setSubmittingForm(false);
+      return false;
+    }
+
+    setFormError(false);
+    return true;
+  }
+
+  const mutation = useCreateProjectMutation();
+
+  const onCreateSuccess = (data) => {
+    setSubmittingForm(false);
+
+    if (data && data.name) {
+      setEffectiveProject(data.name);
+    }
+
+    navigate("/project");
+  };
+
+  const onCreateError = (error) => {
+    setSubmittingForm(false);
+    if (error.message !== "Validation failed") {
+      setFormError(true);
+      setFormErrorMessage("Failed to create project. Please try again.");
+      console.error("Project creation failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (mutation.isSuccess && mutation.data) {
+      onCreateSuccess(mutation.data);
+    }
+
+    if (mutation.isError && mutation.error) {
+      onCreateError(mutation.error);
+    }
+  }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error]);
+
   const handleRequirementNameChange = (index, newName) => {
     setForm((prevForm) => {
       const newKeys = [...prevForm.requirements.keys];

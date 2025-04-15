@@ -1,24 +1,32 @@
-
 import { Gantt } from "gantt-task-react";
-
-import useDataStore from "../../../stores/DataStore";
-
 import "../../PageStyles.css";
 
+// Import the necessary hooks
+import { useGetModelsQuery } from "../../../hooks/useModelQuery";
+import { useGetProjectQuery } from "../../../hooks/useProjectQuery";
+import { useGetProjectRunsQuery } from "../../../hooks/useProjectRunQuery";
+import useDataStore from "../../../stores/DataStore";
 
 const TimelineComponent = ({ viewMode, showSidebar, divId }) => {
-  const { currentProject, projectRuns, models } = useDataStore();
+  const { effectivePname } = useDataStore();
+  const { data: project } = useGetProjectQuery(effectivePname);
+  const { data: projectRuns = [] } = useGetProjectRunsQuery(effectivePname);
+  const { data: models = [] } = useGetModelsQuery(effectivePname, null);
+
+  if (!project) {
+    return <div>Loading project data...</div>;
+  }
 
   let ganttTasks = [];
 
   // Project timeline
-  const projectStartDate = new Date(currentProject.scheduled_start);
-  const projectEndDate = new Date(currentProject.scheduled_end);
+  const projectStartDate = new Date(project.scheduled_start);
+  const projectEndDate = new Date(project.scheduled_end);
   ganttTasks.push(
     {
       start: projectStartDate,
       end: projectEndDate,
-      name: "Project: " + currentProject.name,
+      name: "Project: " + project.name,
       id: "project",
       styles: {progressColor: '#0079C2', progressSelectedColor: '#0B5E90'},
       progress: getGanttTaskProgress(projectStartDate, projectEndDate),
@@ -28,7 +36,7 @@ const TimelineComponent = ({ viewMode, showSidebar, divId }) => {
   )
 
   // Project milestone timeline
-  currentProject.milestones.forEach((milestone) => {
+  project.milestones.forEach((milestone) => {
     const milestoneStartDate = new Date(milestone.milestone_date);
     const milestoneEndDate = new Date(milestone.milestone_date);
 
@@ -39,7 +47,7 @@ const TimelineComponent = ({ viewMode, showSidebar, divId }) => {
       id: milestone.name,
       type: "milestone",
       progress: getGanttTaskProgress(milestoneStartDate, milestoneEndDate),
-      project: currentProject.name,
+      project: project.name,
     });
   });
 
@@ -55,7 +63,7 @@ const TimelineComponent = ({ viewMode, showSidebar, divId }) => {
       id: projectRun.name,
       type: "task",
       progress: getGanttTaskProgress(projectRunStartDate, projectRunEndDate),
-      project: currentProject.name,
+      project: project.name,
       styles: { progressColor: '#5DD2FF', progressSelectedColor: '#00A4E4' },
       hideChildren: false
     });

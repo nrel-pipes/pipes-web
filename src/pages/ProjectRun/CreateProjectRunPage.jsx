@@ -8,28 +8,25 @@ import Row from "react-bootstrap/Row";
 import { useLocation, useNavigate } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 import ContentHeader from "../Components/ContentHeader";
 import FormError from "../Components/form/FormError";
 import SideColumn from "../Components/form/SideColumn";
 import "../FormStyles.css";
-import "./CreateProjectRun.css";
+import "./CreateProjectRunPage.css";
 
-import useProjectStore from "../../stores/ProjectStore";
+import { useGetProjectQuery } from "../../hooks/useProjectQuery";
+import useDataStore from "../../stores/DataStore";
 
-import { getProject } from "../../api/ProjectAPI";
-
-import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useCreateProjectRunMutation } from "../../hooks/useProjectRunQuery";
 
-const CreateProjectRun = () => {
+const CreateProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const createProjectRun = useDataStore((state) => state.createProjectRun);
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
 
-  const { effectiveProject } = useProjectStore();
+  const { effectivePname } = useDataStore();
 
   useEffect(() => {
     validateToken(accessToken);
@@ -38,24 +35,13 @@ const CreateProjectRun = () => {
     }
   }, [isLoggedIn, navigate, validateToken, accessToken]);
 
-  // Get the project name from location state
   const projectName = location.state?.currentProject?.name || location.state?.projectName;
 
-
-  // Use React Query directly to access the project data
   const {
     data: currentProject,
     isLoading: isLoadingProject,
-  } = useQuery({
-    queryKey: ["project", projectName],
-    queryFn: () => getProject({ projectName, accessToken }),
-    enabled: isLoggedIn && !!projectName,
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
-    onError: (error) => {
-      console.error("Error fetching project:", error);
-    }
-  });
+    error: projectError
+  } = useGetProjectQuery(projectName);
 
   const {
     data: projectRuns,
@@ -399,48 +385,12 @@ const CreateProjectRun = () => {
     return formDataValidated;
   }
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  mutation.mutate(formData);
-};
+  const mutation = useCreateProjectRunMutation();
 
-const mutation = useMutation({
-  mutationFn: async (originalFormData) => {
-    setSubmittingForm(true);
-    setFormError(false);
-
-    const validatedFormData = validateProjectData(originalFormData, projectRuns);
-
-    if (validatedFormData === false) {
-      setSubmittingForm(false);
-      throw new Error("Validation failed");
-    }
-
-    if (!currentProject || !currentProject.name) {
-      throw new Error("No current project selected");
-    }
-
-    return await createProjectRun(
-      currentProject.name,
-      validatedFormData,
-      accessToken
-    );
-  },
-  onSuccess: (data) => {
-    setSubmittingForm(false);
-    queryClient.invalidateQueries(['projectRuns']);
-    navigate("/projectrun");
-  },
-  onError: (error) => {
-    console.error("Error creating project run:", error);
-    setFormError(true);
-    setFormErrorMessage(
-      `Failed to create project run: ${error.message}. Please try again later.`
-    );
-    setSubmittingForm(false);
-  }
-});
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    mutation.mutate(formData);
+  };
 
   // Adding definitions
   const [documentation] = useState({
@@ -487,7 +437,7 @@ const mutation = useMutation({
 
   return (
     <>
-    <NavbarSub navData={{ pAll: true, pName: effectiveProject }} />
+    <NavbarSub navData={{ pAll: true, pName: effectivePname }} />
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
@@ -874,4 +824,4 @@ const mutation = useMutation({
   );
 };
 
-export default CreateProjectRun;
+export default CreateProjectRunPage;
