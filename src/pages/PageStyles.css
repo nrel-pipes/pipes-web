@@ -1,3 +1,51 @@
+.btn-outline-primary {
+  --bs-primary: rgb(71, 148, 218);
+  --bs-primary-rgb: 71, 148, 218;
+  border-color: rgb(71, 148, 218);
+  color: rgb(71, 148, 218);
+}
+
+.btn-outline-primary:hover {
+  background-color: rgb(71, 148, 218);
+  border-color: rgb(71, 148, 218);
+  color: white;
+}
+
+.create-card {
+  margin: 15px 0 15px 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  background-color: white;
+}
+
+.create-card .card-body {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.create-card:hover {
+  transform: scale(1.03);
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    inset 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.create-card:hover .card-body {
+  background-color: rgb(71, 148, 218) !important;
+  color: white;
+}
+
+.create-card .plus-icon {
+  transition: color 0.1s ease;
+}
+
+.create-card:hover .plus-icon {
+  color: white;
+}
+
+/* Keep this for NREL styles */
 .imageCol {
   display: flex;
   justify-content: center;
@@ -14,7 +62,6 @@
 .smallCaps {
   font-variant: small-caps;
 }
-
 
 .schedule {
   display: flex;
@@ -33,6 +80,7 @@
 .nrelCardHeader {
   background-color: #0079C2 !important;
   border-radius: 0px !important;
+  text-align: start !important;
 }
 
 .nrelCardHeader > h3 > a {
@@ -45,4 +93,69 @@
 
 .nrelCardHeader > h3 > a:hover {
   text-decoration: underline !important;
+}
+
+.custom-submit-button:hover {
+  background-color: #5d9732 !important;
+  border-color: #5d9732 !important;
+  color: rgba(255, 255, 255, 0.8) !important; /* White with 80% opacity for a dim effect */
+}
+
+.custom-green-button:hover {
+  background-color: #5d9732 !important;
+  border-color: #5d9732 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Profile page styles */
+.profile-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.avatar-circle {
+  width: 80px;
+  height: 80px;
+  background-color: #0079c2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 32px;
+  font-weight: 500;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.info-item {
+  transition: all 0.2s ease;
+  border-left: 4px solid #0079c2;
+}
+
+.info-item:hover {
+  transform: translateX(5px);
+  background-color: #f8f9fa !important;
+}
+
+.info-icon {
+  font-size: 1.5rem;
+  color: #0079c2;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-label {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+}
+
+.info-value {
+  font-weight: 500;
+  font-size: 1.1rem;
 }
