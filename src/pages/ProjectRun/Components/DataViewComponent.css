@@ -28,6 +28,7 @@
   border-bottom: 1px solid #dee2e6;
   display: flex;
   align-items: center;
+  text-transform: none;
 }
 
 .section-header h6 {
@@ -93,4 +94,310 @@
   padding: 8px;
   border-top: 1px solid #eee;
   font-size: 0.85rem;
+}
+
+/* Data view wrapper */
+.data-view-wrapper {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.data-instructions {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #e9ecef;
+  border-radius: 6px;
+  text-align: center;
+  color: #495057;
+  font-style: italic;
+}
+
+.no-data {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+  background-color: #fff;
+  border-radius: 6px;
+  border: 1px dashed #dee2e6;
+}
+
+.data-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.data-section {
+  background-color: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.section-header {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: none;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.section-content {
+  padding: 12px;
+}
+
+/* Table styling */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.data-row {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.key-cell {
+  width: 30%;
+  padding: 8px 12px;
+  font-weight: 500;
+  color: #495057;
+  vertical-align: top;
+}
+
+.value-cell {
+  padding: 8px 12px;
+  color: #212529;
+}
+
+.nested-content {
+  padding: 0;
+}
+
+.nested-table-wrapper {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.nested-table {
+  background-color: transparent;
+}
+
+.source-detail {
+  margin-left: 15px;
+  margin-top: 4px;
+  color: #495057;
+}
+
+/* Scenarios */
+.scenarios-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scenario-badge {
+  padding: 5px 10px;
+  border-radius: 4px;
+  color: black;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Datasets */
+.datasets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dataset-item {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.dataset-details {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.dataset-summary {
+  padding: 10px 15px;
+  cursor: pointer;
+  background-color: #f2f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dataset-summary::-webkit-details-marker {
+  display: none;
+}
+
+.dataset-id {
+  font-weight: 600;
+  color: #212529;
+}
+
+.dataset-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.dataset-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.handoff-badge {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.validated-badge {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.unvalidated-badge {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.dataset-content {
+  padding: 15px;
+}
+
+.dataset-created {
+  font-size: 13px;
+  color: #6c757d;
+  margin-bottom: 15px;
+}
+
+.dataset-location {
+  padding: 8px 15px;
+  font-size: 13px;
+  color: #495057;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.dataset-location-info {
+  font-size: 13px;
+}
+
+.location-details {
+  margin-top: 8px;
+}
+
+.location-details summary {
+  cursor: pointer;
+  color: #0079c2;
+  font-size: 12px;
+}
+
+.location-table {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.location-table td:first-child {
+  width: 120px;
+  font-weight: 500;
+}
+
+.data-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.links-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.link-item {
+  margin-bottom: 4px;
+}
+
+.link-item:last-child {
+  margin-bottom: 0;
+}
+
+.empty-value {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dataset-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dataset-badges {
+    margin-top: 8px;
+  }
+
+  .key-cell, .value-cell {
+    display: block;
+    width: 100%;
+  }
+
+  .key-cell {
+    background-color: #f2f4f6;
+    padding: 6px 12px;
+    font-weight: 600;
+  }
+
+  .value-cell {
+    padding: 8px 12px 12px;
+  }
+}
+
+/* Add these styles to your existing CSS file */
+
+.full-width-cell {
+  padding: 15px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.scenario-mapping-header .key-cell {
+  background-color: #f2f4f6;
+  font-weight: 500;
+  text-align: left;
+  border-bottom: none;
+  padding-bottom: 6px;
+}
+
+.scenario-mapping-content {
+  background-color: white !important;
+}
+
+/* Special rule to prevent text transformation for model ID */
+.model-id-header {
+  text-transform: none !important;
 }
