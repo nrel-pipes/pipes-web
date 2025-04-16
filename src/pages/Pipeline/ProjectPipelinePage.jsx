@@ -344,8 +344,6 @@ const ProjectPipelinePage = () => {
           />
         </Col>
         <Col sm={4} className="border-start text-start ml-4">
-          <h6 className="mt-4">Click the node to retrieve its attributes</h6>
-          <br/>
           <DataViewComponent data={clickedElementData} />
         </Col>
       </Row>
