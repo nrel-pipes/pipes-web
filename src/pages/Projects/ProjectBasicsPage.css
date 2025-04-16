@@ -292,3 +292,9 @@
     justify-content: center;
   }
 }
+
+/* Custom pagination styling */
+.pagination .page-item.active .page-link {
+  background-color: #0079c2 !important;
+  border-color: #0079c2 !important;
+}

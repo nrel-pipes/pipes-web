@@ -1,11 +1,12 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Plus } from "lucide-react";
-import { useEffect } from "react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
+import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 
 import { useProjectBasicsQuery } from "../../hooks/useProjectQuery";
@@ -23,6 +24,9 @@ import "./ProjectBasicsPage.css";
 const ProjectBasicsPage = () => {
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const { setEffectivePname } = useDataStore();
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectsPerPage] = useState(3);
 
   const navigate = useNavigate();
 
@@ -41,6 +45,21 @@ const ProjectBasicsPage = () => {
     error: errorBasics,
   } = useProjectBasicsQuery();
 
+  // Reverse the order of projects to show latest first
+  // TODO: Update API to return the creation time.
+  const reversedProjects = [...projectBasics].reverse();
+
+  // Pagination logic
+  const totalPages = Math.ceil(reversedProjects.length / projectsPerPage);
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = reversedProjects.slice(indexOfFirstProject, indexOfLastProject);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo(0, 0);
+  };
+
   const handleProjectClick = (event, project) => {
     event.preventDefault();
     // Set the project in the store
@@ -56,6 +75,22 @@ const ProjectBasicsPage = () => {
   const isLoadingProject = false;
   const isErrorProject = false;
   const errorProject = null;
+
+  // Custom styles for larger pagination buttons
+  const paginationItemStyle = {
+    fontSize: '1.1rem',
+    minWidth: '40px',
+    height: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  const activePageStyle = {
+    ...paginationItemStyle,
+    backgroundColor: '#0079c2',
+    borderColor: '#0079c2'
+  };
 
   if (isLoadingBasics || isLoadingProject) {
     return (
@@ -135,7 +170,7 @@ const ProjectBasicsPage = () => {
         <ContentHeader title="Your Projects" showCreateProjectButton={false} cornerMark={projectBasics.length} />
       </Row>
       <div className="project-list-container">
-        {projectBasics.map((project) => (
+        {currentProjects.map((project) => (
           <div key={project.name} className="project-column">
             <div className="project-content">
               <div className="project-field title-field">
@@ -160,6 +195,81 @@ const ProjectBasicsPage = () => {
           </div>
         ))}
       </div>
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="pagination-container d-flex justify-content-center mt-4 mb-5">
+          <Pagination size="lg">
+            <Pagination.Prev
+              onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={paginationItemStyle}
+            >
+              <ChevronLeft size={20} />
+            </Pagination.Prev>
+
+            {/* First page */}
+            {currentPage > 2 && (
+              <Pagination.Item
+                onClick={() => handlePageChange(1)}
+                style={paginationItemStyle}
+              >1</Pagination.Item>
+            )}
+
+            {/* Ellipsis if needed */}
+            {currentPage > 3 && <Pagination.Ellipsis disabled style={paginationItemStyle} />}
+
+            {/* Page before current */}
+            {currentPage > 1 && (
+              <Pagination.Item
+                onClick={() => handlePageChange(currentPage - 1)}
+                style={paginationItemStyle}
+              >
+                {currentPage - 1}
+              </Pagination.Item>
+            )}
+
+            {/* Current page */}
+            <Pagination.Item
+              active
+              style={activePageStyle}
+            >
+              {currentPage}
+            </Pagination.Item>
+
+            {/* Page after current */}
+            {currentPage < totalPages && (
+              <Pagination.Item
+                onClick={() => handlePageChange(currentPage + 1)}
+                style={paginationItemStyle}
+              >
+                {currentPage + 1}
+              </Pagination.Item>
+            )}
+
+            {/* Ellipsis if needed */}
+            {currentPage < totalPages - 2 && <Pagination.Ellipsis disabled style={paginationItemStyle} />}
+
+            {/* Last page */}
+            {currentPage < totalPages - 1 && (
+              <Pagination.Item
+                onClick={() => handlePageChange(totalPages)}
+                style={paginationItemStyle}
+              >
+                {totalPages}
+              </Pagination.Item>
+            )}
+
+            <Pagination.Next
+              onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={paginationItemStyle}
+            >
+              <ChevronRight size={20} />
+            </Pagination.Next>
+          </Pagination>
+        </div>
+      )}
     </Container>
     </>
   );

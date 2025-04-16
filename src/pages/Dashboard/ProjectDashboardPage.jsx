@@ -131,7 +131,7 @@ const ProjectDashboardPage = () => {
                   <span className="metadata-label">Owner:</span>
                   <span className="metadata-value mb-2">
                     <label style={{ color: "green"}} className="project-name">
-                    {project.owner?.first_name || ""} {project.owner?.last_name || ""}
+                    {project.owner ? `${project.owner.first_name || ''} ${project.owner.last_name || ''}` : 'N/A'}
                     </label>
                   </span>
                 </div>
