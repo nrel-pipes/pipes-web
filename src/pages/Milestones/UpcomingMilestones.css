@@ -1,0 +1,42 @@
+.milestone-container {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  margin-top: 20px; /* Added margin-top to match ProjectBasics spacing */
+}
+
+.milestone-table {
+  width: 100% !important;
+  border-collapse: collapse;
+  table-layout: fixed;
+  max-width: none !important;
+  margin-bottom: 0 !important;
+}
+
+.milestone-table th,
+.milestone-table td {
+  padding: 12px 15px;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+/* Column width distribution - updated proportions */
+.milestone-table th:nth-child(1),
+.milestone-table td:nth-child(1) {
+  width: 15%;  /* Project column - narrower */
+}
+
+.milestone-table th:nth-child(2),
+.milestone-table td:nth-child(2) {
+  width: 10%;  /* Date column - narrower */
+}
+
+.milestone-table th:nth-child(3),
+.milestone-table td:nth-child(3) {
+  width: 25%;  /* Milestone column - a bit wider */
+}
+
+.milestone-table th:nth-child(4),
+.milestone-table td:nth-child(4) {
+  width: 50%;  /* Description column - much wider */
+}

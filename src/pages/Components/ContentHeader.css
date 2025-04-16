@@ -1,0 +1,93 @@
+.title-container {
+    border: none;
+}
+
+.content-header-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.content-header-heading {
+  display: flex;
+  align-items: baseline;
+}
+
+.content-header-text {
+  color: #0f141a;
+  margin: 0;
+}
+
+.content-header-counter {
+  color: #656871;
+  margin-left: 8px;
+  font-weight: normal;
+}
+
+.content-header-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-right: 0;
+}
+
+.refresh-button {
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.refresh-icon {
+  width: 16px;
+  height: 16px;
+  stroke: #424650;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.create-button {
+  display: inline-block;
+  align-items: center;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: initial;
+  white-space: nowrap;
+  transition: all .2s ease-in-out;
+  cursor: pointer;
+  background: rgb(71, 148, 218);
+  border: 1px solid rgb(71, 148, 218);
+  color: #FFF;
+  box-shadow: none;
+}
+
+.create-button:hover, .create-button:focus {
+  background-color: rgb(71, 148, 218);  /* Keep the same background color */
+  border-color: rgb(71, 148, 218);      /* Keep the same border color */
+  color: rgba(255, 255, 255, 0.85);     /* Only dim the text */
+}
+
+.create-button-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Responsive styling */
+@media (max-width: 576px) {
+  .content-header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .content-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
