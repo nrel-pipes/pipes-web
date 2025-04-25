@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './DataViewComponent.css';
 
 const underscore_regex = /_/;
@@ -98,6 +98,25 @@ function renderTableData(obj) {
 
           if (keyIsInt) keyDisplay = `Item ${parseInt(key) + 1}`;
 
+          // Special handling for Members key
+          if (key === 'members') {
+            return (
+              <React.Fragment key={`row_${key}`}>
+                <tr key={`${key}_header`}>
+                  <td colSpan="2" className="key-cell">
+                    {keyDisplay}
+                  </td>
+                </tr>
+                <tr key={`${key}_content`}>
+                  <td colSpan="2">
+                    {renderValue(value, key)}
+                  </td>
+                </tr>
+              </React.Fragment>
+            );
+          }
+
+          // Default rendering for other keys
           return (
             <tr key={`row_${key}`} className="data-row">
               {!keyIsInt && (
@@ -120,7 +139,6 @@ function renderValue(value, key) {
     if (value.length === 0) {
       return <span className="empty-value">Empty array</span>;
     }
-
     // For arrays of objects, render nested tables
     if (typeof value[0] === 'object') {
       return (
@@ -154,13 +172,6 @@ function renderValue(value, key) {
   else {
     return <span className="primitive-value">{String(value)}</span>;
   }
-}
-
-function _listing(list, name) {
-  // Keep for backward compatibility
-  return list.map((v, i) => {
-    return <div key={name + i.toString()} className="array-item">{v}</div>
-  });
 }
 
 export default DataViewComponent;

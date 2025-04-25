@@ -18,7 +18,7 @@ import ContentHeader from "../Components/ContentHeader";
 
 import "../Components/Cards.css";
 import "../PageStyles.css";
-import "./ProjectBasicsPage.css";
+import "./ProjectListPage.css";
 
 
 const ProjectBasicsPage = () => {

@@ -206,3 +206,41 @@
 .react-flow__minimap .annotation {
   display: none;
 }
+
+.toggle-button-container {
+  position: absolute;
+  left: calc(66.66%); /* Combined positioning */
+  top: 10px; /* Fixed height from top */
+  width: 20px;
+  height: 80px;
+  background-color: #73b5de;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.toggle-button-container.expanded {
+  left: calc(100% - 25px);
+  margin-left: 0;
+}
+
+.toggle-button-container:hover {
+  background-color: #0079c2;
+}
+
+.toggle-button {
+  color: #ffffff;
+}
+
+#pipeline-flowview {
+  position: relative;
+  min-height: 500px;
+}
+
+.data-view-col {
+  transition: width 0.3s ease;
+}
