@@ -6,6 +6,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
 import "../PageStyles.css";
+import "./ProjectRunPage.css";
 
 import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
 import useAuthStore from "../../stores/AuthStore";
@@ -17,6 +18,9 @@ import GraphViewComponent from "./Components/GraphViewComponent";
 import NavbarSub from "../../layouts/NavbarSub";
 import ContentHeader from "../Components/ContentHeader";
 
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 const ProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,6 +28,11 @@ const ProjectRunPage = () => {
   const { effectivePname, effectivePRname } = useDataStore();
 
   const [selectedModel, setSelectedModel] = useState(null);
+  const [isGraphExpanded, setIsGraphExpanded] = useState(false);
+
+  const toggleGraphExpansion = () => {
+    setIsGraphExpanded(!isGraphExpanded);
+  };
 
   // Store the project run from location.state in component state
   const [projectRunFromState, setProjectRunFromState] = useState(
@@ -92,15 +101,29 @@ const ProjectRunPage = () => {
         <ContentHeader title="Project Run" cornerMark={projectRun.name}/>
       </Row>
       <Row id="projectrun-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
-        <Col md={8}>
+        <Col md={isGraphExpanded ? 12 : 8}>
           <GraphViewComponent
             selectedModel={selectedModel}
             setSelectedModel={setSelectedModel}
           />
         </Col>
-        <Col sm={4} className="border-start text-start ml-4">
-          <DataViewComponent selected={selectedModel} />
-        </Col>
+
+        <div
+          className={`toggle-button-container2 ${isGraphExpanded ? 'expanded' : ''}`}
+          onClick={toggleGraphExpansion}
+          title={isGraphExpanded ? "Show data panel" : "Expand graph"}
+        >
+          <FontAwesomeIcon
+            icon={isGraphExpanded ? faChevronLeft : faChevronRight}
+            className="toggle-button"
+          />
+        </div>
+
+        {!isGraphExpanded && (
+          <Col sm={4} className="border-start text-start ml-4 data-view-col">
+            <DataViewComponent selected={selectedModel} />
+          </Col>
+        )}
       </Row>
     </Container>
     </>

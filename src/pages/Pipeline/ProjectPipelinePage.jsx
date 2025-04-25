@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import Col from "react-bootstrap/Col";
@@ -102,6 +102,11 @@ const ProjectPipelinePage = () => {
                    isLoadingHandoffs;
 
   const [clickedElementData, setClickedElementedData] = useState({});
+  const [isGraphExpanded, setIsGraphExpanded] = useState(false);
+
+  const toggleGraphExpansion = () => {
+    setIsGraphExpanded(!isGraphExpanded);
+  };
 
   useEffect(() => {
     validateToken(accessToken);
@@ -283,7 +288,7 @@ const ProjectPipelinePage = () => {
         const mNodeId = modelNodeIdMapping.get(model.name);
         modelRuns.forEach((modelRun, index2) => {
           const mrNodeId = 'n-mr-' + projectRun.name + '-' + model.name + '-' + index1 + '-' + modelRun.name + '-' + index2;
-          if (modelRun.context.projectrun === projectRun.name && modelRun.context.model === model.name) {
+          if (model.context.projectrun === projectRun.name && modelRun.context.projectrun === projectRun.name && modelRun.context.model === model.name) {
             const mrNode = {
               id: mrNodeId,
               type: 'circle',
@@ -336,16 +341,30 @@ const ProjectPipelinePage = () => {
         <ContentHeader title="Project Pipeline" />
       </Row>
       <Row id="pipeline-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
-        <Col md={8}>
+        <Col md={isGraphExpanded ? 12 : 8}>
           <GraphViewComponent
             graphNodes={pipesGraph.nodes}
             graphEdges={pipesGraph.edges}
             setClickedElementData={setClickedElementedData}
           />
         </Col>
-        <Col sm={4} className="border-start text-start ml-4">
-          <DataViewComponent data={clickedElementData} />
-        </Col>
+
+        <div
+          className={`toggle-button-container ${isGraphExpanded ? 'expanded' : ''}`}
+          onClick={toggleGraphExpansion}
+          title={isGraphExpanded ? "Show data panel" : "Expand graph"}
+        >
+          <FontAwesomeIcon
+            icon={isGraphExpanded ? faChevronLeft : faChevronRight}
+            className="toggle-button"
+          />
+        </div>
+
+        {!isGraphExpanded && (
+          <Col sm={4} className="border-start text-start ml-4 data-view-col">
+            <DataViewComponent data={clickedElementData} />
+          </Col>
+        )}
       </Row>
     </Container>
     </>
