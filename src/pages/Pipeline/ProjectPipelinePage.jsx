@@ -283,7 +283,7 @@ const ProjectPipelinePage = () => {
         const mNodeId = modelNodeIdMapping.get(model.name);
         modelRuns.forEach((modelRun, index2) => {
           const mrNodeId = 'n-mr-' + projectRun.name + '-' + model.name + '-' + index1 + '-' + modelRun.name + '-' + index2;
-          if (modelRun.context.projectrun === projectRun.name && modelRun.context.model === model.name) {
+          if (model.context.projectrun === projectRun.name && modelRun.context.projectrun === projectRun.name && modelRun.context.model === model.name) {
             const mrNode = {
               id: mrNodeId,
               type: 'circle',
