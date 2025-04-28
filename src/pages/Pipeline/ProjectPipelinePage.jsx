@@ -22,6 +22,8 @@ import ContentHeader from "../Components/ContentHeader";
 import DataViewComponent from "./Components/DataViewComponent";
 import GraphViewComponent from "./Components/GraphViewComponent";
 
+import { useQueries } from "@tanstack/react-query";
+import { getDatasets } from "../../hooks/useDatasetQuery";
 import { useGetHandoffsQuery } from "../../hooks/useHandoffQuery";
 import { useGetModelsQuery } from "../../hooks/useModelQuery";
 import { useGetModelRunsQuery } from "../../hooks/useModelRunQuery";
@@ -97,9 +99,88 @@ const ProjectPipelinePage = () => {
     }
   );
 
+  const [datasetQueries, setDatasetQueries] = useState([]);
+  const [datasetsMap, setDatasetsMap] = useState(new Map());
+
+  useEffect(() => {
+    if (!projectDataAvailable || !projectRuns.length || !models.length || !modelRuns.length) {
+      return;
+    }
+
+    const queries = [];
+
+    projectRuns.forEach(projectRun => {
+      models.forEach(model => {
+        if (model.context.projectrun === projectRun.name) {
+          modelRuns.forEach(modelRun => {
+            if (modelRun.context.projectrun === projectRun.name &&
+                modelRun.context.model === model.name) {
+
+              const queryKey = `${projectRun.name}-${model.name}-${modelRun.name}`;
+
+              queries.push({
+                queryKey: ['datasets', effectivePname, projectRun.name, model.name, modelRun.name],
+                queryFn: () => getDatasets({
+                  projectName: effectivePname,
+                  projectRunName: projectRun.name,
+                  modelName: model.name,
+                  modelRunName: modelRun.name
+                }),
+                enabled: projectDataAvailable,
+                onSuccess: (data) => {
+                  setDatasetsMap(prev => {
+                    const updated = new Map(prev);
+                    updated.set(queryKey, data);
+                    return updated;
+                  });
+                },
+                onError: (error) => {
+                  console.error(`Query error for ${queryKey}:`, error);
+                }
+              });
+            }
+          });
+        }
+      });
+    });
+
+    setDatasetQueries(queries);
+  }, [projectDataAvailable, projectRuns, models, modelRuns, effectivePname]);
+
+  const datasetResults = useQueries({ queries: datasetQueries });
+
+  useEffect(() => {
+    if (!datasetResults.length) return;
+
+    const newMap = new Map(datasetsMap);
+    let mapUpdated = false;
+
+    datasetResults.forEach((result, index) => {
+      if (result.isSuccess && result.data && datasetQueries[index]) {
+        const queryInfo = datasetQueries[index];
+        const projectRunName = queryInfo.queryKey[2];
+        const modelName = queryInfo.queryKey[3];
+        const modelRunName = queryInfo.queryKey[4];
+        const queryKey = `${projectRunName}-${modelName}-${modelRunName}`;
+
+        if (!datasetsMap.has(queryKey) ||
+            JSON.stringify(datasetsMap.get(queryKey)) !== JSON.stringify(result.data)) {
+          newMap.set(queryKey, result.data);
+          mapUpdated = true;
+        }
+      }
+    });
+
+    if (mapUpdated) {
+      setDatasetsMap(newMap);
+    }
+  }, [datasetResults, datasetQueries, datasetsMap]);
+
+  const isLoadingDatasets = datasetResults.some(query => query.isLoading);
+
   const isLoading = isLoadingProject || isLoadingProjectRuns ||
                    isLoadingModels || isLoadingModelRuns ||
-                   isLoadingHandoffs;
+                   isLoadingHandoffs || isLoadingDatasets;
 
   const [clickedElementData, setClickedElementedData] = useState({});
   const [isGraphExpanded, setIsGraphExpanded] = useState(false);
@@ -321,6 +402,51 @@ const ProjectPipelinePage = () => {
               data: {}
             }
             initialEdges.push(mrEdge);
+
+            const queryKey = `${projectRun.name}-${model.name}-${modelRun.name}`;
+            const datasetsForThisRun = datasetsMap.get(queryKey) || [];
+
+            datasetsForThisRun.forEach((dataset, index3) => {
+              if (dataset.context &&
+                  dataset.context.projectrun === projectRun.name &&
+                  dataset.context.model === model.name &&
+                  dataset.context.modelrun === modelRun.name) {
+
+                const dsNodeId = 'n-ds-' + projectRun.name + '-' + model.name + '-' + modelRun.name + '-' + dataset.name + '-' + index3;
+                const dsNode = {
+                  id: dsNodeId,
+                  type: 'circle',
+                  label: 'Dataset',
+                  position: {x: 0, y: 0},
+                  data: dataset,
+                  style: {
+                    backgroundColor: nodeColors.dataset
+                  }
+                };
+                initialNodes.push(dsNode);
+
+                const dsEdgeId = 'e-' + mrNodeId + '-' + dsNodeId + '-' + generateRandomString(5);
+                const dsEdgeHandle = 'h-' + dsEdgeId;
+                const dsEdge = {
+                  id: dsEdgeId,
+                  source: mrNodeId,
+                  target: dsNodeId,
+                  sourceHandle: dsEdgeHandle,
+                  markerEnd: {
+                    type: MarkerType.ArrowClosed,
+                  },
+                  type: 'default',
+                  label: 'produces',
+                  style: {
+                    stroke: "#fe6523",
+                    strokeWidth: 2,
+                    strokeDasharray: "5,5",
+                  },
+                  data: {}
+                };
+                initialEdges.push(dsEdge);
+              }
+            });
           }
         });
       });
@@ -331,7 +457,7 @@ const ProjectPipelinePage = () => {
 
     return {nodes: layoutedNodes, edges: layoutedEdges}
 
-  }, [project, projectRuns, models, modelRuns, handoffs, isLoading]);
+  }, [project, projectRuns, models, modelRuns, handoffs, datasetsMap, isLoading]);
 
   return (
     <>
@@ -370,7 +496,6 @@ const ProjectPipelinePage = () => {
     </>
   );
 }
-
 
 function getDagreLayoutedElements(nodes, edges) {
   let dagreGraph = new dagre.graphlib.Graph();
