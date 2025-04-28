@@ -102,6 +102,9 @@ const ProjectPipelinePage = () => {
   const [datasetQueries, setDatasetQueries] = useState([]);
   const [datasetsMap, setDatasetsMap] = useState(new Map());
 
+
+  // TODO: Not effcient, but it works.
+  // We need to refactor this to get all datasets in one API call.
   useEffect(() => {
     if (!projectDataAvailable || !projectRuns.length || !models.length || !modelRuns.length) {
       return;

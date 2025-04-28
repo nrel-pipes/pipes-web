@@ -19,7 +19,6 @@ export const getDatasets = async ({ projectName, projectRunName = null, modelNam
     const response = await AxiosInstance.get(`/api/datasets`, { params });
     return response.data || [];
   } catch (error) {
-    // Enhanced error logging
     if (error.response) {
       console.error("Server responded with error fetching datasets:", {
         status: error.response.status,
@@ -53,11 +52,10 @@ export const useGetDatasetsQuery = (
     },
     enabled: isLoggedIn && !!projectName && (options.enabled !== false),
     retry: (failureCount, error) => {
-      // Don't retry 4xx errors
       if (error.response && error.response.status >= 400 && error.response.status < 500) {
         return false;
       }
-      return failureCount < 2; // Maximum of 2 retries for other errors
+      return failureCount < 2;
     },
     refetchOnMount: true,
     refetchOnWindowFocus: true,
