@@ -8,11 +8,11 @@ import pipesConfig from '../configs/PipesConfig';
 
 
 const useAuthStore = create(
-  persist((set) => ({
+  persist((set, get) => ({
     // State
-    currentCognitoUser: null,
+    cognitoUser: null,
 
-    currentUserDetail: null,
+    currentUser: null,
     isLoggedIn: false,
     accessToken: null,
     idToken: null,
@@ -42,7 +42,7 @@ const useAuthStore = create(
             set({accessToken: session.getAccessToken().getJwtToken()});
             set({idToken: session.getIdToken().getJwtToken()});
             set({isLoggedIn: true});
-            set({currentCognitoUser: cognitoUser});
+            set({cognitoUser: cognitoUser});
             resolve(session);
           },
           onFailure: () => {
@@ -65,17 +65,18 @@ const useAuthStore = create(
     // lougout method
     logout: () => {
       const userPool = new CognitoUserPool(pipesConfig.poolData);
-      const currentCognitoUser = userPool.getCurrentUser();
-      if (currentCognitoUser !== null) {
-        currentCognitoUser.signOut();
+      const cognitoUser = userPool.getCurrentUser();
+      if (cognitoUser !== null) {
+        cognitoUser.signOut();
         set({
-          currentCognitoUser: null,
+          cognitoUser: null,
           isLoggedIn: false,
           accessToken: null,
           idToken: null,
           challengeUsername: null,
           tempPassword: null,
-          passwordResetUsername: null
+          passwordResetUsername: null,
+          currentUser: null
         });
       }
     },
@@ -205,6 +206,12 @@ const useAuthStore = create(
       } catch (error) {
         set({ isLoggedIn: false });
       }
+    },
+
+    // Add method to set the current user
+    setCurrentUser: (userData) => {
+      // Simple direct state update without any logs or complexity
+      set({ currentUser: userData });
     },
 
   }),
