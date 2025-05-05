@@ -47,6 +47,9 @@ import ProfilePage from "./pages/Account/ProfilePage";
 import ResetPasswordPage from "./pages/Account/ResetPasswordPage";
 import TokensPage from "./pages/Account/TokensPage";
 
+// Users
+import UserListPage from "./pages/Users/UserListPage";
+
 import useAuthStore from "./stores/AuthStore";
 
 const queryClient = new QueryClient();
@@ -96,6 +99,9 @@ function App() {
                     isLoggedIn ? <ProjectPipeline /> : <Navigate to="/login" />
                   }
                 />
+                <Route path="/create-project" element={<CreateProjectPage />} />
+                <Route path="/create-projectrun" element={<CreateProjectRunPage />} />
+                <Route path="/update-project" element={<UpdateProjectPage />} />
 
                 {/* Project run route */}
                 <Route
@@ -122,9 +128,9 @@ function App() {
                 <Route path="/account/change-password" element={<ChangePasswordPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/create-project" element={<CreateProjectPage />} />
-                <Route path="/create-projectrun" element={<CreateProjectRunPage />} />
-                <Route path="/update-project" element={<UpdateProjectPage />} />
+
+                {/* Admin routes */}
+                <Route path="/users" element={<UserListPage />} />
               </Routes>
             </div>
           </div>
