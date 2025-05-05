@@ -1,6 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useGetUserQuery } from '../../hooks/useUserQuery';
 
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -8,18 +9,16 @@ import Row from 'react-bootstrap/Row';
 
 import "../PageStyles.css";
 
-import { useGetUserQuery } from '../../hooks/useUserQuery';
 import NavbarSub from '../../layouts/NavbarSub';
 import useAuthStore from '../../stores/AuthStore';
 
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, idToken } = useAuthStore();
-
+  const { isLoggedIn, idToken, currentUser, setCurrentUser } = useAuthStore();
   const [userEmail, setUserEmail] = useState(null);
 
-  // Extract email from token
+  // Extract email from token for display purposes and for querying
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login');
@@ -27,17 +26,35 @@ const ProfilePage = () => {
     }
 
     if (idToken) {
-      const decodedIdToken = jwtDecode(idToken);
-      const email = decodedIdToken.email.toLowerCase();
-      setUserEmail(email);
+      try {
+        const decodedIdToken = jwtDecode(idToken);
+        const email = decodedIdToken.email.toLowerCase();
+        setUserEmail(email);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
     }
   }, [isLoggedIn, navigate, idToken]);
 
-  // Fetch user details with React Query
-  const { data: currentUser, isLoading } = useGetUserQuery(userEmail);
+  // Fetch user details if currentUser is null
+  const { data: userDetail, isLoading: isLoadingUserData } = useGetUserQuery(userEmail, {
+    enabled: isLoggedIn && !currentUser && !!userEmail
+  });
 
-  // Determine user role
-  const userRole = currentUser?.is_superuser ? 'Administrator' : 'User';
+  useEffect(() => {
+    if (userDetail && !currentUser) {
+      setCurrentUser(userDetail);
+    }
+  }, [userDetail, currentUser, setCurrentUser]);
+
+  // Determine if data is still loading
+  const isLoading = (!currentUser && isLoadingUserData) || !userEmail;
+
+  // Use currentUser if available, otherwise use the newly fetched userDetail
+  const userData = currentUser || userDetail;
+
+  // Determine user role from user details
+  const userRole = userData?.is_superuser ? 'Administrator' : 'User';
 
   return (
     <>
