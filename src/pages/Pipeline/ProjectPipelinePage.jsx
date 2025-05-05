@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { faChevronLeft, faChevronRight, faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -102,6 +102,59 @@ const ProjectPipelinePage = () => {
   const [datasetQueries, setDatasetQueries] = useState([]);
   const [datasetsMap, setDatasetsMap] = useState(new Map());
 
+  const graphContainerRef = useRef(null);
+  const [graphMounted, setGraphMounted] = useState(false);
+
+  // Add a useEffect to handle initial graph mounting
+  useEffect(() => {
+    // Set a small delay to allow the component to fully mount before rendering the graph
+    const timer = setTimeout(() => {
+      setGraphMounted(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Prevent the ResizeObserver error
+  useEffect(() => {
+    // This prevents the ResizeObserver loop limit exceeded error
+    const handleError = (event) => {
+      if (event.message && event.message.includes('ResizeObserver loop')) {
+        event.stopImmediatePropagation();
+      }
+    };
+
+    window.addEventListener('error', handleError);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
+
+  // Debounced resize handler
+  const debouncedResize = useCallback(() => {
+    let resizeTimer;
+    return () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (graphContainerRef.current) {
+          // Force a reflow
+          graphContainerRef.current.style.display = 'none';
+          void graphContainerRef.current.offsetHeight; // Forces reflow
+          graphContainerRef.current.style.display = '';
+        }
+      }, 300);
+    };
+  }, []);
+
+  // Add resize listener
+  useEffect(() => {
+    const handleResize = debouncedResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [debouncedResize]);
 
   // TODO: Not effcient, but it works.
   // We need to refactor this to get all datasets in one API call.
@@ -470,12 +523,14 @@ const ProjectPipelinePage = () => {
         <ContentHeader title="Project Pipeline" />
       </Row>
       <Row id="pipeline-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
-        <Col md={isGraphExpanded ? 12 : 8}>
-          <GraphViewComponent
-            graphNodes={pipesGraph.nodes}
-            graphEdges={pipesGraph.edges}
-            setClickedElementData={setClickedElementedData}
-          />
+        <Col md={isGraphExpanded ? 12 : 8} ref={graphContainerRef}>
+          {graphMounted && (
+            <GraphViewComponent
+              graphNodes={pipesGraph.nodes}
+              graphEdges={pipesGraph.edges}
+              setClickedElementData={setClickedElementedData}
+            />
+          )}
         </Col>
 
         <div
