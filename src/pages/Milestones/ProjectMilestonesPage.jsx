@@ -7,7 +7,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import { useNavigate } from "react-router-dom";
 
-import { useProjectBasicsQuery } from "../../hooks/useProjectQuery";
+import { useGetProjectsQuery } from "../../hooks/useProjectQuery";
 import useAuthStore from "../../stores/AuthStore";
 
 import NavbarSub from "../../layouts/NavbarSub";
@@ -24,7 +24,7 @@ const ProjectMilestonesPage = () => {
     isLoading: isLoadingBasics,
     isError: isErrorBasics,
     error: errorBasics,
-  } = useProjectBasicsQuery();
+  } = useGetProjectsQuery();
 
   // Auth check effect
   useEffect(() => {

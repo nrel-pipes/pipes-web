@@ -1,10 +1,11 @@
 import { faEdit, faSearch, faSpinner, faTrash, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { useEffect, useState } from 'react';
 import { Alert, Button, Col, Container, Form, InputGroup, Row, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-import { useGetUsersQuery } from '../../hooks/useUserQuery';
+import { useGetUserQuery, useGetUsersQuery } from '../../hooks/useUserQuery';
 import NavbarSub from '../../layouts/NavbarSub';
 import useAuthStore from '../../stores/AuthStore';
 import ContentHeader from '../Components/ContentHeader';
@@ -13,22 +14,44 @@ import './UserListPage.css';
 
 const UserListPage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken, currentUser } = useAuthStore();
+  const { isLoggedIn, accessToken, idToken, validateToken, currentUser, setCurrentUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
+  const [userEmail, setUserEmail] = useState(null);
 
-  // Fetch users with the hook, suppressing the error notification
-  const { data: users = [], isLoading, error } = useGetUsersQuery({
-    onError: () => {}, // Silent error handling, we'll handle it in UI
-  });
-
-  // Validate token
-  React.useEffect(() => {
+    // Extract email from token for display purposes and for querying
+  useEffect(() => {
     validateToken(accessToken);
     if (!isLoggedIn) {
       navigate('/login');
       return;
     }
-  }, [isLoggedIn, navigate, accessToken, validateToken]);
+
+    if (idToken) {
+      try {
+        const decodedIdToken = jwtDecode(idToken);
+        const email = decodedIdToken.email.toLowerCase();
+        setUserEmail(email);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, [isLoggedIn, navigate, idToken, accessToken, validateToken]);
+
+  // Fetch user details if currentUser is null
+  const { data: userData } = useGetUserQuery(userEmail, {
+    enabled: isLoggedIn && !currentUser && !!userEmail
+  });
+
+  useEffect(() => {
+    if (userData && !currentUser) {
+      setCurrentUser(userData);
+    }
+  }, [userData, currentUser, setCurrentUser]);
+
+  // Fetch users with the hook, suppressing the error notification
+  const { data: users = [], isLoading, error } = useGetUsersQuery({
+    onError: () => {}, // Silent error handling, we'll handle it in UI
+  });
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);

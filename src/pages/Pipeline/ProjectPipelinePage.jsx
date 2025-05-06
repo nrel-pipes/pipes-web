@@ -105,43 +105,43 @@ const ProjectPipelinePage = () => {
   const graphContainerRef = useRef(null);
   const [graphMounted, setGraphMounted] = useState(false);
 
-  // Add a useEffect to handle initial graph mounting
-  useEffect(() => {
-    // Set a small delay to allow the component to fully mount before rendering the graph
-    const timer = setTimeout(() => {
-      setGraphMounted(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   // Prevent the ResizeObserver error
   useEffect(() => {
     // This prevents the ResizeObserver loop limit exceeded error
     const handleError = (event) => {
-      if (event.message && event.message.includes('ResizeObserver loop')) {
+      // More specific check for ResizeObserver errors
+      if (
+        event.message === 'ResizeObserver loop completed with undelivered notifications.' ||
+        event.message === 'ResizeObserver loop limit exceeded' ||
+        (event.message && event.message.includes('ResizeObserver loop'))
+      ) {
+        // Prevent the error from appearing in console
         event.stopImmediatePropagation();
+        event.preventDefault();
       }
     };
 
-    window.addEventListener('error', handleError);
+    // Capture all possible error events
+    window.addEventListener('error', handleError, true);
+    window.addEventListener('unhandledrejection', handleError, true);
 
     return () => {
-      window.removeEventListener('error', handleError);
+      window.removeEventListener('error', handleError, true);
+      window.removeEventListener('unhandledrejection', handleError, true);
     };
   }, []);
 
-  // Debounced resize handler
+  // Improved debounced resize handler
   const debouncedResize = useCallback(() => {
     let resizeTimer;
     return () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
         if (graphContainerRef.current) {
-          // Force a reflow
-          graphContainerRef.current.style.display = 'none';
-          void graphContainerRef.current.offsetHeight; // Forces reflow
-          graphContainerRef.current.style.display = '';
+          // Use React state to trigger re-render instead of direct DOM manipulation
+          setGraphMounted(false);
+          // Small delay before remounting
+          setTimeout(() => setGraphMounted(true), 50);
         }
       }, 300);
     };
@@ -205,6 +205,25 @@ const ProjectPipelinePage = () => {
 
   const datasetResults = useQueries({ queries: datasetQueries });
 
+  const isLoadingDatasets = datasetResults ? datasetResults.some(query => query.isLoading) : false;
+
+  const isLoading = isLoadingProject || isLoadingProjectRuns ||
+                   isLoadingModels || isLoadingModelRuns ||
+                   isLoadingHandoffs || isLoadingDatasets;
+
+  // Improved graph mounting logic
+  useEffect(() => {
+    // Only mount graph if we have data ready
+    if (!isLoading && project) {
+      const timer = setTimeout(() => {
+        setGraphMounted(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setGraphMounted(false);
+    }
+  }, [isLoading, project]);
+
   useEffect(() => {
     if (!datasetResults.length) return;
 
@@ -231,12 +250,6 @@ const ProjectPipelinePage = () => {
       setDatasetsMap(newMap);
     }
   }, [datasetResults, datasetQueries, datasetsMap]);
-
-  const isLoadingDatasets = datasetResults.some(query => query.isLoading);
-
-  const isLoading = isLoadingProject || isLoadingProjectRuns ||
-                   isLoadingModels || isLoadingModelRuns ||
-                   isLoadingHandoffs || isLoadingDatasets;
 
   const [clickedElementData, setClickedElementedData] = useState({});
   const [isGraphExpanded, setIsGraphExpanded] = useState(false);
@@ -524,7 +537,7 @@ const ProjectPipelinePage = () => {
       </Row>
       <Row id="pipeline-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
         <Col md={isGraphExpanded ? 12 : 8} ref={graphContainerRef}>
-          {graphMounted && (
+          {graphMounted && !isLoading && pipesGraph.nodes && (
             <GraphViewComponent
               graphNodes={pipesGraph.nodes}
               graphEdges={pipesGraph.edges}

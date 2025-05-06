@@ -1,5 +1,6 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { jwtDecode } from "jwt-decode";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +10,8 @@ import Container from "react-bootstrap/Container";
 import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 
-import { useProjectBasicsQuery } from "../../hooks/useProjectQuery";
+import { useGetProjectsQuery } from "../../hooks/useProjectQuery";
+import { useGetUserQuery } from '../../hooks/useUserQuery';
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
 
@@ -22,11 +24,12 @@ import "./ProjectListPage.css";
 
 
 const ProjectBasicsPage = () => {
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { isLoggedIn, accessToken, idToken, validateToken, currentUser, setCurrentUser } = useAuthStore();
   const { setEffectivePname } = useDataStore();
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [projectsPerPage] = useState(3);
+  const [userEmail, setUserEmail] = useState(null);
 
   const navigate = useNavigate();
 
@@ -36,14 +39,35 @@ const ProjectBasicsPage = () => {
     if (!isLoggedIn) {
       navigate("/login");
     }
-  }, [isLoggedIn, navigate, validateToken, accessToken]);
+
+    if (idToken) {
+      try {
+        const decodedIdToken = jwtDecode(idToken);
+        const email = decodedIdToken.email.toLowerCase();
+        setUserEmail(email);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, [isLoggedIn, navigate, validateToken, idToken, accessToken]);
+
+  // Fetch user details if currentUser is null
+  const { data: userData } = useGetUserQuery(userEmail, {
+    enabled: isLoggedIn && !currentUser && !!userEmail
+  });
+
+  useEffect(() => {
+    if (userData && !currentUser) {
+      setCurrentUser(userData);
+    }
+  }, [userData, currentUser, setCurrentUser]);
 
   const {
     data: projectBasics = [],
     isLoading: isLoadingBasics,
     isError: isErrorBasics,
     error: errorBasics,
-  } = useProjectBasicsQuery();
+  } = useGetProjectsQuery();
 
   // Reverse the order of projects to show latest first
   // TODO: Update API to return the creation time.

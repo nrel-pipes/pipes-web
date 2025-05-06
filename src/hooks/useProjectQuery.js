@@ -10,7 +10,7 @@ export const getProjectBasics = async () => {
   return response.data;
 };
 
-export const useProjectBasicsQuery = () => {
+export const useGetProjectsQuery = () => {
   const { isLoggedIn } = useAuthStore();
 
   return useQuery({
