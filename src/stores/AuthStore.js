@@ -39,10 +39,17 @@ const useAuthStore = create(
       const response = await new Promise((resolve, reject) => {
         cognitoUser.authenticateUser(authenticationDetails, {
           onSuccess: (session) => {
-            set({accessToken: session.getAccessToken().getJwtToken()});
-            set({idToken: session.getIdToken().getJwtToken()});
-            set({isLoggedIn: true});
-            set({cognitoUser: cognitoUser});
+            const accessToken = session.getAccessToken().getJwtToken();
+            const idToken = session.getIdToken().getJwtToken();
+
+            // Update the store with tokens and login state
+            set({
+              accessToken: accessToken,
+              idToken: idToken,
+              isLoggedIn: true,
+              cognitoUser: cognitoUser
+            });
+
             resolve(session);
           },
           onFailure: () => {
@@ -208,9 +215,7 @@ const useAuthStore = create(
       }
     },
 
-    // Add method to set the current user
     setCurrentUser: (userData) => {
-      // Simple direct state update without any logs or complexity
       set({ currentUser: userData });
     },
 
