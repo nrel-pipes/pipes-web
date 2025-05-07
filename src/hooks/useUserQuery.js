@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import useAuthStore from '../stores/AuthStore';
 import AxiosInstance from './AxiosInstance';
 
@@ -41,3 +41,27 @@ export const useGetUsersQuery = (options = {}) => {
   });
 };
 
+// Update user information
+export const updateUser = async ({ email, userData }) => {
+  const response = await AxiosInstance.put("/api/users/update", userData, {
+    params: { email }
+  });
+  return response.data;
+};
+
+export const useUserUpdateMutation = (options = {}) => {
+  return useMutation({
+    mutationFn: ({ email, userData }) => updateUser({ email, userData }),
+    onSuccess: (data, variables, context) => {
+      if (options.onSuccess) {
+        options.onSuccess(data, variables, context);
+      }
+    },
+    onError: (error, variables, context) => {
+      if (options.onError) {
+        options.onError(error, variables, context);
+      }
+    },
+    ...options
+  });
+};

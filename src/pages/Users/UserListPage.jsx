@@ -1,4 +1,4 @@
-import { faEdit, faSearch, faSpinner, faTrash, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
@@ -69,17 +69,6 @@ const UserListPage = () => {
     navigate(`/users/edit/${userEmail}`);
   };
 
-  const handleDelete = (userEmail) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      // Implement deletion logic here
-      console.log(`Delete user with email: ${userEmail}`);
-    }
-  };
-
-  const handleAddUser = () => {
-    navigate('/users/add');
-  };
-
   // Determine if current user is an admin
   const isAdmin = currentUser?.is_superuser === true;
 
@@ -119,12 +108,6 @@ const UserListPage = () => {
                     onChange={handleSearch}
                   />
                 </InputGroup>
-              </Col>
-              <Col md={6} className="text-end">
-                <Button variant="primary" onClick={handleAddUser}>
-                  <FontAwesomeIcon icon={faUserPlus} className="me-2" />
-                  Add User
-                </Button>
               </Col>
             </Row>
 
@@ -170,13 +153,6 @@ const UserListPage = () => {
                             onClick={() => handleEdit(user.email)}
                           >
                             <FontAwesomeIcon icon={faEdit} />
-                          </Button>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleDelete(user.email)}
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
                           </Button>
                         </td>
                       </tr>

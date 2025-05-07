@@ -1,0 +1,55 @@
+/* Remove card hover/focus effects */
+.card, .card-header, .card-body {
+  transition: none !important;
+  transform: none !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.card:hover, .card:focus,
+.card-header:hover, .card-header:focus,
+.card-body:hover, .card-body:focus {
+  transform: none !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  background-color: inherit !important; /* Prevent background color change on hover */
+}
+
+/* Explicitly set background colors */
+.card {
+  background-color: #fff !important;
+}
+
+.card-body {
+  background-color: #fff !important;
+}
+
+.card-header {
+  background-color: #f8f9fa !important;
+}
+
+/* Remove focus effects from form elements */
+.form-control:focus,
+.form-check-input:focus,
+.form-select:focus,
+.btn:focus,
+.btn-close:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Fix button focus visible states */
+.btn:focus-visible {
+  outline: none !important;
+}
+
+/* Remove default focus rings across the app */
+*:focus {
+  outline: none !important;
+}
+
+/* Section headings */
+.section-heading {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0d6efd;
+  margin-bottom: 1rem;
+}

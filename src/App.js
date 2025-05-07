@@ -48,6 +48,7 @@ import ResetPasswordPage from "./pages/Account/ResetPasswordPage";
 import TokensPage from "./pages/Account/TokensPage";
 
 // Users
+import UserEditPage from "./pages/Users/UserEditPage";
 import UserListPage from "./pages/Users/UserListPage";
 
 import useAuthStore from "./stores/AuthStore";
@@ -131,6 +132,9 @@ function App() {
 
                 {/* Admin routes */}
                 <Route path="/users" element={<UserListPage />} />
+                <Route path="/users/edit/:userEmail" element={
+                  isLoggedIn ? <UserEditPage /> : <Navigate to="/login" />
+                } />
               </Routes>
             </div>
           </div>
