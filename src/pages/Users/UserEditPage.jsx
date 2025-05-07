@@ -16,7 +16,7 @@ import './UserEditPage.css';
 const UserEditPage = () => {
   const navigate = useNavigate();
   const { userEmail } = useParams();
-  const { isLoggedIn, accessToken, validateToken, currentUser } = useAuthStore();
+  const { checkAuthStatus, currentUser } = useAuthStore();
   const [submitStatus, setSubmitStatus] = useState({ status: null, message: '' });
   const queryClient = useQueryClient();
 
@@ -38,9 +38,9 @@ const UserEditPage = () => {
     }
   });
 
-  // Fetch user data
+  // Fetch user data - update the enabled condition
   const { data: userData, isLoading, error } = useGetUserQuery(userEmail, {
-    enabled: isLoggedIn && !!userEmail
+    enabled: !!userEmail
   });
 
   // Add the update user mutation
@@ -69,19 +69,29 @@ const UserEditPage = () => {
   // Determine if current user is an admin
   const isAdmin = currentUser?.is_superuser === true;
 
-  // Redirect if not logged in or if not an admin
+  // Updated auth check effect
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
 
-    if (!isAdmin) {
-      navigate('/users');
-      return;
-    }
-  }, [isLoggedIn, navigate, accessToken, validateToken, isAdmin]);
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        if (!isAdmin) {
+          navigate('/users');
+          return;
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus, isAdmin]);
 
   // Set form values when user data is loaded
   useEffect(() => {

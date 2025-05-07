@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
+import { useEffect, useState } from "react";
+
 import SiteBanner from "./layouts/Banner";
 import SiteFooter from "./layouts/Footer";
 import SiteNavbarFluid from "./layouts/NavbarFluid";
@@ -56,17 +58,31 @@ import useAuthStore from "./stores/AuthStore";
 const queryClient = new QueryClient();
 
 function App() {
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authStatus = await checkAuthStatus();
+      setIsAuthenticated(authStatus);
+    };
+
+    checkAuth();
+
+    const interval = setInterval(checkAuth, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [checkAuthStatus]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className="App">
-        {isLoggedIn ? "" : <SiteBanner />}
-        {isLoggedIn ? <SiteNavbarFluid /> : <SiteNavbar />}
+        {isAuthenticated ? "" : <SiteBanner />}
+        {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
 
         <BrowserRouter>
           <div className="app-container">
-            {isLoggedIn && <Sidebar />}
+            {isAuthenticated && <Sidebar />}
             <div className="Content">
               <Routes>
                 {/* Home route */}
@@ -76,28 +92,28 @@ function App() {
                   path="/projects"
                   exact
                   element={
-                    isLoggedIn ? <ProjectBasicsPage /> : <Navigate to="/login" />
+                    isAuthenticated ? <ProjectBasicsPage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
                   path="/project/dashboard"
                   exact
                   element={
-                    isLoggedIn ? <ProjectDashboardPage /> : <Navigate to="/login" />
+                    isAuthenticated ? <ProjectDashboardPage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
                   path="/project/schedule"
                   exact
                   element={
-                    isLoggedIn ? <ProjectSchedulePage /> : <Navigate to="/login" />
+                    isAuthenticated ? <ProjectSchedulePage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
                   path="/project/pipeline"
                   exact
                   element={
-                    isLoggedIn ? <ProjectPipeline /> : <Navigate to="/login" />
+                    isAuthenticated ? <ProjectPipeline /> : <Navigate to="/login" />
                   }
                 />
                 <Route path="/create-project" element={<CreateProjectPage />} />
@@ -108,7 +124,7 @@ function App() {
                 <Route
                   path="/projectrun"
                   exect
-                  element={isLoggedIn ? <ProjectRunPage /> : <Navigate to="/login" />}
+                  element={isAuthenticated ? <ProjectRunPage /> : <Navigate to="/login" />}
                 />
 
                 {/* Milestones route */}
@@ -117,7 +133,7 @@ function App() {
                 {/* User auth routes */}
                 <Route
                   path="/login"
-                  element={isLoggedIn ? <Navigate to="/projects" /> : <LoginPage />}
+                  element={isAuthenticated ? <Navigate to="/projects" /> : <LoginPage />}
                 />
                 <Route path="/logout" element={<LogoutPage />} />
                 <Route path="/account/tokens" element={<TokensPage />} />
@@ -133,13 +149,13 @@ function App() {
                 {/* Admin routes */}
                 <Route path="/users" element={<UserListPage />} />
                 <Route path="/users/edit/:userEmail" element={
-                  isLoggedIn ? <UserEditPage /> : <Navigate to="/login" />
+                  isAuthenticated ? <UserEditPage /> : <Navigate to="/login" />
                 } />
               </Routes>
             </div>
           </div>
         </BrowserRouter>
-        {isLoggedIn ? "" : <SiteFooter />}
+        {isAuthenticated ? "" : <SiteFooter />}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

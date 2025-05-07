@@ -1,4 +1,3 @@
-
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
@@ -18,7 +17,7 @@ import "../PageStyles.css";
 
 const ProjectMilestonesPage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const {
     data: projectBasics = [],
     isLoading: isLoadingBasics,
@@ -26,13 +25,23 @@ const ProjectMilestonesPage = () => {
     error: errorBasics,
   } = useGetProjectsQuery();
 
-  // Auth check effect
+  // Auth check effect - updated to use checkAuthStatus
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, validateToken, accessToken]);
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
+
+        if (!isAuthenticated) {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
 
   if (isLoadingBasics) {
     return (

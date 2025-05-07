@@ -15,45 +15,52 @@ import useAuthStore from '../../stores/AuthStore';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, idToken, currentUser, setCurrentUser } = useAuthStore();
+  const { checkAuthStatus, getIdToken, currentUser, setCurrentUser } = useAuthStore();
   const [userEmail, setUserEmail] = useState(null);
 
-  // Extract email from token for display purposes and for querying
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
-    if (idToken) {
+    const fetchAuthData = async () => {
       try {
-        const decodedIdToken = jwtDecode(idToken);
-        const email = decodedIdToken.email.toLowerCase();
-        setUserEmail(email);
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
-    }
-  }, [isLoggedIn, navigate, idToken]);
+        const isAuthenticated = await checkAuthStatus();
 
-  // Fetch user details if currentUser is null
-  const { data: userDetail, isLoading: isLoadingUserData } = useGetUserQuery(userEmail, {
-    enabled: isLoggedIn && !currentUser && !!userEmail
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        const idToken = await getIdToken();
+
+        if (idToken) {
+          const decodedIdToken = jwtDecode(idToken);
+          const email = decodedIdToken.email.toLowerCase();
+          setUserEmail(email);
+        } else {
+          console.error("ID token not available");
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error("Error accessing authentication data:", error);
+        navigate('/login');
+      }
+    };
+
+    fetchAuthData();
+  }, [navigate, checkAuthStatus, getIdToken]);
+
+  const { data: fetchedUserData, isLoading: isLoadingUserData } = useGetUserQuery(userEmail, {
+    enabled: !!userEmail && !currentUser
   });
 
   useEffect(() => {
-    if (userDetail && !currentUser) {
-      setCurrentUser(userDetail);
+    if (fetchedUserData && !currentUser) {
+      setCurrentUser(fetchedUserData);
     }
-  }, [userDetail, currentUser, setCurrentUser]);
+  }, [fetchedUserData, currentUser, setCurrentUser]);
 
-  // Determine if data is still loading
   const isLoading = (!currentUser && isLoadingUserData) || !userEmail;
 
-  // Use currentUser if available, otherwise use the newly fetched userDetail
-  const userData = currentUser || userDetail;
+  const userData = currentUser || fetchedUserData;
 
-  // Determine user role from user details
   const userRole = userData?.is_superuser ? 'Administrator' : 'User';
 
   return (

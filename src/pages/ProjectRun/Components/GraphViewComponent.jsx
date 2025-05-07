@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import ReactFlow, {
   ReactFlowProvider,
   useEdgesState,
@@ -15,7 +14,6 @@ import Row from "react-bootstrap/Row";
 import { useGetHandoffsQuery } from "../../../hooks/useHandoffQuery";
 import { useGetModelsQuery } from "../../../hooks/useModelQuery";
 import { useGetModelRunsQuery } from "../../../hooks/useModelRunQuery";
-import useAuthStore from "../../../stores/AuthStore";
 import useDataStore from "../../../stores/DataStore";
 import useUIStore from "../../../stores/UIStore";
 import { DecoratedNode } from "../../Components/graph/DecoratedNode";
@@ -23,8 +21,6 @@ import { createEdgesOverview, createNodesOverview } from "./RunUtils";
 
 
 const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
-  const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const getModelColor = useUIStore(state => state.getModelColor);
   const { effectivePname, effectivePRname } = useDataStore();
 
@@ -85,12 +81,6 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
   }, []);
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
     if (!isLoadingModels && !isLoadingModelRuns && !isLoadingHandoffs) {
       let prModels = [];
       models.forEach((model) => {
@@ -114,10 +104,6 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
       setEdges(dcEdges);
     }
   }, [
-    isLoggedIn,
-    accessToken,
-    navigate,
-    validateToken,
     effectivePRname,
     models,
     modelRuns,

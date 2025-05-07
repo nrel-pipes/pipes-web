@@ -17,9 +17,7 @@ import useAuthStore from '../../stores/AuthStore';
 
 const ChangePasswordPage = () => {
   const navigate = useNavigate();
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const changePassword = useAuthStore((state) => state.changePassword);
-  const idToken = useAuthStore((state) => state.idToken);
+  const { checkAuthStatus, changePassword, getIdToken } = useAuthStore();
 
   const [userAttributes, setUserAttributes] = useState({});
   const [oldPassword, setOldPassword] = useState("");
@@ -28,16 +26,35 @@ const ChangePasswordPage = () => {
   const [changeSuccess, setChangeSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() =>{
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        // Check if user is authenticated
+        const isAuthenticated = await checkAuthStatus();
 
-    if (idToken) {
-      const decodedIdToken = jwtDecode(idToken);
-      setUserAttributes(decodedIdToken);
-    }
-  }, [isLoggedIn, navigate, idToken]);
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        // Get the ID token and decode it
+        const idToken = await getIdToken();
+
+        if (idToken) {
+          const decodedIdToken = jwtDecode(idToken);
+          setUserAttributes(decodedIdToken);
+        } else {
+          // If token not available, redirect to login
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate('/login');
+      }
+    };
+
+    initializeAuth();
+  }, [navigate, checkAuthStatus, getIdToken]);
 
   const handleSubmit = async (e) => {
     e.preventDefault()

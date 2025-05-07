@@ -1,8 +1,8 @@
 /// for saving state across components
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from 'zustand/middleware';
 import * as d3 from "d3";
+import { create } from "zustand";
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 
 export const distinguishableColors = function (number) {
@@ -359,7 +359,7 @@ const useUIStore = create(persist(
     }
   }),
   {
-    name: 'UIStore',
+    name: 'Pipes.User.Interface.State',
     storage: createJSONStorage(() => localStorage)
   }
 ));

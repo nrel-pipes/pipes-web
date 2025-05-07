@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import useAuthStore from '../stores/AuthStore';
 import AxiosInstance from './AxiosInstance';
 
 export const getDatasets = async ({ projectName, projectRunName = null, modelName = null, modelRunName = null }) => {
@@ -35,13 +34,11 @@ export const getDatasets = async ({ projectName, projectRunName = null, modelNam
 
 export const useGetDatasetsQuery = (
   projectName,
-  projectRunName = null,
-  modelName = null,
-  modelRunName = null,
+  projectRunName,
+  modelName,
+  modelRunName,
   options = {}
 ) => {
-  const { isLoggedIn } = useAuthStore();
-
   return useQuery({
     queryKey: ['datasets', projectName, projectRunName, modelName, modelRunName],
     queryFn: async () => {
@@ -50,7 +47,7 @@ export const useGetDatasetsQuery = (
       }
       return await getDatasets({ projectName, projectRunName, modelName, modelRunName });
     },
-    enabled: isLoggedIn && !!projectName && (options.enabled !== false),
+    enabled: !!projectName && (options.enabled !== false),
     retry: (failureCount, error) => {
       if (error.response && error.response.status >= 400 && error.response.status < 500) {
         return false;

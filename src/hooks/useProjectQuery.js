@@ -1,8 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import useAuthStore from '../stores/AuthStore';
 import useDataStore from '../stores/DataStore';
 import AxiosInstance from './AxiosInstance';
-
 
 // Get Project Basics
 export const getProjectBasics = async () => {
@@ -11,21 +9,21 @@ export const getProjectBasics = async () => {
 };
 
 export const useGetProjectsQuery = () => {
-  const { isLoggedIn } = useAuthStore();
-
   return useQuery({
     queryKey: ["project-basics"],
     queryFn: () => getProjectBasics(),
-    enabled: !!isLoggedIn,
   });
 };
-
 
 // Get Project Detail
 export const getProject = async ({ projectName }) => {
   try {
-    const encodedProjectName = encodeURIComponent(projectName);
-    const response = await AxiosInstance.get(`/api/projects?project=${encodedProjectName}`);
+    const params = {
+      project: projectName // Axios will properly encode this
+    };
+
+    const response = await AxiosInstance.get('/api/projects', { params });
+
     if (!response.data) {
       throw new Error("No data received from the server.");
     }
@@ -37,15 +35,12 @@ export const getProject = async ({ projectName }) => {
 };
 
 export const useGetProjectQuery = (projectName) => {
-  const { isLoggedIn } = useAuthStore();
-
   return useQuery({
     queryKey: ["effective-project", projectName],
-    queryFn: () => getProject({ projectName}),
-    enabled: !!isLoggedIn
+    queryFn: () => getProject({ projectName }),
+    enabled: !!projectName,
   });
 };
-
 
 // Create New Project
 export const postProject = async ({ data }) => {
@@ -82,12 +77,14 @@ export const useCreateProjectMutation = () => {
   });
 };
 
-
 // Update existing project
-export const putProject = async ({ projectName, data }) => {
+export const updateProject = async ({ projectName, data }) => {
   try {
-    const encodedProjectName = encodeURIComponent(projectName);
-    const response = await AxiosInstance.put(`/api/projects?project=${encodedProjectName}`, data);
+    const params = {
+      project: projectName // Axios will properly encode this
+    };
+
+    const response = await AxiosInstance.put('/api/projects', data, { params });
     return response.data;
   } catch (error) {
     console.error("Failed to update project via request client:", error);
@@ -101,22 +98,20 @@ export const useUpdateProjectMutation = () => {
 
   return useMutation({
     mutationKey: ["update-project"],
-    mutationFn: ({ projectName, data }) => putProject({ projectName, data }),
+    mutationFn: ({ projectName, data }) => updateProject({ projectName, data }),
     onSuccess: (data, variables) => {
       if (data && data.name) {
-        // Set as effective project (in case name changed)
+
         setEffectivePname(data.name);
 
         // Invalidate relevant queries
         queryClient.invalidateQueries(["project-basics"]);
 
-        // Invalidate both the old and new project names if they're different
         queryClient.invalidateQueries(["effective-project", variables.projectName]);
         if (variables.projectName !== data.name) {
           queryClient.invalidateQueries(["effective-project", data.name]);
         }
 
-        // Prefetch the updated project data
         queryClient.prefetchQuery(["effective-project", data.name], () =>
           getProject({ projectName: data.name })
         );

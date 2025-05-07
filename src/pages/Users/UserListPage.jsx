@@ -14,32 +14,45 @@ import './UserListPage.css';
 
 const UserListPage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, idToken, validateToken, currentUser, setCurrentUser } = useAuthStore();
+  const { checkAuthStatus, getIdToken, currentUser, setCurrentUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [userEmail, setUserEmail] = useState(null);
 
-    // Extract email from token for display purposes and for querying
+  // Extract email from token for display purposes and for querying
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
-    if (idToken) {
+    const checkAuth = async () => {
       try {
-        const decodedIdToken = jwtDecode(idToken);
-        const email = decodedIdToken.email.toLowerCase();
-        setUserEmail(email);
+        // Check if user is authenticated
+        const isAuthenticated = await checkAuthStatus();
+
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        // Get token and extract email
+        const idToken = await getIdToken();
+        if (idToken) {
+          try {
+            const decodedIdToken = jwtDecode(idToken);
+            const email = decodedIdToken.email.toLowerCase();
+            setUserEmail(email);
+          } catch (error) {
+            console.error("Error decoding token:", error);
+          }
+        }
       } catch (error) {
-        console.error("Error decoding token:", error);
+        console.error("Authentication error:", error);
+        navigate('/login');
       }
-    }
-  }, [isLoggedIn, navigate, idToken, accessToken, validateToken]);
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus, getIdToken]);
 
   // Fetch user details if currentUser is null
   const { data: userData } = useGetUserQuery(userEmail, {
-    enabled: isLoggedIn && !currentUser && !!userEmail
+    enabled: !!userEmail && !currentUser
   });
 
   useEffect(() => {

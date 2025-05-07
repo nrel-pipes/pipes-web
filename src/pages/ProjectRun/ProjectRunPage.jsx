@@ -21,10 +21,11 @@ import ContentHeader from "../Components/ContentHeader";
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+
 const ProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const { effectivePname, effectivePRname } = useDataStore();
 
   const [selectedModel, setSelectedModel] = useState(null);
@@ -34,17 +35,13 @@ const ProjectRunPage = () => {
     setIsGraphExpanded(!isGraphExpanded);
   };
 
-  // Store the project run from location.state in component state
   const [projectRunFromState, setProjectRunFromState] = useState(
     location.state?.projectRun || null
   );
 
-  // Only query the API if we don't have the project run from state
-  // and we have both project name and run name
   const shouldFetchProjectRun = !projectRunFromState && !!effectivePname && !!effectivePRname;
 
-  // Use the query with proper enabled flag (boolean, not undefined)
-  const { data: fetchedProjectRun, isLoading } = useGetProjectRunQuery(
+  const { data: projectRunFetched, isLoading } = useGetProjectRunQuery(
     effectivePname,
     effectivePRname,
     {
@@ -53,30 +50,35 @@ const ProjectRunPage = () => {
   );
 
   // Use project run from state or from API
-  const projectRun = projectRunFromState || fetchedProjectRun;
+  const projectRun = projectRunFromState || projectRunFetched;
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-      return;
-    }
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
 
-    // If we have no project run data and we're not loading, redirect to projects
-    if (!projectRun && !isLoading && !shouldFetchProjectRun) {
-      navigate("/projects");
-    }
+        if (!isAuthenticated) {
+          navigate("/login");
+          return;
+        }
+
+        if (!projectRun && !projectRunFromState) {
+          navigate("/projects");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
   }, [
-    isLoggedIn,
     navigate,
-    accessToken,
-    validateToken,
+    checkAuthStatus,
     projectRun,
-    isLoading,
-    shouldFetchProjectRun
+    projectRunFromState
   ]);
 
-  // Show loading state
   if (isLoading) {
     return (
       <Container className="mainContent text-center">
@@ -88,26 +90,30 @@ const ProjectRunPage = () => {
     );
   }
 
-  // Don't render if we don't have the project run yet
   if (!projectRun) {
     return null;
   }
 
   return (
     <>
-    <NavbarSub navData = {{pAll: true, pName: effectivePname, prName: projectRun.name}} />
-    <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
-      <Row className="w-100 mx-0">
-        <ContentHeader title="Project Run" cornerMark={projectRun.name}/>
-      </Row>
-      <Row id="projectrun-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
-        <Col md={isGraphExpanded ? 12 : 8}>
-          <GraphViewComponent
-            selectedModel={selectedModel}
-            setSelectedModel={setSelectedModel}
-          />
-        </Col>
-
+      <NavbarSub navData = {{pAll: true, pName: effectivePname, prName: projectRun.name}} />
+      <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+        <Row className="w-100 mx-0">
+          <ContentHeader title="Project Run" cornerMark={projectRun.name}/>
+        </Row>
+        <Row id="projectrun-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
+          <Col md={isGraphExpanded ? 12 : 8}>
+            <GraphViewComponent
+              selectedModel={selectedModel}
+              setSelectedModel={setSelectedModel}
+            />
+          </Col>
+          {!isGraphExpanded && (
+            <Col sm={4} className="border-start text-start ml-4 data-view-col">
+              <DataViewComponent selected={selectedModel} />
+            </Col>
+          )}
+        </Row>
         <div
           className={`toggle-button-container2 ${isGraphExpanded ? 'expanded' : ''}`}
           onClick={toggleGraphExpansion}
@@ -118,14 +124,7 @@ const ProjectRunPage = () => {
             className="toggle-button"
           />
         </div>
-
-        {!isGraphExpanded && (
-          <Col sm={4} className="border-start text-start ml-4 data-view-col">
-            <DataViewComponent selected={selectedModel} />
-          </Col>
-        )}
-      </Row>
-    </Container>
+      </Container>
     </>
   );
 };
