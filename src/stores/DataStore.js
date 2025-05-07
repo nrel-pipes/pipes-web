@@ -15,7 +15,7 @@ const useDataStore = create(
       clearEffectivePRname: () => set({ effectivePRname: null }),
     }),
     {
-      name: 'Pipes.Data.State',
+      name: 'Pipes.Data.Store',
       partialize: (state) => ({
         effectivePname: state.effectivePname,
         effectivePRname: state.effectivePRname,

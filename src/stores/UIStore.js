@@ -359,7 +359,7 @@ const useUIStore = create(persist(
     }
   }),
   {
-    name: 'Pipes.UI.State',
+    name: 'Pipes.UI.Store',
     storage: createJSONStorage(() => localStorage)
   }
 ));

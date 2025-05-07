@@ -312,7 +312,7 @@ const useAuthStore = create(
       set({ currentUser: userData });
     },
   }), {
-    name: 'Pipes.Auth.State',
+    name: 'Pipes.Auth.Store',
     storage: createJSONStorage(() => localStorage),
     // Only persist these specific keys
     partialize: (state) => ({
