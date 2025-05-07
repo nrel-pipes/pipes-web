@@ -312,7 +312,7 @@ const useAuthStore = create(
       set({ currentUser: userData });
     },
   }), {
-    name: 'Pipes.Cognito.Auth.State',
+    name: 'Pipes.Auth.State',
     storage: createJSONStorage(() => localStorage),
     // Only persist these specific keys
     partialize: (state) => ({
