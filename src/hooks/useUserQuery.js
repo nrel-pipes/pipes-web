@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import useAuthStore from '../stores/AuthStore';
 import AxiosInstance from './AxiosInstance';
 
 // UserDetail
@@ -11,12 +10,11 @@ export const getUserDetail = async (email) => {
 };
 
 export const useGetUserQuery = (email) => {
-  const { accessToken } = useAuthStore();
 
   return useQuery({
     queryKey: ['current-user', email],
     queryFn: () => getUserDetail(email),
-    enabled: !!email && !!accessToken,
+    enabled: !!email, // Only check if email is provided
     staleTime: 24 * 60 * 60 * 1000, // 1 day
   });
 };
@@ -29,12 +27,11 @@ export const getUsers = async () => {
 };
 
 export const useGetUsersQuery = (options = {}) => {
-  const { isLoggedIn } = useAuthStore();
 
   return useQuery({
     queryKey: ['users-list'],
     queryFn: getUsers,
-    enabled: isLoggedIn && (options.enabled !== false),
+    enabled: options.enabled !== false, // Only respect the enabled option passed
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     ...options

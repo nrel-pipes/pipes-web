@@ -14,17 +14,28 @@ const AxiosInstance = axios.create({
 
 // Add interceptors for handling authorization and errors
 AxiosInstance.interceptors.request.use(
-  (config) => {
-    const { accessToken, validateToken, logout } = useAuthStore.getState();
+  async (config) => {
+    try {
+      const { getAccessToken, validateToken, logout } = useAuthStore.getState();
 
-    if (accessToken && validateToken(accessToken)) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    } else {
-      console.warn("Interceptor - Invalid or expired token"); // Log if token is invalid
-      logout();
+      await validateToken();
+
+      const accessToken = await getAccessToken();
+
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      } else {
+        console.warn("Interceptor - No access token available");
+        logout();
+        throw new Error("No access token available, logged out the user.");
+      }
+
+      return config;
+    } catch (error) {
+      console.warn("Interceptor - Token validation failed:", error);
+      useAuthStore.getState().logout();
       throw new Error("Invalid or expired token, logged out the user.");
     }
-    return config;
   },
   (error) => {
     return Promise.reject(error);

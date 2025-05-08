@@ -44,10 +44,10 @@ const nodeHeight = 45;
 
 const ProjectPipelinePage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const { effectivePname } = useDataStore();
 
-  const shouldFetchData = !!effectivePname && isLoggedIn;
+  const shouldFetchData = !!effectivePname;
 
   const {
     data: project,
@@ -251,7 +251,7 @@ const ProjectPipelinePage = () => {
     }
   }, [datasetResults, datasetQueries, datasetsMap]);
 
-  const [clickedElementData, setClickedElementedData] = useState({});
+  const [clickedElementData, setClickedElementData] = useState({});
   const [isGraphExpanded, setIsGraphExpanded] = useState(false);
 
   const toggleGraphExpansion = () => {
@@ -259,21 +259,29 @@ const ProjectPipelinePage = () => {
   };
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
 
-    if (!effectivePname) {
-      navigate('/projects');
-      return;
-    }
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        if (!effectivePname) {
+          navigate('/projects');
+          return;
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
   }, [
-    isLoggedIn,
     navigate,
-    accessToken,
-    validateToken,
+    checkAuthStatus,
     effectivePname
   ]);
 
@@ -541,7 +549,7 @@ const ProjectPipelinePage = () => {
             <GraphViewComponent
               graphNodes={pipesGraph.nodes}
               graphEdges={pipesGraph.edges}
-              setClickedElementData={setClickedElementedData}
+              setClickedElementData={setClickedElementData}
             />
           )}
         </Col>

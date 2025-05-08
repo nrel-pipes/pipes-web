@@ -1,14 +1,30 @@
+import { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 
-
 import useAuthStore from '../stores/AuthStore';
 import "./styles/NavbarTop.css";
 
-
 const SiteNavbar = () => {
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+
+  // Check authentication status when component mounts
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authStatus = await checkAuthStatus();
+        setIsAuthenticated(authStatus);
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, [checkAuthStatus]);
 
   return (
     <Navbar expand="lg" className="navbar-instance">
@@ -19,7 +35,7 @@ const SiteNavbar = () => {
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="/projects">Get Started</Nav.Link>
           </Nav>
-          {isLoggedIn ? (
+          {isAuthenticated ? (
           <Nav className="ms-auto">
           </Nav>
           ) : (
