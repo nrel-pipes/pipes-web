@@ -67,9 +67,18 @@ const UserListPage = () => {
     }
   }, [userData, currentUser, setCurrentUser]);
 
-  // Fetch users with the hook, suppressing the error notification
   const { data: users = [], isLoading, error } = useGetUsersQuery({
-    onError: () => {}, // Silent error handling, we'll handle it in UI
+    onError: () => {},
+  });
+
+  // Sort users by is_superuser first (admins at top), then by email
+  const sortedUsers = [...users].sort((a, b) => {
+    // First sort by is_superuser (true values first)
+    if (a.is_superuser !== b.is_superuser) {
+      return b.is_superuser ? 1 : -1; // b is admin and a is not? b comes first (1)
+    }
+    // Then sort by email alphabetically
+    return (a.email || '').localeCompare(b.email || '');
   });
 
   const handleSearch = (e) => {
@@ -77,8 +86,7 @@ const UserListPage = () => {
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  // First filter all users based on search term
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = sortedUsers.filter(user =>
     (user.first_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.last_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -170,8 +178,8 @@ const UserListPage = () => {
               <Table striped hover responsive className="user-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
                     <th>Email</th>
+                    <th>Name</th>
                     <th>Organization</th>
                     <th>Role</th>
                     <th>Status</th>
@@ -182,8 +190,8 @@ const UserListPage = () => {
                   {currentFilteredUsers.length > 0 ? (
                     currentFilteredUsers.map(user => (
                       <tr key={user.email}>
-                        <td>{`${user.first_name || ''} ${user.last_name || ''}`}</td>
                         <td>{user.email}</td>
+                        <td>{`${user.first_name || ''} ${user.last_name || ''}`}</td>
                         <td>{user.organization || '-'}</td>
                         <td>
                           <span className={`role-badge ${user.is_superuser ? 'role-admin' : 'role-user'}`}>
