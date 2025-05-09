@@ -181,18 +181,31 @@ const ProjectPipelinePage = () => {
                   projectRunName: projectRun.name,
                   modelName: model.name,
                   modelRunName: modelRun.name
+                })
+                .catch(error => {
+                  console.warn(`Dataset fetch error for ${queryKey}:`, error);
+                  // Return empty array instead of throwing to prevent breaking the UI
+                  return [];
                 }),
                 enabled: projectDataAvailable,
                 onSuccess: (data) => {
                   setDatasetsMap(prev => {
                     const updated = new Map(prev);
-                    updated.set(queryKey, data);
+                    updated.set(queryKey, data || []);
                     return updated;
                   });
                 },
                 onError: (error) => {
                   console.error(`Query error for ${queryKey}:`, error);
-                }
+                  // Add empty array for this key to prevent errors when accessing
+                  setDatasetsMap(prev => {
+                    const updated = new Map(prev);
+                    updated.set(queryKey, []);
+                    return updated;
+                  });
+                },
+                retry: 1,
+                retryDelay: 1000
               });
             }
           });
@@ -231,16 +244,31 @@ const ProjectPipelinePage = () => {
     let mapUpdated = false;
 
     datasetResults.forEach((result, index) => {
-      if (result.isSuccess && result.data && datasetQueries[index]) {
+      if (result.isSuccess && datasetQueries[index]) {
         const queryInfo = datasetQueries[index];
         const projectRunName = queryInfo.queryKey[2];
         const modelName = queryInfo.queryKey[3];
         const modelRunName = queryInfo.queryKey[4];
         const queryKey = `${projectRunName}-${modelName}-${modelRunName}`;
 
+        // Handle both successful result and empty data
+        const resultData = result.data || [];
+
         if (!datasetsMap.has(queryKey) ||
-            JSON.stringify(datasetsMap.get(queryKey)) !== JSON.stringify(result.data)) {
-          newMap.set(queryKey, result.data);
+            JSON.stringify(datasetsMap.get(queryKey)) !== JSON.stringify(resultData)) {
+          newMap.set(queryKey, resultData);
+          mapUpdated = true;
+        }
+      } else if (result.isError && datasetQueries[index]) {
+        // For error cases, set an empty array
+        const queryInfo = datasetQueries[index];
+        const projectRunName = queryInfo.queryKey[2];
+        const modelName = queryInfo.queryKey[3];
+        const modelRunName = queryInfo.queryKey[4];
+        const queryKey = `${projectRunName}-${modelName}-${modelRunName}`;
+
+        if (!datasetsMap.has(queryKey)) {
+          newMap.set(queryKey, []);
           mapUpdated = true;
         }
       }
@@ -484,7 +512,7 @@ const ProjectPipelinePage = () => {
             const datasetsForThisRun = datasetsMap.get(queryKey) || [];
 
             datasetsForThisRun.forEach((dataset, index3) => {
-              if (dataset.context &&
+              if (dataset && dataset.context &&
                   dataset.context.projectrun === projectRun.name &&
                   dataset.context.model === model.name &&
                   dataset.context.modelrun === modelRun.name) {
