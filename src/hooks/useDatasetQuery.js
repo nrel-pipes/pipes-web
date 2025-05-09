@@ -15,7 +15,7 @@ export const getDatasets = async ({ projectName, projectRunName = null, modelNam
     if (modelRunName) params.modelrun = modelRunName;
 
     // Make the API request
-    const response = await AxiosInstance.get(`/api/datasets`, { params });
+    const response = await AxiosInstance.get("/api/datasets", { params });
     return response.data || [];
   } catch (error) {
     if (error.response) {
