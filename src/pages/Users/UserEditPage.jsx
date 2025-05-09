@@ -195,7 +195,7 @@ const UserEditPage = () => {
 
                   <Form onSubmit={handleSubmit(onSubmit)}>
                     {/* Personal Information Section */}
-                    <h6 className="text-primary mb-3">Personal Information</h6>
+                    <h5 className="mb-3 text-start">User Information</h5>
 
                     <div className="mb-4">
                       <Row className="mb-3">
@@ -297,7 +297,7 @@ const UserEditPage = () => {
                     </div>
 
                     {/* Permissions Section */}
-                    <h6 className="text-primary mb-3 border-top pt-4">User Permissions</h6>
+                    <h5 className="mb-3 border-top pt-4 text-start">User Permissions</h5>
 
                     <div className="mb-4">
                       <Row className="mb-3">
@@ -347,9 +347,10 @@ const UserEditPage = () => {
                         Cancel
                       </Button>
                       <Button
-                        variant="primary"
+                        variant="success"
                         type="submit"
                         className="px-4"
+                        style={{ backgroundColor: '#5d9732', borderColor: '#5d9732' }}
                         disabled={isUpdating || !isDirty}
                       >
                         {isUpdating ? (
