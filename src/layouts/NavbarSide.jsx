@@ -127,7 +127,7 @@ const Sidebar = () => {
           {/* Only show Users link if user is an admin */}
           {isAdmin && (
             <li>
-              <Link to="/users" className={isActive("/users")} title="Users">
+              <Link to="/users" className={`${isActive("/users")} admin-menu-item`} title="Users">
                 <span className="icon"><FaUsers /></span>
                 {expanded && <span className="nav-text">Users</span>}
               </Link>
