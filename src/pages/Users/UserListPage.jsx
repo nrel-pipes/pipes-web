@@ -1,8 +1,10 @@
 import { faEdit, faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { jwtDecode } from 'jwt-decode';
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { Alert, Button, Col, Container, Form, InputGroup, Row, Table } from 'react-bootstrap';
+import Pagination from "react-bootstrap/Pagination";
 import { useNavigate } from 'react-router-dom';
 
 import { useGetUserQuery, useGetUsersQuery } from '../../hooks/useUserQuery';
@@ -17,6 +19,10 @@ const UserListPage = () => {
   const { checkAuthStatus, getIdToken, currentUser, setCurrentUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [userEmail, setUserEmail] = useState(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(25); // Adjust this number based on your preference
 
   // Extract email from token for display purposes and for querying
   useEffect(() => {
@@ -68,15 +74,46 @@ const UserListPage = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
-  // If we have users, filter them as before
+  // First filter all users based on search term
   const filteredUsers = users.filter(user =>
     (user.first_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.last_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.organization?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
+
+  // Then calculate pagination based on filtered results
+  const totalUsers = filteredUsers?.length || 0;
+  const totalPages = Math.ceil(totalUsers / usersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+
+  // Apply pagination to filtered users
+  const currentFilteredUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo(0, 0);
+  };
+
+  // Custom styles for larger pagination buttons - same as ProjectListPage
+  const paginationItemStyle = {
+    fontSize: '1.1rem',
+    minWidth: '40px',
+    height: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  };
+
+  const activePageStyle = {
+    ...paginationItemStyle,
+    backgroundColor: '#0079c2',
+    borderColor: '#0079c2'
+  };
 
   const handleEdit = (userEmail) => {
     navigate(`/users/edit/${userEmail}`);
@@ -142,8 +179,8 @@ const UserListPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map(user => (
+                  {currentFilteredUsers.length > 0 ? (
+                    currentFilteredUsers.map(user => (
                       <tr key={user.email}>
                         <td>{`${user.first_name || ''} ${user.last_name || ''}`}</td>
                         <td>{user.email}</td>
@@ -179,6 +216,81 @@ const UserListPage = () => {
                   )}
                 </tbody>
               </Table>
+            )}
+
+            {/* Add pagination controls */}
+            {totalPages > 1 && !isLoading && (
+              <div className="pagination-container d-flex justify-content-center mt-4 mb-5">
+                <Pagination size="lg">
+                  <Pagination.Prev
+                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={paginationItemStyle}
+                  >
+                    <ChevronLeft size={20} />
+                  </Pagination.Prev>
+
+                  {/* First page */}
+                  {currentPage > 2 && (
+                    <Pagination.Item
+                      onClick={() => handlePageChange(1)}
+                      style={paginationItemStyle}
+                    >1</Pagination.Item>
+                  )}
+
+                  {/* Ellipsis if needed */}
+                  {currentPage > 3 && <Pagination.Ellipsis disabled style={paginationItemStyle} />}
+
+                  {/* Page before current */}
+                  {currentPage > 1 && (
+                    <Pagination.Item
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      style={paginationItemStyle}
+                    >
+                      {currentPage - 1}
+                    </Pagination.Item>
+                  )}
+
+                  {/* Current page */}
+                  <Pagination.Item
+                    active
+                    style={activePageStyle}
+                  >
+                    {currentPage}
+                  </Pagination.Item>
+
+                  {/* Page after current */}
+                  {currentPage < totalPages && (
+                    <Pagination.Item
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      style={paginationItemStyle}
+                    >
+                      {currentPage + 1}
+                    </Pagination.Item>
+                  )}
+
+                  {/* Ellipsis if needed */}
+                  {currentPage < totalPages - 2 && <Pagination.Ellipsis disabled style={paginationItemStyle} />}
+
+                  {/* Last page */}
+                  {currentPage < totalPages - 1 && (
+                    <Pagination.Item
+                      onClick={() => handlePageChange(totalPages)}
+                      style={paginationItemStyle}
+                    >
+                      {totalPages}
+                    </Pagination.Item>
+                  )}
+
+                  <Pagination.Next
+                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={paginationItemStyle}
+                  >
+                    <ChevronRight size={20} />
+                  </Pagination.Next>
+                </Pagination>
+              </div>
             )}
           </>
         )}
