@@ -13,7 +13,7 @@ import SideColumn from "../Components/form/SideColumn";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import "../Components/Cards.css";
 import FormError from "../Components/form/FormError";
@@ -22,18 +22,26 @@ import "../PageStyles.css";
 
 const CreateProjectPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const queryClient = useQueryClient();
   const { setEffectivePname } = useDataStore();
 
-  // Auth check effect
+  // Updated auth check effect
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, validateToken, accessToken]);
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
 
   const [form, setForm] = useState({
     name: "",

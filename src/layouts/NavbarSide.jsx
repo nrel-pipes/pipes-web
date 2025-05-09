@@ -10,9 +10,11 @@ import {
   FaProjectDiagram,
   FaSignOutAlt,
   FaTachometerAlt,
-  FaUser
+  FaUser,
+  FaUsers
 } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
+import useAuthStore from '../stores/AuthStore';
 import useDataStore from '../stores/DataStore';
 import './styles/NavbarSide.css';
 
@@ -20,6 +22,10 @@ const Sidebar = () => {
   const [expanded, setExpanded] = useState(true);
   const location = useLocation();
   const { effectivePname } = useDataStore();
+  const { currentUser } = useAuthStore();
+
+  // Check if the user is an admin
+  const isAdmin = currentUser?.is_superuser === true;
 
   // Check if a project is selected
   const projectSelected = !!effectivePname;
@@ -117,6 +123,19 @@ const Sidebar = () => {
           </li>
 
           <li className="separator"></li>
+
+          {/* Only show Users link if user is an admin */}
+          {isAdmin && (
+            <li>
+              <Link to="/users" className={`${isActive("/users")} admin-menu-item`} title="Users">
+                <span className="icon"><FaUsers /></span>
+                {expanded && <span className="nav-text">Users</span>}
+              </Link>
+            </li>
+          )}
+
+          {/* Show separator only if admin section was shown */}
+          {isAdmin && <li className="separator"></li>}
 
           <li>
             <Link to="/account/profile" className={isActive("/account/profile")} title="Profile">

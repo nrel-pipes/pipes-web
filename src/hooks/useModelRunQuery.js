@@ -1,28 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
-import useAuthStore from '../stores/AuthStore';
 import AxiosInstance from './AxiosInstance';
 
 
 export const getModelRuns = async (projectName, projectRunName = null, modelName = null) => {
   try {
-    const encodedProjectName = encodeURIComponent(projectName);
-    let url = `/api/modelruns?project=${encodedProjectName}`;
+    const params = {
+      project: projectName
+    };
 
     if (projectRunName) {
-      const encodedProjectRunName = encodeURIComponent(projectRunName);
-      url += `&projectrun=${encodedProjectRunName}`;
+      params.projectrun = projectRunName;
     }
 
     if (modelName) {
-      const encodedModelName = encodeURIComponent(modelName);
-      url += `&model=${encodedModelName}`;
+      params.model = modelName;
     }
 
-    // Make the API request
-    const response = await AxiosInstance.get(url);
+    const response = await AxiosInstance.get('/api/modelruns', { params });
+
     return response.data || [];
   } catch (error) {
-    // Enhanced error logging
     if (error.response) {
       console.error("Server responded with error fetching model runs:", {
         status: error.response.status,
@@ -39,8 +36,6 @@ export const getModelRuns = async (projectName, projectRunName = null, modelName
 
 
 export const useGetModelRunsQuery = (projectName, projectRunName = null, modelName = null, options = {}) => {
-  const { isLoggedIn } = useAuthStore();
-
   return useQuery({
     queryKey: ["model-runs", projectName, projectRunName, modelName],
     queryFn: async () => {
@@ -49,7 +44,7 @@ export const useGetModelRunsQuery = (projectName, projectRunName = null, modelNa
       }
       return await getModelRuns(projectName, projectRunName, modelName);
     },
-    enabled: isLoggedIn && !!projectName,
+    enabled: !!projectName && (options.enabled !== false), // Only require a valid projectName
     retry: (failureCount, error) => {
       // Don't retry 4xx errors
       if (error.response && error.response.status >= 400 && error.response.status < 500) {

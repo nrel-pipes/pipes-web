@@ -180,3 +180,40 @@
 .sidebar-nav ul li a.disabled:hover {
   background-color: transparent;
 }
+
+/* Admin menu item styling - using a subtle visual indicator instead of background colors */
+.sidebar-nav ul li a.admin-menu-item {
+  position: relative;
+  border-left: none;
+  background-color: transparent;
+}
+
+/* Add a small badge to indicate admin functionality */
+.sidebar-nav ul li a.admin-menu-item::before {
+  content: "•";
+  position: absolute;
+  right: 12px;
+  color: #d13438;
+  font-size: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* For the collapsed sidebar, adjust the position */
+.sidebar.collapsed .sidebar-nav ul li a.admin-menu-item::before {
+  right: 5px;
+}
+
+/* When active, keep the admin indicator visible but use the regular active styles */
+.sidebar-nav ul li a.admin-menu-item.active {
+  background-color: rgb(71, 148, 218);
+  color: white;
+}
+
+.sidebar-nav ul li a.admin-menu-item.active::before {
+  color: white;
+}
+
+.sidebar-nav ul li a.admin-menu-item:hover:not(.active) {
+  background-color: rgba(71, 148, 218, 0.1);
+}

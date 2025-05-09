@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import useAuthStore from '../stores/AuthStore';
 import AxiosInstance from './AxiosInstance';
-
 
 export const getHandoffs = async ({ projectName, projectRunName = null }) => {
   try {
@@ -20,7 +18,6 @@ export const getHandoffs = async ({ projectName, projectRunName = null }) => {
     const response = await AxiosInstance.get('/api/handoffs', { params });
     return response.data || [];
   } catch (error) {
-    // Enhanced error logging
     if (error.response) {
       console.error("Server responded with error fetching handoffs:", {
         status: error.response.status,
@@ -35,9 +32,7 @@ export const getHandoffs = async ({ projectName, projectRunName = null }) => {
   }
 };
 
-
 export const useGetHandoffsQuery = (projectName, projectRunName = null, options = {}) => {
-  const { isLoggedIn } = useAuthStore();
 
   return useQuery({
     queryKey: ["handoffs", projectName, projectRunName],
@@ -47,7 +42,7 @@ export const useGetHandoffsQuery = (projectName, projectRunName = null, options 
       }
       return await getHandoffs({ projectName, projectRunName });
     },
-    enabled: isLoggedIn && !!projectName,
+    enabled: !!projectName,
     retry: (failureCount, error) => {
       // Don't retry 4xx errors
       if (error.response && error.response.status >= 400 && error.response.status < 500) {

@@ -1,20 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import useAuthStore from '../stores/AuthStore';
 import AxiosInstance from './AxiosInstance';
 
-
 export const getModels = async (projectName, projectRunName) => {
-
   try {
-    const encodedProjectName = encodeURIComponent(projectName);
-    let url = `/api/models?project=${encodedProjectName}`;
+    const params = {
+      project: projectName
+    };
 
     if (projectRunName) {
-      const encodedProjectRunName = encodeURIComponent(projectRunName);
-      url += `&projectrun=${encodedProjectRunName}`;
+      params.projectrun = projectRunName;
     }
 
-    const response = await AxiosInstance.get(url);
+    const response = await AxiosInstance.get('/api/models', { params });
+
     return response.data || [];
   } catch (error) {
     console.error("Error getting models:", error);
@@ -22,10 +20,7 @@ export const getModels = async (projectName, projectRunName) => {
   }
 };
 
-
 export const useGetModelsQuery = (projectName, projectRunName = null, options = {}) => {
-  const { isLoggedIn } = useAuthStore();
-
   return useQuery({
     queryKey: ["models", projectName, projectRunName],
     queryFn: async () => {
@@ -34,7 +29,7 @@ export const useGetModelsQuery = (projectName, projectRunName = null, options = 
       }
       return await getModels(projectName, projectRunName);
     },
-    enabled: isLoggedIn && !!projectName,
+    enabled: !!projectName,
     retry: (failureCount, error) => {
       // Don't retry 4xx errors
       if (error.response && error.response.status >= 400 && error.response.status < 500) {

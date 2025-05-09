@@ -6,7 +6,6 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { useNavigate } from "react-router-dom";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useUpdateProjectMutation } from "../../hooks/useProjectQuery";
 import useAuthStore from "../../stores/AuthStore";
@@ -18,9 +17,8 @@ import "../FormStyles.css";
 
 const UpdateProjectPage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const { currentProject } = useDataStore();
-  const queryClient = useQueryClient();
 
   const updateProjectMutation = useUpdateProjectMutation();
 
@@ -359,11 +357,20 @@ const UpdateProjectPage = () => {
   };
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, accessToken, validateToken]);
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
 
   const handleAddScenario = (e) => {
     e.preventDefault();

@@ -12,9 +12,18 @@ const LogoutPage = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      // Call logout and wait for it to complete
+      await logout();
+
+      // Force a hard navigation to /login to ensure state is fresh
+      window.location.href = '/login';
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Even if there's an error, try to navigate to login
+      navigate('/login', { replace: true });
+    }
   };
 
   const handleCancel = () => {

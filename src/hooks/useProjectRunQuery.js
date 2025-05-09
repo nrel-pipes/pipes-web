@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import useAuthStore from '../stores/AuthStore';
 import AxiosInstance from './AxiosInstance';
 
 // All Project Runs
 const getProjectRuns = async ({ projectName }) => {
   try {
-    const encodedProjectName = encodeURIComponent(projectName);
-    const response = await AxiosInstance.get(`/api/projectruns?project=${encodedProjectName}`);
+    // Use params object instead of URL parameters
+    const params = {
+      project: projectName
+    };
+
+    const response = await AxiosInstance.get('/api/projectruns', { params });
 
     return response.data || [];
   } catch (error) {
@@ -27,7 +30,6 @@ const getProjectRuns = async ({ projectName }) => {
 };
 
 export const useGetProjectRunsQuery = (projectName, options = {}) => {
-  const { isLoggedIn } = useAuthStore();
 
   return useQuery({
     queryKey: ["project-runs", projectName],
@@ -37,7 +39,7 @@ export const useGetProjectRunsQuery = (projectName, options = {}) => {
       }
       return await getProjectRuns({ projectName });
     },
-    enabled: isLoggedIn && !!projectName,
+    enabled: !!projectName, // Only require a valid projectName
     retry: (failureCount, error) => {
       if (error.response && error.response.status >= 400) {
         return false;
@@ -58,11 +60,16 @@ export const useGetProjectRunsQuery = (projectName, options = {}) => {
 
 
 // Project Run by Name
-const getProjectRun = async ({ projectName, projectrunName: projectRunName }) => {
+const getProjectRun = async ({ projectName, projectrunName }) => {
   try {
-    const encodedProjectName = encodeURIComponent(projectName);
-    const encodedProjectRunName = encodeURIComponent(projectRunName);
-    const response = await AxiosInstance.get(`/api/projectruns?project=${encodedProjectName}&projectrun=${encodedProjectRunName}`);
+    // Use params object instead of URL parameters
+    const params = {
+      project: projectName,
+      projectrun: projectrunName
+    };
+
+    const response = await AxiosInstance.get('/api/projectruns', { params });
+
     return response.data || [];
   } catch (error) {
     if (error.response) {
@@ -82,17 +89,16 @@ const getProjectRun = async ({ projectName, projectrunName: projectRunName }) =>
 };
 
 export const useGetProjectRunQuery = (projectName, projectRunName, options={}) => {
-  const { isLoggedIn } = useAuthStore();
 
   return useQuery({
     queryKey: ["project-run", projectName, projectRunName],
-    queryFn: async ({ projectName, projectrunName }) => {
-      if (!projectName || !projectrunName) {
+    queryFn: async () => {
+      if (!projectName || !projectRunName) {
         return [];
       }
-      return await getProjectRun({ projectName, projectrunName });
+      return await getProjectRun({ projectName, projectRunName });
     },
-    enabled: isLoggedIn,
+    enabled: !!projectName && !!projectRunName,
     retry: (failureCount, error) => {
       if (error.response && error.response.status >= 400) {
         return false;

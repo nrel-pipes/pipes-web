@@ -1,6 +1,7 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,7 +10,8 @@ import Container from "react-bootstrap/Container";
 import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 
-import { useProjectBasicsQuery } from "../../hooks/useProjectQuery";
+import { useGetProjectsQuery } from "../../hooks/useProjectQuery";
+import { useGetUserQuery } from '../../hooks/useUserQuery';
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
 
@@ -22,28 +24,60 @@ import "./ProjectListPage.css";
 
 
 const ProjectBasicsPage = () => {
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { currentUser, setCurrentUser, getIdToken, checkAuthStatus } = useAuthStore();
   const { setEffectivePname } = useDataStore();
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [projectsPerPage] = useState(3);
+  const [userEmail, setUserEmail] = useState(null);
 
   const navigate = useNavigate();
 
-  // Auth check effect
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
+    const checkAuth = async () => {
+      try {
+        // Validate authentication and check if user is logged in
+        const isAuthenticated = await checkAuthStatus();
+
+        if (!isAuthenticated) {
+          navigate("/login");
+          return;
+        }
+
+        // Get the ID token and extract email
+        const idToken = await getIdToken();
+        if (idToken) {
+          const decodedIdToken = jwtDecode(idToken);
+          const email = decodedIdToken.email.toLowerCase();
+          setUserEmail(email);
+        } else {
+          // Handle missing token case
+          console.error("ID token not available");
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, getIdToken, checkAuthStatus]);
+
+  const { data: userData } = useGetUserQuery(userEmail);
+
+  useEffect(() => {
+    if (userData && !currentUser) {
+      setCurrentUser(userData);
     }
-  }, [isLoggedIn, navigate, validateToken, accessToken]);
+  }, [userData, currentUser, setCurrentUser]);
 
   const {
     data: projectBasics = [],
     isLoading: isLoadingBasics,
     isError: isErrorBasics,
     error: errorBasics,
-  } = useProjectBasicsQuery();
+  } = useGetProjectsQuery();
 
   // Reverse the order of projects to show latest first
   // TODO: Update API to return the creation time.
@@ -139,12 +173,12 @@ const ProjectBasicsPage = () => {
               You don't have any projects yet. Get started with your first project!
             </p>
             <div className="empty-state-actions">
-              <button variant="primary"
+              {/* <button variant="primary"
                 className="create-button"
                 onClick={handleCreateProjectClick}>
                   <Plus size={16} className="create-button-icon" />
                   Create Project on Web
-              </button>
+              </button> */}
               <a
                 href="https://nrel-pipes.github.io/pipes-core/reference/workflows/initialize-a-project/"
                 target="_blank"
