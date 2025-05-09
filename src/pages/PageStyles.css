@@ -77,10 +77,12 @@
   border-radius: 0px !important;
 }
 
+.nrelCard .nrelCardHeader,
 .nrelCardHeader {
   background-color: #0079C2 !important;
   border-radius: 0px !important;
   text-align: start !important;
+  color: white !important;
 }
 
 .nrelCardHeader > h3 > a {
