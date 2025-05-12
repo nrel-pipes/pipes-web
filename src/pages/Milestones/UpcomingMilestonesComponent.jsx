@@ -4,9 +4,10 @@ import Table from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
 import useDataStore from "../../stores/DataStore";
 import "../PageStyles.css";
-import "./UpcomingMilestones.css";
+import "./UpcomingMilestonesComponent.css";
 
-const UpcomingMilestones = ({ projectBasics }) => {
+
+const UpcomingMilestonesComponent = ({ projectBasics }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setEffectivePname } = useDataStore();
@@ -130,4 +131,4 @@ const UpcomingMilestones = ({ projectBasics }) => {
   );
 };
 
-export default UpcomingMilestones;
+export default UpcomingMilestonesComponent;

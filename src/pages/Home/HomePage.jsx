@@ -10,7 +10,7 @@ import Row from "react-bootstrap/Row";
 import NavbarSub from "../../layouts/NavbarSub";
 import "../PageStyles.css";
 
-const Home = () => {
+const HomePage = () => {
   return (
     <>
     <NavbarSub />
@@ -159,4 +159,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomePage;

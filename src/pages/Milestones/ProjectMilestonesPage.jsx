@@ -5,20 +5,19 @@ import { useEffect } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useProjectBasicsQuery } from "../../hooks/useProjectQuery";
 import useAuthStore from "../../stores/AuthStore";
 
 import NavbarSub from "../../layouts/NavbarSub";
 import ContentHeader from "../Components/ContentHeader";
-import UpcomingMilestones from "./UpcomingMilestones";
+import UpcomingMilestonesComponent from "./UpcomingMilestonesComponent";
 
 import "../PageStyles.css";
 
-const ProjectMilestones = () => {
+const ProjectMilestonesPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { isLoggedIn, accessToken, validateToken } = useAuthStore();
   const {
     data: projectBasics = [],
@@ -90,11 +89,11 @@ const ProjectMilestones = () => {
         <ContentHeader title="Upcoming Milestones" />
       </Row>
       <Row className="w-100 mx-0">
-        <UpcomingMilestones projectBasics={projectBasics} />
+        <UpcomingMilestonesComponent projectBasics={projectBasics} />
       </Row>
     </Container>
     </>
   );
 };
 
-export default ProjectMilestones;
+export default ProjectMilestonesPage;

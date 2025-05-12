@@ -12,17 +12,17 @@ import Sidebar from "./layouts/NavbarSide";
 import SiteNavbar from "./layouts/NavbarTop";
 
 // Home
-import Home from "./pages/Home/Home";
+import HomePage from "./pages/Home/HomePage";
 
 // Project
 import CreateProjectPage from "./pages/Project/CreateProjectPage";
 import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 
 // Projects
-import ProjectBasicsPage from "./pages/Projects/ProjectBasicsPage";
+import ProjectBasicsPage from "./pages/Projects/ProjectListPage";
 
 // Project Milestones
-import ProjectMilestones from "./pages/Milestones/ProjectMilestones";
+import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";
 
 // Project Dashboard
 import ProjectDashboardPage from "./pages/Dashboard/ProjectDashboardPage";
@@ -68,7 +68,7 @@ function App() {
             <div className="Content">
               <Routes>
                 {/* Home route */}
-                <Route exact path="/" element={<Home />} />
+                <Route exact path="/" element={<HomePage />} />
                 {/* Project routes*/}
                 <Route
                   path="/projects"
@@ -107,7 +107,7 @@ function App() {
                 />
 
                 {/* Milestones route */}
-                <Route path="/milestones" element={<ProjectMilestones />} />
+                <Route path="/milestones" element={<ProjectMilestonesPage />} />
 
                 {/* User auth routes */}
                 <Route
