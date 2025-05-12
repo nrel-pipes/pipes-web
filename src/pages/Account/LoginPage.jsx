@@ -32,25 +32,29 @@ const LoginPage = () => {
     }
   }, [isLoggedIn, navigate, accessToken, validateToken]);
 
-  const handleLogin = async (event) => {
-    event.preventDefault(); // Prevent the default form submission
-
+  const handleSubmit = async (event, action) => {
+    event.preventDefault();
+    if (action === 'register') {
+      navigate("/account/register", { state: { email: username } });
+    }
     if (!username || !password) {
       setErrorMessage("Username and password are required.");
       return;
     }
 
-    try {
-      const response = await login(username, password);
+    if (action === 'login') {
+      try {
+        const response = await login(username, password);
 
-      if (
-        response.hasOwnProperty("newPasswordChallenge") &&
-        response.newPasswordChallenge === true
-      ) {
-        navigate("/new-password-challenge");
+        if (
+          response.hasOwnProperty("newPasswordChallenge") &&
+          response.newPasswordChallenge === true
+        ) {
+          navigate("/new-password-challenge");
+        }
+      } catch (error) {
+        setErrorMessage(error);
       }
-    } catch (error) {
-      setErrorMessage(error);
     }
   };
 
@@ -81,7 +85,7 @@ const LoginPage = () => {
       <Row>
         <Col sm={4} className="mx-auto mt-5">
           <h1 className="text-center mb-5">Welcome!</h1>
-          <Form onSubmit={handleLogin}>
+          <Form onSubmit={(e) => e.preventDefault()}>
             <Form.Group controlId="username">
               <Form.Label>Email</Form.Label>
               <Form.Control
@@ -106,15 +110,24 @@ const LoginPage = () => {
               />
             </Form.Group>
 
-            <div className="d-flex justify-content-center">
+            <div className="d-flex justify-content-center gap-3">
               <Button
-                className="mt-3 "
+                className="mt-3"
                 variant="outline-secondary"
                 size="lg"
-                style={{ width: "150px" }}
-                type="submit"
+                style={{ width: "120px" }}
+                onClick={(e) => handleSubmit(e, 'login')}
               >
                 Login
+              </Button>
+              <Button
+                className="mt-3"
+                variant="outline-secondary"
+                size="lg"
+                style={{ width: "120px" }}
+                onClick={(e) => handleSubmit(e, 'register')}
+              >
+                Register
               </Button>
             </div>
             <div className="mt-3 text-center">
