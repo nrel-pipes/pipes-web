@@ -3,6 +3,16 @@ import axios from "axios";
 import pipesConfig from "../configs/PipesConfig";
 import useAuthStore from "../stores/AuthStore";
 
+const PublicAxiosInstance = axios.create({
+  baseURL: pipesConfig.apiOrigin,
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+
 const AxiosInstance = axios.create({
   baseURL: pipesConfig.apiOrigin,
   timeout: 10000,
@@ -73,4 +83,6 @@ AxiosInstance.interceptors.response.use(
   },
 );
 
-export default AxiosInstance;
+const axiosInstances = { AxiosInstance, PublicAxiosInstance };
+
+export default axiosInstances;
