@@ -7,15 +7,15 @@ export const getDatasets = async ({ projectName, projectRunName = null, modelNam
       throw new Error('Project name is required');
     }
 
+    // Set up query parameters
+    const params = {};
+    params.project = projectName;
+    if (projectRunName) params.projectrun = projectRunName;
+    if (modelName) params.model = modelName;
+    if (modelRunName) params.modelrun = modelRunName;
 
-    const searchParams = new URLSearchParams();
-    searchParams.append('project', projectName);
-    if (projectRunName) searchParams.append('projectrun', projectRunName);
-    if (modelName) searchParams.append('model', modelName);
-    if (modelRunName) searchParams.append('modelrun', modelRunName);
-
-    const queryString = searchParams.toString();
-    const response = await AxiosInstance.get(`/api/datasets?${queryString}`);
+    // Make the API request
+    const response = await AxiosInstance.get("/api/datasets", { params });
     return response.data || [];
   } catch (error) {
     if (error.response) {
