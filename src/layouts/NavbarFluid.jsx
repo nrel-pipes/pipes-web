@@ -43,7 +43,7 @@ const SiteNavbarFluid = () => {
         {/* Right side - NREL logo fixed to the right */}
         <div className="nrel-logo-container">
           {isAuthenticated ? (
-            <Image src="./images/nrel-logo@2x-01.png" alt="NREL" className="fluid-image"/>
+            <Image src="/images/nrel-logo@2x-01.png" alt="NREL" className="fluid-image"/>
           ) : (
             <Nav.Link href="/login" className="login-link">Login</Nav.Link>
           )}
