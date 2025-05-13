@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import useAuthStore from '../stores/AuthStore';
-import AxiosInstance from './AxiosInstance';
+import axiosInstances from './AxiosInstance';
+const { AxiosInstance, PublicAxiosInstance } = axiosInstances;
 
 // UserDetail
 export const getUserDetail = async (email) => {
@@ -20,3 +21,7 @@ export const useGetUserQuery = (email) => {
     staleTime: 24 * 60 * 60 * 1000, // 1 day
   });
 };
+
+export const postUser = (createUser) => {
+  return PublicAxiosInstance.post("/api/users", createUser);
+}
