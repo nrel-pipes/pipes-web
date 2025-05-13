@@ -1,144 +1,176 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { useForm } from "react-hook-form";
+import { postUser } from "../../hooks/useUserQuery";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-
+import Spinner from "react-bootstrap/Spinner";
 import "../PageStyles.css";
-
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import AxiosInstance from "../../hooks/AxiosInstance";
 
 const Register = () => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const validateToken = useAuthStore((state) => state.validateToken);
-  const accessToken = useAuthStore((state) => state.accessToken);
-
-  // State for username and password
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  console.log("registering");
-  useEffect(() => {
-    validateToken(accessToken);
-    if (isLoggedIn) {
-      navigate(-1);
-    }
-  }, [isLoggedIn, navigate, accessToken, validateToken]);
+  const { login } = useAuthStore();
+  const queryClient = useQueryClient();
 
-  const handleLogin = async (event) => {
-    event.preventDefault();
-
-    if (!username || !password) {
-      setErrorMessage("Username and password are required.");
-      return;
+  // React-query mutation for user registration
+  const registerMutation = useMutation({
+    mutationFn: (userData) => postUser(userData),
+    onSuccess: (data) => {
+      navigate("/login");
+    },
+    onError: (error) => {
+      setErrorMessage(
+        error.response?.data?.message || "An error occurred during sign up"
+      );
     }
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm({
+    mode: "onChange",
+  });
+
+  const password = watch("password", "");
+
+  const onSubmit = async (data) => {
+    setIsLoading(true);
+    setErrorMessage("");
 
     try {
-      const response = await login(username, password);
-
-      if (
-        response.hasOwnProperty("newPasswordChallenge") &&
-        response.newPasswordChallenge === true
-      ) {
-        navigate("/new-password-challenge");
-      }
-    } catch (error) {
-      setErrorMessage(error);
+      registerMutation.mutate({
+      email: data.email,
+      first_name: data.firstName,
+      last_name: data.lastName,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (isLoggedIn) {
-    return (
-      <Container>
-        <Row>
-          <Col className="mx-auto mt-5">
-            <p>You are already logged in.</p>
+  return (
+    <>
+      <NavbarSub />
+      <Container className="mt-5">
+        <Row className="justify-content-center">
+          <Col md={6}>
+            <div className="p-4 bg-white shadow-sm rounded">
+              <h2 className="text-center mb-4">Create an Account</h2>
+
+              {errorMessage && (
+                <Alert variant="danger" className="mb-4">
+                  {errorMessage}
+                </Alert>
+              )}
+
+              <Form onSubmit={handleSubmit(onSubmit)}>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>First Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        isInvalid={!!errors.firstName}
+                        {...register("firstName", {
+                          required: "First name is required",
+                          minLength: {
+                            value: 2,
+                            message: "First name must be at least 2 characters",
+                          },
+                        })}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.firstName?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Last Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        isInvalid={!!errors.lastName}
+                        {...register("lastName", {
+                          required: "Last name is required",
+                          minLength: {
+                            value: 2,
+                            message: "Last name must be at least 2 characters",
+                          },
+                        })}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.lastName?.message}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Email Address</Form.Label>
+                  <Form.Control
+                    type="email"
+                    isInvalid={!!errors.email}
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                        message: "Please enter a valid email address",
+                      },
+                    })}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.email?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Creating Account...
+                    </>
+                  ) : (
+                    "Sign Up"
+                  )}
+                </Button>
+              </Form>
+
+              <div className="text-center mt-3">
+                <p>
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-decoration-none">
+                    Log in here
+                  </Link>
+                </p>
+              </div>
+            </div>
           </Col>
         </Row>
       </Container>
-    );
-  }
-
-  return (
-    <>
-    <NavbarSub />
-    <Container className="mainContent">
-      <Row>
-        {errorMessage && (
-          <Alert variant="danger" className="text-center">
-            {errorMessage}
-          </Alert>
-        )}
-      </Row>
-
-      <Row>
-        <Col sm={4} className="mx-auto mt-5">
-          <h1 className="text-center mb-5">Welcome!</h1>
-          <Form onSubmit={handleLogin}>
-            <Form.Group controlId="username">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter user email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                title="Please enter your email"
-              />
-            </Form.Group>
-
-            <Form.Group controlId="password">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                title="Please enter your password"
-              />
-            </Form.Group>
-
-            <div className="d-flex justify-content-center gap-3">
-              <Button
-                className="mt-3"
-                variant="outline-secondary"
-                size="lg"
-                style={{ width: "120px" }}
-                type="submit"
-              >
-                Login
-              </Button>
-              <Button
-                className="mt-3"
-                variant="outline-secondary"
-                size="lg"
-                style={{ width: "120px" }}
-                type="submit"
-              >
-                Register
-              </Button>
-            </div>
-            <div className="mt-3 text-center">
-              <Link
-                to="https://nrel-pipes.github.io/pipes-core/index.html"
-                target="_blank"
-              >
-                Learn more about PIPES?
-              </Link>{" "}
-              <Link to="/forgot-password">Forgot the password?</Link>
-            </div>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
     </>
   );
 };
