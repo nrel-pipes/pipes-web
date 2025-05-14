@@ -298,3 +298,32 @@
   background-color: #0079c2 !important;
   border-color: #0079c2 !important;
 }
+
+/* Search bar styling */
+.search-container {
+  position: relative;
+}
+
+.search-container input {
+  padding-right: 40px;
+  border-radius: 6px;
+  height: 42px;
+  transition: all 0.2s ease;
+}
+
+.search-container input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 121, 194, 0.25);
+  border-color: #0079c2;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+}
+
+.search-container input:focus + .search-icon {
+  color: #0079c2;
+}
