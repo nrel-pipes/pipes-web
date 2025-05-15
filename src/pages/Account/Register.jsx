@@ -19,12 +19,16 @@ const Register = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { login } = useAuthStore();
+  const { initiateEmailAuth } = useAuthStore();
   const queryClient = useQueryClient();
 
   // React-query mutation for user registration
   const registerMutation = useMutation({
-    mutationFn: (userData) => postUser(userData),
+    mutationFn: async (userData) => {
+      console.log(JSON.stringify(userData));
+      // Return the promise and await it
+      return await initiateEmailAuth(userData.email);
+    },
     onSuccess: (data) => {
       navigate("/login");
     },
@@ -42,7 +46,6 @@ const Register = () => {
   } = useForm({
     mode: "onChange",
   });
-
   const password = watch("password", "");
 
   const onSubmit = async (data) => {
@@ -76,48 +79,6 @@ const Register = () => {
               )}
 
               <Form onSubmit={handleSubmit(onSubmit)}>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>First Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        isInvalid={!!errors.firstName}
-                        {...register("firstName", {
-                          required: "First name is required",
-                          minLength: {
-                            value: 2,
-                            message: "First name must be at least 2 characters",
-                          },
-                        })}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.firstName?.message}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Last Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        isInvalid={!!errors.lastName}
-                        {...register("lastName", {
-                          required: "Last name is required",
-                          minLength: {
-                            value: 2,
-                            message: "Last name must be at least 2 characters",
-                          },
-                        })}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.lastName?.message}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
                 <Form.Group className="mb-3">
                   <Form.Label>Email Address</Form.Label>
                   <Form.Control

@@ -23,6 +23,27 @@ const useAuthStore = create(
 
     // Actions
     // login method
+    initiateEmailAuth: async (email) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
+      const userData = {
+      Username: email,
+      Pool: userPool
+      };
+      const cognitoUser = new CognitoUser(userData);
+
+      return new Promise((resolve, reject) => {
+        cognitoUser.forgotPassword({
+          onSuccess: () => {
+          set({ passwordResetUsername: email });
+          resolve({ message: 'Password sent to your email' });
+          },
+          onFailure: (err) => {
+          reject(err.message || 'Failed to initiate email authentication');
+          }
+        });
+      });
+    },
+
     login: async (username, password) => {
       const userPool = new CognitoUserPool(pipesConfig.poolData);
       const authenticationData = {
