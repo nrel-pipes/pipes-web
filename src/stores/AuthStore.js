@@ -1,10 +1,13 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-
 import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { jwtDecode } from 'jwt-decode';
 
 import pipesConfig from '../configs/PipesConfig';
+
+
+
+// Helper function to generate a random string (like the image)
 
 const useAuthStore = create(
   persist((set, get) => ({
@@ -18,29 +21,98 @@ const useAuthStore = create(
       const userPool = new CognitoUserPool(pipesConfig.poolData);
       return userPool.getCurrentUser(); // This retrieves from localStorage, not an API call
     },
-    createCognitoUser: async (email, password) => {
-      console.log(JSON.stringify({ email, password }));
+
+    createCognitoUser: async (email) => {
       const userPool = new CognitoUserPool(pipesConfig.poolData);
 
-      // Define user attributes - here we only include email as required by many pools
+      // Generate a secure random password that meets Cognito requirements
+      const generateSecurePassword = (length = 16) => {
+        const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+        const numberChars = '0123456789';
+        const specialChars = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+
+        const randomValues = new Uint8Array(length);
+        window.crypto.getRandomValues(randomValues);
+
+        // Start with one of each required character type
+        let password = '';
+        password += uppercaseChars[randomValues[0] % uppercaseChars.length];
+        password += lowercaseChars[randomValues[1] % lowercaseChars.length];
+        password += numberChars[randomValues[2] % numberChars.length];
+        password += specialChars[randomValues[3] % specialChars.length];
+
+        // Fill the rest with random characters
+        const allChars = uppercaseChars + lowercaseChars + numberChars + specialChars;
+        for (let i = 4; i < length; i++) {
+          password += allChars[randomValues[i] % allChars.length];
+        }
+
+        // Shuffle the password
+        const passwordArray = password.split('');
+        for (let i = passwordArray.length - 1; i > 0; i--) {
+          const j = Math.floor((randomValues[i] / 255) * (i + 1));
+          [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+        }
+
+        return passwordArray.join('');
+      };
+
+      const generatedPassword = generateSecurePassword();
+
+      // Store the generated password in the store temporarily
+      // This can be useful if you need to show it to the user later
+      set({ tempPassword: generatedPassword });
+
       const attributeList = [
         new CognitoUserAttribute({
           Name: 'email',
           Value: email,
         }),
-        // No other attributes are added here
       ];
 
+      console.log('Creating Cognito User with email:', email);
+
       return new Promise((resolve, reject) => {
-        // Call the signUp method with email as username, password, and the attributeList
-        userPool.signUp(email, password, attributeList, null, (err, result) => {
+        userPool.signUp(email, generatedPassword, attributeList, null, (err, result) => {
           if (err) {
-            console.error('Cognito Sign-up Error:', err);
-            reject(err); // Reject the promise with the error
+            console.error('Cognito UserPool Sign-up Error:', err);
+            reject(err);
           } else {
-            console.log('Cognito Sign-up Success:', result);
-            resolve(result); // Resolve the promise with the sign-up result
+            console.log('Cognito UserPool Sign-up Success:', result);
+
+            // Store the username for potential confirmation step later
+            set({ challengeUsername: email });
+
+            resolve({
+              result,
+              message: 'Please check your email for a verification code to confirm your account.'
+            });
           }
+        });
+      });
+    },
+
+    // Add a new function to verify the code from email
+    confirmSignUp: async (username, code) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+
+      const cognitoUser = new CognitoUser(userData);
+
+      return new Promise((resolve, reject) => {
+        cognitoUser.confirmRegistration(code, true, (err, result) => {
+          if (err) {
+            console.error('Confirmation error:', err);
+            reject(err);
+            return;
+          }
+
+          console.log('Confirmation successful:', result);
+          resolve(result);
         });
       });
     },

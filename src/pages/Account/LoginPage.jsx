@@ -43,10 +43,8 @@ const LoginPage = () => {
 
     if (action === 'register') {
       try {
-        await createUser(username.toLowerCase(), password);
-        // If successful (no error thrown), we can continue to challenge
-        // Add your post-registration success logic here
-
+        navigate("/account/register");
+        return;
       } catch (error) {
         console.error("Registration error:", error);
 
@@ -71,12 +69,14 @@ const LoginPage = () => {
     }
 
     // Only get here if action isn't 'register' OR if register was successful
-    try {
-      await login(username.toLowerCase(), password);
-      // Login success is handled by the useEffect that checks isLoggedIn
-    } catch (error) {
-      console.log(error);
-      setErrorMessage(error.message || "Incorrect username or password");
+    if (action !== 'register') {
+      try {
+        await login(username.toLowerCase(), password);
+        // Login success is handled by the useEffect that checks isLoggedIn
+      } catch (error) {
+        console.log(error);
+        setErrorMessage(error.message || "Incorrect username or password");
+      }
     }
   };
 
