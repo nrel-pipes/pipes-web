@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Minus, Plus } from "lucide-react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -23,17 +23,20 @@ import { useCreateProjectRunMutation } from "../../hooks/useProjectRunQuery";
 const CreateProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
 
   const { effectivePname } = useDataStore();
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, validateToken, accessToken]);
+    const checkAuth = async () => {
+      const isAuthenticated = await checkAuthStatus();
+      if (!isAuthenticated) {
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
 
   const projectName = location.state?.currentProject?.name || location.state?.projectName;
 

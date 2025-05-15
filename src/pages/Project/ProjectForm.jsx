@@ -8,16 +8,16 @@ import { useNavigate } from "react-router-dom";
 
 import { useEffect, useState } from "react";
 import { useCreateProjectMutation, useGetProjectQuery } from "../../hooks/useProjectQuery";
+import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 import FormError from "../Components/form/FormError";
 import SideColumn from "../Components/form/SideColumn";
 import "../FormStyles.css";
-import useAuthStore from "./stores/AuthStore";
 import useDataStore from "./stores/ProjectStore";
 
 const ProjectForm = ({ create }) => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const { effectivePname } = useDataStore();
 
   const { data: currentProject } = useGetProjectQuery(effectivePname);
@@ -456,11 +456,20 @@ const ProjectForm = ({ create }) => {
   };
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, accessToken, validateToken]);
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
