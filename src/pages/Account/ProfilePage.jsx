@@ -1,6 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useGetUserQuery } from '../../hooks/useUserQuery';
 
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -8,36 +9,59 @@ import Row from 'react-bootstrap/Row';
 
 import "../PageStyles.css";
 
-import { useGetUserQuery } from '../../hooks/useUserQuery';
 import NavbarSub from '../../layouts/NavbarSub';
 import useAuthStore from '../../stores/AuthStore';
 
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, idToken } = useAuthStore();
-
+  const { checkAuthStatus, getIdToken, currentUser, setCurrentUser } = useAuthStore();
   const [userEmail, setUserEmail] = useState(null);
 
-  // Extract email from token
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
+    const fetchAuthData = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
+
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        const idToken = await getIdToken();
+
+        if (idToken) {
+          const decodedIdToken = jwtDecode(idToken);
+          const email = decodedIdToken.email.toLowerCase();
+          setUserEmail(email);
+        } else {
+          console.error("ID token not available");
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error("Error accessing authentication data:", error);
+        navigate('/login');
+      }
+    };
+
+    fetchAuthData();
+  }, [navigate, checkAuthStatus, getIdToken]);
+
+  const { data: fetchedUserData, isLoading: isLoadingUserData } = useGetUserQuery(userEmail, {
+    enabled: !!userEmail && !currentUser
+  });
+
+  useEffect(() => {
+    if (fetchedUserData && !currentUser) {
+      setCurrentUser(fetchedUserData);
     }
+  }, [fetchedUserData, currentUser, setCurrentUser]);
 
-    if (idToken) {
-      const decodedIdToken = jwtDecode(idToken);
-      const email = decodedIdToken.email.toLowerCase();
-      setUserEmail(email);
-    }
-  }, [isLoggedIn, navigate, idToken]);
+  const isLoading = (!currentUser && isLoadingUserData) || !userEmail;
 
-  // Fetch user details with React Query
-  const { data: currentUser, isLoading } = useGetUserQuery(userEmail);
+  const userData = currentUser || fetchedUserData;
 
-  // Determine user role
-  const userRole = currentUser?.is_superuser ? 'Administrator' : 'User';
+  const userRole = userData?.is_superuser ? 'Administrator' : 'User';
 
   return (
     <>

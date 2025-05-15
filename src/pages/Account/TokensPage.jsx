@@ -16,9 +16,9 @@ import useAuthStore from '../../stores/AuthStore';
 
 const TokensPage = () => {
   const navigate = useNavigate();
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const idToken = useAuthStore((state) => state.idToken);
+  const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+  const getAccessToken = useAuthStore((state) => state.getAccessToken);
+  const getIdToken = useAuthStore((state) => state.getIdToken);
 
   const [exportUnixTokens, setExportUnixTokens] = useState("");
   const [exportWinTokens, setExportWinTokens] = useState("");
@@ -43,17 +43,34 @@ const TokensPage = () => {
   };
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
+    const setupTokens = async () => {
+      try {
+        // Check if user is authenticated
+        const isAuthenticated = await checkAuthStatus();
 
-    const currentExportUnixTokens = "export PIPES_ACCESS_TOKEN=" + accessToken + "\n\nexport PIPES_ID_TOKEN=" + idToken;
-    setExportUnixTokens(currentExportUnixTokens);
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
 
-    const currentExportWinTokens = "SET PIPES_ACCESS_TOKEN=" + accessToken + "\n\nSET PIPES_ID_TOKEN=" + idToken;
-    setExportWinTokens(currentExportWinTokens);
+        // Get tokens from the updated auth store
+        const accessToken = await getAccessToken();
+        const idToken = await getIdToken();
 
-  }, [isLoggedIn, navigate, accessToken, idToken]);
+        // Update the token display strings
+        const currentExportUnixTokens = "export PIPES_ACCESS_TOKEN=" + accessToken + "\n\nexport PIPES_ID_TOKEN=" + idToken;
+        setExportUnixTokens(currentExportUnixTokens);
+
+        const currentExportWinTokens = "SET PIPES_ACCESS_TOKEN=" + accessToken + "\n\nSET PIPES_ID_TOKEN=" + idToken;
+        setExportWinTokens(currentExportWinTokens);
+      } catch (error) {
+        console.error('Error setting up tokens:', error);
+        navigate('/login');
+      }
+    };
+
+    setupTokens();
+  }, [navigate, checkAuthStatus, getAccessToken, getIdToken]);
 
   return (
     <>
@@ -126,6 +143,5 @@ const TokensPage = () => {
     </>
   );
 }
-
 
 export default TokensPage;

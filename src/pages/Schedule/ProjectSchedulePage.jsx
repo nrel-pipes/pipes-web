@@ -27,7 +27,7 @@ import NavbarSub from "../../layouts/NavbarSub";
 
 const ProjectSchedulePage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const { effectivePname } = useDataStore();
 
   const {
@@ -53,21 +53,31 @@ const ProjectSchedulePage = () => {
   };
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
+    const checkAuth = async () => {
+      try {
+        // Check authentication status
+        const isAuthenticated = await checkAuthStatus();
 
-    if (!effectivePname) {
-      navigate('/projects');
-      return;
-    }
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        // Check if a project is selected
+        if (!effectivePname) {
+          navigate('/projects');
+          return;
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
   }, [
-    isLoggedIn,
     navigate,
-    accessToken,
-    validateToken,
+    checkAuthStatus,
     effectivePname
   ]);
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { faChevronLeft, faChevronRight, faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -22,6 +22,8 @@ import ContentHeader from "../Components/ContentHeader";
 import DataViewComponent from "./Components/DataViewComponent";
 import GraphViewComponent from "./Components/GraphViewComponent";
 
+import { useQueries } from "@tanstack/react-query";
+import { getDatasets } from "../../hooks/useDatasetQuery";
 import { useGetHandoffsQuery } from "../../hooks/useHandoffQuery";
 import { useGetModelsQuery } from "../../hooks/useModelQuery";
 import { useGetModelRunsQuery } from "../../hooks/useModelRunQuery";
@@ -42,10 +44,10 @@ const nodeHeight = 45;
 
 const ProjectPipelinePage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
+  const { checkAuthStatus } = useAuthStore();
   const { effectivePname } = useDataStore();
 
-  const shouldFetchData = !!effectivePname && isLoggedIn;
+  const shouldFetchData = !!effectivePname;
 
   const {
     data: project,
@@ -97,11 +99,187 @@ const ProjectPipelinePage = () => {
     }
   );
 
+  const [datasetQueries, setDatasetQueries] = useState([]);
+  const [datasetsMap, setDatasetsMap] = useState(new Map());
+
+  const graphContainerRef = useRef(null);
+  const [graphMounted, setGraphMounted] = useState(false);
+
+  // Prevent the ResizeObserver error
+  useEffect(() => {
+    // This prevents the ResizeObserver loop limit exceeded error
+    const handleError = (event) => {
+      // More specific check for ResizeObserver errors
+      if (
+        event.message === 'ResizeObserver loop completed with undelivered notifications.' ||
+        event.message === 'ResizeObserver loop limit exceeded' ||
+        (event.message && event.message.includes('ResizeObserver loop'))
+      ) {
+        // Prevent the error from appearing in console
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
+    };
+
+    // Capture all possible error events
+    window.addEventListener('error', handleError, true);
+    window.addEventListener('unhandledrejection', handleError, true);
+
+    return () => {
+      window.removeEventListener('error', handleError, true);
+      window.removeEventListener('unhandledrejection', handleError, true);
+    };
+  }, []);
+
+  // Improved debounced resize handler
+  const debouncedResize = useCallback(() => {
+    let resizeTimer;
+    return () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (graphContainerRef.current) {
+          // Use React state to trigger re-render instead of direct DOM manipulation
+          setGraphMounted(false);
+          // Small delay before remounting
+          setTimeout(() => setGraphMounted(true), 50);
+        }
+      }, 300);
+    };
+  }, []);
+
+  // Add resize listener
+  useEffect(() => {
+    const handleResize = debouncedResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [debouncedResize]);
+
+  // TODO: Not effcient, but it works.
+  // We need to refactor this to get all datasets in one API call.
+  useEffect(() => {
+    if (!projectDataAvailable || !projectRuns.length || !models.length || !modelRuns.length) {
+      return;
+    }
+
+    const queries = [];
+
+    projectRuns.forEach(projectRun => {
+      models.forEach(model => {
+        if (model.context.projectrun === projectRun.name) {
+          modelRuns.forEach(modelRun => {
+            if (modelRun.context.projectrun === projectRun.name &&
+                modelRun.context.model === model.name) {
+
+              const queryKey = `${projectRun.name}-${model.name}-${modelRun.name}`;
+
+              queries.push({
+                queryKey: ['datasets', effectivePname, projectRun.name, model.name, modelRun.name],
+                queryFn: () => getDatasets({
+                  projectName: effectivePname,
+                  projectRunName: projectRun.name,
+                  modelName: model.name,
+                  modelRunName: modelRun.name
+                })
+                .catch(error => {
+                  console.warn(`Dataset fetch error for ${queryKey}:`, error);
+                  // Return empty array instead of throwing to prevent breaking the UI
+                  return [];
+                }),
+                enabled: projectDataAvailable,
+                onSuccess: (data) => {
+                  setDatasetsMap(prev => {
+                    const updated = new Map(prev);
+                    updated.set(queryKey, data || []);
+                    return updated;
+                  });
+                },
+                onError: (error) => {
+                  console.error(`Query error for ${queryKey}:`, error);
+                  // Add empty array for this key to prevent errors when accessing
+                  setDatasetsMap(prev => {
+                    const updated = new Map(prev);
+                    updated.set(queryKey, []);
+                    return updated;
+                  });
+                },
+                retry: 1,
+                retryDelay: 1000
+              });
+            }
+          });
+        }
+      });
+    });
+
+    setDatasetQueries(queries);
+  }, [projectDataAvailable, projectRuns, models, modelRuns, effectivePname]);
+
+  const datasetResults = useQueries({ queries: datasetQueries });
+
+  const isLoadingDatasets = datasetResults ? datasetResults.some(query => query.isLoading) : false;
+
   const isLoading = isLoadingProject || isLoadingProjectRuns ||
                    isLoadingModels || isLoadingModelRuns ||
-                   isLoadingHandoffs;
+                   isLoadingHandoffs || isLoadingDatasets;
 
-  const [clickedElementData, setClickedElementedData] = useState({});
+  // Improved graph mounting logic
+  useEffect(() => {
+    // Only mount graph if we have data ready
+    if (!isLoading && project) {
+      const timer = setTimeout(() => {
+        setGraphMounted(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setGraphMounted(false);
+    }
+  }, [isLoading, project]);
+
+  useEffect(() => {
+    if (!datasetResults.length) return;
+
+    const newMap = new Map(datasetsMap);
+    let mapUpdated = false;
+
+    datasetResults.forEach((result, index) => {
+      if (result.isSuccess && datasetQueries[index]) {
+        const queryInfo = datasetQueries[index];
+        const projectRunName = queryInfo.queryKey[2];
+        const modelName = queryInfo.queryKey[3];
+        const modelRunName = queryInfo.queryKey[4];
+        const queryKey = `${projectRunName}-${modelName}-${modelRunName}`;
+
+        // Handle both successful result and empty data
+        const resultData = result.data || [];
+
+        if (!datasetsMap.has(queryKey) ||
+            JSON.stringify(datasetsMap.get(queryKey)) !== JSON.stringify(resultData)) {
+          newMap.set(queryKey, resultData);
+          mapUpdated = true;
+        }
+      } else if (result.isError && datasetQueries[index]) {
+        // For error cases, set an empty array
+        const queryInfo = datasetQueries[index];
+        const projectRunName = queryInfo.queryKey[2];
+        const modelName = queryInfo.queryKey[3];
+        const modelRunName = queryInfo.queryKey[4];
+        const queryKey = `${projectRunName}-${modelName}-${modelRunName}`;
+
+        if (!datasetsMap.has(queryKey)) {
+          newMap.set(queryKey, []);
+          mapUpdated = true;
+        }
+      }
+    });
+
+    if (mapUpdated) {
+      setDatasetsMap(newMap);
+    }
+  }, [datasetResults, datasetQueries, datasetsMap]);
+
+  const [clickedElementData, setClickedElementData] = useState({});
   const [isGraphExpanded, setIsGraphExpanded] = useState(false);
 
   const toggleGraphExpansion = () => {
@@ -109,21 +287,29 @@ const ProjectPipelinePage = () => {
   };
 
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
 
-    if (!effectivePname) {
-      navigate('/projects');
-      return;
-    }
+        if (!isAuthenticated) {
+          navigate('/login');
+          return;
+        }
+
+        if (!effectivePname) {
+          navigate('/projects');
+          return;
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
   }, [
-    isLoggedIn,
     navigate,
-    accessToken,
-    validateToken,
+    checkAuthStatus,
     effectivePname
   ]);
 
@@ -321,6 +507,51 @@ const ProjectPipelinePage = () => {
               data: {}
             }
             initialEdges.push(mrEdge);
+
+            const queryKey = `${projectRun.name}-${model.name}-${modelRun.name}`;
+            const datasetsForThisRun = datasetsMap.get(queryKey) || [];
+
+            datasetsForThisRun.forEach((dataset, index3) => {
+              if (dataset && dataset.context &&
+                  dataset.context.projectrun === projectRun.name &&
+                  dataset.context.model === model.name &&
+                  dataset.context.modelrun === modelRun.name) {
+
+                const dsNodeId = 'n-ds-' + projectRun.name + '-' + model.name + '-' + modelRun.name + '-' + dataset.name + '-' + index3;
+                const dsNode = {
+                  id: dsNodeId,
+                  type: 'circle',
+                  label: 'Dataset',
+                  position: {x: 0, y: 0},
+                  data: dataset,
+                  style: {
+                    backgroundColor: nodeColors.dataset
+                  }
+                };
+                initialNodes.push(dsNode);
+
+                const dsEdgeId = 'e-' + mrNodeId + '-' + dsNodeId + '-' + generateRandomString(5);
+                const dsEdgeHandle = 'h-' + dsEdgeId;
+                const dsEdge = {
+                  id: dsEdgeId,
+                  source: mrNodeId,
+                  target: dsNodeId,
+                  sourceHandle: dsEdgeHandle,
+                  markerEnd: {
+                    type: MarkerType.ArrowClosed,
+                  },
+                  type: 'default',
+                  label: 'produces',
+                  style: {
+                    stroke: "#fe6523",
+                    strokeWidth: 2,
+                    strokeDasharray: "5,5",
+                  },
+                  data: {}
+                };
+                initialEdges.push(dsEdge);
+              }
+            });
           }
         });
       });
@@ -331,7 +562,7 @@ const ProjectPipelinePage = () => {
 
     return {nodes: layoutedNodes, edges: layoutedEdges}
 
-  }, [project, projectRuns, models, modelRuns, handoffs, isLoading]);
+  }, [project, projectRuns, models, modelRuns, handoffs, datasetsMap, isLoading]);
 
   return (
     <>
@@ -341,12 +572,14 @@ const ProjectPipelinePage = () => {
         <ContentHeader title="Project Pipeline" />
       </Row>
       <Row id="pipeline-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
-        <Col md={isGraphExpanded ? 12 : 8}>
-          <GraphViewComponent
-            graphNodes={pipesGraph.nodes}
-            graphEdges={pipesGraph.edges}
-            setClickedElementData={setClickedElementedData}
-          />
+        <Col md={isGraphExpanded ? 12 : 8} ref={graphContainerRef}>
+          {graphMounted && !isLoading && pipesGraph.nodes && (
+            <GraphViewComponent
+              graphNodes={pipesGraph.nodes}
+              graphEdges={pipesGraph.edges}
+              setClickedElementData={setClickedElementData}
+            />
+          )}
         </Col>
 
         <div
@@ -370,7 +603,6 @@ const ProjectPipelinePage = () => {
     </>
   );
 }
-
 
 function getDagreLayoutedElements(nodes, edges) {
   let dagreGraph = new dagre.graphlib.Graph();

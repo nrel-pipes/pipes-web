@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -31,18 +31,28 @@ import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
 const ProjectDashboardPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { isLoggedIn, accessToken, validateToken } = useAuthStore();
-
+  const { checkAuthStatus } = useAuthStore();
   const { effectivePname } = useDataStore();
 
-  // Auth check effect
+  // Auth check effect - updated to match ProjectListPage pattern
   useEffect(() => {
-    validateToken(accessToken);
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
-  }, [isLoggedIn, navigate, validateToken, accessToken]);
+    const checkAuth = async () => {
+      try {
+        // Validate authentication and check if user is logged in
+        const isAuthenticated = await checkAuthStatus();
+
+        if (!isAuthenticated) {
+          navigate("/login");
+          return;
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
 
   // fetch project data
   const {

@@ -23,7 +23,7 @@ const SiteBanner = () => {
         <Col className="banner-nrel-container" md={3} sm={4} xs={4}>
           <Image
             className="banner-nrel-image"
-            src="./images/nrel-logo@2x-01.png"
+            src="/images/nrel-logo@2x-01.png"
             alt="NREL"
             fluid
           />
