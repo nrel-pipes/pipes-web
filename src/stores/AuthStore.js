@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
+import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { jwtDecode } from 'jwt-decode';
 
 import pipesConfig from '../configs/PipesConfig';
@@ -16,7 +16,7 @@ const useAuthStore = create(
 
     getCognitoUser: () => {
       const userPool = new CognitoUserPool(pipesConfig.poolData);
-      return userPool.getCurrentUser(); // This retrieves from localStorage, not an API call
+      return userPool.getCurrentUser();
     },
 
     getAccessToken: async () => {
@@ -47,6 +47,78 @@ const useAuthStore = create(
         console.error("Error getting access token:", error);
         return null;
       }
+    },
+
+    createCognitoUser: async (email, password) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
+
+      // Add required attributes - typically email is required
+      const attributeList = [
+        new CognitoUserAttribute({
+          Name: 'email',
+          Value: email,
+        }),
+      ];
+
+      console.log('Attempting to create Cognito User with email:', email);
+
+      return new Promise((resolve, reject) => {
+        userPool.signUp(
+          email,                // username
+          password,             // password
+          attributeList,        // attributes
+          null,                 // validation data (optional)
+          (err, result) => {
+            if (err) {
+              // If the user already exists, send a new verification code
+              if (err.code === 'UsernameExistsException') {
+                console.log('User already exists, sending verification code...');
+
+                // Create a CognitoUser object for the existing user
+                const userData = {
+                  Username: email,
+                  Pool: userPool
+                };
+
+                const cognitoUser = new CognitoUser(userData);
+
+                // Resend the confirmation code
+                cognitoUser.resendConfirmationCode((resendErr, resendResult) => {
+                  if (resendErr) {
+                    console.error('Error resending confirmation code:', resendErr);
+                    reject(resendErr);
+                  } else {
+                    console.log('Confirmation code resent successfully');
+
+                    // Store the username for potential confirmation step later
+                    set({ challengeUsername: email });
+
+                    resolve({
+                      userExists: true,
+                      result: resendResult,
+                      message: 'User already exists. A new verification code has been sent to your email.'
+                    });
+                  }
+                });
+              } else {
+                console.error('Cognito UserPool Sign-up Error:', err);
+                reject(err);
+              }
+            } else {
+              console.log('Cognito UserPool Sign-up Success:', result);
+
+              // Store username to make verification easier later
+              set({ challengeUsername: email });
+
+              resolve({
+                userExists: false,
+                result: result,
+                message: 'User created successfully. Please check your email for a verification code.'
+              });
+            }
+          }
+        );
+      });
     },
 
     getIdToken: async () => {

@@ -44,6 +44,7 @@ import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
 import ForgotPasswordPage from "./pages/Account/ForgotPasswordPage";
 import LoginPage from "./pages/Account/LoginPage";
 import LogoutPage from "./pages/Account/LogoutPage";
+import Register from "./pages/Account/Register";
 import NewPasswordChallengePage from "./pages/Account/NewPasswordChallengePage";
 import ProfilePage from "./pages/Account/ProfilePage";
 import ResetPasswordPage from "./pages/Account/ResetPasswordPage";
@@ -138,6 +139,7 @@ function App() {
                 <Route path="/logout" element={<LogoutPage />} />
                 <Route path="/account/tokens" element={<TokensPage />} />
                 <Route path="/account/profile" element={<ProfilePage />} />
+                <Route path="/account/register" element={<Register />} />
                 <Route
                   path="/new-password-challenge"
                   element={<NewPasswordChallengePage />}
