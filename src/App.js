@@ -43,6 +43,7 @@ import ProjectSchedulePage from "./pages/Schedule/ProjectSchedulePage";
 import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
 import ForgotPasswordPage from "./pages/Account/ForgotPasswordPage";
 import LoginPage from "./pages/Account/LoginPage";
+import Register from "./pages/Account/Register";
 import LogoutPage from "./pages/Account/LogoutPage";
 import NewPasswordChallengePage from "./pages/Account/NewPasswordChallengePage";
 import ProfilePage from "./pages/Account/ProfilePage";
@@ -138,6 +139,7 @@ function App() {
                 <Route path="/logout" element={<LogoutPage />} />
                 <Route path="/account/tokens" element={<TokensPage />} />
                 <Route path="/account/profile" element={<ProfilePage />} />
+                <Route path="/account/register" element={<register />} />
                 <Route
                   path="/new-password-challenge"
                   element={<NewPasswordChallengePage />}

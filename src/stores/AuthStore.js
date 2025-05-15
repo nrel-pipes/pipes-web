@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
+import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { jwtDecode } from 'jwt-decode';
 
 import pipesConfig from '../configs/PipesConfig';
@@ -17,6 +17,32 @@ const useAuthStore = create(
     getCognitoUser: () => {
       const userPool = new CognitoUserPool(pipesConfig.poolData);
       return userPool.getCurrentUser(); // This retrieves from localStorage, not an API call
+    },
+    createCognitoUser: async (email, password) => {
+      console.log(JSON.stringify({ email, password }));
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
+
+      // Define user attributes - here we only include email as required by many pools
+      const attributeList = [
+        new CognitoUserAttribute({
+          Name: 'email',
+          Value: email,
+        }),
+        // No other attributes are added here
+      ];
+
+      return new Promise((resolve, reject) => {
+        // Call the signUp method with email as username, password, and the attributeList
+        userPool.signUp(email, password, attributeList, null, (err, result) => {
+          if (err) {
+            console.error('Cognito Sign-up Error:', err);
+            reject(err); // Reject the promise with the error
+          } else {
+            console.log('Cognito Sign-up Success:', result);
+            resolve(result); // Resolve the promise with the sign-up result
+          }
+        });
+      });
     },
 
     getAccessToken: async () => {
