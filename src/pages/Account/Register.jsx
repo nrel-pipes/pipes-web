@@ -8,122 +8,77 @@ import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Spinner from "react-bootstrap/Spinner";
-
 import "../PageStyles.css";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import { CognitoUserPool, CognitoUserAttribute } from "amazon-cognito-identity-js";
-import pipesConfig from "../../configs/PipesConfig";
-
-// Add this function to generate a secure random password
-const generateSecurePassword = (length = 16) => {
-  // Create character sets
-  const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-  const numberChars = '0123456789';
-  const specialChars = '!@#$%^&*()-_=+[]{}|;:,.<>?';
-
-  // Generate a random array of bytes
-  const randomValues = new Uint8Array(length);
-  window.crypto.getRandomValues(randomValues);
-
-  // Start with one character from each required character set
-  let password = '';
-  password += uppercaseChars[randomValues[0] % uppercaseChars.length];
-  password += lowercaseChars[randomValues[1] % lowercaseChars.length];
-  password += numberChars[randomValues[2] % numberChars.length];
-  password += specialChars[randomValues[3] % specialChars.length];
-
-  // Fill the rest with random characters from all sets
-  const allChars = uppercaseChars + lowercaseChars + numberChars + specialChars;
-  for (let i = 4; i < length; i++) {
-    password += allChars[randomValues[i] % allChars.length];
-  }
-
-  // Shuffle the password (Fisher-Yates algorithm)
-  const passwordArray = password.split('');
-  for (let i = passwordArray.length - 1; i > 0; i--) {
-    const j = Math.floor((randomValues[i] / 255) * (i + 1));
-    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
-  }
-
-  return passwordArray.join('');
-};
 
 const Register = () => {
   const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const createUser = async (email) => {
-    const userPool = new CognitoUserPool(pipesConfig.poolData);
+  const [verificationStep, setVerificationStep] = useState("email");
+  const [userEmail, setUserEmail] = useState("");
 
-    const password = generateSecurePassword();
-
-    const attributeList = [
-      new CognitoUserAttribute({
-        Name: 'email',
-        Value: email,
-      }),
-    ];
-
-    console.log('Creating Cognito User with email:', email);
-
-    return new Promise((resolve, reject) => {
-      userPool.signUp(email, password, attributeList, null, (err, result) => {
-        if (err) {
-          console.error('Cognito UserPool Sign-up Error:', err);
-          reject(err);
-        } else {
-          console.log('Cognito UserPool Sign-up Success:', result);
-          resolve(result);
-        }
-      });
-    });
-  };
+  const createCognitoUser = useAuthStore((state) => state.createCognitoUser);
 
   const {
-    register,
-    handleSubmit,
-    formState: { errors }
+    register: registerEmail,
+    handleSubmit: handleSubmitEmail,
+    formState: { errors: emailErrors }
   } = useForm({
     mode: "onChange",
   });
 
-  const onSubmit = async (data) => {
+  const {
+    register: registerCode,
+    handleSubmit: handleSubmitCode,
+    formState: { errors: codeErrors },
+    getValues
+  } = useForm({
+    mode: "onChange",
+  });
+
+  // Handle email submission
+  const onSubmitEmail = async (data) => {
     setIsLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
 
     try {
-      await createUser(data.email.toLowerCase());
-      console.log("Here");
-      // If successful, show success message and navigate to login
-      setSuccessMessage("Registration successful. Please check your email for your temporary password.");
-
-      // Navigate to login after 2 seconds
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
-
+      await createCognitoUser(data.email.toLowerCase());
+      setUserEmail(data.email.toLowerCase());
+      setSuccessMessage("Verification code has been sent to your email.");
+      setVerificationStep("code");
     } catch (error) {
       console.error("Registration error:", error);
 
-      // Check if the error is related to an existing user
-      if (error.code === 'UsernameExistsException' ||
-          error.message?.includes('already exists') ||
-          error.message?.includes('exists')) {
-        setErrorMessage("User with email already exists, navigating to login.");
+      // Handle other types of errors - user already exists should be handled in createCognitoUser
+      setErrorMessage(error.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        // Navigate to login after 2 seconds
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
-      } else {
-        // Handle other types of errors
-        setErrorMessage(error.message || "Registration failed");
-        setIsLoading(false);
-      }
+  // Handle code submission
+  const onSubmitCode = async (data) => {
+    setIsLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      // We need to add confirmSignUp to useAuthStore
+      await useAuthStore.getState().confirmSignUp(userEmail, data.code);
+      setSuccessMessage("Email verified successfully! Redirecting to login...");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (error) {
+      console.error("Verification error:", error);
+      setErrorMessage(error.message || "Failed to verify code. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -134,7 +89,9 @@ const Register = () => {
         <Row className="justify-content-center">
           <Col md={6}>
             <div className="p-4 bg-white shadow-sm rounded">
-              <h2 className="text-center mb-4">Create an Account</h2>
+              <h2 className="text-center mb-4">
+                {verificationStep === "email" ? "Create an Account" : "Verify Your Email"}
+              </h2>
 
               {errorMessage && (
                 <Alert variant="danger" className="mb-4">
@@ -148,51 +105,155 @@ const Register = () => {
                 </Alert>
               )}
 
-              <Form onSubmit={handleSubmit(onSubmit)}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Email Address</Form.Label>
-                  <Form.Control
-                    type="email"
-                    isInvalid={!!errors.email}
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                        message: "Please enter a valid email address",
-                      },
-                    })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.email?.message}
-                  </Form.Control.Feedback>
-                  <Form.Text className="text-muted">
-                    You'll receive a temporary password at this email address.
-                  </Form.Text>
-                </Form.Group>
+              {verificationStep === "email" ? (
+                // Email submission form
+                <Form onSubmit={handleSubmitEmail(onSubmitEmail)}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Email Address</Form.Label>
+                    <Form.Control
+                      type="email"
+                      isInvalid={!!emailErrors.email}
+                      {...registerEmail("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                          message: "Please enter a valid email address",
+                        },
+                      })}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {emailErrors.email?.message}
+                    </Form.Control.Feedback>
+                    <Form.Text className="text-muted">
+                      You'll receive a verification code at this email address.
+                    </Form.Text>
+                  </Form.Group>
 
-                <Button
-                  variant="primary"
-                  type="submit"
-                  className="w-100 py-2 mb-3"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                        className="me-2"
-                      />
-                      Registering...
-                    </>
-                  ) : (
-                    "Register"
-                  )}
-                </Button>
-              </Form>
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    className="w-100 py-2 mb-3"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                          className="me-2"
+                        />
+                        Registering...
+                      </>
+                    ) : (
+                      "Register"
+                    )}
+                  </Button>
+                </Form>
+              ) : (
+                // Code verification form
+                <Form onSubmit={handleSubmitCode(onSubmitCode)}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Verification Code</Form.Label>
+                    <Form.Control
+                      type="text"
+                      isInvalid={!!codeErrors.code}
+                      {...registerCode("code", {
+                        required: "Verification code is required",
+                        pattern: {
+                          value: /^[0-9]+$/,
+                          message: "Please enter a valid verification code",
+                        },
+                      })}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {codeErrors.code?.message}
+                    </Form.Control.Feedback>
+                    <Form.Text className="text-muted">
+                      Enter the verification code sent to {userEmail}
+                    </Form.Text>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>New Password</Form.Label>
+                    <Form.Control
+                      type="password"
+                      isInvalid={!!codeErrors.password}
+                      {...registerCode("password", {
+                        required: "Password is required",
+                        minLength: {
+                          value: 8,
+                          message: "Password must be at least 8 characters long",
+                        },
+                        pattern: {
+                          value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+                          message: "Password must include uppercase, lowercase, number and special character",
+                        },
+                      })}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {codeErrors.password?.message}
+                    </Form.Control.Feedback>
+                    <Form.Text className="text-muted">
+                      Password must be at least 8 characters with uppercase, lowercase, number and special character.
+                    </Form.Text>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Confirm Password</Form.Label>
+                    <Form.Control
+                      type="password"
+                      isInvalid={!!codeErrors.confirmPassword}
+                      {...registerCode("confirmPassword", {
+                        required: "Please confirm your password",
+                        validate: value => {
+                          const password = getValues("password");
+                          return password === value || "Passwords do not match";
+                        }
+                      })}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {codeErrors.confirmPassword?.message}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    className="w-100 py-2 mb-3"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                          className="me-2"
+                        />
+                        Verifying...
+                      </>
+                    ) : (
+                      "Login"
+                    )}
+                  </Button>
+
+                  <div className="text-center">
+                    <Button
+                      variant="link"
+                      className="p-0"
+                      onClick={() => setVerificationStep("email")}
+                      disabled={isLoading}
+                    >
+                      Use a different email address
+                    </Button>
+                  </div>
+                </Form>
+              )}
 
               <div className="text-center mt-3">
                 <p>

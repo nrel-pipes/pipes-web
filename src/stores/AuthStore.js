@@ -61,7 +61,6 @@ const useAuthStore = create(
       const generatedPassword = generateSecurePassword();
 
       // Store the generated password in the store temporarily
-      // This can be useful if you need to show it to the user later
       set({ tempPassword: generatedPassword });
 
       const attributeList = [
@@ -71,30 +70,74 @@ const useAuthStore = create(
         }),
       ];
 
-      console.log('Creating Cognito User with email:', email);
+      console.log('Creating or updating Cognito User with email:', email);
 
-      return new Promise((resolve, reject) => {
-        userPool.signUp(email, generatedPassword, attributeList, null, (err, result) => {
-          if (err) {
-            console.error('Cognito UserPool Sign-up Error:', err);
-            reject(err);
-          } else {
-            console.log('Cognito UserPool Sign-up Success:', result);
+      try {
+        return await new Promise((resolve, reject) => {
+          userPool.signUp(email, generatedPassword, attributeList, null, (err, result) => {
+            if (err) {
+              // Handle case where user already exists
+              if (err.code === 'UsernameExistsException') {
+                console.log('User already exists, generating a new verification code...');
 
-            // Store the username for potential confirmation step later
-            set({ challengeUsername: email });
+                // Create a CognitoUser object for the existing user
+                const userData = {
+                  Username: email,
+                  Pool: userPool
+                };
 
-            resolve({
-              result,
-              message: 'Please check your email for a verification code to confirm your account.'
-            });
-          }
+                const cognitoUser = new CognitoUser(userData);
+
+                // Force generation of a new confirmation code by using resendConfirmationCode
+                cognitoUser.resendConfirmationCode((resendErr, resendResult) => {
+                  if (resendErr) {
+                    console.error('Error generating new verification code:', resendErr);
+
+                    // Check for specific errors
+                    if (resendErr.code === 'LimitExceededException') {
+                      reject(new Error('Too many attempts. Please try again after some time.'));
+                    } else if (resendErr.code === 'UserConfirmedException') {
+                      reject(new Error('This account is already verified. Please login.'));
+                    } else {
+                      reject(resendErr);
+                    }
+                  } else {
+                    console.log('New verification code generated successfully:', resendResult);
+
+                    // Store the username for confirmation step
+                    set({ challengeUsername: email });
+
+                    resolve({
+                      result: resendResult,
+                      message: 'New verification code has been sent to your email.'
+                    });
+                  }
+                });
+              } else {
+                console.error('Cognito UserPool Sign-up Error:', err);
+                reject(err);
+              }
+            } else {
+              console.log('Cognito UserPool Sign-up Success:', result);
+
+              // Store the username for confirmation step
+              set({ challengeUsername: email });
+
+              resolve({
+                result,
+                message: 'Please check your email for a verification code to confirm your account.'
+              });
+            }
+          });
         });
-      });
+      } catch (error) {
+        console.error('Error in createCognitoUser:', error);
+        throw error;
+      }
     },
 
     // Add a new function to verify the code from email
-    confirmSignUp: async (username, code) => {
+    confirmSignUp: async (username, code, password) => {
       const userPool = new CognitoUserPool(pipesConfig.poolData);
       const userData = {
         Username: username,
@@ -104,7 +147,8 @@ const useAuthStore = create(
       const cognitoUser = new CognitoUser(userData);
 
       return new Promise((resolve, reject) => {
-        cognitoUser.confirmRegistration(code, true, (err, result) => {
+        // First confirm the registration with the verification code
+        cognitoUser.confirmRegistration(code, true, async (err, result) => {
           if (err) {
             console.error('Confirmation error:', err);
             reject(err);
@@ -112,7 +156,73 @@ const useAuthStore = create(
           }
 
           console.log('Confirmation successful:', result);
-          resolve(result);
+
+          // If password is provided, authenticate and change the password
+          if (password) {
+            try {
+              // We need to authenticate first to change the password
+              const authenticationData = {
+                Username: username,
+                // Password: get().tempPassword || generateSecurePassword(), // Use stored temp password or generate one
+              };
+
+              const authenticationDetails = new AuthenticationDetails(authenticationData);
+
+              await new Promise((authResolve, authReject) => {
+                cognitoUser.authenticateUser(authenticationDetails, {
+                  onSuccess: (session) => {
+                    // Successfully authenticated, now change the password
+                    cognitoUser.changePassword(
+                      authenticationData.Password,
+                      password,
+                      (changeErr, changeResult) => {
+                        if (changeErr) {
+                          console.error('Password change error:', changeErr);
+                          authReject(changeErr);
+                          return;
+                        }
+
+                        console.log('Password changed successfully');
+                        authResolve(session);
+                      }
+                    );
+                  },
+                  onFailure: (authErr) => {
+                    console.error('Authentication error:', authErr);
+                    authReject(authErr);
+                  },
+                  newPasswordRequired: (userAttributes) => {
+                    // Handle new password required scenario
+                    // For first-time login Cognito might require password change
+                    delete userAttributes.email_verified;
+                    cognitoUser.completeNewPasswordChallenge(
+                      password,
+                      userAttributes,
+                      {
+                        onSuccess: authResolve,
+                        onFailure: authReject
+                      }
+                    );
+                  }
+                });
+              });
+
+              // Clear the temporary password from store
+              set({ tempPassword: null });
+
+              resolve(result);
+            } catch (authError) {
+              console.error('Error setting user password:', authError);
+              // Even if setting password fails, the account is confirmed
+              // We can resolve with a message indicating partial success
+              resolve({
+                message: 'Account confirmed, but there was an issue setting your password. Please use password reset.'
+              });
+            }
+          } else {
+            // No password provided, just resolve with the confirmation result
+            resolve(result);
+          }
         });
       });
     },

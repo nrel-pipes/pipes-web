@@ -67,18 +67,23 @@ const LoginPage = () => {
         return;
       }
     }
+    try {
+      const response = await login(username, password);
 
-    // Only get here if action isn't 'register' OR if register was successful
-    if (action !== 'register') {
-      try {
-        await login(username.toLowerCase(), password);
-        // Login success is handled by the useEffect that checks isLoggedIn
-      } catch (error) {
-        console.log(error);
-        setErrorMessage(error.message || "Incorrect username or password");
+      if (
+        response.hasOwnProperty("newPasswordChallenge") &&
+        response.newPasswordChallenge === true
+      ) {
+        navigate("/new-password-challenge");
+      // Use window.location for a hard navigation instead of React Router's navigate
+      // This helps avoid the throttling issue with rapid navigation
+      window.location.href = "/projects";
       }
+    } catch (error) {
+      setErrorMessage(error);
     }
   };
+
 
   if (isLoggedIn) {
     return (
