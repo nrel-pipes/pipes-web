@@ -68,7 +68,7 @@ const LoginPage = () => {
       }
     }
     try {
-      const response = await login(username, password);
+      const response = await login(username.toLowerCase(), password);
 
       if (
         response.hasOwnProperty("newPasswordChallenge") &&

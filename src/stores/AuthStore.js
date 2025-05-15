@@ -157,13 +157,27 @@ const useAuthStore = create(
 
           console.log('Confirmation successful:', result);
 
-          // If password is provided, authenticate and change the password
+          // If password is provided, we need to set it
           if (password) {
             try {
-              // We need to authenticate first to change the password
+              // Get the temporary password that was generated during sign-up
+              // This should be stored in the zustand store
+              const tempPassword = get().tempPassword;
+
+              if (!tempPassword) {
+                console.error('No temporary password found for user');
+                // Even though no temp password was found, the account is confirmed
+                resolve({
+                  result,
+                  message: 'Account confirmed, but could not set the password. Please use forgot password.'
+                });
+                return;
+              }
+
+              console.log('Authenticating with temporary password for:', username);
               const authenticationData = {
                 Username: username,
-                // Password: get().tempPassword || generateSecurePassword(), // Use stored temp password or generate one
+                Password: tempPassword, // Use the temporary password for initial authentication
               };
 
               const authenticationDetails = new AuthenticationDetails(authenticationData);
@@ -171,51 +185,63 @@ const useAuthStore = create(
               await new Promise((authResolve, authReject) => {
                 cognitoUser.authenticateUser(authenticationDetails, {
                   onSuccess: (session) => {
-                    // Successfully authenticated, now change the password
+                    console.log('Successfully authenticated with temp password, now changing password');
+
+                    // Now we can change the password
                     cognitoUser.changePassword(
-                      authenticationData.Password,
-                      password,
+                      tempPassword,  // old password (temporary)
+                      password,      // new password (user-provided)
                       (changeErr, changeResult) => {
                         if (changeErr) {
-                          console.error('Password change error:', changeErr);
+                          console.error('Error changing password:', changeErr);
                           authReject(changeErr);
-                          return;
+                        } else {
+                          console.log('Password changed successfully');
+                          // Clear the temporary password
+                          set({ tempPassword: null });
+                          authResolve(changeResult);
                         }
-
-                        console.log('Password changed successfully');
-                        authResolve(session);
                       }
                     );
                   },
                   onFailure: (authErr) => {
-                    console.error('Authentication error:', authErr);
+                    console.error('Authentication with temp password failed:', authErr);
                     authReject(authErr);
                   },
                   newPasswordRequired: (userAttributes) => {
-                    // Handle new password required scenario
-                    // For first-time login Cognito might require password change
+                    // This is an alternative path for setting the initial password
+                    console.log('New password required flow triggered');
                     delete userAttributes.email_verified;
+
                     cognitoUser.completeNewPasswordChallenge(
-                      password,
-                      userAttributes,
+                      password,        // new password
+                      userAttributes,  // user attributes
                       {
-                        onSuccess: authResolve,
-                        onFailure: authReject
+                        onSuccess: (session) => {
+                          console.log('Password set via completeNewPasswordChallenge');
+                          // Clear the temporary password
+                          set({ tempPassword: null });
+                          authResolve(session);
+                        },
+                        onFailure: (npErr) => {
+                          console.error('Error in completeNewPasswordChallenge:', npErr);
+                          authReject(npErr);
+                        }
                       }
                     );
                   }
                 });
               });
 
-              // Clear the temporary password from store
-              set({ tempPassword: null });
-
-              resolve(result);
-            } catch (authError) {
-              console.error('Error setting user password:', authError);
-              // Even if setting password fails, the account is confirmed
-              // We can resolve with a message indicating partial success
               resolve({
+                result,
+                message: 'Account confirmed and password set successfully.'
+              });
+            } catch (authError) {
+              console.error('Error setting password after confirmation:', authError);
+              // We'll still resolve since the account was confirmed
+              resolve({
+                result,
                 message: 'Account confirmed, but there was an issue setting your password. Please use password reset.'
               });
             }
@@ -341,6 +367,12 @@ const useAuthStore = create(
         Username: username,
         Password: password
       };
+
+      // Make sure we have valid inputs
+      if (!username || !password) {
+        throw new Error('Username and password are required');
+      }
+
       const authenticationDetails = new AuthenticationDetails(authenticationData);
       const userData = {
         Username: username,
@@ -348,15 +380,34 @@ const useAuthStore = create(
       };
       const cognitoUser = new CognitoUser(userData);
 
+      console.log("Attempting login for:", username);
+
       const response = await new Promise((resolve, reject) => {
         cognitoUser.authenticateUser(authenticationDetails, {
           onSuccess: (session) => {
+            console.log("Login successful");
             resolve(session);
           },
-          onFailure: () => {
-            reject('Incorrect username or password, please try again.');
+          onFailure: (err) => {
+            // Extract more detailed error information
+            console.error("Login error:", err);
+
+            // Check for specific error types
+            if (err.code === 'UserNotConfirmedException') {
+              reject('This account has not been verified. Please check your email for a verification code.');
+            } else if (err.code === 'PasswordResetRequiredException') {
+              reject('Password reset is required. Please use the forgot password feature.');
+            } else if (err.code === 'NotAuthorizedException') {
+              reject('Incorrect username or password, please try again.');
+            } else if (err.code === 'UserNotFoundException') {
+              reject('No account found with this username. Please check your spelling or create a new account.');
+            } else {
+              // For other errors, return the specific message
+              reject(err.message || 'Login failed. Please try again.');
+            }
           },
           newPasswordRequired: (userAttributes) => {
+            console.log("New password required");
             userAttributes.newPasswordChallenge = true;
             resolve(userAttributes);
           }

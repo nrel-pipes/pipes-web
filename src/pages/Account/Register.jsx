@@ -15,6 +15,7 @@ import useAuthStore from "../../stores/AuthStore";
 const Register = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const confirmSignUp = useAuthStore((state) => state.confirmSignUp);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -69,7 +70,7 @@ const Register = () => {
 
     try {
       // We need to add confirmSignUp to useAuthStore
-      await useAuthStore.getState().confirmSignUp(userEmail, data.code);
+      await confirmSignUp(userEmail, data.code, data.password);
       setSuccessMessage("Email verified successfully! Redirecting to login...");
 
       setTimeout(() => {
@@ -176,8 +177,9 @@ const Register = () => {
                     </Form.Text>
                   </Form.Group>
 
+                  {/* New Password field */}
                   <Form.Group className="mb-3">
-                    <Form.Label>New Password</Form.Label>
+                    <Form.Label>Password</Form.Label>
                     <Form.Control
                       type="password"
                       isInvalid={!!codeErrors.password}
@@ -197,10 +199,11 @@ const Register = () => {
                       {codeErrors.password?.message}
                     </Form.Control.Feedback>
                     <Form.Text className="text-muted">
-                      Password must be at least 8 characters with uppercase, lowercase, number and special character.
+                      Must include uppercase, lowercase, number and special character
                     </Form.Text>
                   </Form.Group>
 
+                  {/* Confirm Password field */}
                   <Form.Group className="mb-3">
                     <Form.Label>Confirm Password</Form.Label>
                     <Form.Control
@@ -208,10 +211,7 @@ const Register = () => {
                       isInvalid={!!codeErrors.confirmPassword}
                       {...registerCode("confirmPassword", {
                         required: "Please confirm your password",
-                        validate: value => {
-                          const password = getValues("password");
-                          return password === value || "Passwords do not match";
-                        }
+                        validate: value => getValues("password") === value || "Passwords do not match"
                       })}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -235,10 +235,10 @@ const Register = () => {
                           aria-hidden="true"
                           className="me-2"
                         />
-                        Verifying...
+                        Creating Account...
                       </>
                     ) : (
-                      "Login"
+                      "Create Account"
                     )}
                   </Button>
 
