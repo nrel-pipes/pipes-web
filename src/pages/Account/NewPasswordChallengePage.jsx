@@ -74,7 +74,7 @@ const NewPasswordChallengePage = () => {
         <Col sm={4} className="mx-auto mt-5">
           <h3 className="text-center">Setup New Password</h3>
           <Form onSubmit={handleNewPasswordChallenge}>
-          <Form.Group controlId="username">
+          <Form.Group controlId="username" className="mb-3">
             <Form.Label>Username/Email</Form.Label>
               <Form.Control
                 type="username"
@@ -85,7 +85,7 @@ const NewPasswordChallengePage = () => {
                 disabled
               />
             </Form.Group>
-            <Form.Group controlId="newpassword1">
+            <Form.Group controlId="newpassword1" className="mb-3">
             <Form.Label>New Password</Form.Label>
               <Form.Control
                 type="password"
@@ -95,7 +95,7 @@ const NewPasswordChallengePage = () => {
                 title="Please enter new password"
               />
             </Form.Group>
-            <Form.Group controlId="newpassword2">
+            <Form.Group controlId="newpassword2" className="mb-3">
             <Form.Label>Confirm New Password</Form.Label>
               <Form.Control
                 type="password"
@@ -106,7 +106,12 @@ const NewPasswordChallengePage = () => {
               />
             </Form.Group>
             <div className="d-flex justify-content-center">
-              <Button className="mt-3 " variant="outline-secondary" size="lg" style={{ width: '150px' }} type="submit">
+              <Button
+                className="mt-3 w-100 py-2"
+                variant="success"
+                size="lg"
+                type="submit"
+              >
                 Submit
               </Button>
             </div>

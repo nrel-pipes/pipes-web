@@ -77,7 +77,7 @@ const LoginPage = () => {
 
         <Row>
           <Col sm={4} className="mx-auto mt-5">
-            <h1 className="text-center mb-5">Welcome!</h1>
+            <h1 className="text-center mb-5">Account Login</h1>
             <Form onSubmit={handleLogin}>
               <Form.Group controlId="username" className="mb-3">
                 <Form.Label>Email</Form.Label>
