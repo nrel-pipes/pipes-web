@@ -5,7 +5,7 @@ COPY . .
 RUN npm install --omit=dev
 RUN npm run build
 
-FROM nginx:1.27-alpine AS nginx
+FROM nginx:1.27 AS nginx
 
 ENV NODE_ENV development
 COPY --from=builder /app/build /usr/share/nginx/html
