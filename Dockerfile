@@ -11,9 +11,6 @@ ENV NODE_ENV development
 COPY --from=builder /app/build /usr/share/nginx/html
 COPY nginx/${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
 
-# Remove gotpl, as it has vulnerabilities.
-RUN rm -f /usr/local/bin/gotpl
-
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]

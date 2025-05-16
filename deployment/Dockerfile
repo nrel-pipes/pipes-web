@@ -1,6 +1,6 @@
 ARG BASE_IMAGE_TAG AWS_ACCOUNT_ID ENV_CONFIG VERBOSE
 # Build the node app
-FROM node:21-alpine AS build
+FROM node:22-alpine AS build
 
 ARG BASE_IMAGE_TAG AWS_ACCOUNT_ID ENV_CONFIG VERBOSE
 
@@ -37,5 +37,11 @@ WORKDIR /var/www/html
 
 # Copy everything from project root into html container's working dir
 COPY --from=build --chown=wodby:wodby /app/build web/
+
+# Update & upgrade packages to prevent vulnerabilities
+RUN apk update && apk upgrade
+
+# Remove gotpl, as it has vulnerabilities.
+RUN rm -f /usr/local/bin/gotpl
 
 USER wodby
