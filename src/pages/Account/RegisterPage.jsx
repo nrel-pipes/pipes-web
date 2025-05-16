@@ -33,17 +33,32 @@ const RegisterPage = () => {
     } catch (error) {
       console.error('Registration error:', error);
 
-      // Check if this is an "already exists" error for an unconfirmed user
+      // Check if this is an "already exists" error
       if (error.message && error.message.includes('An account with the given email already exists')) {
-        // Set the email and move to confirmation screen
-        setUserEmail(data.email);
-        setIsRegistered(true);
-        // Optional: try to resend the code automatically
+        // Try to determine if the account is confirmed or not by attempting to resend the code
         try {
           await resendConfirmationCode(data.email);
+          // If resend works, the account exists but is NOT confirmed
+          setUserEmail(data.email);
+          setIsRegistered(true);
         } catch (resendError) {
           console.error('Error resending code:', resendError);
-          setConfirmError('Failed to resend confirmation code automatically. You can try manually.');
+
+          // If the error contains "User cannot be confirmed" or similar, it's already confirmed
+          if (resendError.message && (
+              resendError.message.includes("User cannot be confirmed") ||
+              resendError.message.includes("User is already confirmed") ||
+              resendError.message.includes("Invalid verification") ||
+              resendError.message.includes("Cannot reset password")
+          )) {
+            // The account is already confirmed, show proper error message
+            setRegisterError('An account with this email already exists, please login.');
+          } else {
+            // Some other error with the resend, but account may still be unconfirmed
+            setUserEmail(data.email);
+            setIsRegistered(true);
+            setConfirmError('We couldn\'t automatically resend a confirmation code. Please try the resend button below.');
+          }
         }
       } else {
         setRegisterError(error.message || 'An error occurred during registration');
