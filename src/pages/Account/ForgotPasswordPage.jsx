@@ -23,7 +23,7 @@ const ForgotPasswordPage = () => {
 
   useEffect(() => {
     if (codeRequestSuccess) {
-      navigate('/reset-password');
+      navigate('/account/reset-password');
     }
   });
 

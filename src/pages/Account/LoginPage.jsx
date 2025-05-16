@@ -79,11 +79,10 @@ const LoginPage = () => {
           <Col sm={4} className="mx-auto mt-5">
             <h1 className="text-center mb-5">Welcome!</h1>
             <Form onSubmit={handleLogin}>
-              <Form.Group controlId="username">
+              <Form.Group controlId="username" className="mb-3">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter user email"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -91,11 +90,10 @@ const LoginPage = () => {
                 />
               </Form.Group>
 
-              <Form.Group controlId="password">
+              <Form.Group controlId="password" className="mb-3">
                 <Form.Label>Password</Form.Label>
                 <Form.Control
                   type="password"
-                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -105,23 +103,23 @@ const LoginPage = () => {
 
               <div className="d-flex justify-content-center">
                 <Button
-                  className="mt-3 "
-                  variant="outline-secondary"
+                  className="mt-3 py-2"
+                  variant="success"
                   size="lg"
-                  style={{ width: "150px" }}
                   type="submit"
+                  style={{ width: "100%" }}
                 >
                   Login
                 </Button>
               </div>
-              <div className="mt-3 text-center">
+              <div className="mt-4 text-center">
                 <Link
                   to="https://nrel-pipes.github.io/pipes-core/index.html"
                   target="_blank"
                 >
                   Learn more about PIPES?
                 </Link>{" "}
-                <Link to="/forgot-password">Forgot the password?</Link>
+                <Link to="/account/forgot-password">Forgot the password?</Link>
               </div>
             </Form>
           </Col>
