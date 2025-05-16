@@ -38,6 +38,9 @@ WORKDIR /var/www/html
 # Copy everything from project root into html container's working dir
 COPY --from=build --chown=wodby:wodby /app/build web/
 
+# Update & upgrade packages to prevent vulnerabilities
+RUN apk update && apk upgrade
+
 # Remove gotpl, as it has vulnerabilities.
 RUN rm -f /usr/local/bin/gotpl
 
