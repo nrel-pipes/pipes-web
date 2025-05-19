@@ -40,8 +40,8 @@ const SiteNavbar = () => {
           </Nav>
           ) : (
           <Nav className="ms-auto">
-            <Nav.Link href="/register">Register</Nav.Link>
             <Nav.Link href="/login">Login</Nav.Link>
+            <Nav.Link href="/register">Register</Nav.Link>
           </Nav>
           )}
         </Navbar.Collapse>
