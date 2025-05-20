@@ -180,8 +180,8 @@ const ProjectDashboardPage = () => {
               <Card.Body>
                 <Card.Title as="h5" className="summary-title">Summary</Card.Title>
                 <ScheduleComponent
-                  scheduled_start={project.scheduled_start}
-                  scheduled_end={project.scheduled_end}
+                  scheduled_start={project.scheduled_start.split("T")[0]}
+                  scheduled_end={project.scheduled_end.split("T")[0]}
                 />
                 <hr />
                 <div className="d-flex justify-content-between align-items-center mt-2">
