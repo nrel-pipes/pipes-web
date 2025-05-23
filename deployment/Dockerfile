@@ -39,6 +39,9 @@ WORKDIR /var/www/html
 COPY --from=build --chown=wodby:wodby /app/build web/
 
 # Update & upgrade packages to prevent vulnerabilities
+# https://github.com/wodby/gotpl/releases/
 RUN apk update && apk upgrade
+RUN gotpl_url="https://github.com/wodby/gotpl/releases/latest/download/gotpl-linux-amd64.tar.gz"; \
+wget -O- "${gotpl_url}" | tar xz --no-same-owner -C /usr/local/bin;
 
 USER wodby
