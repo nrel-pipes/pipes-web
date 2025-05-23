@@ -40,5 +40,7 @@ COPY --from=build --chown=wodby:wodby /app/build web/
 
 # Update & upgrade packages to prevent vulnerabilities
 RUN apk update && apk upgrade
+RUN gotpl_url="https://github.com/wodby/gotpl/releases/latest/download/gotpl-${TARGETPLATFORM/\//-}.tar.gz"; \
+wget -O- "${gotpl_url}" | tar xz --no-same-owner -C /usr/local/bin;
 
 USER wodby
