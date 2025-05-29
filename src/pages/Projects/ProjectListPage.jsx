@@ -106,9 +106,6 @@ const ProjectBasicsPage = () => {
     navigate("/project/dashboard");
   };
 
-  const handleCreateProjectClick = () => {
-    navigate("/create-project");
-  };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
