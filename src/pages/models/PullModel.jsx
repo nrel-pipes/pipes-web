@@ -62,7 +62,7 @@ const PullModel = () => {
     name: "",
     display_name: "",
     type: "",
-    description: [""],
+    description: "", // Changed from array to string
     modeling_team: "",
     assumptions: [],
     requirements: {},
@@ -120,6 +120,12 @@ const PullModel = () => {
     if (storedModelData) {
       try {
         const modelData = JSON.parse(storedModelData);
+
+        // Convert description array to string if needed
+        if (Array.isArray(modelData.description)) {
+          modelData.description = modelData.description.join('\n\n');
+        }
+
         setForm(modelData);
 
         // Set the selected project and run if available
@@ -255,13 +261,19 @@ const PullModel = () => {
       return;
     }
 
-    if (!form.description[0]) {
+    if (!form.description) {
       setFormError("Description is required");
       return;
     }
 
+    // Format the data for submission - wrap description in an array
+    const formattedData = {
+      ...form,
+      description: [form.description] // Convert string back to array for API
+    };
+
     // Submit the form
-    mutation.mutate(form);
+    mutation.mutate(formattedData);
   };
 
   // Handle adding a requirement key-value pair
@@ -326,394 +338,372 @@ const PullModel = () => {
     <>
       <NavbarSub navData={{ pAll: true }} />
       <Container className="mainContent py-4">
-        <Row className="mb-4">
-          <Col>
-            <h2>Pull Model</h2>
-            <p className="text-muted">Create or pull a model into the catalog</p>
+        <Row className="mb-4 justify-content-center">
+          <Col md={8} lg={6}>
+            <h2 className="text-center">Pull Model</h2>
+            <p className="text-muted text-center">Create or pull a model into the catalog</p>
           </Col>
         </Row>
 
         {formError && (
-          <Row className="mb-4">
-            <Col>
+          <Row className="mb-4 justify-content-center">
+            <Col md={8} lg={6}>
               <Alert variant="danger">{formError}</Alert>
             </Col>
           </Row>
         )}
 
-        <Form onSubmit={handleSubmit}>
-          <Row className="mb-4">
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label className="requiredField">Model Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter unique model name"
-                  value={form.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  required
-                />
-                <Form.Text className="text-muted">
-                  Unique identifier for the model
-                </Form.Text>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label className="requiredField">Display Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter display name"
-                  value={form.display_name}
-                  onChange={(e) => handleChange("display_name", e.target.value)}
-                  required
-                />
-                <Form.Text className="text-muted">
-                  Human-friendly name for the model
-                </Form.Text>
-              </Form.Group>
-            </Col>
-          </Row>
+        <Row className="justify-content-center">
+          <Col md={8} lg={6}>
+            <Form onSubmit={handleSubmit} className="modern-form shadow-sm rounded p-4 bg-white">
+              {/* Project and Project Run at the top */}
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Project</Form.Label>
+                    <Form.Select
+                      value={selectedProject}
+                      onChange={handleProjectChange}
+                      disabled={projectsLoading}
+                      className="form-control-modern"
+                    >
+                      <option value="">Select a project</option>
+                      {projects.map((project) => (
+                        <option key={project.id || project.name} value={project.id || project.name}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-4">
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Type</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Model type"
-                  value={form.type}
-                  onChange={(e) => handleChange("type", e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Modeling Team</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Team name"
-                  value={form.modeling_team}
-                  onChange={(e) => handleChange("modeling_team", e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Project Run</Form.Label>
+                    <Form.Select
+                      value={selectedProjectRun}
+                      onChange={handleProjectRunChange}
+                      disabled={runsLoading || !selectedProject}
+                      className="form-control-modern"
+                    >
+                      <option value="">Select a project run</option>
+                      {projectRuns.map((run) => (
+                        <option key={run.id} value={run.id}>
+                          {run.name || run.id}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-4">
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Project</Form.Label>
-                <Form.Select
-                  value={selectedProject}
-                  onChange={handleProjectChange}
-                  disabled={projectsLoading}
-                >
-                  <option value="">Select a project</option>
-                  {projects.map((project) => (
-                    <option key={project.id || project.name} value={project.id || project.name}>
-                      {project.name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Project Run</Form.Label>
-                <Form.Select
-                  value={selectedProjectRun}
-                  onChange={handleProjectRunChange}
-                  disabled={runsLoading || !selectedProject}
-                >
-                  <option value="">Select a project run</option>
-                  {projectRuns.map((run) => (
-                    <option key={run.id} value={run.id}>
-                      {run.name || run.id}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="requiredField">Model Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter unique model name"
+                      value={form.name}
+                      onChange={(e) => handleChange("name", e.target.value)}
+                      required
+                      className="form-control-modern"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-4">
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Scheduled Start</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={formatDateForInput(form.scheduled_start)}
-                  onChange={(e) => handleChange("scheduled_start", e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Scheduled End</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={formatDateForInput(form.scheduled_end)}
-                  onChange={(e) => handleChange("scheduled_end", e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="requiredField">Display Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter display name"
+                      value={form.display_name}
+                      onChange={(e) => handleChange("display_name", e.target.value)}
+                      required
+                      className="form-control-modern"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-4">
-            <Col>
-              <Form.Group className="mb-3">
-                <Form.Label className="requiredField">Description</Form.Label>
-                {form.description.map((desc, index) => (
-                  <div key={index} className="d-flex mb-2 align-items-center gap-2">
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Type</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Model type"
+                      value={form.type}
+                      onChange={(e) => handleChange("type", e.target.value)}
+                      className="form-control-modern"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Modeling Team</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Team name"
+                      value={form.modeling_team}
+                      onChange={(e) => handleChange("modeling_team", e.target.value)}
+                      className="form-control-modern"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Scheduled Start</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formatDateForInput(form.scheduled_start)}
+                      onChange={(e) => handleChange("scheduled_start", e.target.value)}
+                      className="form-control-modern"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Scheduled End</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={formatDateForInput(form.scheduled_end)}
+                      onChange={(e) => handleChange("scheduled_end", e.target.value)}
+                      className="form-control-modern"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="requiredField">Description</Form.Label>
                     <Form.Control
                       as="textarea"
-                      rows={3}
-                      placeholder="Enter description"
-                      value={desc}
-                      onChange={(e) => handleArrayChange("description", index, e.target.value)}
-                      required={index === 0}
+                      rows={4}
+                      placeholder="Enter model description"
+                      value={form.description}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      required
+                      className="form-control-modern"
                     />
-                    {form.description.length > 1 && (
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => handleRemoveArrayItem("description", index)}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Assumptions</Form.Label>
+                    {form.assumptions.map((assumption, index) => (
+                      <div key={index} className="d-flex mb-2 align-items-center gap-2">
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter assumption"
+                          value={assumption}
+                          onChange={(e) => handleArrayChange("assumptions", index, e.target.value)}
+                          className="form-control-modern"
+                        />
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleRemoveArrayItem("assumptions", index)}
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            padding: "4px",
+                          }}
+                          className="d-flex align-items-center justify-content-center"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={() => handleAddArrayItem("assumptions")}
+                      className="d-flex align-items-center gap-1 mt-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Assumption
+                    </Button>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Expected Scenarios</Form.Label>
+                    {form.expected_scenarios.map((scenario, index) => (
+                      <div key={index} className="d-flex mb-2 align-items-center gap-2">
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter scenario"
+                          value={scenario}
+                          onChange={(e) => handleArrayChange("expected_scenarios", index, e.target.value)}
+                          className="form-control-modern"
+                        />
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleRemoveArrayItem("expected_scenarios", index)}
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            padding: "4px",
+                          }}
+                          className="d-flex align-items-center justify-content-center"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={() => handleAddArrayItem("expected_scenarios")}
+                      className="d-flex align-items-center gap-1 mt-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Scenario
+                    </Button>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Requirements</Form.Label>
+                    {Object.entries(form.requirements).length > 0 && (
+                      <Table striped bordered hover size="sm" className="mt-2">
+                        <thead>
+                          <tr>
+                            <th>Key</th>
+                            <th>Value</th>
+                            <th width="50">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(form.requirements).map(([key, value], index) => (
+                            <tr key={index}>
+                              <td>{key}</td>
+                              <td>{value}</td>
+                              <td>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleRemoveRequirement(key)}
+                                  className="d-flex align-items-center justify-content-center m-auto"
+                                  style={{ width: "28px", height: "28px", padding: "2px" }}
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
                     )}
-                  </div>
-                ))}
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={() => handleAddArrayItem("description")}
-                  className="mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Description
-                </Button>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row className="mb-4">
-            <Col>
-              <Form.Group className="mb-3">
-                <Form.Label>Assumptions</Form.Label>
-                {form.assumptions.map((assumption, index) => (
-                  <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter assumption"
-                      value={assumption}
-                      onChange={(e) => handleArrayChange("assumptions", index, e.target.value)}
-                    />
                     <Button
-                      variant="outline-danger"
+                      variant="outline-primary"
                       size="sm"
-                      onClick={() => handleRemoveArrayItem("assumptions", index)}
+                      onClick={handleAddRequirement}
+                      className="d-flex align-items-center gap-1 mt-2"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Plus className="w-4 h-4" />
+                      Add Requirement
                     </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={() => handleAddArrayItem("assumptions")}
-                  className="mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Assumption
-                </Button>
-              </Form.Group>
-            </Col>
-          </Row>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-4">
-            <Col>
-              <Form.Group className="mb-3">
-                <Form.Label>Expected Scenarios</Form.Label>
-                {form.expected_scenarios.map((scenario, index) => (
-                  <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter expected scenario"
-                      value={scenario}
-                      onChange={(e) => handleArrayChange("expected_scenarios", index, e.target.value)}
-                    />
+              <Row className="mb-4">
+                <Col>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Other Information</Form.Label>
+                    {Object.entries(form.other).length > 0 && (
+                      <Table striped bordered hover size="sm" className="mt-2">
+                        <thead>
+                          <tr>
+                            <th>Key</th>
+                            <th>Value</th>
+                            <th width="50">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(form.other).map(([key, value], index) => (
+                            <tr key={index}>
+                              <td>{key}</td>
+                              <td>{value}</td>
+                              <td>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleRemoveOther(key)}
+                                  className="d-flex align-items-center justify-content-center m-auto"
+                                  style={{ width: "28px", height: "28px", padding: "2px" }}
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
                     <Button
-                      variant="outline-danger"
+                      variant="outline-primary"
                       size="sm"
-                      onClick={() => handleRemoveArrayItem("expected_scenarios", index)}
+                      onClick={handleAddOther}
+                      className="d-flex align-items-center gap-1 mt-2"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Plus className="w-4 h-4" />
+                      Add Other Information
                     </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={() => handleAddArrayItem("expected_scenarios")}
-                  className="mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Expected Scenario
-                </Button>
-              </Form.Group>
-            </Col>
-          </Row>
+                  </Form.Group>
+                </Col>
+              </Row>
 
-          <Row className="mb-4">
-            <Col>
-              <Form.Group className="mb-3">
-                <Form.Label>Scenario Mappings</Form.Label>
-                {form.scenario_mappings.map((mapping, index) => (
-                  <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter scenario mapping"
-                      value={mapping}
-                      onChange={(e) => handleArrayChange("scenario_mappings", index, e.target.value)}
-                    />
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => handleRemoveArrayItem("scenario_mappings", index)}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={() => handleAddArrayItem("scenario_mappings")}
-                  className="mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Scenario Mapping
-                </Button>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row className="mb-4">
-            <Col>
-              <Form.Group className="mb-3">
-                <Form.Label>Requirements</Form.Label>
-                {Object.entries(form.requirements).length === 0 ? (
-                  <p className="text-muted">No requirements added yet</p>
-                ) : (
-                  <Table striped bordered hover size="sm" className="mb-2">
-                    <thead>
-                      <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(form.requirements).map(([key, value]) => (
-                        <tr key={key}>
-                          <td>{key}</td>
-                          <td>{value}</td>
-                          <td>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => handleRemoveRequirement(key)}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={handleAddRequirement}
-                  className="mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Requirement
-                </Button>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row className="mb-4">
-            <Col>
-              <Form.Group className="mb-3">
-                <Form.Label>Additional Information</Form.Label>
-                {Object.entries(form.other).length === 0 ? (
-                  <p className="text-muted">No additional information added yet</p>
-                ) : (
-                  <Table striped bordered hover size="sm" className="mb-2">
-                    <thead>
-                      <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(form.other).map(([key, value]) => (
-                        <tr key={key}>
-                          <td>{key}</td>
-                          <td>{value}</td>
-                          <td>
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() => handleRemoveOther(key)}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={handleAddOther}
-                  className="mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add Additional Information
-                </Button>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row className="mt-5">
-            <Col className="d-flex justify-content-end">
-              <Button
-                variant="secondary"
-                className="me-2"
-                onClick={() => navigate("/models/catalog")}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                disabled={mutation.isLoading}
-              >
-                {mutation.isLoading ? (
-                  <>
-                    <FontAwesomeIcon icon={faSpinner} spin className="me-2" />
-                    Pulling Model...
-                  </>
-                ) : (
-                  "Pull Model"
-                )}
-              </Button>
-            </Col>
-          </Row>
-        </Form>
+              <Row className="mb-4 justify-content-center">
+                <Col xs="auto">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={mutation.isLoading}
+                    className="px-4"
+                  >
+                    {mutation.isLoading ? (
+                      <>
+                        <FontAwesomeIcon icon={faSpinner} spin />{" "}
+                        <span className="ml-2">Submitting...</span>
+                      </>
+                    ) : (
+                      "Pull Model"
+                    )}
+                  </Button>
+                </Col>
+              </Row>
+            </Form>
+          </Col>
+        </Row>
       </Container>
     </>
   );
