@@ -1,30 +1,24 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { jwtDecode } from "jwt-decode";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
 
-import { useGetProjectsQuery } from "../../hooks/useProjectQuery";
 import { useGetModelCatalog } from "../../hooks/useModelQuery";
 import { useGetUserQuery } from "../../hooks/useUserQuery";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 
 import NavbarSub from "../../layouts/NavbarSub";
-import ContentHeader from "../Components/ContentHeader";
 import "../Components/Cards.css";
 import "../PageStyles.css";
 import "./ModelCatalog.css";
-import { mode } from "d3";
 
-const webRegex = /([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#\.]?[\w-]+){1,}\/?/gm;
+const webRegex = /([\w+]+:\/\/)?([\w\d-]+\.)*[\w-]+[.:]\w+([/?=&#.]?[\w-]+){1,}\/?/gm;
 
 // Helper component for displaying array of items with potential web links
 const ListItemsDisplay = ({ items }) => {
@@ -97,10 +91,8 @@ const TableObjectDisplay = ({ object }) => {
 
 const ModelCatalog = () => {
     const { currentUser, setCurrentUser, getIdToken, checkAuthStatus } = useAuthStore();
-    const { setEffectivePname } = useDataStore();
     // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const [projectsPerPage] = useState(3);
+    const [setCurrentPage] = useState(1);
     const [userEmail, setUserEmail] = useState(null);
     // Add state for search term
     const [searchTerm, setSearchTerm] = useState('');
@@ -111,10 +103,30 @@ const ModelCatalog = () => {
         setCurrentPage(1); // Reset to first page when searching
       };
 
-      const handleModelClick = (e, model) => {
-        // TODO
-        e.preventDefault();
-       }
+    const handleModelClick = (e, model) => {
+      e.preventDefault();
+
+      // Store model data in localStorage to be retrieved by the PullModel component
+      localStorage.setItem('pullModelDefaults', JSON.stringify({
+        name: model.name || '',
+        display_name: model.display_name || '',
+        type: model.type || '',
+        description: Array.isArray(model.description) ? model.description : [model.description || ''],
+        modeling_team: model.modeling_team || '',
+        assumptions: Array.isArray(model.assumptions) ? model.assumptions : [],
+        requirements: model.requirements || {},
+        scheduled_start: model.scheduled_start || '',
+        scheduled_end: model.scheduled_end || '',
+        expected_scenarios: Array.isArray(model.expected_scenarios) ? model.expected_scenarios : [],
+        scenario_mappings: Array.isArray(model.scenario_mappings) ? model.scenario_mappings : [],
+        other: model.other || {},
+        project: model.project || '',
+        projectrun: model.projectrun || '',
+      }));
+
+      // Navigate to the pull model page
+      navigate('/pullModel');
+    }
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -223,7 +235,6 @@ const ModelCatalog = () => {
         );
       };
 
-
     return (
         <>
         <NavbarSub navData={{pAll: true}} />
@@ -324,7 +335,7 @@ const ModelCatalog = () => {
                   className="dashboard-button"
                   onClick={(e) => handleModelClick(e, model)}
                 >
-                  Go to Dashboard
+                  Pull Model a Project
                 </button>
               </div>
             </div>
