@@ -9,6 +9,7 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
+import Table from "react-bootstrap/Table";
 
 import { useGetProjectsQuery } from "../../hooks/useProjectQuery";
 import { useGetModelCatalog } from "../../hooks/useModelQuery";
@@ -51,29 +52,46 @@ const ListItemsDisplay = ({ items }) => {
   );
 };
 
-// Component for displaying object properties
-const ObjectDisplay = ({ object }) => {
+// Component for displaying object properties in a table format
+const TableObjectDisplay = ({ object }) => {
   if (!object || Object.keys(object).length === 0) {
     return <p className="text-muted">None specified</p>;
   }
 
   return (
-    <div className="object-display">
-      {Object.entries(object).map(([key, value]) => (
-        <div key={key} className="object-item">
-          <span className="field-label">{key}:</span>
-          {typeof value === 'object' ? (
-            value instanceof Array ? (
-              <ListItemsDisplay items={value} />
-            ) : (
-              <ObjectDisplay object={value} />
-            )
-          ) : (
-            <span>{String(value)}</span>
-          )}
-        </div>
-      ))}
-    </div>
+    <Table striped bordered hover size="sm" className="model-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.entries(object).map(([key, value]) => (
+          <tr key={key}>
+            <td>{key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}</td>
+            <td>
+              {Array.isArray(value)
+                ? value.map((item, i) => (
+                    <div key={i}>
+                      {typeof item === 'string' && item.match(webRegex) ? (
+                        <a href={item} target="_blank" rel="noopener noreferrer">{item}</a>
+                      ) : (
+                        typeof item === 'object' && item !== null
+                          ? JSON.stringify(item)
+                          : String(item)
+                      )}
+                    </div>
+                  ))
+                : typeof value === 'object' && value !== null
+                  ? <TableObjectDisplay object={value} />
+                  : String(value)
+              }
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
   );
 };
 
@@ -287,7 +305,7 @@ const ModelCatalog = () => {
                 <div className="model-field">
                   <span className="field-label">Requirements:</span>
                   <div className="model-requirements">
-                    <ObjectDisplay object={model.requirements} />
+                    <TableObjectDisplay object={model.requirements} />
                   </div>
                 </div>
               )}
@@ -296,7 +314,7 @@ const ModelCatalog = () => {
                 <div className="model-field">
                   <span className="field-label">Additional Information:</span>
                   <div className="model-other">
-                    <ObjectDisplay object={model.other} />
+                    <TableObjectDisplay object={model.other} />
                   </div>
                 </div>
               )}

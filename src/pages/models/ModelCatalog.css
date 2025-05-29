@@ -444,3 +444,34 @@
     padding-left: 10px;
     border-left: 2px solid #eee;
   }
+
+  /* Table styling for model requirements and other objects */
+  .model-table {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+
+  .model-table th {
+    background-color: #f0f7ff;
+    color: #0057a3;
+    font-weight: 600;
+    border-bottom-width: 1px;
+  }
+
+  .model-table td {
+    vertical-align: middle;
+  }
+
+  .model-table a {
+    color: #0079c2;
+    word-break: break-word;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+
+  /* Nested tables should be slightly smaller and indented */
+  .model-table .model-table {
+    width: 95%;
+    margin-left: 5%;
+    font-size: 13px;
+  }
