@@ -24,7 +24,7 @@ import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 import ProjectBasicsPage from "./pages/Projects/ProjectListPage";
 
 // Model Catalog
-import ModelCatalog from "./pages/modelCatalog";
+import ModelCatalog from "./pages/models/modelCatalog";
 
 // Project Milestones
 import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";

@@ -20,6 +20,12 @@ export const getModels = async (projectName, projectRunName) => {
   }
 };
 
+// Get model catalog
+export const getModelCatalog = async () => {
+  const response = await AxiosInstance.get("/api/model_catalog");
+  return response.data;
+};
+
 export const useGetModelsQuery = (projectName, projectRunName = null, options = {}) => {
   return useQuery({
     queryKey: ["models", projectName, projectRunName],
@@ -49,3 +55,26 @@ export const useGetModelsQuery = (projectName, projectRunName = null, options = 
   });
 };
 
+export const useGetModelCatalog = (options = {}) => {
+  return useQuery({
+    queryKey: ["modelCatalog"],
+    queryFn: async () => {
+      try {
+        const result = await getModelCatalog();
+        return result;
+      } catch (error) {
+        console.error("Error fetching model catalog:", error);
+        throw error;
+      }
+    },
+    retry: (failureCount, error) => {
+      // Don't retry 4xx errors
+      if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        return false;
+      }
+      // Retry other errors up to 3 times
+      return failureCount < 3;
+    },
+    ...options
+  });
+};
