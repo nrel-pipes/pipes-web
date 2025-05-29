@@ -43,6 +43,10 @@ const NewPasswordChallengePage = () => {
       await completeNewPasswordChallenge(challengeUsername, tempPassword, newPassword2)
       setChallengeSuccess(true);
       setErrorMessage("");
+      // Add a short timeout before navigation to show the success message briefly
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (error) {
       setChallengeSuccess(false);
       setErrorMessage(error.message);
@@ -57,7 +61,10 @@ const NewPasswordChallengePage = () => {
         </div>
         <h2>New Password Applied</h2>
         <p>
-          Your new password got setup successfully. Please login here <Link href to='/login'>Login</Link>
+          Your new password was set up successfully. Redirecting to login page...
+        </p>
+        <p>
+          If you are not redirected automatically, please <Link to='/login'>click here to login</Link>
         </p>
       </div>
     )
