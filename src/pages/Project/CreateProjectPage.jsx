@@ -902,7 +902,7 @@ const StepReview = () => {
     <div className="form-container">
       <h4 className="form-section-title">Review Your Project</h4>
       <div className="review-intro-note">
-        <p>Your form data is TEMPORARILY temporarily saved in your browser's local storage. Please review all information and submit to PIPES server for permanent storage.</p>
+        <p>Your form data is <b>TEMPORARILY </b> saved in your browser's local storage before submtting it. Please review all information and submit to PIPES server for permanent storage.</p>
       </div>
 
       {/* Basic Info Section */}
