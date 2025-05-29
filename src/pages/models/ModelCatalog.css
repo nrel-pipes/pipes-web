@@ -475,3 +475,26 @@
     margin-left: 5%;
     font-size: 13px;
   }
+
+  /* Custom styles for ProjectForm.jsx */
+  .custom-form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .requiredField:after {
+    content: ' *';
+    color: red;
+  }
+
+  .form-error {
+    border: 1px solid red !important;
+  }
+
+  /* These styles help with responsive layout */
+  @media (max-width: 768px) {
+    .col-xs-11 {
+      width: 90%;
+      margin: 0 auto;
+    }
+  }
