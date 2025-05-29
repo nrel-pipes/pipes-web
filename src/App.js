@@ -23,6 +23,9 @@ import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 // Projects
 import ProjectBasicsPage from "./pages/Projects/ProjectListPage";
 
+// Model Catalog
+import ModelCatalog from "./pages/modelCatalog";
+
 // Project Milestones
 import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";
 
@@ -94,6 +97,13 @@ function App() {
                   exact
                   element={
                     isAuthenticated ? <ProjectBasicsPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/modelsCatalog"
+                  exact
+                  element={
+                    isAuthenticated ? <ModelCatalog /> : <Navigate to="/login" />
                   }
                 />
                 <Route

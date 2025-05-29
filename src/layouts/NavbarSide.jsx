@@ -80,6 +80,13 @@ const Sidebar = () => {
           </li>
 
           <li>
+            <Link to="/modelsCatalog" className={isActive("/modelsCatalog")} title="modelsCatalog">
+              <span className="icon"><FaLayerGroup /></span>
+              {expanded && <span className="nav-text">Models</span>}
+            </Link>
+          </li>
+
+          <li>
             <Link to="/milestones" className={isActive("/milestones")} title="Milestones">
               <span className="icon"><FaFlag /></span>
               {expanded && <span className="nav-text">Milestones</span>}
