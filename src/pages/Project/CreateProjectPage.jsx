@@ -32,17 +32,34 @@ const StepBasicInfo = () => {
       <div className="form-content-section">
         <div className="form-field-group">
           <Form.Label className="form-field-label required-field">
-            <span className="form-field-text">Project Name</span>
+            <span className="form-field-text">Project Name (Identifer) </span>
           </Form.Label>
           <Form.Control
             id="projectName"
             className="form-control-lg form-primary-input"
             isInvalid={!!errors.name}
-            {...register("name", { required: "Project name is required" })}
+            {...register("name", { required: "Project name (identifier) is required" })}
           />
           {errors.name && (
             <Form.Control.Feedback type="invalid">
               {errors.name.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">Project Title</span>
+          </Form.Label>
+          <Form.Control
+            id="projectTitle"
+            className="form-control-lg form-primary-input"
+            isInvalid={!!errors.title}
+            {...register("title", { required: "Project title is required" })}
+          />
+          {errors.title && (
+            <Form.Control.Feedback type="invalid">
+              {errors.title.message}
             </Form.Control.Feedback>
           )}
         </div>
@@ -416,6 +433,7 @@ const StepScenarios = () => {
 
   const updateOtherInfo = (scenarioIndex, otherIndex, keyOrValue, value) => {
     const newScenarios = [...scenarios];
+    // Store as array pairs for UI manipulation, will be converted to object on submission
     const currentPair = newScenarios[scenarioIndex].other[otherIndex] || ["", ""];
     newScenarios[scenarioIndex].other[otherIndex] =
       keyOrValue === "key"
@@ -596,6 +614,7 @@ const StepMilestones = () => {
 
   const updateMilestoneDescription = (index, value) => {
     const newMilestones = [...milestones];
+    // Store as array for consistency in the form, will be converted to string on submission
     newMilestones[index].description = [value];
     setMilestones(newMilestones);
     setValue("milestones", newMilestones, { shouldDirty: true });
@@ -888,6 +907,28 @@ const StepSensitivities = () => {
 const StepReview = () => {
   const { getValues } = useFormContext();
   const formData = getValues();
+
+  // Preview the data as it will be formatted for API submission
+  const previewFormattedData = {
+    ...formData,
+    title: formData.name,
+    milestones: formData.milestones?.map(milestone => ({
+      ...milestone,
+      description: Array.isArray(milestone.description)
+        ? milestone.description.join(" ")
+        : milestone.description || ""
+    })) || [],
+    scenarios: formData.scenarios?.map(scenario => ({
+      ...scenario,
+      other: Array.isArray(scenario.other)
+        ? scenario.other.reduce((acc, [key, value]) => {
+            if (key) acc[key] = value || "";
+            return acc;
+          }, {})
+        : scenario.other || {}
+    })) || []
+  };
+
   const formatDate = (isoString) => {
     if (!isoString) return "";
     try {
@@ -915,8 +956,13 @@ const StepReview = () => {
         </div>
         <div className="review-content">
           <div className="review-item">
-            <div className="review-label">Project Name</div>
+            <div className="review-label">Project Name (Identifier)</div>
             <div className="review-value">{formData.name || "—"}</div>
+          </div>
+
+          <div className="review-item">
+            <div className="review-label">Project Title</div>
+            <div className="review-value">{formData.title || "—"}</div>
           </div>
 
           {formData.description && (
@@ -938,7 +984,6 @@ const StepReview = () => {
         </div>
       </div>
 
-      {/* Project Owner Section */}
       <div className="review-section">
         <div className="review-section-header">
           <h5 className="review-section-title">
@@ -968,7 +1013,7 @@ const StepReview = () => {
         </div>
       </div>
 
-      {/* Requirements Section - Update table structure */}
+      {/* Requirements Section - Fix whitespace in table rows */}
       {formData.requirements?.keys?.filter(Boolean).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -989,24 +1034,22 @@ const StepReview = () => {
               </thead>
               <tbody>
                 {formData.requirements.keys
-                  .map((key, index) => (
-                    key && (
-                      <tr key={index} className="review-table-row">
-                        <td className="review-table-number">{index + 1}</td>
-                        <td className="review-table-key">{key}</td>
-                        <td colSpan="2" className="review-table-value">
-                          {formData.requirements.values[index]?.filter(Boolean).length > 0 ? (
-                            <ul className="review-detail-list">
-                              {formData.requirements.values[index]
-                                .filter(Boolean)
-                                .map((value, vIndex) => (
-                                  <li key={vIndex}>{value}</li>
-                                ))}
-                            </ul>
-                          ) : "—"}
-                        </td>
-                      </tr>
-                    )
+                  .map((key, index) => key && (
+                    <tr key={index} className="review-table-row">
+                      <td className="review-table-number">{index + 1}</td>
+                      <td className="review-table-key">{key}</td>
+                      <td colSpan="2" className="review-table-value">
+                        {formData.requirements.values[index]?.filter(Boolean).length > 0 ? (
+                          <ul className="review-detail-list">
+                            {formData.requirements.values[index]
+                              .filter(Boolean)
+                              .map((value, vIndex) => (
+                                <li key={vIndex}>{value}</li>
+                              ))}
+                          </ul>
+                        ) : "—"}
+                      </td>
+                    </tr>
                   )).filter(Boolean)}
               </tbody>
             </table>
@@ -1014,7 +1057,7 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Scenarios Section - Already has 4 columns */}
+      {/* Scenarios Section - Fix whitespace in table rows */}
       {formData.scenarios?.filter(s => s.name || (s.description && s.description[0]) || s.other?.length > 0).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1065,7 +1108,7 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Milestones Section - Already has 4 columns */}
+      {/* Milestones Section - Fix whitespace in table rows */}
       {formData.milestones?.filter(m => m.name || (m.description && m.description[0]) || m.milestone_date).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1101,7 +1144,7 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Assumptions Section - Convert to table format for consistency */}
+      {/* Assumptions Section - Fix whitespace in table rows */}
       {formData.assumptions?.filter(Boolean).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1135,7 +1178,7 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Sensitivities Section - Make consistent with 4 columns */}
+      {/* Sensitivities Section - Fix whitespace in table rows */}
       {formData.sensitivities?.filter(s => s.name || (s.description && s.description[0])).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1184,17 +1227,27 @@ const CreateProjectPage = () => {
   const { checkAuthStatus } = useAuthStore();
   const { setEffectivePname } = useDataStore();
 
-  // Use FormStore instead of local state
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
   const {
     projectFormData,
     completedSteps,
     currentStep,
     setProjectFormData,
-    setCompletedSteps,
     setCurrentStep,
     addCompletedStep,
-    resetFormData
+    resetCompletedSteps
   } = useFormStore();
+
+  // Update the reset function to use the resetCompletedSteps function
+  const resetProjectForm = () => {
+    // Clear form data
+    setProjectFormData({});
+    // Reset current step to 0
+    setCurrentStep(0);
+    // Reset completed steps
+    resetCompletedSteps();
+  };
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
@@ -1204,6 +1257,7 @@ const CreateProjectPage = () => {
   // Form default values - use persisted data if available
   const defaultValues = projectFormData || {
     name: "",
+    title: "", // Add title field
     description: "",
     scheduled_start: "",
     scheduled_end: "",
@@ -1253,6 +1307,7 @@ const CreateProjectPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        setIsAuthChecking(true);
         const isAuthenticated = await checkAuthStatus();
         if (!isAuthenticated) {
           navigate("/login");
@@ -1260,6 +1315,8 @@ const CreateProjectPage = () => {
       } catch (error) {
         console.error("Authentication error:", error);
         navigate("/login");
+      } finally {
+        setIsAuthChecking(false);
       }
     };
 
@@ -1270,13 +1327,36 @@ const CreateProjectPage = () => {
   const parseErrorResponse = (error) => {
     if (error?.response?.data?.detail) {
       if (Array.isArray(error.response.data.detail)) {
-        return error.response.data.detail.map(item => `${item.loc.join('.')} - ${item.msg}`);
+        return error.response.data.detail.map(item => {
+          // Format validation error paths for better readability
+          const path = Array.isArray(item.loc) ? item.loc.slice(1).join('.') : item.loc;
+          return `${path} - ${item.msg}`;
+        });
       } else if (typeof error.response.data.detail === 'string') {
         return [error.response.data.detail];
       }
     }
 
-    if (error?.message) {
+    // If we have a structured error response but no details were extracted above,
+    // try to extract more specific information
+    if (error?.response?.data) {
+      const errorDetails = [];
+      // Extract field-specific errors if available
+      Object.entries(error.response.data).forEach(([field, messages]) => {
+        if (field !== 'detail' && Array.isArray(messages)) {
+          messages.forEach(msg => {
+            errorDetails.push(`${field}: ${msg}`);
+          });
+        }
+      });
+
+      if (errorDetails.length > 0) {
+        return errorDetails;
+      }
+    }
+
+    // Only use error.message as a fallback if we don't have more specific details
+    if (error?.message && error.message !== error?.response?.statusText) {
       return [error.message];
     }
 
@@ -1289,7 +1369,8 @@ const CreateProjectPage = () => {
     setFormErrorMessage("");
     setErrorDetails([]);
 
-    const projectBasicsFromCache = queryClient.getQueryData(["projectBasics"]);
+    // Update: Convert string queryKey to array format for React Query v4
+    const projectBasicsFromCache = queryClient.getQueryData(["project-basics"]);
     if (projectBasicsFromCache) {
       const names = projectBasicsFromCache.map(project => project.name);
       if (names.includes(data.name)) {
@@ -1299,7 +1380,96 @@ const CreateProjectPage = () => {
       }
     }
 
-    mutation.mutate({ data });
+    // Create a clean copy of the data for submission
+    const formattedData = {
+      ...data,
+      // Make sure owner fields are properly passed through to the API
+      owner: {
+        ...data.owner,
+        // Ensure first_name and last_name are passed as complete strings
+        first_name: data.owner?.first_name || "",
+        last_name: data.owner?.last_name || ""
+      }
+    };
+
+    // Handle requirements - remove if empty
+    if (!data.requirements?.keys?.filter(Boolean).length) {
+      delete formattedData.requirements;
+    }
+
+    // Handle scenarios - filter out empty ones and remove if none remain
+    if (data.scenarios?.length) {
+      const validScenarios = data.scenarios.filter(scenario =>
+        scenario.name || (scenario.description?.[0]) || scenario.other?.some(pair => pair[0] || pair[1])
+      );
+
+      if (validScenarios.length > 0) {
+        formattedData.scenarios = validScenarios.map(scenario => ({
+          ...scenario,
+          description: Array.isArray(scenario.description) ? scenario.description.join(" ") : scenario.description || "",
+          other: Array.isArray(scenario.other)
+            ? scenario.other.reduce((acc, [key, value]) => {
+                if (key) acc[key] = value || "";
+                return acc;
+              }, {})
+            : scenario.other || {}
+        }));
+      } else {
+        delete formattedData.scenarios;
+      }
+    } else {
+      delete formattedData.scenarios;
+    }
+
+    // Handle milestones - filter out empty ones and remove if none remain
+    if (data.milestones?.length) {
+      const validMilestones = data.milestones.filter(milestone =>
+        milestone.name || (milestone.description?.[0]) || milestone.milestone_date
+      );
+
+      if (validMilestones.length > 0) {
+        formattedData.milestones = validMilestones.map(milestone => ({
+          ...milestone,
+          description: Array.isArray(milestone.description) ? milestone.description.join(" ") : milestone.description || ""
+        }));
+      } else {
+        delete formattedData.milestones;
+      }
+    } else {
+      delete formattedData.milestones;
+    }
+
+    // Handle assumptions - filter out empty ones and remove if none remain
+    if (data.assumptions?.length) {
+      const validAssumptions = data.assumptions.filter(Boolean);
+      if (validAssumptions.length > 0) {
+        formattedData.assumptions = validAssumptions;
+      } else {
+        delete formattedData.assumptions;
+      }
+    } else {
+      delete formattedData.assumptions;
+    }
+
+    // Handle sensitivities - filter out empty ones and remove if none remain
+    if (data.sensitivities?.length) {
+      const validSensitivities = data.sensitivities.filter(sensitivity =>
+        sensitivity.name || (sensitivity.description?.[0])
+      );
+
+      if (validSensitivities.length > 0) {
+        formattedData.sensitivities = validSensitivities.map(sensitivity => ({
+          ...sensitivity,
+          description: Array.isArray(sensitivity.description) ? sensitivity.description.join(" ") : sensitivity.description || ""
+        }));
+      } else {
+        delete formattedData.sensitivities;
+      }
+    } else {
+      delete formattedData.sensitivities;
+    }
+
+    mutation.mutate({ data: formattedData });
   };
 
   useEffect(() => {
@@ -1308,20 +1478,21 @@ const CreateProjectPage = () => {
         setEffectivePname(mutation.data.name);
       }
       // Clear form data on successful submission
-      resetFormData();
+      resetProjectForm();
       navigate("/project/dashboard");
     }
 
     if (mutation.isError) {
       setFormError(true);
-      const errorMsg = mutation.error?.message || "Failed to create project";
-      setFormErrorMessage(`Error: ${errorMsg}`);
+      // Set a generic error heading that doesn't duplicate the details
+      setFormErrorMessage("Error creating project");
+      // Get detailed error information
       setErrorDetails(parseErrorResponse(mutation.error));
 
       // Scroll to top to make error visible
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error, setEffectivePname, navigate, resetFormData]);
+  }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error, setEffectivePname, navigate]);
 
   const saveFormData = async () => {
     // Only save if form is valid
@@ -1329,9 +1500,6 @@ const CreateProjectPage = () => {
     if (valid) {
       // Add to completed steps if not already included
       addCompletedStep(currentStep);
-
-      // Form data is already being saved via the watch effect
-      console.log("Form data saved:", methods.getValues());
 
       // Show success message (optional)
       setFormError(false);
@@ -1408,6 +1576,17 @@ const CreateProjectPage = () => {
     <Zap size={18} />,
     <Check size={18} />
   ];
+
+  // Don't render content until auth check is complete
+  if (isAuthChecking) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
