@@ -230,16 +230,18 @@ const ProjectBasicsPage = () => {
         </Col>
         <Col className="d-flex justify-content-end">
           <button
-            className="btn btn-primary px-4 py-2"
+            className="btn btn-primary px-4 py-3"
             onClick={handleCreateProjectClick}
             style={{
               backgroundColor: '#0079c2',
               borderColor: '#0079c2',
               fontSize: '1rem',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              borderRadius: '6px',
+              minWidth: '180px'
             }}
           >
-            <Plus size={18} className="me-2" />
+            <Plus size={20} className="me-2" />
             Create Project
           </button>
         </Col>
