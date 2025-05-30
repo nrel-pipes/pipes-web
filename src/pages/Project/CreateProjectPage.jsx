@@ -1618,12 +1618,12 @@ const CreateProjectPage = () => {
           <div className="form-content-container">
             {/* Error Alert - Displayed at the top of the form */}
             {formError && (
-              <div className="error-container mb-4">
+              <div className="error-container mb-4 text-start">
                 <div className="alert alert-danger">
-                  <h5 className="alert-heading">{formErrorMessage}</h5>
+                  <h5 className="alert-heading text-start">{formErrorMessage}</h5>
                   {errorDetails.length > 0 && (
                     <div className="mt-2">
-                      <ul className="error-details-list mb-0">
+                      <ul className="error-details-list mb-0 ps-3">
                         {errorDetails.map((detail, idx) => (
                           <li key={idx}>{detail}</li>
                         ))}
