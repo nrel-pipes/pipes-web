@@ -946,7 +946,6 @@ const StepReview = () => {
         <p>Your form data is <b>TEMPORARILY </b> saved in your browser's local storage before submtting it. Please review all information and submit to PIPES server for permanent storage.</p>
       </div>
 
-      {/* Basic Info Section */}
       <div className="review-section">
         <div className="review-section-header">
           <h5 className="review-section-title">
@@ -1013,7 +1012,6 @@ const StepReview = () => {
         </div>
       </div>
 
-      {/* Requirements Section - Fix whitespace in table rows */}
       {formData.requirements?.keys?.filter(Boolean).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1029,7 +1027,7 @@ const StepReview = () => {
                   <th>#</th>
                   <th>Name</th>
                   <th>Values</th>
-                  <th></th> {/* Empty column for consistency */}
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -1057,7 +1055,6 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Scenarios Section - Fix whitespace in table rows */}
       {formData.scenarios?.filter(s => s.name || (s.description && s.description[0]) || s.other?.length > 0).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1108,7 +1105,6 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Milestones Section - Fix whitespace in table rows */}
       {formData.milestones?.filter(m => m.name || (m.description && m.description[0]) || m.milestone_date).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1144,7 +1140,6 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Assumptions Section - Fix whitespace in table rows */}
       {formData.assumptions?.filter(Boolean).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1178,7 +1173,6 @@ const StepReview = () => {
         </div>
       )}
 
-      {/* Sensitivities Section - Fix whitespace in table rows */}
       {formData.sensitivities?.filter(s => s.name || (s.description && s.description[0])).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
@@ -1194,7 +1188,7 @@ const StepReview = () => {
                   <th>#</th>
                   <th>Name</th>
                   <th>Description</th>
-                  <th></th> {/* Empty column for consistency */}
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -1369,7 +1363,6 @@ const CreateProjectPage = () => {
     setFormErrorMessage("");
     setErrorDetails([]);
 
-    // Update: Convert string queryKey to array format for React Query v4
     const projectBasicsFromCache = queryClient.getQueryData(["project-basics"]);
     if (projectBasicsFromCache) {
       const names = projectBasicsFromCache.map(project => project.name);
@@ -1383,10 +1376,8 @@ const CreateProjectPage = () => {
     // Create a clean copy of the data for submission
     const formattedData = {
       ...data,
-      // Make sure owner fields are properly passed through to the API
       owner: {
         ...data.owner,
-        // Ensure first_name and last_name are passed as complete strings
         first_name: data.owner?.first_name || "",
         last_name: data.owner?.last_name || ""
       }
@@ -1397,7 +1388,7 @@ const CreateProjectPage = () => {
       delete formattedData.requirements;
     }
 
-    // Handle scenarios - filter out empty ones and remove if none remain
+    // Handle scenarios
     if (data.scenarios?.length) {
       const validScenarios = data.scenarios.filter(scenario =>
         scenario.name || (scenario.description?.[0]) || scenario.other?.some(pair => pair[0] || pair[1])
@@ -1421,7 +1412,7 @@ const CreateProjectPage = () => {
       delete formattedData.scenarios;
     }
 
-    // Handle milestones - filter out empty ones and remove if none remain
+    // Handle milestones
     if (data.milestones?.length) {
       const validMilestones = data.milestones.filter(milestone =>
         milestone.name || (milestone.description?.[0]) || milestone.milestone_date
@@ -1439,7 +1430,7 @@ const CreateProjectPage = () => {
       delete formattedData.milestones;
     }
 
-    // Handle assumptions - filter out empty ones and remove if none remain
+    // Handle assumptions
     if (data.assumptions?.length) {
       const validAssumptions = data.assumptions.filter(Boolean);
       if (validAssumptions.length > 0) {
@@ -1451,7 +1442,7 @@ const CreateProjectPage = () => {
       delete formattedData.assumptions;
     }
 
-    // Handle sensitivities - filter out empty ones and remove if none remain
+    // Handle sensitivities
     if (data.sensitivities?.length) {
       const validSensitivities = data.sensitivities.filter(sensitivity =>
         sensitivity.name || (sensitivity.description?.[0])
