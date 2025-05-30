@@ -1,23 +1,35 @@
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react';
 import { Nav, Navbar } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import './styles/NavbarSub.css';
 
-const NavbarSub = ({ navData = {} }) => {
-  const { pAll, pmAll, pName, prName, pGraph, pSchedule } = navData;
+const NavbarSub = ({ navData }) => {
+  const { pList, pCreate, pmAll, pName, prName, pGraph, pSchedule } = navData || {};
 
-  if (pAll || pmAll || pName || prName || pGraph || pSchedule) {
+  if (pList || pmAll || pName || pCreate || prName || pGraph || pSchedule) {
     return (
       <div className="navbar-sub">
         <Navbar expand="lg" className="navbar-sub-instance w-100">
           <Nav style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
 
-            {pAll && (
+            {pList && (
               <>
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Nav.Link as={Link} to="/projects" className="rounded-box">Projects</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {pCreate && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="#" className="rounded-box">Create</Nav.Link>
               </Nav.Item>
               </>
             )}

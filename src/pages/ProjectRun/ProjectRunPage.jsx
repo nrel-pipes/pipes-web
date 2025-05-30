@@ -96,7 +96,7 @@ const ProjectRunPage = () => {
 
   return (
     <>
-      <NavbarSub navData = {{pAll: true, pName: effectivePname, prName: projectRun.name}} />
+      <NavbarSub navData = {{pList: true, pName: effectivePname, prName: projectRun.name}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Project Run" cornerMark={projectRun.name}/>

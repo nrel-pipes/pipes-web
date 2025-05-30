@@ -1,134 +1,630 @@
-import { Minus, Plus } from "lucide-react";
-import { Container } from "react-bootstrap";
+import { useQueryClient } from "@tanstack/react-query";
+import { Calendar, Check, FileText, Layers, Lightbulb, List, Minus, Plus, Users, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-
-import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
-import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
-import ContentHeader from "../Components/ContentHeader";
-import SideColumn from "../Components/form/SideColumn";
-
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
+import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
+import NavbarSub from "../../layouts/NavbarSub";
+import useAuthStore from "../../stores/AuthStore";
+import useDataStore from "../../stores/DataStore";
+import useFormStore from "../../stores/FormStore";
+import ContentHeader from "../Components/ContentHeader";
+
 import "../Components/Cards.css";
-import FormError from "../Components/form/FormError";
 import "../FormStyles.css";
 import "../PageStyles.css";
+import "./CreateProjectPage.css";
 
-const CreateProjectPage = () => {
-  const navigate = useNavigate();
-  const { checkAuthStatus } = useAuthStore();
-  const queryClient = useQueryClient();
-  const { setEffectivePname } = useDataStore();
 
-  // Updated auth check effect
+const StepBasicInfo = () => {
+  const { register, formState: { errors } } = useFormContext();
+
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Basic Info</h4>
+
+      <div className="form-content-section">
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">Project Name (Identifer) </span>
+          </Form.Label>
+          <Form.Control
+            id="projectName"
+            className="form-control-lg form-primary-input"
+            isInvalid={!!errors.name}
+            {...register("name", { required: "Project name (identifier) is required" })}
+          />
+          {errors.name && (
+            <Form.Control.Feedback type="invalid">
+              {errors.name.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">Project Title</span>
+          </Form.Label>
+          <Form.Control
+            id="projectTitle"
+            className="form-control-lg form-primary-input"
+            isInvalid={!!errors.title}
+            {...register("title", { required: "Project title is required" })}
+          />
+          {errors.title && (
+            <Form.Control.Feedback type="invalid">
+              {errors.title.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+
+        <div className="form-field-group">
+          <Form.Label className="form-field-label">
+            <span className="form-field-text">Project Description</span>
+          </Form.Label>
+          <Form.Control
+            id="projectDescription"
+            as="textarea"
+            rows={3}
+            className="form-control-lg form-textarea-input"
+            {...register("description")}
+          />
+        </div>
+
+        <Row>
+          <Col md={6} className="form-field-group">
+            <Form.Label className="form-field-label required-field">
+              <span className="form-field-text">Scheduled Start</span>
+            </Form.Label>
+            <Form.Control
+              id="scheduledStart"
+              type="date"
+              className="form-control-lg form-date-input"
+              isInvalid={!!errors.scheduled_start}
+              {...register("scheduled_start", { required: "Start date is required" })}
+            />
+            {errors.scheduled_start && (
+              <Form.Control.Feedback type="invalid">
+                {errors.scheduled_start.message}
+              </Form.Control.Feedback>
+            )}
+          </Col>
+          <Col md={6} className="form-field-group">
+            <Form.Label className="form-field-label required-field">
+              <span className="form-field-text">Scheduled End</span>
+            </Form.Label>
+            <Form.Control
+              id="scheduledEnd"
+              type="date"
+              className="form-control-lg form-date-input"
+              isInvalid={!!errors.scheduled_end}
+              {...register("scheduled_end", {
+                required: "End date is required",
+                validate: (value, formValues) =>
+                  !formValues.scheduled_start || new Date(value) >= new Date(formValues.scheduled_start) ||
+                  "End date must be after start date"
+              })}
+            />
+            {errors.scheduled_end && (
+              <Form.Control.Feedback type="invalid">
+                {errors.scheduled_end.message}
+              </Form.Control.Feedback>
+            )}
+          </Col>
+        </Row>
+      </div>
+    </div>
+  );
+};
+
+// New step for Project Owner
+const StepProjectOwner = () => {
+  const { register, formState: { errors } } = useFormContext();
+
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Project Owner</h4>
+
+      <div className="form-content-section">
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">First Name</span>
+          </Form.Label>
+          <Form.Control
+            id="firstName"
+            className="form-control-lg form-primary-input"
+            isInvalid={!!errors.owner?.first_name}
+            {...register("owner.first_name", { required: "First name is required" })}
+          />
+          {errors.owner?.first_name && (
+            <Form.Control.Feedback type="invalid">
+              {errors.owner.first_name.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">Last Name</span>
+          </Form.Label>
+          <Form.Control
+            id="lastName"
+            className="form-control-lg form-primary-input"
+            isInvalid={!!errors.owner?.last_name}
+            {...register("owner.last_name", { required: "Last name is required" })}
+          />
+          {errors.owner?.last_name && (
+            <Form.Control.Feedback type="invalid">
+              {errors.owner.last_name.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">Email</span>
+          </Form.Label>
+          <Form.Control
+            id="email"
+            className="form-control-lg form-primary-input"
+            isInvalid={!!errors.owner?.email}
+            {...register("owner.email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Invalid email address"
+              }
+            })}
+          />
+          {errors.owner?.email && (
+            <Form.Control.Feedback type="invalid">
+              {errors.owner.email.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">Organization</span>
+          </Form.Label>
+          <Form.Control
+            id="organization"
+            className="form-control-lg form-primary-input"
+            isInvalid={!!errors.owner?.organization}
+            {...register("owner.organization", { required: "Organization is required" })}
+          />
+          {errors.owner?.organization && (
+            <Form.Control.Feedback type="invalid">
+              {errors.owner.organization.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StepRequirements = () => {
+  const { getValues, setValue, watch } = useFormContext();
+  const [requirements, setRequirements] = useState([]);
+
+  const formRequirements = watch("requirements");
+
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const isAuthenticated = await checkAuthStatus();
-        if (!isAuthenticated) {
-          navigate("/login");
-        }
-      } catch (error) {
-        console.error("Authentication error:", error);
-        navigate("/login");
-      }
-    };
+    const formValues = getValues();
+    if (formValues.requirements?.keys?.length) {
+      const reqsArray = formValues.requirements.keys.map((key, i) => ({
+        key,
+        values: formValues.requirements.values[i] || [""]
+      }));
+      setRequirements(reqsArray);
+    } else {
+      setRequirements([{ key: "", values: [""] }]);
+    }
+  }, [getValues, formRequirements]);
 
-    checkAuth();
-  }, [navigate, checkAuthStatus]);
+  useEffect(() => {
+    if (requirements.length > 0) {
+      const keys = requirements.map(req => req.key);
+      const values = requirements.map(req => req.values);
+      setValue("requirements.keys", keys, { shouldDirty: true });
+      setValue("requirements.values", values, { shouldDirty: true });
+    }
+  }, [requirements, setValue]);
 
-  const [form, setForm] = useState({
-    name: "",
-    scheduled_start: "",
-    assumptions: [],
-    milestones: [],
-    owner: {
-      email: "",
-      first_name: "",
-      last_name: "",
-      organization: "",
-    },
-    scenarios: [],
-    requirements: {
-      keys: [],
-      values: [],
-    },
-    sensitivities: [],
-  });
-
-  const handleSetString = (path, value) => {
-    setForm((prevState) => {
-      const keys = path.split(".");
-      const newState = { ...prevState };
-      let current = newState;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-      current[keys[keys.length - 1]] = value;
-      return newState;
-    });
+  const addRequirement = () => {
+    const newRequirements = [...requirements, { key: "", values: [""] }];
+    setRequirements(newRequirements);
+    const keys = newRequirements.map(req => req.key);
+    const values = newRequirements.map(req => req.values);
+    setValue("requirements.keys", keys, { shouldDirty: true });
+    setValue("requirements.values", values, { shouldDirty: true });
   };
 
-  const handleAddListItem = (path, newItem) => {
-    setForm((prevState) => {
-      const keys = path.split(".");
-      const newState = { ...prevState };
-      let current = newState;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-      const lastKey = keys[keys.length - 1];
-      current[lastKey] = [...(current[lastKey] || []), newItem];
-      return newState;
-    });
+  const removeRequirement = (index) => {
+    const newRequirements = requirements.filter((_, i) => i !== index);
+    setRequirements(newRequirements);
+    const keys = newRequirements.map(req => req.key);
+    const values = newRequirements.map(req => req.values);
+    setValue("requirements.keys", keys, { shouldDirty: true });
+    setValue("requirements.values", values, { shouldDirty: true });
   };
 
-  const handleListItemChange = (path, index, newValue) => {
-    setForm((prevState) => {
-      const keys = path.split(".");
-      const newState = { ...prevState };
-      let current = newState;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-      const lastKey = keys[keys.length - 1];
-      const updatedArray = [...current[lastKey]];
-      updatedArray[index] = newValue;
-      current[lastKey] = updatedArray;
-      return newState;
-    });
+  const updateRequirementKey = (index, value) => {
+    const newRequirements = [...requirements];
+    newRequirements[index].key = value;
+    setRequirements(newRequirements);
+    const keys = newRequirements.map(req => req.key);
+    setValue("requirements.keys", keys, { shouldDirty: true });
   };
 
-  const handleRemoveListItem = (path, index) => {
-    setForm((prevState) => {
-      const keys = path.split(".");
-      const newState = { ...prevState };
-      let current = newState;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-      const lastKey = keys[keys.length - 1];
-      if (!Array.isArray(current[lastKey])) {
-        console.error(`The property at path "${path}" is not an array:`, current[lastKey]);
-        return newState;
-      }
-      current[lastKey] = [
-        ...current[lastKey].slice(0, index),
-        ...current[lastKey].slice(index + 1)
-      ];
+  const addValue = (reqIndex) => {
+    const newRequirements = [...requirements];
+    newRequirements[reqIndex].values.push("");
+    setRequirements(newRequirements);
+    const values = newRequirements.map(req => req.values);
+    setValue("requirements.values", values, { shouldDirty: true });
+  };
 
-      return newState;
-    });
+  const updateValue = (reqIndex, valueIndex, value) => {
+    const newRequirements = [...requirements];
+    newRequirements[reqIndex].values[valueIndex] = value;
+    setRequirements(newRequirements);
+    const values = newRequirements.map(req => req.values);
+    setValue("requirements.values", values, { shouldDirty: true });
+  };
+
+  const removeValue = (reqIndex, valueIndex) => {
+    const newRequirements = [...requirements];
+    newRequirements[reqIndex].values = newRequirements[reqIndex].values.filter((_, i) => i !== valueIndex);
+    setRequirements(newRequirements);
+    const values = newRequirements.map(req => req.values);
+    setValue("requirements.values", values, { shouldDirty: true });
+  };
+
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Project Requirements</h4>
+
+      {requirements.map((requirement, reqIndex) => (
+        <div key={reqIndex} className="card-item">
+          <div className="card-item-header">
+            <h4 className="card-item-title requirement-title">
+              Requirement {reqIndex + 1}
+            </h4>
+            {requirements.length > 1 && (
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => removeRequirement(reqIndex)}
+                className="item-action-button"
+              >
+                <Minus size={16} />
+              </Button>
+            )}
+          </div>
+
+          <div className="requirement-name-section">
+            <Form.Label className="form-field-label">
+              <span className="requirement-label">Requirement Name</span>
+            </Form.Label>
+            <Form.Control
+              id={`requirement-${reqIndex}`}
+              type="text"
+              value={requirement.key}
+              onChange={(e) => updateRequirementKey(reqIndex, e.target.value)}
+              className="requirement-name-input"
+            />
+          </div>
+
+          <div className="requirement-values-section">
+            <div className="values-header">
+              <Form.Label className="form-field-label mb-3">
+                <span className="values-label">Requirement Values</span>
+              </Form.Label>
+            </div>
+
+            {requirement.values.map((value, valueIndex) => (
+              <div key={valueIndex} className="requirement-value-item d-flex mb-3 align-items-center gap-2">
+                <div className="value-index">{valueIndex + 1}.</div>
+                <Form.Control
+                  id={`value-${reqIndex}-${valueIndex}`}
+                  type="text"
+                  value={value}
+                  onChange={(e) => updateValue(reqIndex, valueIndex, e.target.value)}
+                />
+                {requirement.values.length > 1 && (
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={() => removeValue(reqIndex, valueIndex)}
+                    className="item-action-button"
+                  >
+                    <Minus size={16} />
+                  </Button>
+                )}
+              </div>
+            ))}
+
+            <div className="d-flex justify-content-start mt-3">
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={() => addValue(reqIndex)}
+                className="add-button"
+              >
+                <Plus size={16} /> Add Value
+              </Button>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="d-flex justify-content-start mt-4">
+        <Button
+          variant="outline-primary"
+          onClick={addRequirement}
+          className="add-button"
+        >
+          <Plus size={18} /> Add New Requirement
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const StepScenarios = () => {
+  const { getValues, setValue } = useFormContext();
+  const [scenarios, setScenarios] = useState([]);
+
+  useEffect(() => {
+    const formValues = getValues();
+    if (formValues.scenarios?.length) {
+      setScenarios(formValues.scenarios);
+    } else {
+      setScenarios([{ name: "", description: [""], other: [] }]);
+    }
+  }, [getValues]);
+
+  useEffect(() => {
+    if (scenarios.length > 0) {
+      setValue("scenarios", scenarios, { shouldDirty: true });
+    }
+  }, [scenarios, setValue]);
+
+  const addScenario = () => {
+    const newScenarios = [...scenarios, { name: "", description: [""], other: [] }];
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  const removeScenario = (index) => {
+    const newScenarios = scenarios.filter((_, i) => i !== index);
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  const updateScenarioName = (index, value) => {
+    const newScenarios = [...scenarios];
+    newScenarios[index].name = value;
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  const updateScenarioDescription = (index, value) => {
+    const newScenarios = [...scenarios];
+    newScenarios[index].description = [value];
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  const addOtherInfo = (scenarioIndex) => {
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other.push(["", ""]);
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  const updateOtherInfo = (scenarioIndex, otherIndex, keyOrValue, value) => {
+    const newScenarios = [...scenarios];
+    // Store as array pairs for UI manipulation, will be converted to object on submission
+    const currentPair = newScenarios[scenarioIndex].other[otherIndex] || ["", ""];
+    newScenarios[scenarioIndex].other[otherIndex] =
+      keyOrValue === "key"
+        ? [value, currentPair[1]]
+        : [currentPair[0], value];
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  const removeOtherInfo = (scenarioIndex, otherIndex) => {
+    const newScenarios = [...scenarios];
+    newScenarios[scenarioIndex].other = newScenarios[scenarioIndex].other.filter(
+      (_, idx) => idx !== otherIndex
+    );
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Project Scenarios</h4>
+
+      {scenarios.map((scenario, scenarioIndex) => (
+        <div key={scenarioIndex} className="card-item">
+          <div className="card-item-header">
+            <h4 className="card-item-title">
+              Scenario {scenarioIndex + 1}
+            </h4>
+            {scenarios.length > 1 && (
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => removeScenario(scenarioIndex)}
+                className="item-action-button"
+              >
+                <Minus size={16} />
+              </Button>
+            )}
+          </div>
+
+          <div className="form-content-section">
+            <div className="form-field-group">
+              <Form.Label className="form-field-label">
+                <span className="form-field-text">Scenario Name</span>
+              </Form.Label>
+              <Form.Control
+                id={`scenario${scenarioIndex}`}
+                type="text"
+                value={scenario.name}
+                onChange={(e) => updateScenarioName(scenarioIndex, e.target.value)}
+                className="form-primary-input"
+              />
+            </div>
+
+            <div className="form-field-group">
+              <Form.Label className="form-field-label">
+                <span className="form-field-text">Description</span>
+              </Form.Label>
+              <Form.Control
+                id={`scenarioDescription${scenarioIndex}`}
+                as="textarea"
+                rows={3}
+                value={scenario.description[0] || ""}
+                onChange={(e) => updateScenarioDescription(scenarioIndex, e.target.value)}
+                className="form-textarea-input"
+              />
+            </div>
+          </div>
+
+          <div className="scenario-other-section">
+            <Form.Label className="form-field-label">
+              <span className="scenario-label"> Other information</span>
+            </Form.Label>
+
+            {scenario.other.map((item, otherIndex) => (
+              <div key={otherIndex} className="scenario-other-row mb-3">
+                <div className="scenario-other-item">
+                  <div className="scenario-other-fields">
+                    <Form.Control
+                      id={`scenarioOtherKey-${scenarioIndex}-${otherIndex}`}
+                      type="text"
+                      value={item[0] || ""}
+                      placeholder="Key"
+                      onChange={(e) => updateOtherInfo(scenarioIndex, otherIndex, "key", e.target.value)}
+                      className="other-key-input"
+                    />
+
+                    <Form.Control
+                      id={`scenarioOtherValue-${scenarioIndex}-${otherIndex}`}
+                      type="text"
+                      value={item[1] || ""}
+                      placeholder="Value"
+                      onChange={(e) => updateOtherInfo(scenarioIndex, otherIndex, "value", e.target.value)}
+                      className="other-value-input"
+                    />
+
+                    {scenario.other.length > 1 && (
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeOtherInfo(scenarioIndex, otherIndex)}
+                        className="item-action-button"
+                      >
+                        <Minus size={16} />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="d-flex justify-content-start mt-3">
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={() => addOtherInfo(scenarioIndex)}
+                className="add-button"
+              >
+                <Plus size={16} /> Add Other Information
+              </Button>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="d-flex justify-content-start mt-4">
+        <Button
+          variant="outline-primary"
+          onClick={addScenario}
+          className="add-button"
+        >
+          <Plus size={18} /> Add New Scenario
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const StepMilestones = () => {
+  const { getValues, setValue, watch } = useFormContext();
+  const [milestones, setMilestones] = useState([]);
+  const scheduledStart = watch("scheduled_start");
+  const scheduledEnd = watch("scheduled_end");
+
+  useEffect(() => {
+    const formValues = getValues();
+    if (formValues.milestones?.length) {
+      setMilestones(formValues.milestones);
+    } else {
+      setMilestones([{ name: "", description: [""], milestone_date: "" }]);
+    }
+  }, [getValues]);
+
+  useEffect(() => {
+    if (milestones.length > 0) {
+      setValue("milestones", milestones, { shouldDirty: true });
+    }
+  }, [milestones, setValue]);
+
+  const addMilestone = () => {
+    const newMilestones = [...milestones, { name: "", description: [""], milestone_date: "" }];
+    setMilestones(newMilestones);
+    setValue("milestones", newMilestones, { shouldDirty: true });
+  };
+
+  const removeMilestone = (index) => {
+    const newMilestones = milestones.filter((_, i) => i !== index);
+    setMilestones(newMilestones);
+    setValue("milestones", newMilestones, { shouldDirty: true });
+  };
+
+  const updateMilestoneName = (index, value) => {
+    const newMilestones = [...milestones];
+    newMilestones[index].name = value;
+    setMilestones(newMilestones);
+    setValue("milestones", newMilestones, { shouldDirty: true });
+  };
+
+  const updateMilestoneDescription = (index, value) => {
+    const newMilestones = [...milestones];
+    // Store as array for consistency in the form, will be converted to string on submission
+    newMilestones[index].description = [value];
+    setMilestones(newMilestones);
+    setValue("milestones", newMilestones, { shouldDirty: true });
+  };
+
+  const updateMilestoneDate = (index, value) => {
+    const newMilestones = [...milestones];
+    newMilestones[index].milestone_date = value;
+    setMilestones(newMilestones);
+    setValue("milestones", newMilestones, { shouldDirty: true });
   };
 
   const formatDateForInput = (isoString) => {
@@ -136,1721 +632,1052 @@ const CreateProjectPage = () => {
     return isoString.split("T")[0];
   };
 
-  const handleDateChange = (field, value) => {
-    setForm({
-      ...form,
-      [field]: value,
-    });
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Project Milestones</h4>
+
+      {milestones.map((milestone, milestoneIndex) => (
+        <div key={milestoneIndex} className="card-item">
+          <div className="card-item-header">
+            <h4 className="card-item-title milestone-title">
+              Milestone {milestoneIndex + 1}
+            </h4>
+            {milestones.length > 1 && (
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => removeMilestone(milestoneIndex)}
+                className="item-action-button"
+              >
+                <Minus size={16} />
+              </Button>
+            )}
+          </div>
+
+          <div className="milestone-name-section">
+            <Form.Label className="form-field-label">
+              <span className="milestone-label">Name</span>
+            </Form.Label>
+            <Form.Control
+              id={`milestoneName-${milestoneIndex}`}
+              type="text"
+              value={milestone.name}
+              onChange={(e) => updateMilestoneName(milestoneIndex, e.target.value)}
+              className="milestone-name-input"
+            />
+          </div>
+
+          <div className="milestone-details-section">
+
+            <div className="milestone-description-item">
+              <Form.Label className="form-field-label">Description</Form.Label>
+              <Form.Control
+                id={`milestoneDescription-${milestoneIndex}`}
+                as="textarea"
+                rows={3}
+                value={milestone.description[0] || ""}
+                onChange={(e) => updateMilestoneDescription(milestoneIndex, e.target.value)}
+                className="milestone-description-input"
+              />
+            </div>
+
+            <div className="milestone-date-item">
+              <Form.Label className="form-field-label">Date</Form.Label>
+              <Form.Control
+                id={`milestoneDate-${milestoneIndex}`}
+                type="date"
+                value={formatDateForInput(milestone.milestone_date)}
+                onChange={(e) => updateMilestoneDate(milestoneIndex, e.target.value)}
+                min={scheduledStart}
+                max={scheduledEnd}
+                className="milestone-date-input"
+              />
+              {scheduledStart && scheduledEnd && (
+                <Form.Text className="text-muted">
+                  Date must be between project start ({formatDateForInput(scheduledStart)}) and
+                  end ({formatDateForInput(scheduledEnd)})
+                </Form.Text>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="d-flex justify-content-start mt-4">
+        <Button
+          variant="outline-primary"
+          onClick={addMilestone}
+          className="add-button"
+        >
+          <Plus size={18} /> Add New Milestone
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const StepAssumptions = () => {
+  const { getValues, setValue } = useFormContext();
+  const [assumptions, setAssumptions] = useState([]);
+
+  useEffect(() => {
+    const formValues = getValues();
+    if (formValues.assumptions?.length) {
+      setAssumptions(formValues.assumptions);
+    } else {
+      setAssumptions([""]);
+    }
+  }, [getValues]);
+
+  useEffect(() => {
+    if (assumptions.length > 0) {
+      setValue("assumptions", assumptions, { shouldDirty: true });
+    }
+  }, [assumptions, setValue]);
+
+  const addAssumption = () => {
+    const newAssumptions = [...assumptions, ""];
+    setAssumptions(newAssumptions);
+    setValue("assumptions", newAssumptions, { shouldDirty: true });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    mutation.mutate({ data: form });
+  const removeAssumption = (index) => {
+    const newAssumptions = assumptions.filter((_, i) => i !== index);
+    setAssumptions(newAssumptions);
+    setValue("assumptions", newAssumptions, { shouldDirty: true });
+  };
+
+  const updateAssumption = (index, value) => {
+    const newAssumptions = [...assumptions];
+    newAssumptions[index] = value;
+    setAssumptions(newAssumptions);
+    setValue("assumptions", newAssumptions, { shouldDirty: true });
+  };
+
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Project Assumptions</h4>
+      <div style={{ textAlign: 'left', width: '100%' }} className="mb-3">List of Assumptions</div>
+      {assumptions.map((assumption, index) => (
+        <div key={index} className="d-flex mb-3 align-items-center gap-2">
+          {index+1}<Form.Control
+            id={`assumptions${index}`}
+            type="text"
+            value={assumption}
+            onChange={(e) => updateAssumption(index, e.target.value)}
+          />
+          {assumptions.length > 1 && (
+            <Button
+              variant="outline-danger"
+              size="sm"
+              onClick={() => removeAssumption(index)}
+              className="item-action-button"
+            >
+              <Minus size={16} />
+            </Button>
+          )}
+        </div>
+      ))}
+
+      <div className="d-flex justify-content-start mt-4">
+        <Button
+          variant="outline-primary"
+          onClick={addAssumption}
+          className="add-button"
+        >
+          <Plus size={18} /> Add New Assumption
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const StepSensitivities = () => {
+  const { getValues, setValue } = useFormContext();
+  const [sensitivities, setSensitivities] = useState([]);
+
+  useEffect(() => {
+    const formValues = getValues();
+    if (formValues.sensitivities?.length) {
+      setSensitivities(formValues.sensitivities);
+    } else {
+      setSensitivities([{ name: "", description: [""] }]);
+    }
+  }, [getValues]);
+
+  useEffect(() => {
+    if (sensitivities.length > 0) {
+      setValue("sensitivities", sensitivities, { shouldDirty: true });
+    }
+  }, [sensitivities, setValue]);
+
+  const addSensitivity = () => {
+    const newSensitivities = [...sensitivities, { name: "", description: [""] }];
+    setSensitivities(newSensitivities);
+    setValue("sensitivities", newSensitivities, { shouldDirty: true });
+  };
+
+  const removeSensitivity = (index) => {
+    const newSensitivities = sensitivities.filter((_, i) => i !== index);
+    setSensitivities(newSensitivities);
+    setValue("sensitivities", newSensitivities, { shouldDirty: true });
+  };
+
+  const updateSensitivityName = (index, value) => {
+    const newSensitivities = [...sensitivities];
+    newSensitivities[index].name = value;
+    setSensitivities(newSensitivities);
+    setValue("sensitivities", newSensitivities, { shouldDirty: true });
+  };
+
+  const updateSensitivityDescription = (index, value) => {
+    const newSensitivities = [...sensitivities];
+    newSensitivities[index].description = [value];
+    setSensitivities(newSensitivities);
+    setValue("sensitivities", newSensitivities, { shouldDirty: true });
+  };
+
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Project Sensitivities</h4>
+
+      {sensitivities.map((sensitivity, sensitivityIndex) => (
+        <div key={sensitivityIndex} className="card-item">
+          <div className="card-item-header">
+            <h4 className="card-item-title">
+              Sensitivity {sensitivityIndex + 1}
+            </h4>
+            {sensitivities.length > 1 && (
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => removeSensitivity(sensitivityIndex)}
+                className="item-action-button"
+              >
+                <Minus size={16} />
+              </Button>
+            )}
+          </div>
+
+          <div className="form-content-section">
+            <div className="form-field-group">
+              <Form.Label className="form-field-label">
+                <span className="form-field-text">Sensitivity Name</span>
+              </Form.Label>
+              <Form.Control
+                id={`sensitivityName-${sensitivityIndex}`}
+                type="text"
+                value={sensitivity.name}
+                onChange={(e) => updateSensitivityName(sensitivityIndex, e.target.value)}
+                className="form-control-lg form-primary-input"
+              />
+            </div>
+
+            <div className="form-field-group">
+              <Form.Label className="form-field-label">
+                <span className="form-field-text">Description</span>
+              </Form.Label>
+              <Form.Control
+                id={`sensitivityDescription-${sensitivityIndex}`}
+                as="textarea"
+                rows={3}
+                value={sensitivity.description[0] || ""}
+                onChange={(e) => updateSensitivityDescription(sensitivityIndex, e.target.value)}
+                className="form-control-lg form-textarea-input"
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="d-flex justify-content-start mt-4">
+        <Button
+          variant="outline-primary"
+          onClick={addSensitivity}
+          className="add-button"
+        >
+          <Plus size={18} /> Add New Sensitivity
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Add the new Review component for the final step
+const StepReview = () => {
+  const { getValues } = useFormContext();
+  const formData = getValues();
+
+  // Preview the data as it will be formatted for API submission
+  const previewFormattedData = {
+    ...formData,
+    title: formData.name,
+    milestones: formData.milestones?.map(milestone => ({
+      ...milestone,
+      description: Array.isArray(milestone.description)
+        ? milestone.description.join(" ")
+        : milestone.description || ""
+    })) || [],
+    scenarios: formData.scenarios?.map(scenario => ({
+      ...scenario,
+      other: Array.isArray(scenario.other)
+        ? scenario.other.reduce((acc, [key, value]) => {
+            if (key) acc[key] = value || "";
+            return acc;
+          }, {})
+        : scenario.other || {}
+    })) || []
+  };
+
+  const formatDate = (isoString) => {
+    if (!isoString) return "";
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleDateString();
+    } catch (e) {
+      return isoString;
+    }
+  };
+
+  return (
+    <div className="form-container">
+      <h4 className="form-section-title">Review Your Project</h4>
+      <div className="review-intro-note">
+        <p>Your form data is <b>TEMPORARILY </b> saved in your browser's local storage before submtting it. Please review all information and submit to PIPES server for permanent storage.</p>
+      </div>
+
+      <div className="review-section">
+        <div className="review-section-header">
+          <h5 className="review-section-title">
+            <FileText size={18} className="review-section-icon" />
+            Basic Info
+          </h5>
+        </div>
+        <div className="review-content">
+          <div className="review-item">
+            <div className="review-label">Project Name (Identifier)</div>
+            <div className="review-value">{formData.name || "—"}</div>
+          </div>
+
+          <div className="review-item">
+            <div className="review-label">Project Title</div>
+            <div className="review-value">{formData.title || "—"}</div>
+          </div>
+
+          {formData.description && (
+            <div className="review-item">
+              <div className="review-label">Description</div>
+              <div className="review-value">{formData.description}</div>
+            </div>
+          )}
+
+          <div className="review-item">
+            <div className="review-label">Scheduled Start</div>
+            <div className="review-value">{formatDate(formData.scheduled_start) || "—"}</div>
+          </div>
+
+          <div className="review-item">
+            <div className="review-label">Scheduled End</div>
+            <div className="review-value">{formatDate(formData.scheduled_end) || "—"}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="review-section">
+        <div className="review-section-header">
+          <h5 className="review-section-title">
+            <Users size={18} className="review-section-icon" />
+            Project Owner
+          </h5>
+        </div>
+        <div className="review-content">
+          <div className="review-item">
+            <div className="review-label">Name</div>
+            <div className="review-value">
+              {(formData.owner?.first_name || formData.owner?.last_name)
+                ? `${formData.owner?.first_name || ""} ${formData.owner?.last_name || ""}`.trim()
+                : "—"}
+            </div>
+          </div>
+
+          <div className="review-item">
+            <div className="review-label">Email</div>
+            <div className="review-value">{formData.owner?.email || "—"}</div>
+          </div>
+
+          <div className="review-item">
+            <div className="review-label">Organization</div>
+            <div className="review-value">{formData.owner?.organization || "—"}</div>
+          </div>
+        </div>
+      </div>
+
+      {formData.requirements?.keys?.filter(Boolean).length > 0 && (
+        <div className="review-section">
+          <div className="review-section-header">
+            <h5 className="review-section-title">
+              <List size={18} className="review-section-icon" />
+              Requirements
+            </h5>
+          </div>
+          <div className="review-content">
+            <table className="review-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Values</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.requirements.keys
+                  .map((key, index) => key && (
+                    <tr key={index} className="review-table-row">
+                      <td className="review-table-number">{index + 1}</td>
+                      <td className="review-table-key">{key}</td>
+                      <td colSpan="2" className="review-table-value">
+                        {formData.requirements.values[index]?.filter(Boolean).length > 0 ? (
+                          <ul className="review-detail-list">
+                            {formData.requirements.values[index]
+                              .filter(Boolean)
+                              .map((value, vIndex) => (
+                                <li key={vIndex}>{value}</li>
+                              ))}
+                          </ul>
+                        ) : "—"}
+                      </td>
+                    </tr>
+                  )).filter(Boolean)}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {formData.scenarios?.filter(s => s.name || (s.description && s.description[0]) || s.other?.length > 0).length > 0 && (
+        <div className="review-section">
+          <div className="review-section-header">
+            <h5 className="review-section-title">
+              <Layers size={18} className="review-section-icon" />
+              Scenarios
+            </h5>
+          </div>
+          <div className="review-content">
+            <table className="review-table">
+              <thead>
+                <tr>
+                  <th width="40">#</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Other Information</th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.scenarios
+                  .filter(s => s.name || (s.description && s.description[0]) || s.other?.length > 0)
+                  .map((scenario, index) => (
+                    <tr key={index} className="review-table-row">
+                      <td className="review-table-number">{index + 1}</td>
+                      <td className="review-table-title">{scenario.name || "—"}</td>
+                      <td>{scenario.description?.[0] || "—"}</td>
+                      <td>
+                        {scenario.other?.filter(pair => pair[0] || pair[1]).length > 0 ? (
+                          <table className="review-inner-table">
+                            <tbody>
+                              {scenario.other
+                                .filter(pair => pair[0] || pair[1])
+                                .map((pair, pIndex) => (
+                                  <tr key={pIndex}>
+                                    <td className="inner-table-key">{pair[0] + ":" || "—"}</td>
+                                    <td className="inner-table-value">{pair[1] || "—"}</td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        ) : "—"}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {formData.milestones?.filter(m => m.name || (m.description && m.description[0]) || m.milestone_date).length > 0 && (
+        <div className="review-section">
+          <div className="review-section-header">
+            <h5 className="review-section-title">
+              <Calendar size={18} className="review-section-icon" />
+              Milestones
+            </h5>
+          </div>
+          <div className="review-content">
+            <table className="review-table">
+              <thead>
+                <tr>
+                  <th width="40">#</th>
+                  <th>Name</th>
+                  <th>Date</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.milestones
+                  .filter(m => m.name || (m.description && m.description[0]) || m.milestone_date)
+                  .map((milestone, index) => (
+                    <tr key={index} className="review-table-row">
+                      <td className="review-table-number">{index + 1}</td>
+                      <td className="review-table-title">{milestone.name || "—"}</td>
+                      <td>{formatDate(milestone.milestone_date) || "—"}</td>
+                      <td>{milestone.description?.[0] || "—"}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {formData.assumptions?.filter(Boolean).length > 0 && (
+        <div className="review-section">
+          <div className="review-section-header">
+            <h5 className="review-section-title">
+              <Lightbulb size={18} className="review-section-icon" />
+              Assumptions
+            </h5>
+          </div>
+          <div className="review-content">
+            <table className="review-table two-column">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Assumption</th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.assumptions
+                  .filter(Boolean)
+                  .map((assumption, index) => (
+                    <tr key={index} className="review-table-row">
+                      <td className="review-table-number">{index + 1}</td>
+                      <td colSpan="3">{assumption}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {formData.sensitivities?.filter(s => s.name || (s.description && s.description[0])).length > 0 && (
+        <div className="review-section">
+          <div className="review-section-header">
+            <h5 className="review-section-title">
+              <Zap size={18} className="review-section-icon" />
+              Sensitivities
+            </h5>
+          </div>
+          <div className="review-content">
+            <table className="review-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.sensitivities
+                  .filter(s => s.name || (s.description && s.description[0]))
+                  .map((sensitivity, index) => (
+                    <tr key={index} className="review-table-row">
+                      <td className="review-table-number">{index + 1}</td>
+                      <td className="review-table-title">{sensitivity.name || "—"}</td>
+                      <td colSpan="2">{sensitivity.description?.[0] || "—"}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <div className="review-submit-note">
+        <p>Once you click "Submit", your project will be created and you'll be redirected to the project dashboard.</p>
+      </div>
+    </div>
+  );
+};
+
+// Main component with updated layout
+const CreateProjectPage = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { checkAuthStatus } = useAuthStore();
+  const { setEffectivePname } = useDataStore();
+
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  const {
+    projectFormData,
+    completedSteps,
+    currentStep,
+    setProjectFormData,
+    setCurrentStep,
+    addCompletedStep,
+    resetCompletedSteps
+  } = useFormStore();
+
+  // Update the reset function to use the resetCompletedSteps function
+  const resetProjectForm = () => {
+    // Clear form data
+    setProjectFormData({});
+    // Reset current step to 0
+    setCurrentStep(0);
+    // Reset completed steps
+    resetCompletedSteps();
   };
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
-  const [submittingForm, setSubmittingForm] = useState(false);
-
-  function validateProjectData(formData) {
-    // Reset previous errors
-    setFormError(false);
-    setFormErrorMessage("");
-
-    // Get DOM elements for adding/removing error classes
-    const projectNameElement = document.getElementById("projectName");
-
-    // Validate project name
-    if (!formData.name || formData.name.trim().length === 0) {
-      projectNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage("You forgot to provide a name for your project.");
-      return false;
-    } else {
-      projectNameElement.classList.remove("form-error");
-    }
-    const projectBasicsFromCache = queryClient.getQueryData(["projectBasics"]);
-    const names = projectBasicsFromCache.map(projectBasic => projectBasic.name);
-    if (names.includes(formData.name)) {
-      projectNameElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(`Project with ${formData.name} already exists. Please choose unique name.`);
-      return false;
-    }
-    // Validate owner information
-    const firstNameElement = document.getElementById("firstName");
-    const lastNameElement = document.getElementById("lastName");
-    const emailElement = document.getElementById("email");
-    const organizationElement = document.getElementById("organization");
-
-    let hasOwnerError = false;
-
-    // Check first name
-    if (!formData.owner.first_name || formData.owner.first_name.trim().length === 0) {
-      firstNameElement.classList.add("form-error");
-      hasOwnerError = true;
-    } else {
-      firstNameElement.classList.remove("form-error");
-    }
-
-    // Check last name
-    if (!formData.owner.last_name || formData.owner.last_name.trim().length === 0) {
-      lastNameElement.classList.add("form-error");
-      hasOwnerError = true;
-    } else {
-      lastNameElement.classList.remove("form-error");
-    }
-
-    // Check email
-    if (!formData.owner.email || formData.owner.email.trim().length === 0) {
-      emailElement.classList.add("form-error");
-      hasOwnerError = true;
-    } else {
-      emailElement.classList.remove("form-error");
-    }
-
-    // Check organization
-    if (!formData.owner.organization || formData.owner.organization.trim().length === 0) {
-      organizationElement.classList.add("form-error");
-      hasOwnerError = true;
-    } else {
-      organizationElement.classList.remove("form-error");
-    }
-
-    if (hasOwnerError) {
-      setFormError(true);
-      setFormErrorMessage("Please fill in all owner information fields.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    const scheduledStartElement = document.getElementById("scheduledStart");
-    const scheduledEndElement = document.getElementById("scheduledEnd");
-
-    if (!formData.scheduled_start || formData.scheduled_start.trim().length === 0) {
-      scheduledStartElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(
-        "The schedule is invalid. Please fill in Scheduled Start.",
-      );
-      setSubmittingForm(false);
-      return false;
-    }
-    scheduledStartElement.classList.remove("form-error");
-
-    if (!formData.scheduled_end || formData.scheduled_end.trim().length === 0) {
-      scheduledEndElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(
-        "The schedule is invalid. Please fill in Scheduled End.",
-      );
-      setSubmittingForm(false);
-      return false;
-    }
-
-    const startDate = new Date(formData.scheduled_start);
-    const endDate = new Date(formData.scheduled_end);
-    if (startDate > endDate) {
-      scheduledStartElement.classList.add("form-error");
-      scheduledEndElement.classList.add("form-error");
-      setFormError(true);
-      setFormErrorMessage(
-        "The schedule is invalid. Ensure Scheduled End is after Scheduled Start."
-      );
-      setSubmittingForm(false);
-      return false;
-    }
-    scheduledStartElement.classList.remove("form-error");
-    scheduledEndElement.classList.remove("form-error");
-
-    // Check for empty assumptions
-    let hasEmptyAssumption = false;
-    formData.assumptions.forEach((assumption, index) => {
-      const assumptionElement = document.getElementById(`assumptions${index}`);
-      if (!assumption || assumption.trim().length === 0) {
-        assumptionElement.classList.add("form-error");
-        hasEmptyAssumption = true;
-      } else {
-        assumptionElement.classList.remove("form-error");
-      }
-    });
-
-    if (hasEmptyAssumption) {
-      setFormError(true);
-      setFormErrorMessage("Please fill in all assumptions or remove empty ones.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    // Validate requirements
-    const requirementKeys = formData.requirements.keys;
-    let hasEmptyRequirementKey = false;
-    let hasDuplicateRequirementKey = false;
-    let duplicateKeyName = "";
-
-    // Check for empty keys
-    requirementKeys.forEach((key, index) => {
-      const requirementElement = document.getElementById(`requirement-${index}`);
-      if (!key || key.trim().length === 0) {
-        requirementElement.classList.add("form-error");
-        hasEmptyRequirementKey = true;
-      } else {
-        requirementElement.classList.remove("form-error");
-      }
-    });
-
-    if (hasEmptyRequirementKey) {
-      setFormError(true);
-      setFormErrorMessage("Requirement names cannot be empty. Please fill in all requirement names.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    // Check for duplicate keys
-    const keySet = new Set();
-    requirementKeys.forEach((key, index) => {
-      const requirementElement = document.getElementById(`requirement-${index}`);
-      const normalizedKey = key.trim().toLowerCase(); // Normalize for case-insensitive comparison
-
-      if (keySet.has(normalizedKey)) {
-        requirementElement.classList.add("form-error");
-        hasDuplicateRequirementKey = true;
-        duplicateKeyName = key;
-      } else {
-        keySet.add(normalizedKey);
-      }
-    });
-
-    if (hasDuplicateRequirementKey) {
-      setFormError(true);
-      setFormErrorMessage(`Duplicate requirement name found: "${duplicateKeyName}". Please use unique names for requirements.`);
-      setSubmittingForm(false);
-      return false;
-    }
-
-    // Optional: Check for empty requirement values if needed
-    let hasEmptyRequirementValue = false;
-    formData.requirements.values.forEach((values, keyIndex) => {
-      values.forEach((value, valueIndex) => {
-        const valueElement = document.getElementById(`value-${keyIndex}-${valueIndex}`);
-        if (!value || value.trim().length === 0) {
-          valueElement.classList.add("form-error");
-          hasEmptyRequirementValue = true;
-        } else {
-          valueElement.classList.remove("form-error");
-        }
-      });
-    });
-
-    if (hasEmptyRequirementValue) {
-      setFormError(true);
-      setFormErrorMessage("Requirement values cannot be empty. Please fill in all values or remove them.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    // Validate scenarios
-    let hasEmptyScenarioName = false;
-    let hasDuplicateScenarioName = false;
-    let duplicateScenarioName = "";
-    let hasEmptyScenarioDescription = false;
-    let hasEmptyOtherKey = false;
-    let hasDuplicateOtherKey = false;
-    let duplicateOtherKeyName = "";
-    let hasEmptyOtherValue = false;
-
-    // Create a set to track unique scenario names (case-insensitive)
-    const scenarioNameSet = new Set();
-
-    // Check for empty or duplicate scenario names
-    formData.scenarios.forEach((scenario, index) => {
-      const scenarioNameElement = document.getElementById(`scenario${index}`);
-      const scenarioDescriptionElement = document.getElementById(`scenarioDescription${index}`);
-
-      // Check for empty scenario names
-      if (!scenario.name || scenario.name.trim().length === 0) {
-        scenarioNameElement.classList.add("form-error");
-        hasEmptyScenarioName = true;
-      } else {
-        // Check for duplicate scenario names (case-insensitive)
-        const normalizedName = scenario.name.trim().toLowerCase();
-
-        if (scenarioNameSet.has(normalizedName)) {
-          scenarioNameElement.classList.add("form-error");
-          hasDuplicateScenarioName = true;
-          duplicateScenarioName = scenario.name;
-        } else {
-          scenarioNameElement.classList.remove("form-error");
-          scenarioNameSet.add(normalizedName);
-        }
-      }
-
-      // Check for empty description
-      if (!scenario.description || !scenario.description[0] || scenario.description[0].trim().length === 0) {
-        scenarioDescriptionElement.classList.add("form-error");
-        hasEmptyScenarioDescription = true;
-      } else {
-        scenarioDescriptionElement.classList.remove("form-error");
-      }
-
-      // Check the "other" key-value pairs
-      if (scenario.other && scenario.other.length > 0) {
-        // Create a set to track unique keys within this scenario (case-insensitive)
-        const otherKeySet = new Set();
-
-        scenario.other.forEach((item, otherIndex) => {
-          const otherKeyElement = document.getElementById(`scenarioOther${otherIndex}`);
-          const otherValueElement = document.getElementById(`scenarioOther-${index}`);
-
-          // Check for empty keys
-          if (!item[0] || item[0].trim().length === 0) {
-            otherKeyElement.classList.add("form-error");
-            hasEmptyOtherKey = true;
-          } else {
-            // Check for duplicate keys within this scenario
-            const normalizedKey = item[0].trim().toLowerCase();
-
-            if (otherKeySet.has(normalizedKey)) {
-              otherKeyElement.classList.add("form-error");
-              hasDuplicateOtherKey = true;
-              duplicateOtherKeyName = item[0];
-            } else {
-              otherKeyElement.classList.remove("form-error");
-              otherKeySet.add(normalizedKey);
-            }
-          }
-
-          // Check for empty values
-          if (!item[1] || item[1].trim().length === 0) {
-            otherValueElement.classList.add("form-error");
-            hasEmptyOtherValue = true;
-          } else {
-            otherValueElement.classList.remove("form-error");
-          }
-        });
-      }
-    });
-
-    // Handle validation errors for scenarios
-    if (hasEmptyScenarioName) {
-      setFormError(true);
-      setFormErrorMessage("Scenario names cannot be empty. Please fill in all scenario names.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasDuplicateScenarioName) {
-      setFormError(true);
-      setFormErrorMessage(`Duplicate scenario name found: "${duplicateScenarioName}". Please use unique names for scenarios.`);
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasEmptyScenarioDescription) {
-      setFormError(true);
-      setFormErrorMessage("Scenario descriptions cannot be empty. Please fill in all scenario descriptions.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasEmptyOtherKey) {
-      setFormError(true);
-      setFormErrorMessage("Scenario 'Other Information' keys cannot be empty. Please fill in all keys or remove the empty entries.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasDuplicateOtherKey) {
-      setFormError(true);
-      setFormErrorMessage(`Duplicate 'Other Information' key found: "${duplicateOtherKeyName}" in a scenario. Please use unique keys.`);
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasEmptyOtherValue) {
-      setFormError(true);
-      setFormErrorMessage("Scenario 'Other Information' values cannot be empty. Please fill in all values or remove the empty entries.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    // Validate milestones
-    let hasEmptyMilestoneName = false;
-    let hasDuplicateMilestoneName = false;
-    let duplicateMilestoneName = "";
-    let hasEmptyMilestoneDescription = false;
-    let hasEmptyMilestoneDate = false;
-    let hasMilestoneDateOutOfRange = false;
-    let outOfRangeMilestoneIndex = -1;
-
-    // Create a set to track unique milestone names (case-insensitive)
-    const milestoneNameSet = new Set();
-
-    // Check each milestone
-    formData.milestones.forEach((milestone, index) => {
-      const milestoneNameElement = document.getElementById(`milestoneName-${index}`);
-      const milestoneDescriptionElement = document.getElementById(`milestoneDescription-${index}`);
-      const milestoneDateElement = document.getElementById(`milestoneDate-${index}`);
-
-      // Check for empty milestone name
-      if (!milestone.name || milestone.name.trim().length === 0) {
-        milestoneNameElement.classList.add("form-error");
-        hasEmptyMilestoneName = true;
-      } else {
-        // Check for duplicate milestone names (case-insensitive)
-        const normalizedName = milestone.name.trim().toLowerCase();
-
-        if (milestoneNameSet.has(normalizedName)) {
-          milestoneNameElement.classList.add("form-error");
-          hasDuplicateMilestoneName = true;
-          duplicateMilestoneName = milestone.name;
-        } else {
-          milestoneNameElement.classList.remove("form-error");
-          milestoneNameSet.add(normalizedName);
-        }
-      }
-
-      // Check for empty milestone description
-      if (!milestone.description || !milestone.description[0] || milestone.description[0].trim().length === 0) {
-        milestoneDescriptionElement.classList.add("form-error");
-        hasEmptyMilestoneDescription = true;
-      } else {
-        milestoneDescriptionElement.classList.remove("form-error");
-      }
-
-      // Check for empty milestone date
-      if (!milestone.milestone_date || milestone.milestone_date.trim().length === 0) {
-        milestoneDateElement.classList.add("form-error");
-        hasEmptyMilestoneDate = true;
-      } else {
-        // Check if the milestone date is within the project's scheduled start and end dates
-        const milestoneDate = new Date(milestone.milestone_date);
-        const projectStartDate = new Date(formData.scheduled_start);
-        const projectEndDate = new Date(formData.scheduled_end);
-
-        if (milestoneDate < projectStartDate || milestoneDate > projectEndDate) {
-          milestoneDateElement.classList.add("form-error");
-          hasMilestoneDateOutOfRange = true;
-          if (outOfRangeMilestoneIndex === -1) outOfRangeMilestoneIndex = index;
-        } else {
-          milestoneDateElement.classList.remove("form-error");
-        }
-      }
-    });
-
-    // Handle validation errors for milestones
-    if (hasEmptyMilestoneName) {
-      setFormError(true);
-      setFormErrorMessage("Milestone names cannot be empty. Please fill in all milestone names.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasDuplicateMilestoneName) {
-      setFormError(true);
-      setFormErrorMessage(`Duplicate milestone name found: "${duplicateMilestoneName}". Please use unique names for milestones.`);
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasEmptyMilestoneDescription) {
-      setFormError(true);
-      setFormErrorMessage("Milestone descriptions cannot be empty. Please fill in all milestone descriptions.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasEmptyMilestoneDate) {
-      setFormError(true);
-      setFormErrorMessage("Milestone dates cannot be empty. Please set a date for each milestone.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasMilestoneDateOutOfRange) {
-      setFormError(true);
-      setFormErrorMessage(`Milestone ${outOfRangeMilestoneIndex + 1} date is outside the project schedule. All milestones must be between the project's scheduled start and end dates.`);
-      setSubmittingForm(false);
-      return false;
-    }
-
-    // Validate sensitivities
-    let hasEmptySensitivityName = false;
-    let hasDuplicateSensitivityName = false;
-    let duplicateSensitivityName = "";
-    let hasEmptySensitivityDescription = false;
-    let hasEmptySensitivityListItem = false;
-    let hasDuplicateSensitivityListItems = false;
-    let duplicateListItemValue = "";
-    let sensitivityWithDuplicateItems = -1;
-
-    // Create a set to track unique sensitivity names (case-insensitive)
-    const sensitivityNameSet = new Set();
-
-    // Check each sensitivity
-    formData.sensitivities.forEach((sensitivity, index) => {
-      const sensitivityNameElement = document.getElementById(`sensitivityName-${index}`);
-      const sensitivityDescriptionElement = document.getElementById(`sensitivityDescription-${index}`);
-
-      // Check for empty sensitivity name
-      if (!sensitivity.name || sensitivity.name.trim().length === 0) {
-        sensitivityNameElement.classList.add("form-error");
-        hasEmptySensitivityName = true;
-      } else {
-        // Check for duplicate sensitivity names (case-insensitive)
-        const normalizedName = sensitivity.name.trim().toLowerCase();
-
-        if (sensitivityNameSet.has(normalizedName)) {
-          sensitivityNameElement.classList.add("form-error");
-          hasDuplicateSensitivityName = true;
-          duplicateSensitivityName = sensitivity.name;
-        } else {
-          sensitivityNameElement.classList.remove("form-error");
-          sensitivityNameSet.add(normalizedName);
-        }
-      }
-
-      // Check for empty sensitivity description
-      if (!sensitivity.description || !sensitivity.description[0] || sensitivity.description[0].trim().length === 0) {
-        sensitivityDescriptionElement.classList.add("form-error");
-        hasEmptySensitivityDescription = true;
-      } else {
-        sensitivityDescriptionElement.classList.remove("form-error");
-      }
-
-      // Check sensitivity list items
-      if (sensitivity.list && sensitivity.list.length > 0) {
-        // Create a set to track unique list items within this sensitivity (case-insensitive)
-        const listItemSet = new Set();
-
-        sensitivity.list.forEach((item, listIndex) => {
-          const sensitivityItemElement = document.getElementById(`senstivityItem-${index}`);
-
-          // Check for empty list items
-          if (!item || item.trim().length === 0) {
-            sensitivityItemElement.classList.add("form-error");
-            hasEmptySensitivityListItem = true;
-          } else {
-            // Check for duplicate list items within this sensitivity (case-insensitive)
-            const normalizedItem = item.trim().toLowerCase();
-
-            if (listItemSet.has(normalizedItem)) {
-              sensitivityItemElement.classList.add("form-error");
-              hasDuplicateSensitivityListItems = true;
-              duplicateListItemValue = item;
-              sensitivityWithDuplicateItems = index;
-            } else {
-              sensitivityItemElement.classList.remove("form-error");
-              listItemSet.add(normalizedItem);
-            }
-          }
-        });
-      }
-    });
-
-    // Handle validation errors for sensitivities
-    if (hasEmptySensitivityName) {
-      setFormError(true);
-      setFormErrorMessage("Sensitivity names cannot be empty. Please fill in all sensitivity names.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasDuplicateSensitivityName) {
-      setFormError(true);
-      setFormErrorMessage(`Duplicate sensitivity name found: "${duplicateSensitivityName}". Please use unique names for sensitivities.`);
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasEmptySensitivityDescription) {
-      setFormError(true);
-      setFormErrorMessage("Sensitivity descriptions cannot be empty. Please fill in all sensitivity descriptions.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasEmptySensitivityListItem) {
-      setFormError(true);
-      setFormErrorMessage("Sensitivity list items cannot be empty. Please fill in all items or remove them.");
-      setSubmittingForm(false);
-      return false;
-    }
-
-    if (hasDuplicateSensitivityListItems) {
-      setFormError(true);
-      setFormErrorMessage(`Duplicate list item "${duplicateListItemValue}" found in Sensitivity ${sensitivityWithDuplicateItems + 1}. Please ensure all items within a sensitivity are unique.`);
-      setSubmittingForm(false);
-      return false;
-    }
-
-    setFormError(false);
-    return true;
-  }
-
+  const [errorDetails, setErrorDetails] = useState([]);
   const mutation = useCreateProjectMutation();
 
-  const onCreateSuccess = (data) => {
-    setSubmittingForm(false);
-
-    if (data && data.name) {
-      setEffectivePname(data.name);
-    }
-
-    navigate("/project/dashboard");
+  // Form default values - use persisted data if available
+  const defaultValues = projectFormData || {
+    name: "",
+    title: "", // Add title field
+    description: "",
+    scheduled_start: "",
+    scheduled_end: "",
+    assumptions: [""],
+    milestones: [],
+    owner: {
+      email: "",
+      first_name: "",
+      last_name: "",
+      organization: ""
+    },
+    scenarios: [],
+    requirements: {
+      keys: [],
+      values: []
+    },
+    sensitivities: []
   };
 
-  const onCreateError = (error) => {
-    setSubmittingForm(false);
-    if (error.message !== "Validation failed") {
-      setFormError(true);
-      setFormErrorMessage("Failed to create project. Please try again.");
-      console.error("Project creation failed:", error);
+  const methods = useForm({
+    defaultValues,
+    mode: "onChange"
+  });
+
+  // Save form data to Zustand store whenever it changes
+  useEffect(() => {
+    const subscription = methods.watch((formData) => {
+      if (Object.keys(formData).length > 0) {
+        setProjectFormData(formData);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [methods, setProjectFormData]);
+
+  const steps = [
+    { title: "Basic Info", component: <StepBasicInfo /> },
+    { title: "Owner", component: <StepProjectOwner /> },
+    { title: "Requirements", component: <StepRequirements /> },
+    { title: "Scenarios", component: <StepScenarios /> },
+    { title: "Milestones", component: <StepMilestones /> },
+    { title: "Assumptions", component: <StepAssumptions /> },
+    { title: "Sensitivities", component: <StepSensitivities /> },
+    { title: "Review", component: <StepReview /> }
+  ];
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        setIsAuthChecking(true);
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      } finally {
+        setIsAuthChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
+
+  // Enhanced error handling with error parsing
+  const parseErrorResponse = (error) => {
+    if (error?.response?.data?.detail) {
+      if (Array.isArray(error.response.data.detail)) {
+        return error.response.data.detail.map(item => {
+          // Format validation error paths for better readability
+          const path = Array.isArray(item.loc) ? item.loc.slice(1).join('.') : item.loc;
+          return `${path} - ${item.msg}`;
+        });
+      } else if (typeof error.response.data.detail === 'string') {
+        return [error.response.data.detail];
+      }
     }
+
+    // If we have a structured error response but no details were extracted above,
+    // try to extract more specific information
+    if (error?.response?.data) {
+      const errorDetails = [];
+      // Extract field-specific errors if available
+      Object.entries(error.response.data).forEach(([field, messages]) => {
+        if (field !== 'detail' && Array.isArray(messages)) {
+          messages.forEach(msg => {
+            errorDetails.push(`${field}: ${msg}`);
+          });
+        }
+      });
+
+      if (errorDetails.length > 0) {
+        return errorDetails;
+      }
+    }
+
+    // Only use error.message as a fallback if we don't have more specific details
+    if (error?.message && error.message !== error?.response?.statusText) {
+      return [error.message];
+    }
+
+    return ["An unexpected error occurred. Please try again."];
+  };
+
+  const onSubmit = (data) => {
+    // Reset error states
+    setFormError(false);
+    setFormErrorMessage("");
+    setErrorDetails([]);
+
+    const projectBasicsFromCache = queryClient.getQueryData(["project-basics"]);
+    if (projectBasicsFromCache) {
+      const names = projectBasicsFromCache.map(project => project.name);
+      if (names.includes(data.name)) {
+        setFormError(true);
+        setFormErrorMessage(`Project with "${data.name}" already exists. Please choose a unique name.`);
+        return;
+      }
+    }
+
+    // Create a clean copy of the data for submission
+    const formattedData = {
+      ...data,
+      owner: {
+        ...data.owner,
+        first_name: data.owner?.first_name || "",
+        last_name: data.owner?.last_name || ""
+      }
+    };
+
+    // Handle requirements - remove if empty
+    if (!data.requirements?.keys?.filter(Boolean).length) {
+      delete formattedData.requirements;
+    }
+
+    // Handle scenarios
+    if (data.scenarios?.length) {
+      const validScenarios = data.scenarios.filter(scenario =>
+        scenario.name || (scenario.description?.[0]) || scenario.other?.some(pair => pair[0] || pair[1])
+      );
+
+      if (validScenarios.length > 0) {
+        formattedData.scenarios = validScenarios.map(scenario => ({
+          ...scenario,
+          description: Array.isArray(scenario.description) ? scenario.description.join(" ") : scenario.description || "",
+          other: Array.isArray(scenario.other)
+            ? scenario.other.reduce((acc, [key, value]) => {
+                if (key) acc[key] = value || "";
+                return acc;
+              }, {})
+            : scenario.other || {}
+        }));
+      } else {
+        delete formattedData.scenarios;
+      }
+    } else {
+      delete formattedData.scenarios;
+    }
+
+    // Handle milestones
+    if (data.milestones?.length) {
+      const validMilestones = data.milestones.filter(milestone =>
+        milestone.name || (milestone.description?.[0]) || milestone.milestone_date
+      );
+
+      if (validMilestones.length > 0) {
+        formattedData.milestones = validMilestones.map(milestone => ({
+          ...milestone,
+          description: Array.isArray(milestone.description) ? milestone.description.join(" ") : milestone.description || ""
+        }));
+      } else {
+        delete formattedData.milestones;
+      }
+    } else {
+      delete formattedData.milestones;
+    }
+
+    // Handle assumptions
+    if (data.assumptions?.length) {
+      const validAssumptions = data.assumptions.filter(Boolean);
+      if (validAssumptions.length > 0) {
+        formattedData.assumptions = validAssumptions;
+      } else {
+        delete formattedData.assumptions;
+      }
+    } else {
+      delete formattedData.assumptions;
+    }
+
+    // Handle sensitivities
+    if (data.sensitivities?.length) {
+      const validSensitivities = data.sensitivities.filter(sensitivity =>
+        sensitivity.name || (sensitivity.description?.[0])
+      );
+
+      if (validSensitivities.length > 0) {
+        formattedData.sensitivities = validSensitivities.map(sensitivity => ({
+          ...sensitivity,
+          description: Array.isArray(sensitivity.description) ? sensitivity.description.join(" ") : sensitivity.description || ""
+        }));
+      } else {
+        delete formattedData.sensitivities;
+      }
+    } else {
+      delete formattedData.sensitivities;
+    }
+
+    mutation.mutate({ data: formattedData });
   };
 
   useEffect(() => {
     if (mutation.isSuccess && mutation.data) {
-      onCreateSuccess(mutation.data);
+      if (mutation.data.name) {
+        setEffectivePname(mutation.data.name);
+      }
+      // Clear form data on successful submission
+      resetProjectForm();
+      navigate("/project/dashboard");
     }
 
-    if (mutation.isError && mutation.error) {
-      onCreateError(mutation.error);
+    if (mutation.isError) {
+      setFormError(true);
+      // Set a generic error heading that doesn't duplicate the details
+      setFormErrorMessage("Error creating project");
+      // Get detailed error information
+      setErrorDetails(parseErrorResponse(mutation.error));
+
+      // Scroll to top to make error visible
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error]);
+  }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error, setEffectivePname, navigate]);
 
-  const handleRequirementNameChange = (index, newName) => {
-    setForm((prevForm) => {
-      const newKeys = [...prevForm.requirements.keys];
-      newKeys[index] = newName;
+  const saveFormData = async () => {
+    // Only save if form is valid
+    const valid = await methods.trigger();
+    if (valid) {
+      // Add to completed steps if not already included
+      addCompletedStep(currentStep);
 
-      return {
-        ...prevForm,
-        requirements: {
-          ...prevForm.requirements,
-          keys: newKeys,
-        },
-      };
-    });
+      // Show success message (optional)
+      setFormError(false);
+      setFormErrorMessage("");
+
+      // Return validation success
+      return true;
+    }
+    return false;
   };
 
-  const handleRequirementValueChange = (index, valueIndex, newValue) => {
-    setForm((prevForm) => {
-      const newValues = [...prevForm.requirements.values];
-      newValues[index] = [...newValues[index]];
-      newValues[index][valueIndex] = newValue;
+  const saveAndContinue = async () => {
+    if (currentStep === steps.length - 1) {
+      methods.handleSubmit(onSubmit)();
+      return;
+    }
 
-      return {
-        ...prevForm,
-        requirements: {
-          ...prevForm.requirements,
-          values: newValues,
-        },
-      };
-    });
+    // For the Review step (second to last), no validation needed
+    if (currentStep === steps.length - 2) {
+      addCompletedStep(currentStep);
+      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
+      setFormError(false);
+      setFormErrorMessage("");
+      return;
+    }
+
+    // Save and move to next step if validation passes
+    const saved = await saveFormData();
+    if (saved) {
+      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
+    }
   };
 
-  const handleRemoveRequirement = (index, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      const newKeys = [...prevForm.requirements.keys];
-      const newValues = [...prevForm.requirements.values];
-      newKeys.splice(index, 1);
-      newValues.splice(index, 1);
-
-      return {
-        ...prevForm,
-        requirements: {
-          ...prevForm.requirements,
-          keys: newKeys,
-          values: newValues,
-        },
-      };
-    });
+  const prevStep = () => {
+    setCurrentStep(Math.max(currentStep - 1, 0));
+    setFormError(false);
+    setFormErrorMessage("");
   };
 
-  const handleRemoveSubRequirement = (index, valueIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      const newValues = [...prevForm.requirements.values];
-      newValues[index] = [...newValues[index]];
-      newValues[index].splice(valueIndex, 1);
+  const goToStep = (stepIndex) => {
+    // Allow going to Review step if all previous steps are completed
+    if (stepIndex === steps.length - 1) {
+      // Check if all previous steps are completed
+      const allPreviousStepsCompleted = Array.from(
+        { length: steps.length - 1 },
+        (_, i) => i
+      ).every(i => completedSteps.includes(i));
 
-      return {
-        ...prevForm,
-        requirements: {
-          ...prevForm.requirements,
-          values: newValues,
-        },
-      };
-    });
-  };
-
-  const handleAddSubRequirement = (index, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      const newValues = [...prevForm.requirements.values];
-      newValues[index] = [...newValues[index], ""];
-
-      return {
-        ...prevForm,
-        requirements: {
-          ...prevForm.requirements,
-          values: newValues,
-        },
-      };
-    });
-  };
-
-  const handleAddRequirement = (e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      const newKeys = [...prevForm.requirements.keys, ""];
-      const newValues = [...prevForm.requirements.values, [""]];
-
-      return {
-        ...prevForm,
-        requirements: {
-          ...prevForm.requirements,
-          keys: newKeys,
-          values: newValues,
-        },
-      };
-    });
-  };
-
-  const handleAddOtherInfo = (scenarioIndex, e) => {
-    e.preventDefault();
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        other: [...(updatedScenarios[scenarioIndex].other || []), ["", ""]],
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-  const handleRemoveScenario = (index, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      scenarios: prevForm.scenarios.filter((_, idx) => idx !== index),
-    }));
-  };
-
-  const handleScenarioDescriptionChange = (scenarioIndex, value) => {
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        description: [value], // Keep it as an array with single value since that's your data structure
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-
-  const handleOtherInfoChange = (
-    scenarioIndex,
-    otherIndex,
-    keyOrValue,
-    value,
-  ) => {
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      const currentOther = [...updatedScenarios[scenarioIndex].other];
-      const currentPair = currentOther[otherIndex] || ["", ""];
-      currentOther[otherIndex] =
-        keyOrValue === "key"
-          ? [value, currentPair[1]]
-          : [currentPair[0], value];
-
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        other: currentOther,
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-
-  const handleScenarioNameChange = (scenarioIndex, value) => {
-    setForm((prevState) => {
-      const updatedScenarios = [...prevState.scenarios];
-      updatedScenarios[scenarioIndex] = {
-        ...updatedScenarios[scenarioIndex],
-        name: value,
-      };
-
-      return {
-        ...prevState,
-        scenarios: updatedScenarios,
-      };
-    });
-  };
-
-  const handleRemoveOtherInfo = (scenarioIndex, otherIndex) => {
-    setForm((prevForm) => {
-      const newScenarios = [...prevForm.scenarios];
-      newScenarios[scenarioIndex] = {
-        ...newScenarios[scenarioIndex],
-        other: newScenarios[scenarioIndex].other.filter(
-          (_, idx) => idx !== otherIndex,
-        ),
-      };
-      return {
-        ...prevForm,
-        scenarios: newScenarios,
-      };
-    });
-  };
-
-  const handleAddScenario = (e) => {
-    e.preventDefault();
-    setForm((prevState) => ({
-      ...prevState,
-      scenarios: [
-        ...(prevState.scenarios || []),
-        {
-          name: "",
-          description: [""],
-          other: [],
-        },
-      ],
-    }));
-  };
-
-  const handleRemoveMilestone = (milestoneIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      milestones: prevForm.milestones.filter(
-        (_, index) => index !== milestoneIndex,
-      ),
-    }));
-  };
-
-  const handleMilestoneNameChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
+      if (allPreviousStepsCompleted) {
+        setCurrentStep(stepIndex);
+        setFormError(false);
+        setFormErrorMessage("");
+        return;
       }
-      newMilestones[milestoneIndex].name = value;
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
+    }
+
+    // Original logic for other steps
+    if (completedSteps.includes(stepIndex) || stepIndex === currentStep) {
+      setCurrentStep(stepIndex);
+      setFormError(false);
+      setFormErrorMessage("");
+    }
   };
 
-  const handleMilestoneDescriptionChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].description = [value];
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
-  };
+  const progressPercentage = Math.round(((completedSteps.length + (currentStep > Math.max(...completedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
 
-  const handleMilestoneDateChange = (milestoneIndex, value) => {
-    setForm((prevForm) => {
-      const newMilestones = [...(prevForm.milestones || [])];
-      if (!newMilestones[milestoneIndex]) {
-        newMilestones[milestoneIndex] = {};
-      }
-      newMilestones[milestoneIndex].milestone_date = value;
-      return {
-        ...prevForm,
-        milestones: newMilestones,
-      };
-    });
-  };
+  const stepIcons = [
+    <FileText size={18} />,
+    <Users size={18} />,
+    <List size={18} />,
+    <Layers size={18} />,
+    <Calendar size={18} />,
+    <Lightbulb size={18} />,
+    <Zap size={18} />,
+    <Check size={18} />
+  ];
 
-  const handleAddMilestone = (e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      milestones: [
-        ...(prevForm.milestones || []),
-        {
-          name: "",
-          description: [""],
-          milestone_date: "",
-        },
-      ],
-    }));
-  };
-
-  const handleRemoveSensitivity = (index, e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      sensitivities: prevForm.sensitivities.filter((_, idx) => idx !== index),
-    }));
-  };
-
-  const handleRemoveSensitivityListItem = (sensitivityIndex, listIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      const newSensitivities = [...(prevForm.sensitivities || [])];
-      newSensitivities[sensitivityIndex].list = newSensitivities[
-        sensitivityIndex
-      ].list.filter((_, idx) => idx !== listIndex);
-      return {
-        ...prevForm,
-        sensitivities: newSensitivities,
-      };
-    });
-  };
-
-  const handleAddSensitivityListItem = (sensitivityIndex, e) => {
-    e.preventDefault();
-    setForm((prevForm) => {
-      // If the last item is already empty, don't add another
-      if (prevForm.sensitivities[sensitivityIndex].list.at(-1) === "") {
-        return prevForm;
-      }
-
-      const newSensitivities = [...(prevForm.sensitivities || [])];
-      newSensitivities[sensitivityIndex].list.push("");
-      return {
-        ...prevForm,
-        sensitivities: newSensitivities,
-      };
-    });
-  };
-
-  const handleAddSensitivity = (e) => {
-    e.preventDefault();
-    setForm((prevForm) => ({
-      ...prevForm,
-      sensitivities: [
-        ...(prevForm.sensitivities || []),
-        {
-          name: "",
-          description: [""],
-          list: [""],
-        },
-      ],
-    }));
-  };
-
-  // Side bar state
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [documentation] = useState({
-    description: "This is a sample description of the project creation page",
-    definitions: [
-      {
-        name: "Project Name",
-        definition: "Choose the name of your project",
-      },
-      {
-        name: "Scheduled Start",
-        definition: "Fill in the starting date of your modeling project",
-      },
-      {
-        name: "Scheduled End",
-        definition: "This will be ending date of your modeling project",
-      },
-      {
-        name: "Assumptions",
-        definition: "List what you take for granted in your project.",
-      },
-      {
-        name: "Sensitivity",
-        definition: "What is a sensitivity?",
-      },
-      {
-        name: "Milestone",
-        definition: "What is a Milestone?",
-      },
-    ],
-  });
+  // Don't render content until auth check is complete
+  if (isAuthChecking) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Container fluid className="p-0">
-      <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
-        <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>
-          <ContentHeader title={"Create Project"} />
-          <Row className="justify-content-center"></Row>
-          <div className="d-flex justify-content-center">
-            <Col
-              className="justify-content-center mw-600"
-              xs={12}
-              md={9}
-            >
-              <Form className="my-4 justify-content" onSubmit={handleSubmit}>
-                <Form.Group className="mb-3 w-100">
-                  <Form.Label
-                    id="projectNameLabel"
-                    className="d-block text-start w-100 custom-form-label requiredField"
+    <>
+      <NavbarSub navData={{ pList: true, pCreate: true }} />
+      <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+        <Row className="w-100 mx-0">
+          <ContentHeader title="Create Project"/>
+        </Row>
+
+        <div className="create-project-container">
+          <div className="step-sidebar">
+
+            <div className="progress-indicator">
+              <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
+            </div>
+
+            <div className="step-navigation">
+              {steps.map((step, i) => (
+                <div
+                  key={i}
+                  className={`step-item ${currentStep === i ? 'active' : ''} ${completedSteps.includes(i) ? 'completed' : ''}`}
+                >
+                  <button
+                    className="step-button"
+                    onClick={() => goToStep(i)}
+                    disabled={!completedSteps.includes(i) && i !== currentStep && i !== steps.length - 1}
                   >
-                    Project Name
-                  </Form.Label>
-                  <Form.Control
-                    type="input"
-                    id="projectName"
-                    name="name"
-                    placeholder="Project Name"
-                    className="mb-4"
-                    value={form.name}
-                    onChange={(e) => handleSetString("name", e.target.value)}
-                  />
-                  <Row>
-                    <Col md={6} className="mb-3">
-                      <Form.Group>
-                        <Form.Label className="d-block text-start custom-form-label requiredField">
-                          Scheduled Start
-                        </Form.Label>
-                        <Form.Control
-                          id="scheduledStart"
-                          name="scheduledStart"
-                          type="date"
-                          value={formatDateForInput(form.scheduled_start) || ""}
-                          onChange={(e) =>
-                            handleDateChange("scheduled_start", e.target.value)
-                          }
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6} className="mb-3">
-                      <Form.Group>
-                        <Form.Label className="d-block text-start custom-form-label requiredField">
-                          Scheduled End
-                        </Form.Label>
-                        <Form.Control
-                          id="scheduledEnd"
-                          name="scheduledEnd"
-                          type="date"
-                          value={formatDateForInput(form.scheduled_end) || ""}
-                          onChange={(e) =>
-                            handleDateChange("scheduled_end", e.target.value)
-                          }
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Form.Label className="d-block text-start w-100 custom-form-label requiredField">
-                    Project Owner
-                  </Form.Label>
-                  <Row>
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="d-block text-start">
-                        First Name
-                      </Form.Label>
-                      <Form.Control
-                        id="firstName"
-                        type="input"
-                        placeholder="First Name"
-                        value={form.owner.first_name}
-                        onChange={(e) =>
-                          handleSetString("owner.first_name", e.target.value)
-                        }
-                      />
-                    </Col>
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="d-block text-start">
-                        Last Name
-                      </Form.Label>
-                      <Form.Control
-                        id="lastName"
-                        type="input"
-                        placeholder="Last Name"
-                        value={form.owner.last_name}
-                        onChange={(e) =>
-                          handleSetString("owner.last_name", e.target.value)
-                        }
-                      />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="d-block text-start">
-                        Email
-                      </Form.Label>
-                      <Form.Control
-                        id="email"
-                        type="input"
-                        placeholder="Email"
-                        value={form.owner.email}
-                        onChange={(e) =>
-                          handleSetString("owner.email", e.target.value)
-                        }
-                      />
-                    </Col>
-
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="d-block text-start">
-                        Organization
-                      </Form.Label>
-                      <Form.Control
-                        id="organization"
-                        type="input"
-                        placeholder="Organization"
-                        value={form.owner.organization}
-                        onChange={(e) =>
-                          handleSetString("owner.organization", e.target.value)
-                        }
-                      />
-                    </Col>
-                  </Row>
-                  <Form.Label className="d-block text-start w-100 custom-form-label">
-                    Project Description
-                  </Form.Label>
-                  <Form.Control
-                    id="projectDescription"
-                    as="textarea"
-                    rows={3}
-                    placeholder="Describe your project"
-                    className="mb-4"
-                    value={form.description}
-                    onChange={(e) =>
-                      handleSetString("description", e.target.value)
-                    }
-                  />
-                  <Form.Label className="d-block text-start w-100 custom-form-label">
-                    Assumptions
-                  </Form.Label>
-                  {form.assumptions.map((assumption, index) => (
-                    <div
-                      key={index}
-                      className="d-flex mb-2 align-items-center gap-2"
-                    >
-                      <Form.Control
-                        id={`assumptions${index}`}
-                        type="input"
-                        placeholder="Enter assumption"
-                        value={form.assumptions[index]}
-                        onChange={(e) => handleListItemChange("assumptions", index, e.target.value)}
-
-                      />{" "}
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={(e) => handleRemoveListItem("assumptions", index, e)}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={() => handleAddListItem("assumptions", "")}
-
-                      className="mt-2 align-items-left"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Assumption
-                    </Button>
-                  </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
-                    Requirements
-                  </Form.Label>
-                  <div className="d-block">
-                    {form.requirements.keys.map((requirementName, index) => {
-                      const values = form.requirements.values[index];
-
-                      return (
-                        <div key={index}>
-                          {values.map((value, valueIndex) => (
-                            <Row
-                              key={`${index}-${valueIndex}`}
-                              className="mb-2 align-items-center"
-                            >
-                              {valueIndex === 0 ? (
-                                <>
-                                  <Col xs="auto">
-                                    <Button
-                                      variant="outline-danger"
-                                      size="sm"
-                                      onClick={(e) =>
-                                        handleRemoveRequirement(index, e)
-                                      }
-                                      style={{
-                                        width: "32px",
-                                        height: "32px",
-                                        padding: "4px",
-                                      }}
-                                      className="d-flex align-items-center justify-content-center"
-                                    >
-                                      <Minus className="w-4 h-4" />
-                                    </Button>
-                                  </Col>
-                                  <Col xs={3}>
-                                    <Form.Control
-                                      type="text"
-                                      id={`requirement-${index}`}
-                                      placeholder="Requirement"
-                                      value={requirementName}
-                                      onChange={(e) =>
-                                        handleRequirementNameChange(
-                                          index,
-                                          e.target.value,
-                                        )
-                                      }
-                                    />
-                                  </Col>
-                                </>
-                              ) : (
-                                <>
-                                  <Col xs="auto">
-                                    <div style={{ width: "32px" }}></div>
-                                  </Col>
-                                  <Col xs={3}>
-                                    <div></div>
-                                  </Col>
-                                </>
-                              )}
-                              <Col>
-                                <Form.Control
-                                  id={`value-${index}-${valueIndex}`}
-                                  type="text"
-                                  placeholder="Enter value"
-                                  value={value}
-                                  onChange={(e) =>
-                                    handleRequirementValueChange(
-                                      index,
-                                      valueIndex,
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </Col>
-                              <Col xs="auto">
-                                {values.length > 1 && (
-                                  <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={(e) =>
-                                      handleRemoveSubRequirement(
-                                        index,
-                                        valueIndex,
-                                        e,
-                                      )
-                                    }
-                                    style={{
-                                      width: "32px",
-                                      height: "32px",
-                                      padding: "4px",
-                                    }}
-                                    className="d-flex align-items-center justify-content-center"
-                                  >
-                                    <Minus className="w-4 h-4" />
-                                  </Button>
-                                )}
-                              </Col>
-                            </Row>
-                          ))}
-                          <Row>
-                            <Col xs="auto">
-                              <div style={{ width: "32px" }}></div>
-                            </Col>
-                            <Col xs={3}></Col>
-                            <Col>
-                              <div className="d-flex mb-3">
-                                <Button
-                                  variant="outline-primary"
-                                  size="sm"
-                                  onClick={(e) =>
-                                    handleAddSubRequirement(index, e)
-                                  }
-                                  style={{
-                                    width: "32px",
-                                    height: "32px",
-                                    padding: "4px",
-                                  }}
-                                  className="d-flex align-items-center justify-content-center"
-                                >
-                                  <Plus className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </Col>
-                            <Col xs="auto">
-                              <div style={{ width: "32px" }}></div>
-                            </Col>
-                          </Row>
-                        </div>
-                      );
-                    })}
-                  </div>{" "}
-                  <div className="d-flex justify-content-start mt-2">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={(e) => handleAddRequirement(e)}
-                    className="d-flex align-items-center me-2"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Requirement
-                  </Button>
-
-                  </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
-                    Scenarios
-                  </Form.Label>
-                  <div className="d-block">
-                    {form.scenarios.map((scenario, scenarioIndex) => (
-                      <div
-                        key={scenarioIndex}
-                        className="border rounded p-3 mb-4"
-                      >
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            Scenario {scenarioIndex + 1}
-                          </h4>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={(e) =>
-                              handleRemoveScenario(scenarioIndex, e)
-                            }
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              padding: "4px",
-                            }}
-                            className="d-flex align-items-center justify-content-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`scenario${scenarioIndex}`}
-                            type="input"
-                            placeholder="Scenario name"
-                            value={scenario.name}
-                            onChange={(e) =>
-                              handleScenarioNameChange(
-                                scenarioIndex,
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`scenarioDescription${scenarioIndex}`}
-                            as="textarea"
-                            rows={3}
-                            placeholder="Enter description"
-                            value={scenario.description[0]}
-                            onChange={(e) =>
-                              handleScenarioDescriptionChange(
-                                scenarioIndex,
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <h5 className="mb-3" style={{ fontSize: "1.1rem" }}>
-                            Other
-                          </h5>
-                          {scenario.other.map((item, otherIndex) => (
-                            <Row
-                              key={otherIndex}
-                              className="mb-2 align-items-center"
-                            >
-                              <Col xs={3}>
-                                <Form.Control
-                                  id={`scenarioOther${otherIndex}`}
-                                  type="input"
-                                  placeholder={`key${otherIndex + 1}`}
-                                  value={item[0] || ""}
-                                  onChange={(e) =>
-                                    handleOtherInfoChange(
-                                      scenarioIndex,
-                                      otherIndex,
-                                      "key",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </Col>
-                              <Col>
-                                <Form.Control
-                                  id={`scenarioOther-${scenarioIndex}`}
-                                  type="input"
-                                  placeholder="Value"
-                                  value={item[1] || ""}
-                                  onChange={(e) =>
-                                    handleOtherInfoChange(
-                                      scenarioIndex,
-                                      otherIndex,
-                                      "value",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </Col>
-                              <Col xs="auto">
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleRemoveOtherInfo(
-                                      scenarioIndex,
-                                      otherIndex,
-                                    )
-                                  }
-                                  style={{
-                                    width: "32px",
-                                    height: "32px",
-                                    padding: "4px",
-                                  }}
-                                  className="d-flex align-items-center justify-content-center"
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              </Col>
-                            </Row>
-                          ))}
-                          <div className="d-flex justify-content-start mt-2">
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={(e) =>
-                                handleAddOtherInfo(scenarioIndex, e)
-                              }
-                              className="d-flex align-items-center gap-1"
-                            >
-                              <Plus className="w-4 h-4" />
-                              Other Information
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>{" "}
-                  <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={handleAddScenario}
-                      className="mt-2 align-items-left"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Scenario
-                    </Button>
-                  </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
-                    Milestones
-                  </Form.Label>
-                  <div className="d-block">
-                    {form.milestones.map((milestone, milestoneIndex) => (
-                      <div
-                        key={milestoneIndex}
-                        className="border rounded p-3 mb-4"
-                      >
-                        {/* Milestone Header with Delete Button */}
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            {" "}
-                            {/* Set font size to 1.0rem */}
-                            Milestone {milestoneIndex + 1}
-                          </h4>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={(e) =>
-                              handleRemoveMilestone(milestoneIndex, e)
-                            }
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              padding: "4px",
-                            }}
-                            className="d-flex align-items-center justify-content-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        {/* Milestone Name */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`milestoneName-${milestoneIndex}`}
-                            type="input"
-                            placeholder="Milestone name"
-                            value={milestone.name}
-                            onChange={(e) => {
-                              handleMilestoneNameChange(
-                                milestoneIndex,
-                                e.target.value,
-                              );
-                            }}
-                          />
-                        </div>
-
-                        {/* Milestone Description */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`milestoneDescription-${milestoneIndex}`}
-                            as="textarea"
-                            rows={3}
-                            placeholder="Enter description"
-                            value={milestone.description[0]}
-                            onChange={(e) =>
-                              handleMilestoneDescriptionChange(
-                                milestoneIndex,
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        {/* Milestone Date */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Group
-                            id={`milestone-date-${milestoneIndex}`}
-                            className="w-100"
-                          >
-                            <Form.Label
-                              className="d-block text-start"
-                              style={{ fontSize: "1.0rem" }}
-                            >
-                              Milestone Date (YYYY-MM-DD)
-                            </Form.Label>
-                            <Form.Control
-                              id={`milestoneDate-${milestoneIndex}`}
-                              type="date"
-                              value={
-                                formatDateForInput(
-                                  form.milestones[milestoneIndex]
-                                    ?.milestone_date,
-                                ) || ""
-                              }
-                              onChange={(e) =>
-                                handleMilestoneDateChange(
-                                  milestoneIndex,
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </Form.Group>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={handleAddMilestone}
-                      className="mt-2 align-items-left"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Scenario
-                    </Button>
-                  </div>
-                  <Form.Label className="d-block text-start w-100 custom-form-label mt-3">
-                    Sensitivities
-                  </Form.Label>
-                  <div className="d-block">
-                    {form.sensitivities.map((sensitivity, sensitivityIndex) => (
-                      <div
-                        key={sensitivityIndex}
-                        className="border rounded p-3 mb-4"
-                      >
-                        {/* Sensitivity Header with Delete Button */}
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <h4 className="mb-0" style={{ fontSize: "1.1rem" }}>
-                            {" "}
-                            {/* Set font size to 1.0rem */}
-                            Sensitivity {sensitivityIndex + 1}
-                          </h4>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={(e) =>
-                              handleRemoveSensitivity(sensitivityIndex, e)
-                            }
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              padding: "4px",
-                            }}
-                            className="d-flex align-items-center justify-content-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        {/* Sensitivity Name */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`sensitivityName-${sensitivityIndex}`}
-                            type="input"
-                            placeholder="Sensitivity name"
-                            value={sensitivity.name}
-                            onChange={(e) => {
-                              setForm((prevForm) => {
-                                const newSensitivities = [
-                                  ...(prevForm.sensitivities || []),
-                                ];
-                                newSensitivities[sensitivityIndex].name =
-                                  e.target.value;
-                                return {
-                                  ...prevForm,
-                                  sensitivities: newSensitivities,
-                                };
-                              });
-                            }}
-                          />{" "}
-                        </div>
-                        {/* Sensitivity Description */}
-                        <div className="d-flex mb-3 align-items-center gap-2">
-                          <Form.Control
-                            id={`sensitivityDescription-${sensitivityIndex}`}
-                            as="textarea"
-                            rows={3}
-                            placeholder="Enter description"
-                            value={sensitivity.description[0]}
-                            onChange={(e) => {
-                              setForm((prevForm) => {
-                                const newSensitivities = [
-                                  ...(prevForm.sensitivities || []),
-                                ];
-                                newSensitivities[sensitivityIndex].description =
-                                  [e.target.value];
-                                return {
-                                  ...prevForm,
-                                  sensitivities: newSensitivities,
-                                };
-                              });
-                            }}
-                          />{" "}
-                        </div>
-                        {/* Sensitivity List Items */}
-                        <div className="mb-3">
-                          {sensitivity.list.map((item, listIndex) => (
-                            <div
-                              key={listIndex}
-                              className="d-flex mb-2 align-items-center gap-2"
-                            >
-                              <Form.Control
-                                id={`senstivityItem-${sensitivityIndex}`}
-                                type="input"
-                                placeholder="Enter sensitivity item"
-                                value={item}
-                                onChange={(e) => {
-                                  setForm((prevForm) => {
-                                    const newSensitivities = [
-                                      ...(prevForm.sensitivities || []),
-                                    ];
-                                    newSensitivities[sensitivityIndex].list[
-                                      listIndex
-                                    ] = e.target.value;
-                                    return {
-                                      ...prevForm,
-                                      sensitivities: newSensitivities,
-                                    };
-                                  });
-                                }}
-                              />
-                              {sensitivity.list.length > 1 && (
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  onClick={(e) =>
-                                    handleRemoveSensitivityListItem(
-                                      sensitivityIndex,
-                                      listIndex,
-                                      e,
-                                    )
-                                  }
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-
-                          {/* Add List Item Button */}
-                          <div className="d-flex justify-content-start mt-2">
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={(e) =>
-                                handleAddSensitivityListItem(
-                                  sensitivityIndex,
-                                  e,
-                                )
-                              }
-                              className="d-flex align-items-center gap-1"
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Item
-                            </Button>
-                          </div>
-                        </div>{" "}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="d-flex justify-content-start mt-2">
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={handleAddSensitivity}
-                      className="mt-2 align-items-left"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Sensitivity
-                    </Button>
-                  </div>
-                  <Button
-                    variant="primary"
-                    disabled={mutation.isPending}
-                    type="submit"
-                  >
-                    {mutation.isPending ? "Submitting..." : "Submit"}
-                  </Button>
-                </Form.Group>
-                <Row>
-                  {formError ? (
-                    <FormError errorMessage={formErrorMessage} />
-                  ) : null}
-                </Row>
-              </Form>
-            </Col>
+                    <span className="step-icon">
+                      {completedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
+                    </span>
+                    <span className="step-title">{step.title}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </Col>
-        <div
-          style={{
-            width: isExpanded ? "calc(30vw + 40px)" : "40px",
-            transition: "width 0.3s ease",
-            flexShrink: 0,
-          }}
-        >
-          <SideColumn
-            isExpanded={isExpanded}
-            onToggle={() => setIsExpanded(!isExpanded)}
-            documentation={documentation}
-          />
+
+          <div className="form-content-container">
+            {/* Error Alert - Displayed at the top of the form */}
+            {formError && (
+              <div className="error-container mb-4 text-start">
+                <div className="alert alert-danger">
+                  <h5 className="alert-heading text-start">{formErrorMessage}</h5>
+                  {errorDetails.length > 0 && (
+                    <div className="mt-2">
+                      <ul className="error-details-list mb-0 ps-3">
+                        {errorDetails.map((detail, idx) => (
+                          <li key={idx}>{detail}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <FormProvider {...methods}>
+              <Form>
+                {steps[currentStep].component}
+
+                <div className="form-action-buttons">
+                  <Button
+                    variant="outline-secondary"
+                    onClick={prevStep}
+                    disabled={currentStep === 0}
+                    className="action-button"
+                  >
+                    Previous
+                  </Button>
+
+                  <div className="action-buttons-right">
+                    <Button
+                      style={{ borderColor: "#0079c2", color: "#0079c2" }}
+                      variant="outline-primary"
+                      onClick={saveFormData}
+                      disabled={mutation.isPending}
+                      className="action-button me-2"
+                    >
+                      Save
+                    </Button>
+
+                    <Button
+                      style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
+                      variant="primary"
+                      onClick={saveAndContinue}
+                      disabled={mutation.isPending}
+                      className="action-button"
+                    >
+                      {currentStep === steps.length - 1
+                        ? (mutation.isPending ? "Submitting..." : "Submit")
+                        : "Save & Continue"}
+                    </Button>
+                  </div>
+                </div>
+              </Form>
+            </FormProvider>
+          </div>
         </div>
-      </Row>
-    </Container>
+      </Container>
+    </>
   );
 };
 

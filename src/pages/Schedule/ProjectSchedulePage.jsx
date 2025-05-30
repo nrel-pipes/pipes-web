@@ -107,7 +107,7 @@ const ProjectSchedulePage = () => {
 
   return (
     <>
-    <NavbarSub navData={{pAll: true, pName: effectivePname, pSchedule: true}} />
+    <NavbarSub navData={{pList: true, pName: effectivePname, pSchedule: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Project Schedule" />

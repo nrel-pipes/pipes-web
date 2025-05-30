@@ -566,7 +566,7 @@ const ProjectPipelinePage = () => {
 
   return (
     <>
-    <NavbarSub navData={{pAll: true, pName: effectivePname, pGraph: true}} />
+    <NavbarSub navData={{pList: true, pName: effectivePname, pGraph: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Project Pipeline" />

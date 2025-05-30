@@ -41,45 +41,37 @@ AxiosInstance.interceptors.request.use(
     return Promise.reject(error);
   },
 );
-
 AxiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
       const { status, data } = error.response;
 
-      switch (status) {
-        case 400:
-          throw new Error(
-            data.message || "Bad Request: Invalid data provided.",
-          );
-        case 401:
-          throw new Error("Unauthorized: Please check your access token.");
-        case 403:
-          throw new Error(
-            "Forbidden: You do not have permission to access this resource.",
-          );
-        case 404:
-          throw new Error(
-            data.message || "Not Found: The requested resource was not found.",
-          );
-        case 500:
-          throw new Error(
-            "Internal Server Error: Something went wrong on the server.",
-          );
-        case 502:
-        case 503:
-        case 504:
-          throw new Error("Server Unavailable: Please try again later.");
-        default:
-          throw new Error(data.message || `Unexpected Error: ${status}`);
-      }
-    } else if (error.request) {
-      throw new Error(
-        "No response from server. Please check your network connection.",
+      // Create custom error but preserve the response
+      const customError = new Error(
+        status === 400 ? (data.detail || data.message || "Bad Request: invalid data provided.") :
+        status === 401 ? "Unauthorized: Please check your access token." :
+        status === 403 ? "Forbidden: You do not have permission to access this resource." :
+        status === 404 ? (data.message || "Not Found: The requested resource was not found.") :
+        status === 500 ? "Internal Server Error: Something went wrong on the server." :
+        (status >= 502 && status <= 504) ? "Server Unavailable: Please try again later." :
+        (data.message || `Unexpected Error: ${status}`)
       );
+
+      // Copy the response to our custom error
+      customError.response = error.response;
+      customError.status = status;
+      customError.serverData = data;
+
+      return Promise.reject(customError);
+    } else if (error.request) {
+      const networkError = new Error(
+        "No response from server. Please check your network connection."
+      );
+      networkError.request = error.request;
+      return Promise.reject(networkError);
     } else {
-      throw new Error(error.message || "An unexpected error occurred.");
+      return Promise.reject(error);
     }
   },
 );

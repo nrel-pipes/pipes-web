@@ -1,4 +1,4 @@
-import { Pencil, Plus } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "../PageStyles.css";
@@ -6,15 +6,10 @@ import "./ContentHeader.css";
 
 function ContentHeader({
   title,
-  showCreateProjectButton = false,
   showUpdateProjectButton = false,
   cornerMark
 }) {
   const navigate = useNavigate();
-
-  const handleCreateProject = () => {
-    navigate("/create-project");
-  };
 
   const handleUpdateProject = () => {
     navigate("/update-project");
@@ -43,16 +38,6 @@ function ContentHeader({
           >
             <Pencil size={16} className="update-button-icon me-1" />
             Update project
-          </Button>
-        )}
-        {showCreateProjectButton && (
-          <Button
-            variant="primary"
-            className="create-button"
-            onClick={handleCreateProject}
-          >
-            <Plus size={16} className="create-button-icon" />
-            Create project
           </Button>
         )}
       </div>
