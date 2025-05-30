@@ -92,7 +92,7 @@ const ProjectMilestonesPage = () => {
 
   return (
     <>
-    <NavbarSub navData = {{pAll: true, pmAll: true}} />
+    <NavbarSub navData = {{pList: true, pmAll: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Upcoming Milestones" />

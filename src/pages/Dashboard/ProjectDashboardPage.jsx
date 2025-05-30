@@ -118,7 +118,7 @@ const ProjectDashboardPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pAll: true, pName: effectivePname }} />
+      <NavbarSub navData={{ pList: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           {/* TODO: Enabled this when we have the project update page */}
