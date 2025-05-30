@@ -48,7 +48,6 @@ export const postProject = async ({ data }) => {
     const response = await AxiosInstance.post("api/projects", data);
     return response.data;
   } catch (error) {
-    console.error("Failed to post project via request client:", error);
     throw error;
   }
 };
@@ -72,7 +71,7 @@ export const useCreateProjectMutation = () => {
       }
     },
     onError: (error) => {
-      console.error("Failed to create project:", error);
+      // console.error("Failed to create project:", error.response);
     },
   });
 };
