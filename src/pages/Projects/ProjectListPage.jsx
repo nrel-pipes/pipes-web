@@ -206,7 +206,7 @@ const ProjectBasicsPage = () => {
 
   return (
     <>
-    <NavbarSub navData={{pAll: true}} />
+    <NavbarSub navData={{pList: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Your Projects" cornerMark={filteredProjects.length} />
