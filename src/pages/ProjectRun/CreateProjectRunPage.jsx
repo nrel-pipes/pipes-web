@@ -440,7 +440,7 @@ const CreateProjectRunPage = () => {
 
   return (
     <>
-    <NavbarSub navData={{ pAll: true, pName: effectivePname }} />
+    <NavbarSub navData={{ pList: true, pName: effectivePname }} />
     <Container fluid className="p-0">
       <Row className="g-0" style={{ display: "flex", flexDirection: "row" }}>
         <Col style={{ flex: 1, transition: "margin-left 0.3s ease" }}>

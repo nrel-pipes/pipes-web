@@ -48,7 +48,6 @@ export const postProject = async ({ data }) => {
     const response = await AxiosInstance.post("api/projects", data);
     return response.data;
   } catch (error) {
-    console.error("Failed to post project via request client:", error);
     throw error;
   }
 };
@@ -63,16 +62,17 @@ export const useCreateProjectMutation = () => {
     onSuccess: (data) => {
       if (data && data.name) {
         setEffectivePname(data.name);
-        queryClient.invalidateQueries(["project-basics"]);
-        queryClient.invalidateQueries(["effective-project", data.name]);
+        queryClient.invalidateQueries({ queryKey: ["project-basics"] });
+        queryClient.invalidateQueries({ queryKey: ["effective-project", data.name] });
         // TODO: may have other queries to invalidate as well.
-        queryClient.prefetchQuery(["effective-project", data.name], () =>
-          getProject({ projectName: data.name })
-        );
+        queryClient.prefetchQuery({
+          queryKey: ["effective-project", data.name],
+          queryFn: () => getProject({ projectName: data.name })
+        });
       }
     },
     onError: (error) => {
-      console.error("Failed to create project:", error);
+      // console.error("Failed to create project:", error.response);
     },
   });
 };
@@ -105,16 +105,17 @@ export const useUpdateProjectMutation = () => {
         setEffectivePname(data.name);
 
         // Invalidate relevant queries
-        queryClient.invalidateQueries(["project-basics"]);
+        queryClient.invalidateQueries({ queryKey: ["project-basics"] });
 
-        queryClient.invalidateQueries(["effective-project", variables.projectName]);
+        queryClient.invalidateQueries({ queryKey: ["effective-project", variables.projectName] });
         if (variables.projectName !== data.name) {
-          queryClient.invalidateQueries(["effective-project", data.name]);
+          queryClient.invalidateQueries({ queryKey: ["effective-project", data.name] });
         }
 
-        queryClient.prefetchQuery(["effective-project", data.name], () =>
-          getProject({ projectName: data.name })
-        );
+        queryClient.prefetchQuery({
+          queryKey: ["effective-project", data.name],
+          queryFn: () => getProject({ projectName: data.name })
+        });
       }
     },
     onError: (error) => {

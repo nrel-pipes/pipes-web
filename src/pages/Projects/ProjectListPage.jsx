@@ -1,7 +1,7 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { jwtDecode } from "jwt-decode";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -182,12 +182,12 @@ const ProjectBasicsPage = () => {
               You don't have any projects yet. Get started with your first project!
             </p>
             <div className="empty-state-actions">
-              {/* <button variant="primary"
+              <button variant="primary"
                 className="create-button"
                 onClick={handleCreateProjectClick}>
                   <Plus size={16} className="create-button-icon" />
                   Create Project on Web
-              </button> */}
+              </button>
               <a
                 href="https://nrel-pipes.github.io/pipes-core/reference/workflows/initialize-a-project/"
                 target="_blank"
@@ -206,14 +206,14 @@ const ProjectBasicsPage = () => {
 
   return (
     <>
-    <NavbarSub navData={{pAll: true}} />
+    <NavbarSub navData={{pList: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
-        <ContentHeader title="Your Projects" showCreateProjectButton={false} cornerMark={filteredProjects.length} />
+        <ContentHeader title="Your Projects" cornerMark={filteredProjects.length} />
       </Row>
 
-      {/* Search bar for filtering projects - aligned to the left */}
-      <Row className="mb-4 mt-2">
+      {/* Search bar and Create Project button */}
+      <Row className="mb-4 mt-2 align-items-center">
         <Col md={6} lg={4} className="ms-0">
           <div className="search-container">
             <input
@@ -230,6 +230,23 @@ const ProjectBasicsPage = () => {
               </svg>
             </div>
           </div>
+        </Col>
+        <Col className="d-flex justify-content-end">
+          <button
+            className="btn btn-primary px-4 py-3"
+            onClick={handleCreateProjectClick}
+            style={{
+              backgroundColor: '#0079c2',
+              borderColor: '#0079c2',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              borderRadius: '6px',
+              minWidth: '180px'
+            }}
+          >
+            <Plus size={20} className="me-2" />
+            Create Project
+          </button>
         </Col>
       </Row>
 
