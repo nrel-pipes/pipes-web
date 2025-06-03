@@ -23,6 +23,8 @@ import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 // Projects
 import ProjectBasicsPage from "./pages/Projects/ProjectListPage";
 
+// Pull model from catalog into project
+
 // Project Milestones
 import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";
 
@@ -60,6 +62,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
   useEffect(() => {
@@ -75,15 +78,26 @@ function App() {
     return () => clearInterval(interval);
   }, [checkAuthStatus]);
 
+  const handleSidebarToggle = (expanded) => {
+    setSidebarExpanded(expanded);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="App">
-        {isAuthenticated ? "" : <SiteBanner />}
-        {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+      <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
+        {!isAuthenticated && <div className="site-banner"><SiteBanner /></div>}
+
+        <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
+          {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+        </div>
 
         <BrowserRouter>
-          <div className="app-container">
-            {isAuthenticated && <Sidebar />}
+          <div className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}>
+            {isAuthenticated && (
+              <div className="sidebar">
+                <Sidebar onToggle={handleSidebarToggle} />
+              </div>
+            )}
             <div className="Content">
               <Routes>
                 {/* Home route */}
@@ -157,7 +171,7 @@ function App() {
             </div>
           </div>
         </BrowserRouter>
-        {isAuthenticated ? "" : <SiteFooter />}
+        {!isAuthenticated && <SiteFooter />}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
