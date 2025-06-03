@@ -2,14 +2,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Calendar, Check, FileText, Layers, Lightbulb, List, Minus, Plus, Users, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
-import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
+import { useCreateProjectMutation, useGetProjectsQuery } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
@@ -21,32 +20,131 @@ import "../FormStyles.css";
 import "../PageStyles.css";
 import "./CreateModelCatalogPage.css";
 
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Col from "react-bootstrap/Col";
 
 const StepBasicInfo = () => {
-  const { register, formState: { errors } } = useFormContext();
+  const { register, formState: { errors }, setValue, watch } = useFormContext();
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  // Using the correct hook name from the available exports
+  const {
+    data: projects = [],
+    isLoading: isLoadingProjects,
+    isError: isErrorProjects,
+    error: errorProjects,
+  } = useGetProjectsQuery();
+
+  // Loading state - following ModelCatalog pattern
+  if (isLoadingProjects) {
+    return (
+      <div className="form-container">
+        <h4 className="form-section-title">Basic Info</h4>
+        <Row className="mt-3">
+          <Col className="text-center">
+            <FontAwesomeIcon icon={faSpinner} spin size="xl" />
+            <p className="mt-2">Loading projects...</p>
+          </Col>
+        </Row>
+      </div>
+    );
+  }
+
+  // Error state - following ModelCatalog pattern
+  if (isErrorProjects) {
+    return (
+      <div className="form-container">
+        <h4 className="form-section-title">Basic Info</h4>
+        <Row className="mt-3">
+          <Col>
+            <div className="alert alert-danger">
+              <h5>Error Loading Projects</h5>
+              <p>{errorProjects?.message || "An unknown error occurred while fetching projects."}</p>
+              <p>Please try refreshing the page or contact support if the problem persists.</p>
+            </div>
+          </Col>
+        </Row>
+      </div>
+    );
+  }
+
+  // Empty state - following ModelCatalog pattern
+  if (!projects || projects.length === 0) {
+    return (
+      <div className="form-container">
+        <h4 className="form-section-title">Basic Info</h4>
+        <div className="empty-state-container">
+          <div className="empty-state-card">
+            <div className="empty-state-icon">
+              <i className="bi bi-folder-plus"></i>
+            </div>
+            <h5 className="empty-state-title">No Projects Found</h5>
+            <p className="empty-state-description">
+              There are no projects available to select from.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="form-container">
       <h4 className="form-section-title">Basic Info</h4>
 
       <div className="form-content-section">
+        {/* Project Selection Section */}
         <div className="form-field-group">
           <Form.Label className="form-field-label required-field">
-            <span className="form-field-text">Project Name (Identifer) </span>
+            <span className="form-field-text">Select Project</span>
           </Form.Label>
-          <Form.Control
-            id="projectName"
+          <Form.Select
+            id="projectSelect"
             className="form-control-lg form-primary-input"
-            isInvalid={!!errors.name}
-            {...register("name", { required: "Project name (identifier) is required" })}
+            isInvalid={!!errors.selectedProject}
+            value={selectedProject?.id || ''}
+            onChange={(e) => {
+              const projectId = e.target.value;
+              if (projectId) {
+                const project = projects.find(p => p.id === projectId);
+                setSelectedProject(project);
+                setValue("selectedProject", project);
+                setValue("name", project.name || project.identifier);
+                setValue("selectedProject", project, { shouldValidate: true });
+              } else {
+                setSelectedProject(null);
+                setValue("selectedProject", null);
+                setValue("name", "");
+              }
+            }}
+          >
+            <option value="">Choose a project...</option>
+            {projects.map((project) => (
+              <option key={project.id || project.name} value={project.id}>
+                {project.display_name || project.title || project.name}
+                {project.name && project.name !== (project.display_name || project.title)
+                  ? ` (${project.name})`
+                  : ''
+                }
+              </option>
+            ))}
+          </Form.Select>
+
+          {/* Hidden input for form validation */}
+          <input
+            type="hidden"
+            {...register("selectedProject", { required: "Please select a project" })}
           />
-          {errors.name && (
+
+          {errors.selectedProject && (
             <Form.Control.Feedback type="invalid">
-              {errors.name.message}
+              {errors.selectedProject.message}
             </Form.Control.Feedback>
           )}
         </div>
 
+        {/* Remaining form fields */}
         <div className="form-field-group">
           <Form.Label className="form-field-label required-field">
             <span className="form-field-text">Project Title</span>
@@ -76,7 +174,6 @@ const StepBasicInfo = () => {
             {...register("description")}
           />
         </div>
-
       </div>
     </div>
   );
