@@ -82,13 +82,20 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="App">
-        {isAuthenticated ? "" : <SiteBanner />}
-        {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+      <div className={`App ${!isAuthenticated ? 'has-banner' : ''}`}>
+        {!isAuthenticated && <div className="site-banner"><SiteBanner /></div>}
+
+        <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
+          {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+        </div>
 
         <BrowserRouter>
-          <div className="app-container">
-            {isAuthenticated && <Sidebar />}
+          <div className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}>
+            {isAuthenticated && (
+              <div className="sidebar">
+                <Sidebar />
+              </div>
+            )}
             <div className="Content">
               <Routes>
                 {/* Home route */}
@@ -176,7 +183,7 @@ function App() {
             </div>
           </div>
         </BrowserRouter>
-        {isAuthenticated ? "" : <SiteFooter />}
+        {!isAuthenticated && <SiteFooter />}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
