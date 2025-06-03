@@ -24,11 +24,18 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Col from "react-bootstrap/Col";
 
+// You'll need to create this hook or import it from the correct location
+import { useGetProjectQuery } from "../../hooks/useProjectQuery";
+import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
+
 const StepBasicInfo = () => {
   const { register, formState: { errors }, setValue, watch } = useFormContext();
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProjectRun, setSelectedProjectRun] = useState(null);
+  const [projectRunsMap, setProjectRunsMap] = useState({});
+  const [isLoadingAllProjectRuns, setIsLoadingAllProjectRuns] = useState(false);
 
-  // Using the correct hook name from the available exports
+  // Get the list of all projects
   const {
     data: projects = [],
     isLoading: isLoadingProjects,
@@ -36,8 +43,40 @@ const StepBasicInfo = () => {
     error: errorProjects,
   } = useGetProjectsQuery();
 
+  // Fetch project runs for the selected project only
+  const {
+    data: selectedProjectRuns = [],
+    isLoading: isLoadingSelectedProjectRuns,
+    isError: isErrorSelectedProjectRuns,
+  } = useGetProjectRunsQuery(
+    selectedProject?.name,
+    { enabled: !!selectedProject?.name }
+  );
+
+  // Effect to update the project runs map when a project is selected and its runs are fetched
+  useEffect(() => {
+    if (selectedProject?.name && selectedProjectRuns.length > 0) {
+      setProjectRunsMap(prevMap => ({
+        ...prevMap,
+        [selectedProject.name]: selectedProjectRuns
+      }));
+    }
+  }, [selectedProject, selectedProjectRuns]);
+
+  // Reset project run selection when project changes
+  useEffect(() => {
+    if (selectedProject) {
+      setSelectedProjectRun(null);
+      setValue("selectedProjectRun", null);
+    }
+  }, [selectedProject, setValue]);
+
+  // Get available project runs for the selected project
+  const availableProjectRuns = selectedProject?.name ?
+    projectRunsMap[selectedProject.name] || [] : [];
+
   // Loading state - following ModelCatalog pattern
-  if (isLoadingProjects) {
+  if (isLoadingProjects || isLoadingAllProjectRuns) {
     return (
       <div className="form-container">
         <h4 className="form-section-title">Basic Info</h4>
@@ -103,15 +142,17 @@ const StepBasicInfo = () => {
             id="projectSelect"
             className="form-control-lg form-primary-input"
             isInvalid={!!errors.selectedProject}
-            value={selectedProject?.id || ''}
+            value={selectedProject?.name || ''}
             onChange={(e) => {
-              const projectId = e.target.value;
-              if (projectId) {
-                const project = projects.find(p => p.id === projectId);
-                setSelectedProject(project);
-                setValue("selectedProject", project);
-                setValue("name", project.name || project.identifier);
-                setValue("selectedProject", project, { shouldValidate: true });
+              const projectName = e.target.value;
+              if (projectName) {
+                const project = projects.find(p => p.name === projectName);
+                if (project) {
+                  setSelectedProject(project);
+                  setValue("selectedProject", project);
+                  setValue("name", project.name);
+                  setValue("selectedProject", project, { shouldValidate: true });
+                }
               } else {
                 setSelectedProject(null);
                 setValue("selectedProject", null);
@@ -120,10 +161,13 @@ const StepBasicInfo = () => {
             }}
           >
             <option value="">Choose a project...</option>
-            {projects.map((project) => (
-              <option key={project.id || project.name} value={project.id}>
-                {project.display_name || project.title || project.name}
-                {project.name && project.name !== (project.display_name || project.title)
+            {projects.map((project, index) => (
+              <option
+                key={project.name || index}
+                value={project.name}
+              >
+                {project.title || project.name}
+                {project.title && project.title !== project.name
                   ? ` (${project.name})`
                   : ''
                 }
@@ -140,6 +184,82 @@ const StepBasicInfo = () => {
           {errors.selectedProject && (
             <Form.Control.Feedback type="invalid">
               {errors.selectedProject.message}
+            </Form.Control.Feedback>
+          )}
+        </div>
+
+        {/* Project Run Selection Section */}
+        <div className="form-field-group">
+          <Form.Label className="form-field-label required-field">
+            <span className="form-field-text">Select Project Run</span>
+          </Form.Label>
+          <Form.Select
+            id="projectRunSelect"
+            className={`form-control-lg ${!selectedProject ? 'form-secondary-input' : 'form-primary-input'}`}
+            isInvalid={!!errors.selectedProjectRun}
+            value={selectedProjectRun?.name || ''}
+            disabled={!selectedProject || isLoadingSelectedProjectRuns || availableProjectRuns.length === 0}
+            onChange={(e) => {
+              const projectRunName = e.target.value;
+              if (projectRunName) {
+                const projectRun = availableProjectRuns.find(pr => pr.name === projectRunName);
+                if (projectRun) {
+                  setSelectedProjectRun(projectRun);
+                  setValue("selectedProjectRun", projectRun);
+                  setValue("selectedProjectRun", projectRun, { shouldValidate: true });
+                }
+              } else {
+                setSelectedProjectRun(null);
+                setValue("selectedProjectRun", null);
+              }
+            }}
+          >
+            <option value="">
+              {!selectedProject
+                ? "Select a project first..."
+                : isLoadingSelectedProjectRuns
+                  ? "Loading project runs..."
+                  : availableProjectRuns.length === 0
+                    ? "No runs available for this project"
+                    : "Choose a project run..."
+              }
+            </option>
+            {availableProjectRuns.map((projectRun, index) => (
+              <option
+                key={projectRun.name || index}
+                value={projectRun.name}
+              >
+                {projectRun.title || projectRun.name}
+                {projectRun.title && projectRun.title !== projectRun.name
+                  ? ` (${projectRun.name})`
+                  : ''
+                }
+              </option>
+            ))}
+          </Form.Select>
+
+          {isLoadingSelectedProjectRuns && selectedProject && (
+            <div className="text-center mt-2">
+              <FontAwesomeIcon icon={faSpinner} spin size="sm" />
+              <span className="ms-2">Loading runs...</span>
+            </div>
+          )}
+
+          {isErrorSelectedProjectRuns && selectedProject && (
+            <div className="text-danger mt-2">
+              Error loading project runs. Please try again.
+            </div>
+          )}
+
+          {/* Hidden input for form validation */}
+          <input
+            type="hidden"
+            {...register("selectedProjectRun", { required: "Please select a project run" })}
+          />
+
+          {errors.selectedProjectRun && (
+            <Form.Control.Feedback type="invalid">
+              {errors.selectedProjectRun.message}
             </Form.Control.Feedback>
           )}
         </div>
@@ -178,6 +298,7 @@ const StepBasicInfo = () => {
     </div>
   );
 };
+
 
 const StepRequirements = () => {
   const { getValues, setValue, watch } = useFormContext();
