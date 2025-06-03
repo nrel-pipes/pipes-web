@@ -470,8 +470,12 @@ const StepRequirements = () => {
 };
 
 const StepScenarios = () => {
-  const { getValues, setValue } = useFormContext();
+  const { getValues, setValue, watch } = useFormContext();
   const [scenarios, setScenarios] = useState([]);
+  const selectedProject = watch("selectedProject");
+
+  // Get available project scenarios from the selected project
+  const availableProjectScenarios = selectedProject?.scenarios || [];
 
   useEffect(() => {
     const formValues = getValues();
@@ -503,6 +507,22 @@ const StepScenarios = () => {
   const updateScenarioName = (index, value) => {
     const newScenarios = [...scenarios];
     newScenarios[index].name = value;
+
+    // If selecting from existing scenarios, populate the description and other info
+    if (availableProjectScenarios.length > 0) {
+      const selectedScenario = availableProjectScenarios.find(s => s.name === value);
+      if (selectedScenario) {
+        // Handle description - convert string to array if needed
+        newScenarios[index].description = [selectedScenario.description || ""];
+
+        // Handle other - convert object to array pairs for UI
+        if (selectedScenario.other && typeof selectedScenario.other === 'object') {
+          newScenarios[index].other = Object.entries(selectedScenario.other)
+            .map(([key, value]) => [key, value]);
+        }
+      }
+    }
+
     setScenarios(newScenarios);
     setValue("scenarios", newScenarios, { shouldDirty: true });
   };
@@ -523,7 +543,6 @@ const StepScenarios = () => {
 
   const updateOtherInfo = (scenarioIndex, otherIndex, keyOrValue, value) => {
     const newScenarios = [...scenarios];
-    // Store as array pairs for UI manipulation, will be converted to object on submission
     const currentPair = newScenarios[scenarioIndex].other[otherIndex] || ["", ""];
     newScenarios[scenarioIndex].other[otherIndex] =
       keyOrValue === "key"
@@ -569,13 +588,54 @@ const StepScenarios = () => {
               <Form.Label className="form-field-label">
                 <span className="form-field-text">Scenario Name</span>
               </Form.Label>
-              <Form.Control
-                id={`scenario${scenarioIndex}`}
-                type="text"
-                value={scenario.name}
-                onChange={(e) => updateScenarioName(scenarioIndex, e.target.value)}
-                className="form-primary-input"
-              />
+
+              {availableProjectScenarios.length > 0 ? (
+                <Form.Select
+                  id={`scenario${scenarioIndex}`}
+                  value={scenario.name || ''}
+                  onChange={(e) => updateScenarioName(scenarioIndex, e.target.value)}
+                  className="form-control-lg form-primary-input"
+                >
+                  <option value="">Choose a scenario...</option>
+                  {availableProjectScenarios.map((projectScenario, index) => (
+                    <option
+                      key={index}
+                      value={projectScenario.name}
+                    >
+                      {projectScenario.name || `Scenario ${index + 1}`}
+                    </option>
+                  ))}
+                  <option value="custom">Create custom scenario...</option>
+                </Form.Select>
+              ) : (
+                <Form.Control
+                  id={`scenario${scenarioIndex}`}
+                  type="text"
+                  value={scenario.name}
+                  onChange={(e) => updateScenarioName(scenarioIndex, e.target.value)}
+                  className="form-primary-input"
+                  placeholder="Enter scenario name"
+                />
+              )}
+
+              {/* Show text input for custom scenario name if "custom" is selected */}
+              {availableProjectScenarios.length > 0 && scenario.name === "custom" && (
+                <Form.Control
+                  id={`scenarioCustom${scenarioIndex}`}
+                  type="text"
+                  value={scenario.customName || ""}
+                  onChange={(e) => {
+                    const newScenarios = [...scenarios];
+                    newScenarios[scenarioIndex].customName = e.target.value;
+                    // Update the actual name property as well
+                    newScenarios[scenarioIndex].name = e.target.value;
+                    setScenarios(newScenarios);
+                    setValue("scenarios", newScenarios, { shouldDirty: true });
+                  }}
+                  className="form-primary-input mt-2"
+                  placeholder="Enter custom scenario name"
+                />
+              )}
             </div>
 
             <div className="form-field-group">
