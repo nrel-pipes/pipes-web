@@ -62,7 +62,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true); // Track sidebar state
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
   useEffect(() => {
