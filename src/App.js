@@ -65,6 +65,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true); // Track sidebar state
   const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
   useEffect(() => {
@@ -80,9 +81,13 @@ function App() {
     return () => clearInterval(interval);
   }, [checkAuthStatus]);
 
+  const handleSidebarToggle = (expanded) => {
+    setSidebarExpanded(expanded);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <div className={`App ${!isAuthenticated ? 'has-banner' : ''}`}>
+      <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
         {!isAuthenticated && <div className="site-banner"><SiteBanner /></div>}
 
         <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
@@ -93,7 +98,7 @@ function App() {
           <div className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}>
             {isAuthenticated && (
               <div className="sidebar">
-                <Sidebar />
+                <Sidebar onToggle={handleSidebarToggle} />
               </div>
             )}
             <div className="Content">

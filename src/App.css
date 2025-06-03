@@ -1,4 +1,3 @@
-/* Your existing App.css styles */
 .App {
   text-align: center;
 }
@@ -44,30 +43,36 @@
   margin-top: 60px;
 }
 
-/* Force consistent sidebar width - make it sticky */
 .app-container > .sidebar {
-  flex: 0 0 auto; /* Don't grow, don't shrink, respect its base width */
+  flex: 0 0 auto;
   position: fixed;
-  top: 60px; /* Position below the fixed navbar */
+  top: 60px;
   left: 0;
   bottom: 0;
   z-index: 999;
-  background-color: #fff; /* Add background color */
-  overflow-y: auto; /* Allow scrolling within sidebar if content is too long */
-  box-shadow: 2px 0 4px rgba(0,0,0,0.1); /* Optional: add shadow */
-  width: 250px; /* Set explicit width since it's now fixed */
+  background-color: #fff;
+  overflow-y: auto;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+  width: 200px;
+  transition: width 0.3s;
 }
 
-/* Updated Content to work with fixed sidebar */
+.sidebar-collapsed .app-container > .sidebar {
+  width: 60px;
+}
+
 .Content {
-  flex: 1;  /* Take up remaining space */
+  flex: 1;
   transition: margin-left 0.3s;
   overflow-y: auto;
-  margin-left: 250px; /* Add left margin when sidebar is present */
-  padding: 20px; /* Add some padding */
+  margin-left: 200px;
+  padding: 20px;
 }
 
-/* Make the top navbar sticky */
+.sidebar-collapsed .Content {
+  margin-left: 60px;
+}
+
 .site-navbar-fluid,
 .site-navbar {
   position: fixed;
@@ -75,24 +80,22 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  background-color: #fff; /* Add background color to prevent content showing through */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: add shadow for better visual separation */
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* When not authenticated (no sidebar), don't add left margin */
 .app-container:not(.has-sidebar) .Content {
   margin-left: 0;
 }
 
-/* Responsive adjustments for mobile */
 @media (max-width: 768px) {
   .sidebar {
-    transform: translateX(-100%); /* Hide sidebar by default on mobile */
+    transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
 
   .sidebar.mobile-open {
-    transform: translateX(0); /* Show sidebar when mobile menu is open */
+    transform: translateX(0);
   }
 
   .Content {
@@ -100,26 +103,24 @@
   }
 }
 
-/* Optional: Banner positioning if it needs to be sticky too */
 .site-banner {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1001; /* Higher than navbar */
+  z-index: 1001;
   background-color: #fff;
 }
 
-/* Adjust navbar position when banner is present */
 .has-banner .site-navbar-fluid,
 .has-banner .site-navbar {
-  top: 40px; /* Adjust based on banner height */
+  top: 40px;
 }
 
 .has-banner .app-container {
-  margin-top: 100px; /* Navbar height + banner height */
+  margin-top: 100px;
 }
 
 .has-banner .sidebar {
-  top: 100px; /* Navbar height + banner height */
+  top: 100px;
 }
