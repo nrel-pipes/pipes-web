@@ -23,6 +23,11 @@ import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 // Projects
 import ProjectBasicsPage from "./pages/Projects/ProjectListPage";
 
+import ModelCatalog from "./pages/models/modelCatalog";
+
+// Pull model from catalog into project
+import PullModel from "./pages/models/PullModel";
+
 // Project Milestones
 import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";
 
@@ -60,6 +65,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true); // Track sidebar state
   const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
   useEffect(() => {
@@ -75,15 +81,26 @@ function App() {
     return () => clearInterval(interval);
   }, [checkAuthStatus]);
 
+  const handleSidebarToggle = (expanded) => {
+    setSidebarExpanded(expanded);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="App">
-        {isAuthenticated ? "" : <SiteBanner />}
-        {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+      <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
+        {!isAuthenticated && <div className="site-banner"><SiteBanner /></div>}
+
+        <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
+          {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+        </div>
 
         <BrowserRouter>
-          <div className="app-container">
-            {isAuthenticated && <Sidebar />}
+          <div className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}>
+            {isAuthenticated && (
+              <div className="sidebar">
+                <Sidebar onToggle={handleSidebarToggle} />
+              </div>
+            )}
             <div className="Content">
               <Routes>
                 {/* Home route */}
@@ -94,6 +111,20 @@ function App() {
                   exact
                   element={
                     isAuthenticated ? <ProjectBasicsPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/modelsCatalog"
+                  exact
+                  element={
+                    isAuthenticated ? <ModelCatalog /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/pullModel"
+                  exact
+                  element={
+                    isAuthenticated ? <PullModel /> : <Navigate to="/login" />
                   }
                 />
                 <Route
@@ -157,7 +188,7 @@ function App() {
             </div>
           </div>
         </BrowserRouter>
-        {isAuthenticated ? "" : <SiteFooter />}
+        {!isAuthenticated && <SiteFooter />}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
