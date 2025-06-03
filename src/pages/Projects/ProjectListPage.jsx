@@ -106,6 +106,9 @@ const ProjectBasicsPage = () => {
     navigate("/project/dashboard");
   };
 
+  const handleCreateProjectClick = () => {
+    navigate("/create-project");
+  };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -181,7 +184,7 @@ const ProjectBasicsPage = () => {
             <div className="empty-state-actions">
               <button variant="primary"
                 className="create-button"
-                // onClick={handleCreateProjectClick}
+                onClick={handleCreateProjectClick}
                 >
                   <Plus size={16} className="create-button-icon" />
                   Create Project on Web
@@ -232,7 +235,7 @@ const ProjectBasicsPage = () => {
         <Col className="d-flex justify-content-end">
           <button
             className="btn btn-primary px-4 py-3"
-            // onClick={handleCreateProjectClick}
+            onClick={handleCreateProjectClick}
             style={{
               backgroundColor: '#0079c2',
               borderColor: '#0079c2',

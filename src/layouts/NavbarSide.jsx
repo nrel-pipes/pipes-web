@@ -6,6 +6,7 @@ import {
   FaFlag,
   FaKey,
   FaLayerGroup,
+  FaCube,
   FaLock,
   FaProjectDiagram,
   FaSignOutAlt,
@@ -84,8 +85,8 @@ const Sidebar = ({ onToggle }) => {
 
           <li>
             <Link to="/modelsCatalog" className={isActive("/modelsCatalog")} title="modelsCatalog">
-              <span className="icon"><FaLayerGroup /></span>
-              {expanded && <span className="nav-text">Models</span>}
+              <span className="icon"><FaCube /></span>
+              {expanded && <span className="nav-text">Model Catalog</span>}
             </Link>
           </li>
 

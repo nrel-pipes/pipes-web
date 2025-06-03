@@ -1,0 +1,78 @@
+.model-source-banner {
+  background-color: #f0f7ff;
+  border-left: 4px solid #0079c2;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.model-source-name {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+  background-color: rgba(0, 121, 194, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.model-source-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.model-source-type {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Review section improvements */
+.review-model-info {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.review-heading {
+  margin-bottom: 15px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #0079c2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-heading svg {
+  color: #0079c2;
+}
+
+.review-model-label {
+  font-weight: 500;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.review-model-value {
+  flex: 1;
+}
+
+.review-section {
+  margin-bottom: 25px;
+}
+
+/* Form section enhancement */
+.form-section-subtitle {
+  font-size: 0.9rem;
+  font-weight: normal;
+  font-style: italic;
+  color: #666;
+  margin-top: 5px;
+}
+
+.form-info-text {
+  font-size: 0.9rem;
+  color: #666;
+  margin: -5px 0 15px 0;
+}
+
+/* Inherit all other form styling from FormStyles.css */
