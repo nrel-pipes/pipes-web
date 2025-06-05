@@ -455,7 +455,20 @@ const StepRequirements = () => {
 const StepScenarios = () => {
   const { getValues, setValue, watch } = useFormContext();
   const [scenarios, setScenarios] = useState([]);
+
+  // Fix 1: Correct the typo in variable name
   const selectedProject = watch("selectedProject");
+  const selectedProjectRun = watch("selectedProjectRun"); // Fixed typo
+
+  // Fix 2: Add more robust watching with additional debugging
+  const watchedValues = watch(["selectedProject", "selectedProjectRun"]);
+
+  // Fix 3: Add debugging to see what values are being received
+  useEffect(() => {
+    console.log("StepScenarios - selectedProject:", selectedProject);
+    console.log("StepScenarios - selectedProjectRun:", selectedProjectRun);
+    console.log("StepScenarios - watchedValues:", watchedValues);
+  }, [selectedProject, selectedProjectRun, watchedValues]);
 
   // Get available project scenarios from the selected project
   const availableProjectScenarios = selectedProject?.scenarios || [];
@@ -469,15 +482,16 @@ const StepScenarios = () => {
     }
   }, [getValues]);
 
-  // Reset scenarios when project changes
+  // Fix 4: Make the reset effect more robust
   useEffect(() => {
     if (selectedProject) {
+      console.log("Project changed, resetting scenarios. New project:", selectedProject);
       // Reset to a single empty scenario when project changes
       const resetScenarios = [{ name: "", description: [""], other: [] }];
       setScenarios(resetScenarios);
       setValue("scenarios", resetScenarios, { shouldDirty: true });
     }
-  }, [selectedProject?.id, setValue]); // Use project id to detect actual project changes
+  }, [selectedProject?.name, selectedProject?.id, setValue]); // Watch both name and id
 
   useEffect(() => {
     if (scenarios.length > 0) {
@@ -584,6 +598,10 @@ const StepScenarios = () => {
     setValue("scenarios", newScenarios, { shouldDirty: true });
   };
 
+  // Fix 5: More detailed debugging for the project check
+  console.log("Render check - selectedProject:", selectedProject);
+  console.log("Render check - availableProjectScenarios:", availableProjectScenarios);
+
   // Show message if no project is selected
   if (!selectedProject) {
     return (
@@ -591,6 +609,7 @@ const StepScenarios = () => {
         <h4 className="form-section-title">Project Scenarios</h4>
         <div className="alert alert-info">
           <p>Please select a project first to configure scenarios.</p>
+          <p><small>Debug: selectedProject is {typeof selectedProject} - {JSON.stringify(selectedProject)}</small></p>
         </div>
       </div>
     );
@@ -599,6 +618,16 @@ const StepScenarios = () => {
   return (
     <div className="form-container">
       <h4 className="form-section-title">Project Scenarios</h4>
+
+      {/* Debug information */}
+      <div className="alert alert-secondary mb-3">
+        <small>
+          <strong>Debug Info:</strong><br/>
+          Selected Project: {selectedProject?.name || 'undefined'}<br/>
+          Selected Project Run: {selectedProjectRun?.name || 'undefined'}<br/>
+          Available Scenarios: {availableProjectScenarios.length}
+        </small>
+      </div>
 
       {/* Show available scenarios info */}
       {availableProjectScenarios.length > 0 && (
