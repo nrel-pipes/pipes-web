@@ -266,23 +266,6 @@ const StepBasicInfo = () => {
 
         {/* Remaining form fields */}
         <div className="form-field-group">
-          <Form.Label className="form-field-label required-field">
-            <span className="form-field-text">Project Title</span>
-          </Form.Label>
-          <Form.Control
-            id="projectTitle"
-            className="form-control-lg form-primary-input"
-            isInvalid={!!errors.title}
-            {...register("title", { required: "Project title is required" })}
-          />
-          {errors.title && (
-            <Form.Control.Feedback type="invalid">
-              {errors.title.message}
-            </Form.Control.Feedback>
-          )}
-        </div>
-
-        <div className="form-field-group">
           <Form.Label className="form-field-label">
             <span className="form-field-text">Project Description</span>
           </Form.Label>
@@ -486,6 +469,16 @@ const StepScenarios = () => {
     }
   }, [getValues]);
 
+  // Reset scenarios when project changes
+  useEffect(() => {
+    if (selectedProject) {
+      // Reset to a single empty scenario when project changes
+      const resetScenarios = [{ name: "", description: [""], other: [] }];
+      setScenarios(resetScenarios);
+      setValue("scenarios", resetScenarios, { shouldDirty: true });
+    }
+  }, [selectedProject?.id, setValue]); // Use project id to detect actual project changes
+
   useEffect(() => {
     if (scenarios.length > 0) {
       setValue("scenarios", scenarios, { shouldDirty: true });
@@ -506,23 +499,47 @@ const StepScenarios = () => {
 
   const updateScenarioName = (index, value) => {
     const newScenarios = [...scenarios];
-    newScenarios[index].name = value;
 
-    // If selecting from existing scenarios, populate the description and other info
-    if (availableProjectScenarios.length > 0) {
+    // Handle custom scenario case
+    if (value === "custom") {
+      newScenarios[index] = {
+        name: "custom",
+        customName: "",
+        description: [""],
+        other: []
+      };
+    } else if (value === "") {
+      // Clear selection
+      newScenarios[index] = {
+        name: "",
+        description: [""],
+        other: []
+      };
+    } else {
+      // If selecting from existing scenarios, populate the description and other info
       const selectedScenario = availableProjectScenarios.find(s => s.name === value);
       if (selectedScenario) {
-        // Handle description - convert string to array if needed
-        newScenarios[index].description = [selectedScenario.description || ""];
-
-        // Handle other - convert object to array pairs for UI
-        if (selectedScenario.other && typeof selectedScenario.other === 'object') {
-          newScenarios[index].other = Object.entries(selectedScenario.other)
-            .map(([key, value]) => [key, value]);
-        }
+        newScenarios[index] = {
+          name: value,
+          description: [selectedScenario.description || ""],
+          other: selectedScenario.other && typeof selectedScenario.other === 'object'
+            ? Object.entries(selectedScenario.other).map(([key, val]) => [key, val])
+            : []
+        };
+      } else {
+        // Fallback for manual entry when no dropdown available
+        newScenarios[index].name = value;
       }
     }
 
+    setScenarios(newScenarios);
+    setValue("scenarios", newScenarios, { shouldDirty: true });
+  };
+
+  const updateCustomScenarioName = (index, value) => {
+    const newScenarios = [...scenarios];
+    newScenarios[index].customName = value;
+    newScenarios[index].name = value; // Keep name in sync for form submission
     setScenarios(newScenarios);
     setValue("scenarios", newScenarios, { shouldDirty: true });
   };
@@ -536,6 +553,9 @@ const StepScenarios = () => {
 
   const addOtherInfo = (scenarioIndex) => {
     const newScenarios = [...scenarios];
+    if (!newScenarios[scenarioIndex].other) {
+      newScenarios[scenarioIndex].other = [];
+    }
     newScenarios[scenarioIndex].other.push(["", ""]);
     setScenarios(newScenarios);
     setValue("scenarios", newScenarios, { shouldDirty: true });
@@ -543,7 +563,10 @@ const StepScenarios = () => {
 
   const updateOtherInfo = (scenarioIndex, otherIndex, keyOrValue, value) => {
     const newScenarios = [...scenarios];
-    const currentPair = newScenarios[scenarioIndex].other[otherIndex] || ["", ""];
+    if (!newScenarios[scenarioIndex].other[otherIndex]) {
+      newScenarios[scenarioIndex].other[otherIndex] = ["", ""];
+    }
+    const currentPair = newScenarios[scenarioIndex].other[otherIndex];
     newScenarios[scenarioIndex].other[otherIndex] =
       keyOrValue === "key"
         ? [value, currentPair[1]]
@@ -561,9 +584,35 @@ const StepScenarios = () => {
     setValue("scenarios", newScenarios, { shouldDirty: true });
   };
 
+  // Show message if no project is selected
+  if (!selectedProject) {
+    return (
+      <div className="form-container">
+        <h4 className="form-section-title">Project Scenarios</h4>
+        <div className="alert alert-info">
+          <p>Please select a project first to configure scenarios.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="form-container">
       <h4 className="form-section-title">Project Scenarios</h4>
+
+      {/* Show available scenarios info */}
+      {availableProjectScenarios.length > 0 && (
+        <div className="alert alert-info mb-3">
+          <p className="mb-1">
+            <strong>Available scenarios for "{selectedProject.title || selectedProject.name}":</strong>
+          </p>
+          <ul className="mb-0">
+            {availableProjectScenarios.map((scenario, index) => (
+              <li key={index}>{scenario.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {scenarios.map((scenario, scenarioIndex) => (
         <div key={scenarioIndex} className="card-item">
@@ -592,7 +641,7 @@ const StepScenarios = () => {
               {availableProjectScenarios.length > 0 ? (
                 <Form.Select
                   id={`scenario${scenarioIndex}`}
-                  value={scenario.name || ''}
+                  value={scenario.name === "custom" ? "custom" : scenario.name || ''}
                   onChange={(e) => updateScenarioName(scenarioIndex, e.target.value)}
                   className="form-control-lg form-primary-input"
                 >
@@ -611,7 +660,7 @@ const StepScenarios = () => {
                 <Form.Control
                   id={`scenario${scenarioIndex}`}
                   type="text"
-                  value={scenario.name}
+                  value={scenario.name || ""}
                   onChange={(e) => updateScenarioName(scenarioIndex, e.target.value)}
                   className="form-primary-input"
                   placeholder="Enter scenario name"
@@ -619,19 +668,12 @@ const StepScenarios = () => {
               )}
 
               {/* Show text input for custom scenario name if "custom" is selected */}
-              {availableProjectScenarios.length > 0 && scenario.name === "custom" && (
+              {scenario.name === "custom" && (
                 <Form.Control
                   id={`scenarioCustom${scenarioIndex}`}
                   type="text"
                   value={scenario.customName || ""}
-                  onChange={(e) => {
-                    const newScenarios = [...scenarios];
-                    newScenarios[scenarioIndex].customName = e.target.value;
-                    // Update the actual name property as well
-                    newScenarios[scenarioIndex].name = e.target.value;
-                    setScenarios(newScenarios);
-                    setValue("scenarios", newScenarios, { shouldDirty: true });
-                  }}
+                  onChange={(e) => updateCustomScenarioName(scenarioIndex, e.target.value)}
                   className="form-primary-input mt-2"
                   placeholder="Enter custom scenario name"
                 />
@@ -646,19 +688,20 @@ const StepScenarios = () => {
                 id={`scenarioDescription${scenarioIndex}`}
                 as="textarea"
                 rows={3}
-                value={scenario.description[0] || ""}
+                value={scenario.description?.[0] || ""}
                 onChange={(e) => updateScenarioDescription(scenarioIndex, e.target.value)}
                 className="form-textarea-input"
+                placeholder="Enter scenario description"
               />
             </div>
           </div>
 
           <div className="scenario-other-section">
             <Form.Label className="form-field-label">
-              <span className="scenario-label"> Other information</span>
+              <span className="scenario-label">Other Information</span>
             </Form.Label>
 
-            {scenario.other.map((item, otherIndex) => (
+            {scenario.other?.map((item, otherIndex) => (
               <div key={otherIndex} className="scenario-other-row mb-3">
                 <div className="scenario-other-item">
                   <div className="scenario-other-fields">
@@ -680,16 +723,14 @@ const StepScenarios = () => {
                       className="other-value-input"
                     />
 
-                    {scenario.other.length > 1 && (
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => removeOtherInfo(scenarioIndex, otherIndex)}
-                        className="item-action-button"
-                      >
-                        <Minus size={16} />
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => removeOtherInfo(scenarioIndex, otherIndex)}
+                      className="item-action-button"
+                    >
+                      <Minus size={16} />
+                    </Button>
                   </div>
                 </div>
               </div>
