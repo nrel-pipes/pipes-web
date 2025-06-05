@@ -454,151 +454,133 @@ const StepRequirements = () => {
 
 const StepScenarios = () => {
   const { getValues, setValue, watch } = useFormContext();
-  const [scenarios, setScenarios] = useState([]);
-  const [selectedScenarioNames, setSelectedScenarioNames] = useState([]);
+  const [expectedScenarios, setExpectedScenarios] = useState([]);
+  const [scenarioMappings, setScenarioMappings] = useState([]);
 
-  // Fix 1: Correct the typo in variable name
   const selectedProject = watch("selectedProject");
-  const selectedProjectRun = watch("selectedProjectRun"); // Fixed typo
-
-  // Fix 2: Add more robust watching with additional debugging
-  const watchedValues = watch(["selectedProject", "selectedProjectRun"]);
-
-  // Fix 3: Add debugging to see what values are being received
-  useEffect(() => {
-    console.log("StepScenarios - selectedProject:", selectedProject);
-    console.log("StepScenarios - selectedProjectRun:", selectedProjectRun);
-    console.log("StepScenarios - watchedValues:", watchedValues);
-  }, [selectedProject, selectedProjectRun, watchedValues]);
+  const selectedProjectRun = watch("selectedProjectRun");
 
   // Get available project scenarios from the selected project run
   const availableProjectScenarios = selectedProjectRun?.scenarios || [];
 
   useEffect(() => {
     const formValues = getValues();
-    if (formValues.scenarios?.length) {
-      setScenarios(formValues.scenarios);
-      // Extract selected scenario names from form data
-      const selectedNames = formValues.scenarios.map(s => s.name).filter(Boolean);
-      setSelectedScenarioNames(selectedNames);
+
+    // Load expected scenarios
+    if (formValues.expected_scenarios?.length) {
+      setExpectedScenarios(formValues.expected_scenarios);
     } else {
-      setScenarios([]);
-      setSelectedScenarioNames([]);
+      setExpectedScenarios([]);
+    }
+
+    // Load scenario mappings
+    if (formValues.scenario_mappings?.length) {
+      setScenarioMappings(formValues.scenario_mappings);
+    } else {
+      setScenarioMappings([]);
     }
   }, [getValues]);
 
-  // Fix 4: Make the reset effect more robust
+  // Reset both expected scenarios and scenario mappings when project changes
   useEffect(() => {
     if (selectedProject) {
-      console.log("Project changed, resetting scenarios. New project:", selectedProject);
-      // Reset to a single empty scenario when project changes
-      const resetScenarios = [{ name: "", description: [""], other: [] }];
-      setScenarios(resetScenarios);
-      setValue("scenarios", resetScenarios, { shouldDirty: true });
+      console.log("Project changed, resetting scenarios and mappings. New project:", selectedProject);
+      setExpectedScenarios([]);
+      setScenarioMappings([]);
+      setValue("expected_scenarios", [], { shouldDirty: true });
+      setValue("scenario_mappings", [], { shouldDirty: true });
     }
-  }, [selectedProject?.name, selectedProject?.id, setValue]); // Watch both name and id
+  }, [selectedProject?.name, selectedProject?.id, setValue]);
+
+  // Update form values when state changes
+  useEffect(() => {
+    setValue("expected_scenarios", expectedScenarios, { shouldDirty: true });
+  }, [expectedScenarios, setValue]);
 
   useEffect(() => {
-    if (scenarios.length > 0) {
-      setValue("scenarios", scenarios, { shouldDirty: true });
-    }
-  }, [scenarios, setValue]);
+    setValue("scenario_mappings", scenarioMappings, { shouldDirty: true });
+  }, [scenarioMappings, setValue]);
 
-  const handleScenarioToggle = (scenarioName) => {
-    let newSelectedNames;
-    let newScenarios;
-
-    if (selectedScenarioNames.includes(scenarioName)) {
+  // Expected Scenarios Functions
+  const handleExpectedScenarioToggle = (scenarioName) => {
+    if (expectedScenarios.includes(scenarioName)) {
       // Remove scenario
-      newSelectedNames = selectedScenarioNames.filter(name => name !== scenarioName);
-      newScenarios = scenarios.filter(s => s.name !== scenarioName);
+      const newScenarios = expectedScenarios.filter(name => name !== scenarioName);
+      setExpectedScenarios(newScenarios);
     } else {
       // Add scenario
-      newSelectedNames = [...selectedScenarioNames, scenarioName];
-      const newScenario = {
-        name: scenarioName,
-        description: [""],
-        other: []
-      };
-      newScenarios = [...scenarios, newScenario];
+      const newScenarios = [...expectedScenarios, scenarioName];
+      setExpectedScenarios(newScenarios);
     }
-
-    setSelectedScenarioNames(newSelectedNames);
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
   };
 
-  const addCustomScenario = () => {
-    const customScenario = { name: "", description: [""], other: [], isCustom: true };
-    const newScenarios = [...scenarios, customScenario];
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
+  // Scenario Mappings Functions
+  const addScenarioMapping = () => {
+    const newMapping = {
+      model_scenario: "",
+      project_scenarios: [],
+      description: [""],
+      other: {}
+    };
+    const newMappings = [...scenarioMappings, newMapping];
+    setScenarioMappings(newMappings);
   };
 
-  const removeScenario = (index) => {
-    const scenarioToRemove = scenarios[index];
-    const newScenarios = scenarios.filter((_, i) => i !== index);
+  const removeScenarioMapping = (index) => {
+    const newMappings = scenarioMappings.filter((_, i) => i !== index);
+    setScenarioMappings(newMappings);
+  };
 
-    // If it's not a custom scenario, also remove from selected names
-    if (!scenarioToRemove.isCustom && scenarioToRemove.name) {
-      const newSelectedNames = selectedScenarioNames.filter(name => name !== scenarioToRemove.name);
-      setSelectedScenarioNames(newSelectedNames);
+  const updateModelScenario = (index, value) => {
+    const newMappings = [...scenarioMappings];
+    newMappings[index].model_scenario = value;
+    setScenarioMappings(newMappings);
+  };
+
+  const updateProjectScenarios = (index, scenarioName, isChecked) => {
+    const newMappings = [...scenarioMappings];
+    if (isChecked) {
+      newMappings[index].project_scenarios = [...newMappings[index].project_scenarios, scenarioName];
+    } else {
+      newMappings[index].project_scenarios = newMappings[index].project_scenarios.filter(
+        name => name !== scenarioName
+      );
     }
-
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
+    setScenarioMappings(newMappings);
   };
 
-  const updateCustomScenarioName = (index, value) => {
-    const newScenarios = [...scenarios];
-    newScenarios[index].name = value;
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
+  const updateDescription = (index, value) => {
+    const newMappings = [...scenarioMappings];
+    newMappings[index].description = [value];
+    setScenarioMappings(newMappings);
   };
 
-  const updateScenarioDescription = (index, value) => {
-    const newScenarios = [...scenarios];
-    newScenarios[index].description = [value];
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
+  const addOtherInfo = (mappingIndex) => {
+    const newMappings = [...scenarioMappings];
+    const key = `other_${Object.keys(newMappings[mappingIndex].other).length + 1}`;
+    newMappings[mappingIndex].other[key] = "";
+    setScenarioMappings(newMappings);
   };
 
-  const addOtherInfo = (scenarioIndex) => {
-    const newScenarios = [...scenarios];
-    if (!newScenarios[scenarioIndex].other) {
-      newScenarios[scenarioIndex].other = [];
-    }
-    newScenarios[scenarioIndex].other.push(["", ""]);
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
+  const updateOtherInfo = (mappingIndex, key, value) => {
+    const newMappings = [...scenarioMappings];
+    newMappings[mappingIndex].other[key] = value;
+    setScenarioMappings(newMappings);
   };
 
-  const updateOtherInfo = (scenarioIndex, otherIndex, keyOrValue, value) => {
-    const newScenarios = [...scenarios];
-    if (!newScenarios[scenarioIndex].other[otherIndex]) {
-      newScenarios[scenarioIndex].other[otherIndex] = ["", ""];
-    }
-    const currentPair = newScenarios[scenarioIndex].other[otherIndex];
-    newScenarios[scenarioIndex].other[otherIndex] =
-      keyOrValue === "key"
-        ? [value, currentPair[1]]
-        : [currentPair[0], value];
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
+  const updateOtherKey = (mappingIndex, oldKey, newKey) => {
+    const newMappings = [...scenarioMappings];
+    const value = newMappings[mappingIndex].other[oldKey];
+    delete newMappings[mappingIndex].other[oldKey];
+    newMappings[mappingIndex].other[newKey] = value;
+    setScenarioMappings(newMappings);
   };
 
-  const removeOtherInfo = (scenarioIndex, otherIndex) => {
-    const newScenarios = [...scenarios];
-    newScenarios[scenarioIndex].other = newScenarios[scenarioIndex].other.filter(
-      (_, idx) => idx !== otherIndex
-    );
-    setScenarios(newScenarios);
-    setValue("scenarios", newScenarios, { shouldDirty: true });
+  const removeOtherInfo = (mappingIndex, key) => {
+    const newMappings = [...scenarioMappings];
+    delete newMappings[mappingIndex].other[key];
+    setScenarioMappings(newMappings);
   };
-
-  // Fix 5: More detailed debugging for the project check
-  console.log("Render check - selectedProject:", selectedProject);
-  console.log("Render check - availableProjectScenarios:", availableProjectScenarios);
 
   // Show message if no project or project run is selected
   if (!selectedProject) {
@@ -628,7 +610,6 @@ const StepScenarios = () => {
     <div className="form-container">
       <h4 className="form-section-title">Project Scenarios</h4>
 
-      {/* Add some custom CSS for the checkbox grid */}
       <style jsx>{`
         .scenario-checkbox-grid {
           display: grid;
@@ -638,139 +619,279 @@ const StepScenarios = () => {
         }
 
         .scenario-checkbox-item {
-          padding: 8px 12px;
-          border: 1px solid #dee2e6;
-          border-radius: 4px;
+          padding: 12px 16px;
+          border: 2px solid #dee2e6;
+          border-radius: 6px;
           background-color: #f8f9fa;
-          transition: background-color 0.2s;
+          transition: all 0.2s ease;
+          cursor: pointer;
+          user-select: none;
         }
 
         .scenario-checkbox-item:hover {
           background-color: #e9ecef;
+          border-color: #adb5bd;
         }
 
-        .scenario-checkbox-item .form-check-input:checked ~ .form-check-label {
-          font-weight: 600;
+        .scenario-checkbox-item.selected {
+          background-color: #e7f3ff;
+          border-color: #0079c2;
           color: #0079c2;
         }
 
-        .selected-scenarios-section {
-          margin-top: 30px;
+        .scenario-checkbox-item.selected:hover {
+          background-color: #d1ecf1;
+        }
+
+        .scenario-name {
+          font-weight: 500;
+        }
+
+        .scenario-checkbox-item.selected .scenario-name {
+          font-weight: 600;
+        }
+
+        .mapping-checkbox-item {
+          padding: 8px 12px;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          background-color: #f8f9fa;
+          transition: all 0.2s ease;
+          cursor: pointer;
+          user-select: none;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .mapping-checkbox-item:hover {
+          background-color: #e9ecef;
+          border-color: #adb5bd;
+        }
+
+        .mapping-checkbox-item.selected {
+          background-color: #e7f3ff;
+          border-color: #0079c2;
+          color: #0079c2;
+        }
+
+        .mapping-scenario-name {
+          font-weight: 500;
+          font-size: 14px;
+        }
+
+        .other-info-section {
+          margin-top: 15px;
+        }
+
+        .other-info-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+
+        .other-key-input {
+          flex: 1;
+        }
+
+        .other-value-input {
+          flex: 2;
+        }
+
+        .section-divider {
+          margin: 40px 0;
+          border-top: 2px solid #dee2e6;
         }
       `}</style>
-      {/* Available scenarios selection */}
+
+      {availableProjectScenarios.length === 0 && (
+        <div className="alert alert-warning">
+          <p>No scenarios available in the selected project run.</p>
+        </div>
+      )}
+
+      {/* Expected Scenarios Selection */}
       {availableProjectScenarios.length > 0 && (
         <div className="card-item">
           <div className="card-item-header">
-            <h4 className="card-item-title">Available Scenarios</h4>
+            <h4 className="card-item-title">Expected Scenarios</h4>
           </div>
           <div className="form-content-section">
-            <p className="mb-3">Select one or more scenarios from "{selectedProjectRun?.name || 'N/A'}":</p>
+            <p className="mb-3">Select expected scenarios from "{selectedProjectRun?.name || 'N/A'}":</p>
             <div className="scenario-checkbox-grid">
               {availableProjectScenarios.map((scenarioName, index) => (
-                <div key={index} className="form-check scenario-checkbox-item">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id={`scenario-${index}`}
-                    checked={selectedScenarioNames.includes(scenarioName)}
-                    onChange={() => handleScenarioToggle(scenarioName)}
-                  />
-                  <label className="form-check-label" htmlFor={`scenario-${index}`}>
+                <div
+                  key={index}
+                  className={`scenario-checkbox-item ${expectedScenarios.includes(scenarioName) ? 'selected' : ''}`}
+                  onClick={() => handleExpectedScenarioToggle(scenarioName)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="scenario-name">
                     {scenarioName}
-                  </label>
+                  </div>
                 </div>
               ))}
             </div>
+            {expectedScenarios.length > 0 && (
+              <div className="mt-3">
+                <p className="text-muted">
+                  <strong>Selected scenarios:</strong> {expectedScenarios.join(', ')}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Selected scenarios configuration */}
-      {scenarios.length > 0 && (
-        <div className="selected-scenarios-section">
-          <h5 className="mb-3">Configure Selected Scenarios</h5>
-          {scenarios.map((scenario, scenarioIndex) => (
-            <div key={scenarioIndex} className="card-item">
-              <div className="card-item-header">
-                <h4 className="card-item-title">
-                  {scenario.isCustom ? 'Custom Scenario' : scenario.name || `Scenario ${scenarioIndex + 1}`}
-                </h4>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => removeScenario(scenarioIndex)}
-                  className="item-action-button"
-                >
-                  <Minus size={16} />
-                </Button>
-              </div>
+      <div className="section-divider"></div>
 
-              <div className="form-content-section">
-                {scenario.isCustom && (
-                  <div className="form-field-group">
-                    <Form.Label className="form-field-label">
-                      <span className="form-field-text">Custom Scenario Name</span>
-                    </Form.Label>
-                    <Form.Control
-                      id={`customScenarioName${scenarioIndex}`}
-                      type="text"
-                      value={scenario.name || ""}
-                      onChange={(e) => updateCustomScenarioName(scenarioIndex, e.target.value)}
-                      className="form-primary-input"
-                      placeholder="Enter custom scenario name"
-                    />
-                  </div>
-                )}
+      {/* Scenario Mappings */}
+      <div className="scenario-mappings-section">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h5>Scenario Mappings</h5>
+          <Button
+            variant="outline-primary"
+            onClick={addScenarioMapping}
+            className="add-button"
+          >
+            <Plus size={18} /> Add Scenario Mapping
+          </Button>
+        </div>
 
+        {scenarioMappings.length === 0 && (
+          <div className="alert alert-info">
+            <p>No scenario mappings configured. Add a scenario mapping to map model scenarios to project scenarios.</p>
+          </div>
+        )}
 
-              </div>
+        {scenarioMappings.map((mapping, mappingIndex) => (
+          <div key={mappingIndex} className="card-item mb-3">
+            <div className="card-item-header">
+              <h4 className="card-item-title">
+                {mapping.model_scenario || `Scenario Mapping ${mappingIndex + 1}`}
+              </h4>
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => removeScenarioMapping(mappingIndex)}
+                className="item-action-button"
+              >
+                <Minus size={16} />
+              </Button>
+            </div>
 
-              <div className="scenario-other-section">
+            <div className="form-content-section">
+              {/* Model Scenario Name */}
+              <div className="form-field-group">
                 <Form.Label className="form-field-label">
-                  <span className="scenario-label">Other Information</span>
+                  <span className="form-field-text">Model Scenario Name</span>
+                </Form.Label>
+                <Form.Control
+                  id={`modelScenario${mappingIndex}`}
+                  type="text"
+                  value={mapping.model_scenario || ""}
+                  onChange={(e) => updateModelScenario(mappingIndex, e.target.value)}
+                  className="form-primary-input"
+                  placeholder="Enter model scenario name"
+                />
+              </div>
+
+              {/* Project Scenarios Selection */}
+              {availableProjectScenarios.length > 0 && (
+                <div className="form-field-group">
+                  <Form.Label className="form-field-label">
+                    <span className="form-field-text">Project Scenarios</span>
+                  </Form.Label>
+                  <p className="text-muted mb-2">
+                    Select which project scenarios this model scenario maps to:
+                  </p>
+                  <div className="scenario-checkbox-grid">
+                    {availableProjectScenarios.map((scenarioName, index) => (
+                      <div
+                        key={index}
+                        className={`mapping-checkbox-item ${
+                          mapping.project_scenarios.includes(scenarioName) ? 'selected' : ''
+                        }`}
+                        onClick={() =>
+                          updateProjectScenarios(
+                            mappingIndex,
+                            scenarioName,
+                            !mapping.project_scenarios.includes(scenarioName)
+                          )
+                        }
+                      >
+                        <Form.Check
+                          type="checkbox"
+                          checked={mapping.project_scenarios.includes(scenarioName)}
+                          onChange={(e) =>
+                            updateProjectScenarios(mappingIndex, scenarioName, e.target.checked)
+                          }
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="mapping-scenario-name">
+                          {scenarioName}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              <div className="form-field-group">
+                <Form.Label className="form-field-label">
+                  <span className="form-field-text">Description</span>
+                </Form.Label>
+                <Form.Control
+                  id={`mappingDescription${mappingIndex}`}
+                  as="textarea"
+                  rows={3}
+                  value={mapping.description?.[0] || ""}
+                  onChange={(e) => updateDescription(mappingIndex, e.target.value)}
+                  className="form-textarea-input"
+                  placeholder="Enter model scenario description"
+                />
+              </div>
+
+              {/* Other Information */}
+              <div className="other-info-section">
+                <Form.Label className="form-field-label">
+                  <span className="form-field-text">Other Information</span>
                 </Form.Label>
 
-                {scenario.other?.map((item, otherIndex) => (
-                  <div key={otherIndex} className="scenario-other-row mb-3">
-                    <div className="scenario-other-item">
-                      <div className="scenario-other-fields">
-                        <Form.Control
-                          id={`scenarioOtherKey-${scenarioIndex}-${otherIndex}`}
-                          type="text"
-                          value={item[0] || ""}
-                          placeholder="Key"
-                          onChange={(e) => updateOtherInfo(scenarioIndex, otherIndex, "key", e.target.value)}
-                          className="other-key-input"
-                        />
-
-                        <Form.Control
-                          id={`scenarioOtherValue-${scenarioIndex}-${otherIndex}`}
-                          type="text"
-                          value={item[1] || ""}
-                          placeholder="Value"
-                          onChange={(e) => updateOtherInfo(scenarioIndex, otherIndex, "value", e.target.value)}
-                          className="other-value-input"
-                        />
-
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => removeOtherInfo(scenarioIndex, otherIndex)}
-                          className="item-action-button"
-                        >
-                          <Minus size={16} />
-                        </Button>
-                      </div>
-                    </div>
+                {Object.entries(mapping.other || {}).map(([key, value]) => (
+                  <div key={key} className="other-info-row">
+                    <Form.Control
+                      type="text"
+                      value={key}
+                      placeholder="Key"
+                      onChange={(e) => updateOtherKey(mappingIndex, key, e.target.value)}
+                      className="other-key-input"
+                    />
+                    <Form.Control
+                      type="text"
+                      value={value}
+                      placeholder="Value"
+                      onChange={(e) => updateOtherInfo(mappingIndex, key, e.target.value)}
+                      className="other-value-input"
+                    />
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => removeOtherInfo(mappingIndex, key)}
+                      className="item-action-button"
+                    >
+                      <Minus size={16} />
+                    </Button>
                   </div>
                 ))}
 
                 <div className="d-flex justify-content-start mt-3">
                   <Button
-                    variant="outline-primary"
+                    variant="outline-secondary"
                     size="sm"
-                    onClick={() => addOtherInfo(scenarioIndex)}
+                    onClick={() => addOtherInfo(mappingIndex)}
                     className="add-button"
                   >
                     <Plus size={16} /> Add Other Information
@@ -778,18 +899,8 @@ const StepScenarios = () => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      <div className="d-flex justify-content-start mt-4">
-        <Button
-          variant="outline-primary"
-          onClick={addCustomScenario}
-          className="add-button"
-        >
-          <Plus size={18} /> Add Custom Scenario
-        </Button>
+          </div>
+        ))}
       </div>
     </div>
   );
