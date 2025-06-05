@@ -623,7 +623,7 @@ const StepScenarios = () => {
             <h4 className="card-item-title">Expected Scenarios</h4>
           </div>
           <div className="form-content-section">
-            <p className="mb-3">Select expected scenarios from projectrun "{selectedProjectRun?.name || 'N/A'}":</p>
+            <p className="mb-3">Select expected scenarios from "{selectedProjectRun?.name || 'N/A'}":</p>
             <div className="scenario-checkbox-grid">
               {availableProjectScenarios.map((scenarioName, index) => (
                 <div
@@ -638,7 +638,13 @@ const StepScenarios = () => {
                 </div>
               ))}
             </div>
-
+            {expectedScenarios.length > 0 && (
+              <div className="mt-3">
+                <p className="text-muted">
+                  <strong>Selected scenarios:</strong> {expectedScenarios.join(', ')}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -647,16 +653,7 @@ const StepScenarios = () => {
 
       {/* Scenario Mappings */}
       <div className="scenario-mappings-section">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5>Scenario Mappings</h5>
-          <Button
-            variant="outline-primary"
-            onClick={addScenarioMapping}
-            className="add-button"
-          >
-            <Plus size={18} /> Add Scenario Mapping
-          </Button>
-        </div>
+        <h4 className="form-section-title">Scenario Mappings</h4>
 
         {scenarioMappings.length === 0 && (
           <div className="alert alert-info">
@@ -667,9 +664,9 @@ const StepScenarios = () => {
         {scenarioMappings.map((mapping, mappingIndex) => (
           <div key={mappingIndex} className="card-item mb-3">
             <div className="card-item-header">
-              <h4 className="card-item-title">
-                Scenario mapping {mappingIndex + 1}
-              </h4>
+              <h5 className="card-item-title">
+              {`Scenario Mapping ${mappingIndex + 1}`}
+              </h5>
               <Button
                 variant="outline-danger"
                 size="sm"
@@ -793,11 +790,20 @@ const StepScenarios = () => {
             </div>
           </div>
         ))}
+
+        <div className="d-flex justify-content-start mt-4">
+          <Button
+            variant="outline-primary"
+            onClick={addScenarioMapping}
+            className="add-button"
+          >
+            <Plus size={18} /> Add Scenario Mapping
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
-
 
 const StepAssumptions = () => {
   const { getValues, setValue } = useFormContext();
