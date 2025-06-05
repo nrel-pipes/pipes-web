@@ -557,7 +557,7 @@ const StepScenarios = () => {
 
   const addOtherInfo = (mappingIndex) => {
     const newMappings = [...scenarioMappings];
-    const key = `other_${Object.keys(newMappings[mappingIndex].other).length + 1}`;
+    const key = "";
     newMappings[mappingIndex].other[key] = "";
     setScenarioMappings(newMappings);
   };
@@ -610,101 +610,6 @@ const StepScenarios = () => {
     <div className="form-container">
       <h4 className="form-section-title">Project Scenarios</h4>
 
-      <style jsx>{`
-        .scenario-checkbox-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-
-        .scenario-checkbox-item {
-          padding: 12px 16px;
-          border: 2px solid #dee2e6;
-          border-radius: 6px;
-          background-color: #f8f9fa;
-          transition: all 0.2s ease;
-          cursor: pointer;
-          user-select: none;
-        }
-
-        .scenario-checkbox-item:hover {
-          background-color: #e9ecef;
-          border-color: #adb5bd;
-        }
-
-        .scenario-checkbox-item.selected {
-          background-color: #e7f3ff;
-          border-color: #0079c2;
-          color: #0079c2;
-        }
-
-        .scenario-checkbox-item.selected:hover {
-          background-color: #d1ecf1;
-        }
-
-        .scenario-name {
-          font-weight: 500;
-        }
-
-        .scenario-checkbox-item.selected .scenario-name {
-          font-weight: 600;
-        }
-
-        .mapping-checkbox-item {
-          padding: 8px 12px;
-          border: 1px solid #dee2e6;
-          border-radius: 4px;
-          background-color: #f8f9fa;
-          transition: all 0.2s ease;
-          cursor: pointer;
-          user-select: none;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .mapping-checkbox-item:hover {
-          background-color: #e9ecef;
-          border-color: #adb5bd;
-        }
-
-        .mapping-checkbox-item.selected {
-          background-color: #e7f3ff;
-          border-color: #0079c2;
-          color: #0079c2;
-        }
-
-        .mapping-scenario-name {
-          font-weight: 500;
-          font-size: 14px;
-        }
-
-        .other-info-section {
-          margin-top: 15px;
-        }
-
-        .other-info-row {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-          margin-bottom: 10px;
-        }
-
-        .other-key-input {
-          flex: 1;
-        }
-
-        .other-value-input {
-          flex: 2;
-        }
-
-        .section-divider {
-          margin: 40px 0;
-          border-top: 2px solid #dee2e6;
-        }
-      `}</style>
-
       {availableProjectScenarios.length === 0 && (
         <div className="alert alert-warning">
           <p>No scenarios available in the selected project run.</p>
@@ -718,7 +623,7 @@ const StepScenarios = () => {
             <h4 className="card-item-title">Expected Scenarios</h4>
           </div>
           <div className="form-content-section">
-            <p className="mb-3">Select expected scenarios from "{selectedProjectRun?.name || 'N/A'}":</p>
+            <p className="mb-3">Select expected scenarios from projectrun "{selectedProjectRun?.name || 'N/A'}":</p>
             <div className="scenario-checkbox-grid">
               {availableProjectScenarios.map((scenarioName, index) => (
                 <div
@@ -733,13 +638,7 @@ const StepScenarios = () => {
                 </div>
               ))}
             </div>
-            {expectedScenarios.length > 0 && (
-              <div className="mt-3">
-                <p className="text-muted">
-                  <strong>Selected scenarios:</strong> {expectedScenarios.join(', ')}
-                </p>
-              </div>
-            )}
+
           </div>
         </div>
       )}
@@ -769,7 +668,7 @@ const StepScenarios = () => {
           <div key={mappingIndex} className="card-item mb-3">
             <div className="card-item-header">
               <h4 className="card-item-title">
-                {mapping.model_scenario || `Scenario Mapping ${mappingIndex + 1}`}
+                Scenario mapping {mappingIndex + 1}
               </h4>
               <Button
                 variant="outline-danger"
@@ -820,15 +719,8 @@ const StepScenarios = () => {
                             !mapping.project_scenarios.includes(scenarioName)
                           )
                         }
+                        style={{ cursor: 'pointer' }}
                       >
-                        <Form.Check
-                          type="checkbox"
-                          checked={mapping.project_scenarios.includes(scenarioName)}
-                          onChange={(e) =>
-                            updateProjectScenarios(mappingIndex, scenarioName, e.target.checked)
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                        />
                         <div className="mapping-scenario-name">
                           {scenarioName}
                         </div>
@@ -905,6 +797,7 @@ const StepScenarios = () => {
     </div>
   );
 };
+
 
 const StepAssumptions = () => {
   const { getValues, setValue } = useFormContext();
