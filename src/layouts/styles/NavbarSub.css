@@ -8,14 +8,25 @@
   display: flex;
   align-items: center;
   position: fixed !important;
-  top: calc(var(--navbar-height)) !important;
+  top: calc(var(--navbar-height) + 40px) !important; /* Position below navbar + toggle button */
   left: 0;
   right: 0;
   z-index: 1025;
 }
 
+/* When banner is present, position sub-navbar below banner + navbar + toggle */
 .has-banner .navbar-sub {
-  top: calc(var(--banner-height) + var(--navbar-height)) !important;
+  top: calc(var(--banner-height) + var(--navbar-height) + 40px) !important;
+}
+
+/* When sidebar is present, position sub-navbar to the right of sidebar */
+.has-sidebar .navbar-sub {
+  left: 250px !important; /* Default sidebar width */
+}
+
+/* When sidebar is collapsed, reduce left margin */
+.sidebar-collapsed .navbar-sub {
+  left: 60px !important; /* Collapsed sidebar width */
 }
 
 .navbar-sub-instance {

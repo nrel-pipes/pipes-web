@@ -2,6 +2,7 @@
   --navbar-height: 65px;
   --banner-height: 142px;
   --navbar-sub-height: 50px;
+  --toggle-button-height: 40px;
 }
 
 .navbar-instance,
@@ -119,11 +120,7 @@
 }
 
 .navbar-toggle-button {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: none; /* Hide the toggle button to eliminate the gap */
+  display: none !important; /* Hide the old toggle button */
 }
 
 .login-link {

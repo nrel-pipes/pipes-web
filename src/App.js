@@ -13,6 +13,7 @@ import SiteNavbarFluid from "./layouts/NavbarFluid";
 import Sidebar from "./layouts/NavbarSide";
 import SiteNavbar from "./layouts/NavbarTop";
 import NavbarSub from "./layouts/NavbarSub";
+import ToggleButton from "./layouts/ToggleButton";
 
 // Home
 import HomePage from "./pages/Home/HomePage";
@@ -79,8 +80,8 @@ function App() {
     return () => clearInterval(interval);
   }, [checkAuthStatus]);
 
-  const handleSidebarToggle = (expanded) => {
-    setSidebarExpanded(expanded);
+  const handleSidebarToggle = () => {
+    setSidebarExpanded(!sidebarExpanded);
   };
 
   return (
@@ -90,20 +91,31 @@ function App() {
         {!isAuthenticated && <SiteBanner />}
 
         <BrowserRouter>
+          {/* Fixed Navbar section */}
           <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
             {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
           </div>
 
+          {/* Toggle Button - only when authenticated */}
+          {isAuthenticated && (
+            <ToggleButton
+              onToggle={handleSidebarToggle}
+              isExpanded={sidebarExpanded}
+            />
+          )}
+
+          {/* Fixed NavbarSub section - only when authenticated */}
           {isAuthenticated && <NavbarSub navData={{}} />}
 
+          {/* Main content with proper spacing */}
           <div
             className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}
             style={{
               paddingTop: isAuthenticated
-                ? '115px'
+                ? '155px'  // navbar height + toggle button + sub-navbar height
                 : !isAuthenticated
-                  ? '207px'
-                  : '65px'
+                  ? '207px' // banner height + navbar height
+                  : '65px'  // just navbar height
             }}
           >
             {isAuthenticated && (
