@@ -90,23 +90,20 @@ function App() {
         {!isAuthenticated && <SiteBanner />}
 
         <BrowserRouter>
-          {/* Fixed Navbar section */}
           <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
             {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
           </div>
 
-          {/* Fixed NavbarSub section - only when authenticated */}
           {isAuthenticated && <NavbarSub navData={{}} />}
 
-          {/* Main content with proper spacing handled by CSS */}
           <div
             className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}
             style={{
               paddingTop: isAuthenticated
-                ? '115px'  // navbar height + sub-navbar height
+                ? '115px'
                 : !isAuthenticated
-                  ? '207px' // banner height + navbar height
-                  : '65px'  // just navbar height
+                  ? '207px'
+                  : '65px'
             }}
           >
             {isAuthenticated && (

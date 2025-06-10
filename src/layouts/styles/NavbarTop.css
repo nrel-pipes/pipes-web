@@ -15,7 +15,7 @@
   z-index: 1030 !important;
   width: 100% !important;
   position: fixed !important;
-  top: var(--banner-height) !important; /* Always position below banner */
+  top: var(--banner-height) !important;
   left: 0 !important;
   right: 0 !important;
   margin: 0 !important;
@@ -23,7 +23,6 @@
   transform: none !important;
 }
 
-/* When no banner is present, position navbar at top */
 .App:not(.has-banner) .navbar-instance {
   top: 0 !important;
 }
@@ -95,7 +94,6 @@
   padding-top: calc(var(--banner-height) + var(--navbar-height)) !important; /* Account for both fixed elements */
 }
 
-/* When no banner, only account for navbar */
 .App:not(.has-banner) .main-content-wrapper {
   padding-top: var(--navbar-height) !important;
 }
@@ -152,7 +150,6 @@
   padding: 0 !important;
 }
 
-/* Responsive adjustments */
 @media (max-width: 576px) {
   .navbar-right {
     gap: 5px;
