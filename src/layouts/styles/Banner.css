@@ -1,15 +1,14 @@
 .banner {
   height: 142px !important;
   width: 100%;
-  position: relative; /* Ensure it's in document flow */
-  display: block; /* Ensure it takes up space */
-  margin-bottom: 0; /* No gap between banner and navbar */
+  position: relative;
+  display: block;
+  margin-bottom: 0;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  min-height: 142px !important; /* Ensure minimum height */
+  min-height: 142px !important;
 }
 
-/* Override Bootstrap Container padding that might collapse the banner */
 .banner.container {
   padding-left: 15px !important;
   padding-right: 15px !important;

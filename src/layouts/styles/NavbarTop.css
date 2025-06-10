@@ -3,7 +3,6 @@
   --banner-height: 142px;
 }
 
-/* Override Bootstrap's navbar positioning completely */
 .navbar-instance,
 .navbar-instance.navbar,
 .navbar-instance.navbar-expand-lg,
@@ -14,7 +13,7 @@
   font-weight: bold;
   z-index: 1030;
   width: 100% !important;
-  position: static !important; /* Force static positioning - this is key */
+  position: static !important;
   display: block !important;
   float: none !important;
   top: auto !important;
@@ -26,7 +25,6 @@
   transform: none !important;
 }
 
-/* Override any Bootstrap fixed/absolute positioning classes */
 .navbar-fixed-top,
 .navbar-fixed-bottom,
 .fixed-top,
@@ -64,7 +62,6 @@
 .main-content-wrapper {
   width: 100%;
   min-height: 100vh;
-  /* Remove padding-top since we're using static flow */
 }
 
 .pipes-full-name {
@@ -110,14 +107,13 @@
   }
 }
 
-/* When banner is present, ensure navbar appears below it */
+
 .has-banner .navbar-instance {
   position: relative !important;
   margin-top: 0 !important;
   top: 0 !important;
 }
 
-/* Ensure the site-navbar wrapper doesn't interfere */
 .site-navbar,
 .site-navbar-fluid {
   position: static !important;

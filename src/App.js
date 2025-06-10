@@ -85,7 +85,6 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
-        {/* Banner section */}
         {!isAuthenticated && (
           <div style={{ width: '100%', position: 'relative', zIndex: 1 }}>
             <SiteBanner />
@@ -93,7 +92,6 @@ function App() {
         )}
 
         <BrowserRouter>
-          {/* Navbar section - ensure it flows after banner */}
           <div
             className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}
             style={{ width: '100%', position: 'relative', zIndex: 2 }}
