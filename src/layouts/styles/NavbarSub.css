@@ -12,6 +12,7 @@
   right: 0 !important;
   width: calc(100% - 250px) !important; /* Take remaining width */
   z-index: 1025;
+  transition: left 0.3s ease, width 0.3s ease; /* Add smooth transitions */
 }
 
 /* When banner is present, position sub-navbar below banner + navbar */

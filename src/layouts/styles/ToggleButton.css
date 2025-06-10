@@ -10,6 +10,7 @@
   align-items: center;
   padding-left: 15px;
   z-index: 1027; /* Higher than navbar-sub to ensure visibility */
+  transition: width 0.3s ease, padding-left 0.3s ease; /* Add smooth transitions */
 }
 
 /* When banner is present, position below banner + navbar */
