@@ -3,15 +3,35 @@
   --banner-height: 142px;
 }
 
-.navbar-instance {
-  background-color: #ededed;
+/* Override Bootstrap's navbar positioning completely */
+.navbar-instance,
+.navbar-instance.navbar,
+.navbar-instance.navbar-expand-lg,
+.navbar-instance.navbar-light {
+  background-color: #ededed !important;
   color: #5e6a71;
-  height: var(--navbar-height);
+  height: var(--navbar-height) !important;
   font-weight: bold;
   z-index: 1030;
-  width: 100%;
-  position: static !important; /* Force static positioning */
-  top: auto !important; /* Override any top positioning */
+  width: 100% !important;
+  position: static !important; /* Force static positioning - this is key */
+  display: block !important;
+  float: none !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+/* Override any Bootstrap fixed/absolute positioning classes */
+.navbar-fixed-top,
+.navbar-fixed-bottom,
+.fixed-top,
+.fixed-bottom {
+  position: static !important;
 }
 
 .navbar-menu-container {
@@ -92,6 +112,17 @@
 
 /* When banner is present, ensure navbar appears below it */
 .has-banner .navbar-instance {
-  position: static !important;
+  position: relative !important;
   margin-top: 0 !important;
+  top: 0 !important;
+}
+
+/* Ensure the site-navbar wrapper doesn't interfere */
+.site-navbar,
+.site-navbar-fluid {
+  position: static !important;
+  width: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
