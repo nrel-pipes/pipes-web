@@ -1,6 +1,7 @@
 :root {
   --navbar-height: 65px;
   --banner-height: 142px;
+  --navbar-sub-height: 50px;
 }
 
 .navbar-instance,
@@ -11,18 +12,20 @@
   color: #5e6a71;
   height: var(--navbar-height) !important;
   font-weight: bold;
-  z-index: 1030;
+  z-index: 1030 !important;
   width: 100% !important;
-  position: static !important;
-  display: block !important;
-  float: none !important;
-  top: auto !important;
-  left: auto !important;
-  right: auto !important;
-  bottom: auto !important;
+  position: fixed !important;
+  top: var(--banner-height) !important; /* Always position below banner */
+  left: 0 !important;
+  right: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
   transform: none !important;
+}
+
+/* When no banner is present, position navbar at top */
+.App:not(.has-banner) .navbar-instance {
+  top: 0 !important;
 }
 
 .navbar-fixed-top,
@@ -37,6 +40,33 @@
   color: #5e6a71;
   font-weight: bold;
   height: 100%;
+  padding: 0 15px;
+}
+
+.navbar-left {
+  flex: 1;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-link-custom {
+  color: #5e6a71;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.nav-link-custom:hover {
+  color: #000;
+  background-color: rgba(0, 0, 0, 0.05);
+  text-decoration: none;
 }
 
 .navbar-nav .nav-link {
@@ -62,6 +92,12 @@
 .main-content-wrapper {
   width: 100%;
   min-height: 100vh;
+  padding-top: calc(var(--banner-height) + var(--navbar-height)) !important; /* Account for both fixed elements */
+}
+
+/* When no banner, only account for navbar */
+.App:not(.has-banner) .main-content-wrapper {
+  padding-top: var(--navbar-height) !important;
 }
 
 .pipes-full-name {
@@ -107,13 +143,6 @@
   }
 }
 
-
-.has-banner .navbar-instance {
-  position: relative !important;
-  margin-top: 0 !important;
-  top: 0 !important;
-}
-
 .site-navbar,
 .site-navbar-fluid {
   position: static !important;
@@ -121,4 +150,23 @@
   display: block !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .navbar-right {
+    gap: 5px;
+  }
+
+  .nav-link-custom {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-link-custom {
+    padding: 4px 6px;
+    font-size: 0.8rem;
+  }
 }

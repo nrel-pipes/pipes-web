@@ -12,6 +12,7 @@ import SiteFooter from "./layouts/Footer";
 import SiteNavbarFluid from "./layouts/NavbarFluid";
 import Sidebar from "./layouts/NavbarSide";
 import SiteNavbar from "./layouts/NavbarTop";
+import NavbarSub from "./layouts/NavbarSub";
 
 // Home
 import HomePage from "./pages/Home/HomePage";
@@ -85,21 +86,29 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
-        {!isAuthenticated && (
-          <div style={{ width: '100%', position: 'relative', zIndex: 1 }}>
-            <SiteBanner />
-          </div>
-        )}
+        {/* Fixed Banner section */}
+        {!isAuthenticated && <SiteBanner />}
 
         <BrowserRouter>
-          <div
-            className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}
-            style={{ width: '100%', position: 'relative', zIndex: 2 }}
-          >
+          {/* Fixed Navbar section */}
+          <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
             {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
           </div>
 
-          <div className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}>
+          {/* Fixed NavbarSub section - only when authenticated */}
+          {isAuthenticated && <NavbarSub navData={{}} />}
+
+          {/* Main content with proper spacing handled by CSS */}
+          <div
+            className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}
+            style={{
+              paddingTop: isAuthenticated
+                ? '115px'  // navbar height + sub-navbar height
+                : !isAuthenticated
+                  ? '207px' // banner height + navbar height
+                  : '65px'  // just navbar height
+            }}
+          >
             {isAuthenticated && (
               <div className="sidebar">
                 <Sidebar onToggle={handleSidebarToggle} />
