@@ -1,6 +1,9 @@
 .banner {
   height: 142px;
   width: 100%;
+  position: relative; /* Ensure it's in document flow */
+  display: block; /* Ensure it takes up space */
+  margin-bottom: 0; /* No gap between banner and navbar */
 }
 
 .banner-pipes-name {

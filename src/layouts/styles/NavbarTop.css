@@ -1,5 +1,6 @@
 :root {
   --navbar-height: 65px;
+  --banner-height: 142px;
 }
 
 .navbar-instance {
@@ -9,6 +10,8 @@
   font-weight: bold;
   z-index: 1030;
   width: 100%;
+  position: static !important; /* Force static positioning */
+  top: auto !important; /* Override any top positioning */
 }
 
 .navbar-menu-container {
@@ -39,9 +42,9 @@
 }
 
 .main-content-wrapper {
-  padding-top: var(--navbar-height);
   width: 100%;
   min-height: 100vh;
+  /* Remove padding-top since we're using static flow */
 }
 
 .pipes-full-name {
@@ -85,4 +88,10 @@
   .pipes-full-name {
     display: none;
   }
+}
+
+/* When banner is present, ensure navbar appears below it */
+.has-banner .navbar-instance {
+  position: static !important;
+  margin-top: 0 !important;
 }

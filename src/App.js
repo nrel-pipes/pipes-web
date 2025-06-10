@@ -85,13 +85,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
-        {!isAuthenticated && <div className="site-banner"><SiteBanner /></div>}
-
-        <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
-          {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
-        </div>
+        {!isAuthenticated && <SiteBanner />}
 
         <BrowserRouter>
+          <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
+            {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+          </div>
+
           <div className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}>
             {isAuthenticated && (
               <div className="sidebar">
