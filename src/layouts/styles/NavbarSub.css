@@ -1,5 +1,4 @@
 .navbar-sub {
-  width: 100%;
   border-bottom: 1px solid #e9ecef;
   background-color: #f8f9fa;
   padding: 0;
@@ -8,25 +7,22 @@
   display: flex;
   align-items: center;
   position: fixed !important;
-  top: calc(var(--navbar-height) + 40px) !important; /* Position below navbar + toggle button */
-  left: 0;
-  right: 0;
+  top: calc(var(--navbar-height)) !important; /* Position directly below main navbar */
+  left: 250px !important; /* Always start to the right of sidebar area */
+  right: 0 !important;
+  width: calc(100% - 250px) !important; /* Take remaining width */
   z-index: 1025;
 }
 
-/* When banner is present, position sub-navbar below banner + navbar + toggle */
+/* When banner is present, position sub-navbar below banner + navbar */
 .has-banner .navbar-sub {
-  top: calc(var(--banner-height) + var(--navbar-height) + 40px) !important;
+  top: calc(var(--banner-height) + var(--navbar-height)) !important;
 }
 
-/* When sidebar is present, position sub-navbar to the right of sidebar */
-.has-sidebar .navbar-sub {
-  left: 250px !important; /* Default sidebar width */
-}
-
-/* When sidebar is collapsed, reduce left margin */
+/* When sidebar is collapsed, reduce left margin and increase width */
 .sidebar-collapsed .navbar-sub {
   left: 60px !important; /* Collapsed sidebar width */
+  width: calc(100% - 60px) !important; /* Adjust width for collapsed sidebar */
 }
 
 .navbar-sub-instance {

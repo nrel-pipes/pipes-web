@@ -96,7 +96,7 @@ function App() {
             {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
           </div>
 
-          {/* Toggle Button - only when authenticated */}
+          {/* Toggle Button - only when authenticated, positioned in sidebar area */}
           {isAuthenticated && (
             <ToggleButton
               onToggle={handleSidebarToggle}
@@ -104,7 +104,7 @@ function App() {
             />
           )}
 
-          {/* Fixed NavbarSub section - only when authenticated */}
+          {/* Fixed NavbarSub section - only when authenticated, positioned to right of sidebar */}
           {isAuthenticated && <NavbarSub navData={{}} />}
 
           {/* Main content with proper spacing */}
@@ -112,9 +112,9 @@ function App() {
             className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}
             style={{
               paddingTop: isAuthenticated
-                ? '155px'  // navbar height + toggle button + sub-navbar height
+                ? '115px'  // navbar height + navbar-sub height (65px + 50px)
                 : !isAuthenticated
-                  ? '207px' // banner height + navbar height
+                  ? '207px' // banner height + navbar height (142px + 65px)
                   : '65px'  // just navbar height
             }}
           >
