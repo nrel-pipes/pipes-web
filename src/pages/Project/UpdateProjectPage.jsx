@@ -1250,6 +1250,47 @@ const UpdateProjectPage = () => {
   const mutation = useUpdateProjectMutation();
 
   // Transform project data for form consumption
+  const cleanRequirements = (reqData) => {
+    if (!reqData || (typeof reqData === 'object' && Object.keys(reqData).length === 0)) {
+      return { keys: [], values: [] }; // Handles null, undefined, {}
+    }
+
+    // If reqData has 'keys' and 'values' properties, assume it's already (or trying to be) in RHF structure.
+    if (reqData.hasOwnProperty('keys') && reqData.hasOwnProperty('values')) {
+      const keys = Array.isArray(reqData.keys) ? reqData.keys : [reqData.keys].filter(k => k !== null && k !== undefined);
+      const valuesInput = Array.isArray(reqData.values) ? reqData.values : [reqData.values].filter(v => v !== null && v !== undefined);
+
+      const processedValues = valuesInput.map(valArray => {
+        if (Array.isArray(valArray)) {
+          return valArray.map(v => String(v));
+        }
+        // If an element of 'valuesInput' is not an array (e.g. a single string value for a requirement),
+        // wrap it as a single-element array.
+        return [String(valArray)];
+      });
+
+      // Ensure values array length matches keys array length, padding with empty value arrays if necessary
+      const finalValues = keys.map((_, i) => processedValues[i] || [""]);
+
+      return {
+        keys: keys.map(k => String(k)),
+        values: finalValues
+      };
+    }
+
+    // Standard path: reqData is like {"ActualKey1": ["valA", "valB"], "ActualKey2": "valC"}
+    const apiKeys = Object.keys(reqData);
+    const apiValues = apiKeys.map(key => {
+      const val = reqData[key];
+      if (Array.isArray(val)) {
+        return val.map(v => String(v));
+      }
+      return [String(val)]; // Wrap single value in array
+    });
+
+    return { keys: apiKeys, values: apiValues };
+  };
+
   const cleanProjectDataForForm = (projectData) => {
     if (!projectData) return {};
 
@@ -1265,10 +1306,7 @@ const UpdateProjectPage = () => {
         last_name: projectData.owner?.last_name || "",
         organization: projectData.owner?.organization || ""
       },
-      requirements: projectData.requirements ? {
-        keys: Object.keys(projectData.requirements),
-        values: Object.values(projectData.requirements).map(val => Array.isArray(val) ? val : [val])
-      } : { keys: [], values: [] },
+      requirements: cleanRequirements(projectData.requirements),
       scenarios: projectData.scenarios?.map(scenario => ({
         name: scenario.name || "",
         description: [scenario.description || ""],
