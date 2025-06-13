@@ -1,15 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Calendar, Check, FileText, Layers, Lightbulb, List, Minus, Plus, Users, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
+import { useGetProjectQuery, useUpdateProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
@@ -943,7 +943,7 @@ const StepReview = () => {
     <div className="form-container">
       <h4 className="form-section-title">Review Your Project</h4>
       <div className="review-intro-note">
-        <p>Your form data is <b>TEMPORARILY </b> saved in your browser's local storage before submtting it. Please review all information and submit to PIPES server for permanent storage.</p>
+        <p>Your form data is <b>TEMPORARILY </b> saved in your browser's local storage before submitting it. Please review all information and submit to PIPES server for permanent storage.</p>
       </div>
 
       <div className="review-section">
@@ -1208,84 +1208,138 @@ const StepReview = () => {
       )}
 
       <div className="review-submit-note">
-        <p>Once you click "Submit", your project will be created and you'll be redirected to the project dashboard.</p>
+        <p>Once you click "Update Project", your project will be updated and you'll be redirected to the project dashboard.</p>
       </div>
     </div>
   );
 };
 
 // Main component with updated layout
-const CreateProjectPage = () => {
+const UpdateProjectPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { checkAuthStatus } = useAuthStore();
-  const { setEffectivePname } = useDataStore();
+  const { setEffectivePname, effectivePname } = useDataStore();
+  const { projectName } = useParams();
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isProjectLoading, setIsProjectLoading] = useState(true);
 
   const {
-    projectFormData,
-    completedSteps,
-    currentStep,
-    setProjectFormData,
-    setCurrentStep,
-    addCompletedStep,
-    resetCompletedSteps
+    updateProjectFormData,
+    updateCompletedSteps,
+    updateCurrentStep,
+    setUpdateProjectFormData,
+    setUpdateCurrentStep,
+    addUpdateCompletedStep,
+    resetUpdateCompletedSteps,
+    resetUpdateForm
   } = useFormStore();
 
-  // Update the reset function to use the resetCompletedSteps function
+  // Fetch existing project data
+  const projectQuery = useGetProjectQuery(projectName || effectivePname);
+
+  // Update the reset function to use the resetUpdateForm function
   const resetProjectForm = () => {
-    // Clear form data
-    setProjectFormData({});
-    // Reset current step to 0
-    setCurrentStep(0);
-    // Reset completed steps
-    resetCompletedSteps();
+    resetUpdateForm();
   };
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
-  const mutation = useCreateProjectMutation();
+  const mutation = useUpdateProjectMutation();
 
-  // Form default values - use persisted data if available
-  const defaultValues = projectFormData || {
-    name: "",
-    title: "", // Add title field
-    description: "",
-    scheduled_start: "",
-    scheduled_end: "",
-    assumptions: [""],
-    milestones: [],
-    owner: {
-      email: "",
-      first_name: "",
-      last_name: "",
-      organization: ""
-    },
-    scenarios: [],
-    requirements: {
-      keys: [],
-      values: []
-    },
-    sensitivities: []
+  // Transform project data for form consumption
+  const cleanProjectDataForForm = (projectData) => {
+    if (!projectData) return {};
+
+    return {
+      name: projectData.name || "",
+      title: projectData.title || "",
+      description: projectData.description || "",
+      scheduled_start: projectData.scheduled_start ? projectData.scheduled_start.split('T')[0] : "",
+      scheduled_end: projectData.scheduled_end ? projectData.scheduled_end.split('T')[0] : "",
+      owner: {
+        email: projectData.owner?.email || "",
+        first_name: projectData.owner?.first_name || "",
+        last_name: projectData.owner?.last_name || "",
+        organization: projectData.owner?.organization || ""
+      },
+      requirements: projectData.requirements ? {
+        keys: Object.keys(projectData.requirements),
+        values: Object.values(projectData.requirements).map(val => Array.isArray(val) ? val : [val])
+      } : { keys: [], values: [] },
+      scenarios: projectData.scenarios?.map(scenario => ({
+        name: scenario.name || "",
+        description: [scenario.description || ""],
+        other: scenario.other ? Object.entries(scenario.other) : []
+      })) || [],
+      milestones: projectData.milestones?.map(milestone => ({
+        name: milestone.name || "",
+        description: [milestone.description || ""],
+        milestone_date: milestone.milestone_date ? milestone.milestone_date.split('T')[0] : ""
+      })) || [],
+      assumptions: projectData.assumptions || [""],
+      sensitivities: projectData.sensitivities?.map(sensitivity => ({
+        name: sensitivity.name || "",
+        description: [sensitivity.description || ""]
+      })) || []
+    };
   };
+
+  // Form default values - use project data if available, otherwise use persisted update form data
+  const defaultValues = useMemo(() => {
+    if (projectQuery.data) {
+      return cleanProjectDataForForm(projectQuery.data);
+    }
+    return updateProjectFormData || {
+      name: "",
+      title: "",
+      description: "",
+      scheduled_start: "",
+      scheduled_end: "",
+      assumptions: [""],
+      milestones: [],
+      owner: {
+        email: "",
+        first_name: "",
+        last_name: "",
+        organization: ""
+      },
+      scenarios: [],
+      requirements: {
+        keys: [],
+        values: []
+      },
+      sensitivities: []
+    };
+  }, [projectQuery.data, updateProjectFormData]);
 
   const methods = useForm({
     defaultValues,
     mode: "onChange"
   });
 
+  // Reset form when project data changes
+  useEffect(() => {
+    if (projectQuery.data) {
+      const transformedData = cleanProjectDataForForm(projectQuery.data);
+      methods.reset(transformedData);
+      setUpdateProjectFormData(transformedData);
+      setIsProjectLoading(false);
+    }
+  }, [projectQuery.data, methods, setUpdateProjectFormData]);
+
   // Save form data to Zustand store whenever it changes
   useEffect(() => {
     const subscription = methods.watch((formData) => {
       if (Object.keys(formData).length > 0) {
-        setProjectFormData(formData);
+        setUpdateProjectFormData(formData);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [methods, setProjectFormData]);
+  }, [methods, setUpdateProjectFormData]);
 
   const steps = [
     { title: "Basic Info", component: <StepBasicInfo /> },
@@ -1362,16 +1416,6 @@ const CreateProjectPage = () => {
     setFormError(false);
     setFormErrorMessage("");
     setErrorDetails([]);
-
-    const projectBasicsFromCache = queryClient.getQueryData(["project-basics"]);
-    if (projectBasicsFromCache) {
-      const names = projectBasicsFromCache.map(project => project.name);
-      if (names.includes(data.name)) {
-        setFormError(true);
-        setFormErrorMessage(`Project with "${data.name}" already exists. Please choose a unique name.`);
-        return;
-      }
-    }
 
     // Create a clean copy of the data for submission
     const formattedData = {
@@ -1460,7 +1504,9 @@ const CreateProjectPage = () => {
       delete formattedData.sensitivities;
     }
 
-    mutation.mutate({ data: formattedData });
+    // Use the project name from params or effectivePname for the update
+    const projectToUpdate = projectName || effectivePname;
+    mutation.mutate({ projectName: projectToUpdate, data: formattedData });
   };
 
   useEffect(() => {
@@ -1468,7 +1514,7 @@ const CreateProjectPage = () => {
       if (mutation.data.name) {
         setEffectivePname(mutation.data.name);
       }
-      // Clear form data on successful submission
+      // Only clear form data on successful submission
       resetProjectForm();
       navigate("/project/dashboard");
     }
@@ -1476,12 +1522,14 @@ const CreateProjectPage = () => {
     if (mutation.isError) {
       setFormError(true);
       // Set a generic error heading that doesn't duplicate the details
-      setFormErrorMessage("Error creating project");
+      setFormErrorMessage("Error updating project");
       // Get detailed error information
       setErrorDetails(parseErrorResponse(mutation.error));
 
       // Scroll to top to make error visible
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Don't clear form data on error - preserve user changes for retry
     }
   }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error, setEffectivePname, navigate]);
 
@@ -1490,7 +1538,7 @@ const CreateProjectPage = () => {
     const valid = await methods.trigger();
     if (valid) {
       // Add to completed steps if not already included
-      addCompletedStep(currentStep);
+      addUpdateCompletedStep(updateCurrentStep);
 
       // Show success message (optional)
       setFormError(false);
@@ -1503,15 +1551,15 @@ const CreateProjectPage = () => {
   };
 
   const saveAndContinue = async () => {
-    if (currentStep === steps.length - 1) {
+    if (updateCurrentStep === steps.length - 1) {
       methods.handleSubmit(onSubmit)();
       return;
     }
 
     // For the Review step (second to last), no validation needed
-    if (currentStep === steps.length - 2) {
-      addCompletedStep(currentStep);
-      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
+    if (updateCurrentStep === steps.length - 2) {
+      addUpdateCompletedStep(updateCurrentStep);
+      setUpdateCurrentStep(Math.min(updateCurrentStep + 1, steps.length - 1));
       setFormError(false);
       setFormErrorMessage("");
       return;
@@ -1520,42 +1568,24 @@ const CreateProjectPage = () => {
     // Save and move to next step if validation passes
     const saved = await saveFormData();
     if (saved) {
-      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
+      setUpdateCurrentStep(Math.min(updateCurrentStep + 1, steps.length - 1));
     }
   };
 
   const prevStep = () => {
-    setCurrentStep(Math.max(currentStep - 1, 0));
+    setUpdateCurrentStep(Math.max(updateCurrentStep - 1, 0));
     setFormError(false);
     setFormErrorMessage("");
   };
 
   const goToStep = (stepIndex) => {
-    // Allow going to Review step if all previous steps are completed
-    if (stepIndex === steps.length - 1) {
-      // Check if all previous steps are completed
-      const allPreviousStepsCompleted = Array.from(
-        { length: steps.length - 1 },
-        (_, i) => i
-      ).every(i => completedSteps.includes(i));
-
-      if (allPreviousStepsCompleted) {
-        setCurrentStep(stepIndex);
-        setFormError(false);
-        setFormErrorMessage("");
-        return;
-      }
-    }
-
-    // Original logic for other steps
-    if (completedSteps.includes(stepIndex) || stepIndex === currentStep) {
-      setCurrentStep(stepIndex);
-      setFormError(false);
-      setFormErrorMessage("");
-    }
+    // For update page, allow navigation to any step
+    setUpdateCurrentStep(stepIndex);
+    setFormError(false);
+    setFormErrorMessage("");
   };
 
-  const progressPercentage = Math.round(((completedSteps.length + (currentStep > Math.max(...completedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
+  const progressPercentage = Math.round(((updateCompletedSteps.length + (updateCurrentStep > Math.max(...updateCompletedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
 
   const stepIcons = [
     <FileText size={18} />,
@@ -1568,8 +1598,8 @@ const CreateProjectPage = () => {
     <Check size={18} />
   ];
 
-  // Don't render content until auth check is complete
-  if (isAuthChecking) {
+  // Don't render content until auth check is complete and project is loaded
+  if (isAuthChecking || isProjectLoading || projectQuery.isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
         <div className="spinner-border text-primary" role="status">
@@ -1579,12 +1609,33 @@ const CreateProjectPage = () => {
     );
   }
 
+  // Handle project not found
+  if (projectQuery.isError) {
+    return (
+      <>
+        <NavbarSub navData={{ pList: true, pUpdate: true }} />
+        <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+          <Row className="w-100 mx-0">
+            <ContentHeader title="Update Project"/>
+          </Row>
+          <div className="alert alert-danger">
+            <h4>Project Not Found</h4>
+            <p>The project you are trying to update could not be found.</p>
+            <Button variant="primary" onClick={() => navigate("/project/list")}>
+              Go to Project List
+            </Button>
+          </div>
+        </Container>
+      </>
+    );
+  }
+
   return (
     <>
-      <NavbarSub navData={{ pList: true, pCreate: true }} />
+      <NavbarSub navData={{ pList: true, pUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Create Project"/>
+          <ContentHeader title={`Update Project: ${projectQuery.data?.name || ''}`}/>
         </Row>
 
         <div className="create-project-container">
@@ -1598,15 +1649,15 @@ const CreateProjectPage = () => {
               {steps.map((step, i) => (
                 <div
                   key={i}
-                  className={`step-item ${currentStep === i ? 'active' : ''} ${completedSteps.includes(i) ? 'completed' : ''}`}
+                  className={`step-item ${updateCurrentStep === i ? 'active' : ''} ${updateCompletedSteps.includes(i) ? 'completed' : ''}`}
                 >
                   <button
                     className="step-button"
                     onClick={() => goToStep(i)}
-                    disabled={!completedSteps.includes(i) && i !== currentStep && i !== steps.length - 1}
+                    // Remove disabled state for update page - all steps should be clickable
                   >
                     <span className="step-icon">
-                      {completedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
+                      {updateCompletedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
                     </span>
                     <span className="step-title">{step.title}</span>
                   </button>
@@ -1636,13 +1687,13 @@ const CreateProjectPage = () => {
 
             <FormProvider {...methods}>
               <Form>
-                {steps[currentStep].component}
+                {steps[updateCurrentStep].component}
 
                 <div className="form-action-buttons">
                   <Button
                     variant="outline-secondary"
                     onClick={prevStep}
-                    disabled={currentStep === 0}
+                    disabled={updateCurrentStep === 0}
                     className="action-button"
                   >
                     Previous
@@ -1666,8 +1717,8 @@ const CreateProjectPage = () => {
                       disabled={mutation.isPending}
                       className="action-button"
                     >
-                      {currentStep === steps.length - 1
-                        ? (mutation.isPending ? "Submitting..." : "Submit")
+                      {updateCurrentStep === steps.length - 1
+                        ? (mutation.isPending ? "Updating..." : "Update Project")
                         : "Save & Continue"}
                     </Button>
                   </div>
@@ -1681,4 +1732,4 @@ const CreateProjectPage = () => {
   );
 };
 
-export default CreateProjectPage;
+export default UpdateProjectPage;

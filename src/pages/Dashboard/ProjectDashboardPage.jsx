@@ -122,7 +122,7 @@ const ProjectDashboardPage = () => {
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           {/* TODO: Enabled this when we have the project update page */}
-          <ContentHeader title="Project Dashboard" showUpdateProjectButton={false}/>
+          <ContentHeader title="Project Dashboard" showUpdateProjectButton={true}/>
         </Row>
         {/* Project Header with Overview */}
         <Row className="dashboard-header mb-4">
