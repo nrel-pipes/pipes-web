@@ -1,18 +1,36 @@
 .navbar-sub {
-  width: 100%;
   border-bottom: 1px solid #e9ecef;
   background-color: #f8f9fa;
   padding: 0;
   margin: 0;
-  height: 50px; /* Increased height to match sidebar items */
+  height: 50px;
   display: flex;
   align-items: center;
+  position: fixed !important;
+  top: calc(var(--navbar-height)) !important; /* Position directly below main navbar */
+  left: 250px !important; /* Always start to the right of sidebar area */
+  right: 0 !important;
+  width: calc(100% - 250px) !important; /* Take remaining width */
+  z-index: 1025;
+  transition: left 0.3s ease, width 0.3s ease; /* Add smooth transitions */
+}
+
+/* When banner is present, position sub-navbar below banner + navbar */
+.has-banner .navbar-sub {
+  top: calc(var(--banner-height) + var(--navbar-height)) !important;
+}
+
+/* When sidebar is collapsed, reduce left margin and increase width */
+.sidebar-collapsed .navbar-sub {
+  left: 60px !important; /* Collapsed sidebar width */
+  width: calc(100% - 60px) !important; /* Adjust width for collapsed sidebar */
 }
 
 .navbar-sub-instance {
   min-height: 48px;
   width: 100%;
   padding: 0.5rem 1rem;
+  position: static !important;
 }
 
 .navbar-sub-instance .navbar-collapse {
@@ -32,7 +50,7 @@
   height: 100%;
   display: flex;
   align-items: center;
-  font-size: 13px; /* Slightly larger font size */
+  font-size: 13px;
 }
 
 .navbar-sub-link:hover {
@@ -65,7 +83,7 @@
 }
 
 .navbar-sub-link:hover .rounded-box {
-  background-color: #d9eaff;  /* light blue color */
+  background-color: #d9eaff;
 }
 
 .navbar-sub-circle {
