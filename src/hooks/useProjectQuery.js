@@ -80,11 +80,8 @@ export const useCreateProjectMutation = () => {
 // Update existing project
 export const updateProject = async ({ projectName, data }) => {
   try {
-    const params = {
-      project: projectName // Axios will properly encode this
-    };
-
-    const response = await AxiosInstance.put('/api/projects', data, { params });
+    // Send projectName as path parameter, not query parameter
+    const response = await AxiosInstance.put(`/api/projects/${encodeURIComponent(projectName)}`, data);
     return response.data;
   } catch (error) {
     console.error("Failed to update project via request client:", error);

@@ -27,17 +27,20 @@ function ContentHeader({
       <div className="content-header-actions d-flex justify-content-end">
         {showUpdateProjectButton && (
           <Button
-            className="update-button me-2"
+            variant="primary"
             onClick={handleUpdateProject}
+            className="px-4 py-3"
             style={{
-              backgroundColor: 'rgb(71, 148, 218)',
-              color: 'white',
+              backgroundColor: '#0079c2',
+              borderColor: '#0079c2',
+              fontSize: '1rem',
               fontWeight: 'bold',
-              width: '180px'
+              borderRadius: '6px',
+              minWidth: '180px'
             }}
           >
             <Pencil size={16} className="update-button-icon me-1" />
-            Update project
+            Update Project
           </Button>
         )}
       </div>

@@ -19,7 +19,7 @@ import ContentHeader from "../Components/ContentHeader";
 import "../Components/Cards.css";
 import "../FormStyles.css";
 import "../PageStyles.css";
-import "./CreateProjectPage.css";
+import "./ProjectPage.css";
 
 
 const StepBasicInfo = () => {
