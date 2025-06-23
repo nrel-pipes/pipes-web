@@ -102,9 +102,7 @@ function App() {
               isExpanded={sidebarExpanded}
             />
           )}
-
           {isAuthenticated && <NavbarSub navData={{}} />}
-
           <div
             className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}
             style={{
