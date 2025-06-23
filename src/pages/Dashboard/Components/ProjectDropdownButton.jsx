@@ -1,11 +1,9 @@
 import { Pencil, Settings, Trash2 } from "lucide-react";
 import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import "../../Components/ContentHeader.css";
-import "../../PageStyles.css";
 
 
-const ContentHeader = ({cornerMark}) => {
+const ProjectDropdownButton = () => {
   const navigate = useNavigate();
 
   const handleUpdateProject = () => {
@@ -18,15 +16,7 @@ const ContentHeader = ({cornerMark}) => {
   };
 
   return (
-    <div className="container mt-4 mb-4 content-header-container">
-      <div className="content-header-heading">
-        <h2 className="d-inline-flex title-container content-header-text display-6">Project Dashboard</h2>
-        {cornerMark !== undefined && (
-          <span className="content-header-counter">({cornerMark})</span>
-        )}
-      </div>
-
-      <div className="content-header-actions d-flex justify-content-end">
+    <div className="content-header-actions d-flex justify-content-end">
         <Dropdown>
           <Dropdown.Toggle
             variant="primary"
@@ -55,8 +45,7 @@ const ContentHeader = ({cornerMark}) => {
           </Dropdown.Menu>
         </Dropdown>
       </div>
-    </div>
   );
 }
 
-export default ContentHeader;
+export default ProjectDropdownButton;

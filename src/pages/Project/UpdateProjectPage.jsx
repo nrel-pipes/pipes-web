@@ -15,6 +15,7 @@ import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
 import useFormStore from "../../stores/FormStore";
 import ContentHeader from "../Components/ContentHeader";
+import ProjectUpdateCancelButton from "./Components/ProjectUpdateCancelButton";
 
 import "../Components/Cards.css";
 import "../FormStyles.css";
@@ -1673,7 +1674,10 @@ const UpdateProjectPage = () => {
       <NavbarSub navData={{ pList: true, pUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title={`Update Project: ${projectQuery.data?.name || ''}`}/>
+          <ContentHeader
+            title={`Update Project: ${projectQuery.data?.name || ''}`}
+            headerButton={<ProjectUpdateCancelButton />}
+          />
         </Row>
 
         <div className="create-project-container">
