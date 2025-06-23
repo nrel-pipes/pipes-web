@@ -18,20 +18,23 @@ import useAuthStore from '../stores/AuthStore';
 import useDataStore from '../stores/DataStore';
 import './styles/NavbarSide.css';
 
-const Sidebar = () => {
+const Sidebar = ({ onToggle }) => {
   const [expanded, setExpanded] = useState(true);
   const location = useLocation();
   const { effectivePname } = useDataStore();
   const { currentUser } = useAuthStore();
 
-  // Check if the user is an admin
   const isAdmin = currentUser?.is_superuser === true;
 
-  // Check if a project is selected
   const projectSelected = !!effectivePname;
 
   const toggleSidebar = () => {
-    setExpanded(!expanded);
+    const newExpanded = !expanded;
+    setExpanded(newExpanded);
+
+    if (onToggle) {
+      onToggle(newExpanded);
+    }
   };
 
   // Force consistent sidebar width when route changes

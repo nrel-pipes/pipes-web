@@ -12,6 +12,8 @@ import SiteFooter from "./layouts/Footer";
 import SiteNavbarFluid from "./layouts/NavbarFluid";
 import Sidebar from "./layouts/NavbarSide";
 import SiteNavbar from "./layouts/NavbarTop";
+import NavbarSub from "./layouts/NavbarSub";
+import ToggleButton from "./layouts/ToggleButton";
 
 // Home
 import HomePage from "./pages/Home/HomePage";
@@ -22,6 +24,8 @@ import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 
 // Projects
 import ProjectBasicsPage from "./pages/Projects/ProjectListPage";
+
+// Pull model from catalog into project
 
 // Project Milestones
 import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";
@@ -60,6 +64,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
   useEffect(() => {
@@ -75,15 +80,44 @@ function App() {
     return () => clearInterval(interval);
   }, [checkAuthStatus]);
 
+  const handleSidebarToggle = () => {
+    setSidebarExpanded(!sidebarExpanded);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="App">
-        {isAuthenticated ? "" : <SiteBanner />}
-        {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+      <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
+
+        {!isAuthenticated && <SiteBanner />}
 
         <BrowserRouter>
-          <div className="app-container">
-            {isAuthenticated && <Sidebar />}
+
+          <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
+            {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+          </div>
+
+          {isAuthenticated && (
+            <ToggleButton
+              onToggle={handleSidebarToggle}
+              isExpanded={sidebarExpanded}
+            />
+          )}
+          {isAuthenticated && <NavbarSub navData={{}} />}
+          <div
+            className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}
+            style={{
+              paddingTop: isAuthenticated
+                ? '115px'
+                : !isAuthenticated
+                  ? '207px'
+                  : '65px'
+            }}
+          >
+            {isAuthenticated && (
+              <div className="sidebar">
+                <Sidebar onToggle={handleSidebarToggle} />
+              </div>
+            )}
             <div className="Content">
               <Routes>
                 {/* Home route */}
@@ -157,7 +191,7 @@ function App() {
             </div>
           </div>
         </BrowserRouter>
-        {isAuthenticated ? "" : <SiteFooter />}
+        {!isAuthenticated && <SiteFooter />}
       </div>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
