@@ -7,23 +7,21 @@
   display: flex;
   align-items: center;
   position: fixed !important;
-  top: calc(var(--navbar-height)) !important; /* Position directly below main navbar */
-  left: 250px !important; /* Always start to the right of sidebar area */
+  top: calc(var(--navbar-height)) !important;
+  left: 200px !important;
   right: 0 !important;
-  width: calc(100% - 250px) !important; /* Take remaining width */
+  width: calc(100% - 250px) !important;
   z-index: 1025;
-  transition: left 0.3s ease, width 0.3s ease; /* Add smooth transitions */
+  transition: left 0.3s ease, width 0.3s ease;
 }
 
-/* When banner is present, position sub-navbar below banner + navbar */
 .has-banner .navbar-sub {
   top: calc(var(--banner-height) + var(--navbar-height)) !important;
 }
 
-/* When sidebar is collapsed, reduce left margin and increase width */
 .sidebar-collapsed .navbar-sub {
-  left: 60px !important; /* Collapsed sidebar width */
-  width: calc(100% - 60px) !important; /* Adjust width for collapsed sidebar */
+  left: 60px !important;
+  width: calc(100%) !important;
 }
 
 .navbar-sub-instance {

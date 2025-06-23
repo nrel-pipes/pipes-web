@@ -3,10 +3,9 @@
   border-right: 1px solid #ddd;
   transition: width 0.3s ease;
   position: relative;
-  height: calc(100vh - 60px); /* Adjust based on your navbar height */
-  /* Set fixed width in both states */
+  height: calc(100vh - 60px);
   width: 200px;
-  flex-shrink: 0; /* Prevent the sidebar from shrinking */
+  flex-shrink: 0;
   overflow-x: hidden;
 }
 
@@ -35,9 +34,8 @@
   z-index: 2;
 }
 
-/* Adjust position of toggle button when sidebar is collapsed */
 .sidebar.collapsed .sidebar-toggle {
-  right: 15px; /* Move more toward the center when collapsed */
+  right: 15px;
 }
 
 .sidebar-toggle:hover {
@@ -55,19 +53,19 @@
 }
 
 .sidebar-nav ul li {
-  height: 50px; /* Fixed height for all list items */
+  height: 50px;
   display: flex;
   align-items: center;
 }
 
-/* Add styling for the separator */
+
 .sidebar-nav ul li.separator {
-  height: 1px; /* Height of the separator line */
+  height: 1px;
   margin: 8px 15px;
   background-color: #aabbc8;
   opacity: 0.3;
   list-style-type: none;
-  min-height: auto; /* Override fixed height for separator */
+  min-height: auto;
 }
 
 .sidebar-nav a {
@@ -98,7 +96,7 @@
   align-items: center;
   justify-content: center;
   width: 30px;
-  min-width: 30px; /* Ensure icons keep their space */
+  min-width: 30px;
   height: 30px;
 }
 
@@ -107,17 +105,14 @@
   white-space: nowrap;
 }
 
-/* Hide text when sidebar is collapsed */
 .sidebar.collapsed .sidebar-nav .nav-text {
   display: none;
 }
 
-/* Center icons when collapsed */
 .sidebar.collapsed .sidebar-nav .icon {
   margin: 0 auto;
 }
 
-/* Show tooltip on hover when collapsed */
 .sidebar.collapsed .sidebar-nav a {
   position: relative;
 }
@@ -130,21 +125,19 @@
   transform: translateY(-50%);
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 5px 10px;  /* Fixed the padding value */
+  padding: 5px 10px;
   border-radius: 3px;
   white-space: nowrap;
   z-index: 10;
   margin-left: 10px;
 }
 
-/* Override any width changes that might occur on specific routes */
 .sidebar-nav li a,
 .sidebar-nav li a.active {
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Update the active link styling */
 .sidebar-nav ul li a.active {
   color: white;
   background-color: rgb(71, 148, 218);
@@ -155,22 +148,18 @@
   color: white;
 }
 
-/* Keep hover effect consistent with the new color scheme */
 .sidebar-nav ul li a:hover:not(.active) {
   background-color: rgba(71, 148, 218, 0.1);
 }
 
-/* Make all sidebar links semi-bold */
 .sidebar-nav ul li a {
-  font-weight: 600; /* semi-bold weight */
+  font-weight: 600;
 }
 
-/* Ensure text in nav-text spans also inherits the semi-bold weight */
 .sidebar-nav ul li .nav-text {
   font-weight: 600;
 }
 
-/* Add this to the existing CSS file */
 .sidebar-nav ul li a.disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -181,14 +170,12 @@
   background-color: transparent;
 }
 
-/* Admin menu item styling - using a subtle visual indicator instead of background colors */
 .sidebar-nav ul li a.admin-menu-item {
   position: relative;
   border-left: none;
   background-color: transparent;
 }
 
-/* Add a small badge to indicate admin functionality */
 .sidebar-nav ul li a.admin-menu-item::before {
   content: "•";
   position: absolute;
@@ -199,12 +186,10 @@
   transform: translateY(-50%);
 }
 
-/* For the collapsed sidebar, adjust the position */
 .sidebar.collapsed .sidebar-nav ul li a.admin-menu-item::before {
   right: 5px;
 }
 
-/* When active, keep the admin indicator visible but use the regular active styles */
 .sidebar-nav ul li a.admin-menu-item.active {
   background-color: rgb(71, 148, 218);
   color: white;
