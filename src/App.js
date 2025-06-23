@@ -87,16 +87,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className={`App ${!isAuthenticated ? 'has-banner' : ''} ${!sidebarExpanded ? 'sidebar-collapsed' : ''}`}>
-        {/* Fixed Banner section */}
+
         {!isAuthenticated && <SiteBanner />}
 
         <BrowserRouter>
-          {/* Fixed Navbar section */}
+
           <div className={isAuthenticated ? "site-navbar-fluid" : "site-navbar"}>
             {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
           </div>
 
-          {/* Toggle Button - only when authenticated, positioned in sidebar area */}
           {isAuthenticated && (
             <ToggleButton
               onToggle={handleSidebarToggle}
@@ -104,18 +103,16 @@ function App() {
             />
           )}
 
-          {/* Fixed NavbarSub section - only when authenticated, positioned to right of sidebar */}
           {isAuthenticated && <NavbarSub navData={{}} />}
 
-          {/* Main content with proper spacing */}
           <div
             className={`app-container ${isAuthenticated ? 'has-sidebar' : ''}`}
             style={{
               paddingTop: isAuthenticated
-                ? '115px'  // navbar height + navbar-sub height (65px + 50px)
+                ? '115px'
                 : !isAuthenticated
-                  ? '207px' // banner height + navbar height (142px + 65px)
-                  : '65px'  // just navbar height
+                  ? '207px'
+                  : '65px'
             }}
           >
             {isAuthenticated && (
