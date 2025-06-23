@@ -25,7 +25,8 @@ import ScheduleComponent from "./Components/ScheduleComponent";
 import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
 import useDataStore from "../../stores/DataStore";
 
-import ContentHeader from "./Components/ContentHeader";
+import ContentHeader from "../Components/ContentHeader";
+import ProjectUpdateButton from "./Components/ProjectUpdateButton";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
@@ -121,7 +122,7 @@ const ProjectDashboardPage = () => {
       <NavbarSub navData={{ pList: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader/>
+          <ContentHeader title="Project Dashboard" headerButton={<ProjectUpdateButton/>} />
         </Row>
         <Row className="dashboard-header mb-4">
           <Col lg={8}>
