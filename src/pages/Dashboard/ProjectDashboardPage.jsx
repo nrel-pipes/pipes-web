@@ -25,7 +25,7 @@ import ScheduleComponent from "./Components/ScheduleComponent";
 import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
 import useDataStore from "../../stores/DataStore";
 
-import ContentHeader from "../Components/ContentHeader";
+import ContentHeader from "./Components/ContentHeader";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
@@ -121,10 +121,8 @@ const ProjectDashboardPage = () => {
       <NavbarSub navData={{ pList: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          {/* TODO: Enabled this when we have the project update page */}
-          <ContentHeader title="Project Dashboard" showUpdateProjectButton={true}/>
+          <ContentHeader/>
         </Row>
-        {/* Project Header with Overview */}
         <Row className="dashboard-header mb-4">
           <Col lg={8}>
             <div className="mt-4 mb-2 text-start">
