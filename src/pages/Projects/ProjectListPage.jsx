@@ -184,7 +184,8 @@ const ProjectBasicsPage = () => {
             <div className="empty-state-actions">
               <button variant="primary"
                 className="create-button"
-                onClick={handleCreateProjectClick}>
+                onClick={handleCreateProjectClick}
+                >
                   <Plus size={16} className="create-button-icon" />
                   Create Project on Web
               </button>

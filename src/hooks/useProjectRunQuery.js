@@ -114,8 +114,6 @@ export const useGetProjectRunQuery = (projectName, projectRunName, options={}) =
   });
 }
 
-
-
 // Create project run API function
 const createProjectRun = async ({ projectName, data }) => {
   try {
@@ -138,7 +136,6 @@ const createProjectRun = async ({ projectName, data }) => {
     throw error;
   }
 };
-
 
 export const useCreateProjectRunMutation = () => {
   const queryClient = useQueryClient();
