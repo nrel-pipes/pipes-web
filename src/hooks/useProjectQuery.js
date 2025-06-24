@@ -80,8 +80,11 @@ export const useCreateProjectMutation = () => {
 // Update existing project
 export const updateProject = async ({ projectName, data }) => {
   try {
-    // Send projectName as path parameter, not query parameter
-    const response = await AxiosInstance.put(`/api/projects/${encodeURIComponent(projectName)}`, data);
+    const params = {
+      project: projectName
+    };
+
+    const response = await AxiosInstance.put('/api/projects', data, { params });
     return response.data;
   } catch (error) {
     console.error("Failed to update project via request client:", error);
@@ -141,17 +144,15 @@ export const useDeleteProjectMutation = () => {
   const { setEffectivePname } = useDataStore();
 
   return useMutation({
-    mutationKey: ["delete-project"],
     mutationFn: ({ projectName }) => deleteProject({ projectName }),
     onSuccess: (data, variables) => {
       // Clear the effective project name if it was the deleted project
       setEffectivePname(null);
 
-      // Invalidate and refetch project-related queries
+      // Only invalidate project lists, not the specific project query
       queryClient.invalidateQueries({ queryKey: ["project-basics"] });
-      queryClient.invalidateQueries({ queryKey: ["effective-project", variables.projectName] });
 
-      // Remove the specific project from cache
+      // Remove the specific project from cache since it's deleted
       queryClient.removeQueries({ queryKey: ["effective-project", variables.projectName] });
     },
     onError: (error) => {

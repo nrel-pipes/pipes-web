@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
@@ -7,7 +6,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import { useNavigate, useParams } from "react-router-dom";
 
-import { useDeleteProjectMutation, useGetProjectQuery } from "../../hooks/useProjectQuery";
+import { useDeleteProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
@@ -20,16 +19,12 @@ import "./ProjectPage.css";
 
 const DeleteProjectPage = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { checkAuthStatus } = useAuthStore();
   const { setEffectivePname, effectivePname } = useDataStore();
   const { projectName } = useParams();
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [deleteError, setDeleteError] = useState(null);
-
-  // Fetch existing project data
-  const projectQuery = useGetProjectQuery(projectName || effectivePname);
 
   // Delete project mutation
   const deleteProjectMutation = useDeleteProjectMutation();
@@ -110,21 +105,14 @@ const DeleteProjectPage = () => {
     return ["An unexpected error occurred. Please try again."];
   };
 
-  // Handle project not found
-  if (projectQuery.isError) {
+  // Don't render content until auth check is complete
+  if (isAuthChecking) {
     return (
-      <>
-        <NavbarSub navData={{ pList: true, pDelete: true }} />
-        <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
-          <div className="alert alert-danger">
-            <h4>Error Encountered</h4>
-            <p>An issue encountered when trying to delete the project. Reason: {parseErrorResponse(projectQuery.error)}</p>
-            <Button variant="primary" onClick={() => navigate("/project/dashboard")}>
-              Go to Project Dashboard
-            </Button>
-          </div>
-        </Container>
-      </>
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
     );
   }
 
