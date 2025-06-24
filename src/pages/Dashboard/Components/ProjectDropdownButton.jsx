@@ -11,8 +11,7 @@ const ProjectDropdownButton = () => {
   };
 
   const handleDeleteProject = () => {
-    // Add your delete project logic here
-    console.log("Delete project clicked");
+    navigate("/delete-project");
   };
 
   return (

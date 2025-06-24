@@ -5,9 +5,17 @@ import { Link } from 'react-router-dom';
 import './styles/NavbarSub.css';
 
 const NavbarSub = ({ navData }) => {
-  const { pList, pCreate, pUpdate, pmAll, pName, prName, pGraph, pSchedule } = navData || {};
+  const {
+    pList, pName, pGraph, pSchedule, pmAll,
+    pCreate, pUpdate, pDelete,
+    prName,
+  } = navData || {};
 
-  if (pList || pmAll || pName || pCreate || pUpdate || prName || pGraph || pSchedule) {
+  if (
+      pList || pName || pGraph || pSchedule  || pmAll ||
+      pCreate || pUpdate || pDelete ||
+      prName
+    ) {
     return (
       <div className="navbar-sub">
         <Navbar expand="lg" className="navbar-sub-instance w-100">
@@ -43,6 +51,19 @@ const NavbarSub = ({ navData }) => {
                 />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Nav.Link as={Link} to="#" className="rounded-box">Update</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {pDelete && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="#" className="rounded-box">Delete</Nav.Link>
               </Nav.Item>
               </>
             )}

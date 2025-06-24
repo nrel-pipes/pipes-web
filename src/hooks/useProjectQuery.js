@@ -120,3 +120,42 @@ export const useUpdateProjectMutation = () => {
     },
   });
 };
+
+// Delete Project
+export const deleteProject = async ({ projectName }) => {
+  try {
+    const params = {
+      project: projectName
+    };
+
+    const response = await AxiosInstance.delete('/api/projects', { params });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to delete project:", error);
+    throw error;
+  }
+};
+
+export const useDeleteProjectMutation = () => {
+  const queryClient = useQueryClient();
+  const { setEffectivePname } = useDataStore();
+
+  return useMutation({
+    mutationKey: ["delete-project"],
+    mutationFn: ({ projectName }) => deleteProject({ projectName }),
+    onSuccess: (data, variables) => {
+      // Clear the effective project name if it was the deleted project
+      setEffectivePname(null);
+
+      // Invalidate and refetch project-related queries
+      queryClient.invalidateQueries({ queryKey: ["project-basics"] });
+      queryClient.invalidateQueries({ queryKey: ["effective-project", variables.projectName] });
+
+      // Remove the specific project from cache
+      queryClient.removeQueries({ queryKey: ["effective-project", variables.projectName] });
+    },
+    onError: (error) => {
+      console.error('Error deleting project:', error);
+    }
+  });
+};
