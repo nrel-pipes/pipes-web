@@ -1660,7 +1660,7 @@ const UpdateProjectPage = () => {
           <div className="alert alert-danger">
             <h4>Project Not Found</h4>
             <p>The project you are trying to update could not be found.</p>
-            <Button variant="primary" onClick={() => navigate("/project/list")}>
+            <Button variant="primary" onClick={() => navigate("/projects")}>
               Go to Project List
             </Button>
           </div>
