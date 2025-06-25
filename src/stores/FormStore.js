@@ -55,10 +55,13 @@ const useFormStore = create(
     }),
     {
       name: 'pipes-form-storage',
-      // Only persist the form data, not the current steps (they should reset on page load)
       partialize: (state) => ({
         createProjectFormData: state.createProjectFormData,
+        createCompletedSteps: state.createCompletedSteps,
+        createCurrentStep: state.createCurrentStep,
         updateProjectFormData: state.updateProjectFormData,
+        updateCompletedSteps: state.updateCompletedSteps,
+        updateCurrentStep: state.updateCurrentStep,
       }),
     }
   )
