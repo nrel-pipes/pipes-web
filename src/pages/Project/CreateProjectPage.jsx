@@ -13,7 +13,7 @@ import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import useFormStore from "../../stores/FormStore";
+import { useCreateProjectFormStore } from "../../stores/FormStore";
 import ContentHeader from "../Components/ContentHeader";
 
 import "../Components/Cards.css";
@@ -1224,19 +1224,19 @@ const CreateProjectPage = () => {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   const {
-    createProjectFormData,
-    createCompletedSteps,
-    createCurrentStep,
-    setCreateProjectFormData,
-    setCreateCurrentStep,
-    addCreateCompletedStep,
-    resetCreateCompletedSteps,
-    resetCreateForm
-  } = useFormStore();
+    projectFormData,
+    completedSteps,
+    currentStep,
+    setProjectFormData,
+    setCurrentStep,
+    addCompletedStep,
+    resetCompletedSteps,
+    resetForm
+  } = useCreateProjectFormStore();
 
-  // Update the reset function to use the resetCreateForm function
+  // Update the reset function to use the resetForm function
   const resetProjectForm = () => {
-    resetCreateForm();
+    resetForm();
   };
 
   const [formError, setFormError] = useState(false);
@@ -1245,7 +1245,7 @@ const CreateProjectPage = () => {
   const mutation = useCreateProjectMutation();
 
   // Form default values - use persisted data if available
-  const defaultValues = createProjectFormData || {
+  const defaultValues = projectFormData || {
     name: "",
     title: "", // Add title field
     description: "",
@@ -1276,12 +1276,12 @@ const CreateProjectPage = () => {
   useEffect(() => {
     const subscription = methods.watch((formData) => {
       if (Object.keys(formData).length > 0) {
-        setCreateProjectFormData(formData);
+        setProjectFormData(formData);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [methods, setCreateProjectFormData]);
+  }, [methods, setProjectFormData]);
 
   const steps = [
     { title: "Basic Info", component: <StepBasicInfo /> },
@@ -1486,7 +1486,7 @@ const CreateProjectPage = () => {
     const valid = await methods.trigger();
     if (valid) {
       // Add to completed steps if not already included
-      addCreateCompletedStep(createCurrentStep);
+      addCompletedStep(currentStep);
 
       // Show success message (optional)
       setFormError(false);
@@ -1499,15 +1499,15 @@ const CreateProjectPage = () => {
   };
 
   const saveAndContinue = async () => {
-    if (createCurrentStep === steps.length - 1) {
+    if (currentStep === steps.length - 1) {
       methods.handleSubmit(onSubmit)();
       return;
     }
 
     // For the Review step (second to last), no validation needed
-    if (createCurrentStep === steps.length - 2) {
-      addCreateCompletedStep(createCurrentStep);
-      setCreateCurrentStep(Math.min(createCurrentStep + 1, steps.length - 1));
+    if (currentStep === steps.length - 2) {
+      addCompletedStep(currentStep);
+      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
       setFormError(false);
       setFormErrorMessage("");
       return;
@@ -1516,12 +1516,12 @@ const CreateProjectPage = () => {
     // Save and move to next step if validation passes
     const saved = await saveFormData();
     if (saved) {
-      setCreateCurrentStep(Math.min(createCurrentStep + 1, steps.length - 1));
+      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
     }
   };
 
   const prevStep = () => {
-    setCreateCurrentStep(Math.max(createCurrentStep - 1, 0));
+    setCurrentStep(Math.max(currentStep - 1, 0));
     setFormError(false);
     setFormErrorMessage("");
   };
@@ -1533,10 +1533,10 @@ const CreateProjectPage = () => {
       const allPreviousStepsCompleted = Array.from(
         { length: steps.length - 1 },
         (_, i) => i
-      ).every(i => createCompletedSteps.includes(i));
+      ).every(i => completedSteps.includes(i));
 
       if (allPreviousStepsCompleted) {
-        setCreateCurrentStep(stepIndex);
+        setCurrentStep(stepIndex);
         setFormError(false);
         setFormErrorMessage("");
         return;
@@ -1544,14 +1544,14 @@ const CreateProjectPage = () => {
     }
 
     // Original logic for other steps
-    if (createCompletedSteps.includes(stepIndex) || stepIndex === createCurrentStep) {
-      setCreateCurrentStep(stepIndex);
+    if (completedSteps.includes(stepIndex) || stepIndex === currentStep) {
+      setCurrentStep(stepIndex);
       setFormError(false);
       setFormErrorMessage("");
     }
   };
 
-  const progressPercentage = Math.round(((createCompletedSteps.length + (createCurrentStep > Math.max(...createCompletedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
+  const progressPercentage = Math.round(((completedSteps.length + (currentStep > Math.max(...completedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
 
   const stepIcons = [
     <FileText size={18} />,
@@ -1594,15 +1594,15 @@ const CreateProjectPage = () => {
               {steps.map((step, i) => (
                 <div
                   key={i}
-                  className={`step-item ${createCurrentStep === i ? 'active' : ''} ${createCompletedSteps.includes(i) ? 'completed' : ''}`}
+                  className={`step-item ${currentStep === i ? 'active' : ''} ${completedSteps.includes(i) ? 'completed' : ''}`}
                 >
                   <button
                     className="step-button"
                     onClick={() => goToStep(i)}
-                    disabled={!createCompletedSteps.includes(i) && i !== createCurrentStep && i !== steps.length - 1}
+                    disabled={!completedSteps.includes(i) && i !== currentStep && i !== steps.length - 1}
                   >
                     <span className="step-icon">
-                      {createCompletedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
+                      {completedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
                     </span>
                     <span className="step-title">{step.title}</span>
                   </button>
@@ -1632,13 +1632,13 @@ const CreateProjectPage = () => {
 
             <FormProvider {...methods}>
               <Form>
-                {steps[createCurrentStep].component}
+                {steps[currentStep].component}
 
                 <div className="form-action-buttons">
                   <Button
                     variant="outline-secondary"
                     onClick={prevStep}
-                    disabled={createCurrentStep === 0}
+                    disabled={currentStep === 0}
                     className="action-button"
                   >
                     Previous
@@ -1662,7 +1662,7 @@ const CreateProjectPage = () => {
                       disabled={mutation.isPending}
                       className="action-button"
                     >
-                      {createCurrentStep === steps.length - 1
+                      {currentStep === steps.length - 1
                         ? (mutation.isPending ? "Submitting..." : "Submit")
                         : "Save & Continue"}
                     </Button>
