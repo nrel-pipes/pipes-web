@@ -144,7 +144,6 @@ export const useCreateProjectRunMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["create-project-run"],
     mutationFn: createProjectRun,
     onSuccess: (data, variables) => {
       // Invalidate relevant queries
@@ -160,3 +159,4 @@ export const useCreateProjectRunMutation = () => {
     }
   });
 };
+
