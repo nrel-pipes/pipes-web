@@ -13,7 +13,7 @@ import { useGetProjectQuery, useUpdateProjectMutation } from "../../hooks/usePro
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import useFormStore from "../../stores/FormStore";
+import { useUpdateProjectFormStore } from "../../stores/FormStore";
 import ContentHeader from "../Components/ContentHeader";
 import ProjectUpdateCancelButton from "./Components/ProjectUpdateCancelButton";
 
@@ -1227,22 +1227,22 @@ const UpdateProjectPage = () => {
   const [isProjectLoading, setIsProjectLoading] = useState(true);
 
   const {
-    updateProjectFormData,
-    updateCompletedSteps,
-    updateCurrentStep,
-    setUpdateProjectFormData,
-    setUpdateCurrentStep,
-    addUpdateCompletedStep,
-    resetUpdateCompletedSteps,
-    resetUpdateForm
-  } = useFormStore();
+    projectFormData,
+    completedSteps,
+    currentStep,
+    setProjectFormData,
+    setCurrentStep,
+    addCompletedStep,
+    resetCompletedSteps,
+    resetForm
+  } = useUpdateProjectFormStore();
 
   // Fetch existing project data
   const projectQuery = useGetProjectQuery(projectName || effectivePname);
 
-  // Update the reset function to use the resetUpdateForm function
+  // Update the reset function to use the resetForm function
   const resetProjectForm = () => {
-    resetUpdateForm();
+    resetForm();
   };
 
   const [formError, setFormError] = useState(false);
@@ -1331,7 +1331,7 @@ const UpdateProjectPage = () => {
     if (projectQuery.data) {
       return cleanProjectDataForForm(projectQuery.data);
     }
-    return updateProjectFormData || {
+    return projectFormData || {
       name: "",
       title: "",
       description: "",
@@ -1352,7 +1352,7 @@ const UpdateProjectPage = () => {
       },
       sensitivities: []
     };
-  }, [projectQuery.data, updateProjectFormData]);
+  }, [projectQuery.data, projectFormData]);
 
   const methods = useForm({
     defaultValues,
@@ -1364,21 +1364,21 @@ const UpdateProjectPage = () => {
     if (projectQuery.data) {
       const transformedData = cleanProjectDataForForm(projectQuery.data);
       methods.reset(transformedData);
-      setUpdateProjectFormData(transformedData);
+      setProjectFormData(transformedData);
       setIsProjectLoading(false);
     }
-  }, [projectQuery.data, methods, setUpdateProjectFormData]);
+  }, [projectQuery.data, methods, setProjectFormData]);
 
   // Save form data to Zustand store whenever it changes
   useEffect(() => {
     const subscription = methods.watch((formData) => {
       if (Object.keys(formData).length > 0) {
-        setUpdateProjectFormData(formData);
+        setProjectFormData(formData);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [methods, setUpdateProjectFormData]);
+  }, [methods, setProjectFormData]);
 
   const steps = [
     { title: "Basic Info", component: <StepBasicInfo /> },
@@ -1577,7 +1577,7 @@ const UpdateProjectPage = () => {
     const valid = await methods.trigger();
     if (valid) {
       // Add to completed steps if not already included
-      addUpdateCompletedStep(updateCurrentStep);
+      addCompletedStep(currentStep);
 
       // Show success message (optional)
       setFormError(false);
@@ -1590,15 +1590,15 @@ const UpdateProjectPage = () => {
   };
 
   const saveAndContinue = async () => {
-    if (updateCurrentStep === steps.length - 1) {
+    if (currentStep === steps.length - 1) {
       methods.handleSubmit(onSubmit)();
       return;
     }
 
     // For the Review step (second to last), no validation needed
-    if (updateCurrentStep === steps.length - 2) {
-      addUpdateCompletedStep(updateCurrentStep);
-      setUpdateCurrentStep(Math.min(updateCurrentStep + 1, steps.length - 1));
+    if (currentStep === steps.length - 2) {
+      addCompletedStep(currentStep);
+      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
       setFormError(false);
       setFormErrorMessage("");
       return;
@@ -1607,24 +1607,24 @@ const UpdateProjectPage = () => {
     // Save and move to next step if validation passes
     const saved = await saveFormData();
     if (saved) {
-      setUpdateCurrentStep(Math.min(updateCurrentStep + 1, steps.length - 1));
+      setCurrentStep(Math.min(currentStep + 1, steps.length - 1));
     }
   };
 
   const prevStep = () => {
-    setUpdateCurrentStep(Math.max(updateCurrentStep - 1, 0));
+    setCurrentStep(Math.max(currentStep - 1, 0));
     setFormError(false);
     setFormErrorMessage("");
   };
 
   const goToStep = (stepIndex) => {
     // For update page, allow navigation to any step
-    setUpdateCurrentStep(stepIndex);
+    setCurrentStep(stepIndex);
     setFormError(false);
     setFormErrorMessage("");
   };
 
-  const progressPercentage = Math.round(((updateCompletedSteps.length + (updateCurrentStep > Math.max(...updateCompletedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
+  const progressPercentage = Math.round(((completedSteps.length + (currentStep > Math.max(...completedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
 
   const stepIcons = [
     <FileText size={18} />,
@@ -1691,7 +1691,7 @@ const UpdateProjectPage = () => {
               {steps.map((step, i) => (
                 <div
                   key={i}
-                  className={`step-item ${updateCurrentStep === i ? 'active' : ''} ${updateCompletedSteps.includes(i) ? 'completed' : ''}`}
+                  className={`step-item ${currentStep === i ? 'active' : ''} ${completedSteps.includes(i) ? 'completed' : ''}`}
                 >
                   <button
                     className="step-button"
@@ -1699,7 +1699,7 @@ const UpdateProjectPage = () => {
                     // Remove disabled state for update page - all steps should be clickable
                   >
                     <span className="step-icon">
-                      {updateCompletedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
+                      {completedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
                     </span>
                     <span className="step-title">{step.title}</span>
                   </button>
@@ -1729,13 +1729,13 @@ const UpdateProjectPage = () => {
 
             <FormProvider {...methods}>
               <Form>
-                {steps[updateCurrentStep].component}
+                {steps[currentStep].component}
 
                 <div className="form-action-buttons">
                   <Button
                     variant="outline-secondary"
                     onClick={prevStep}
-                    disabled={updateCurrentStep === 0}
+                    disabled={currentStep === 0}
                     className="action-button"
                   >
                     Previous
@@ -1759,7 +1759,7 @@ const UpdateProjectPage = () => {
                       disabled={mutation.isPending}
                       className="action-button"
                     >
-                      {updateCurrentStep === steps.length - 1
+                      {currentStep === steps.length - 1
                         ? (mutation.isPending ? "Updating..." : "Update Project")
                         : "Save & Continue"}
                     </Button>
