@@ -1663,7 +1663,7 @@ const CreateProjectPage = () => {
                       className="action-button"
                     >
                       {currentStep === steps.length - 1
-                        ? (mutation.isPending ? "Submitting..." : "Submit")
+                        ? (mutation.isPending ? "Creating..." : "Create Project")
                         : "Save & Continue"}
                     </Button>
                   </div>
