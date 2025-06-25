@@ -79,17 +79,10 @@ export const useCreateProjectMutation = () => {
 // Update existing project
 export const updateProject = async ({ projectName, data }) => {
   try {
-<<<<<<< HEAD
     const params = {
       project: projectName
     };
 
-=======
-    // Send projectName as query parameter using params object
-    const params = {
-      project: projectName
-    };
->>>>>>> project-update
     const response = await AxiosInstance.put('/api/projects', data, { params });
     return response.data;
   } catch (error) {
