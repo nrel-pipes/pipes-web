@@ -79,11 +79,7 @@ export const useCreateProjectMutation = () => {
 // Update existing project
 export const updateProject = async ({ projectName, data }) => {
   try {
-    const params = {
-      project: projectName
-    };
-
-    const response = await AxiosInstance.put('/api/projects', data, { params });
+    const response = await AxiosInstance.put(`/api/projects?project=${encodeURIComponent(projectName)}`, data);
     return response.data;
   } catch (error) {
     console.error("Failed to update project via request client:", error);
@@ -97,7 +93,7 @@ export const useUpdateProjectMutation = () => {
 
   return useMutation({
     mutationFn: ({ projectName, data }) => updateProject({ projectName, data }),
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       if (data && data.name) {
         const oldProjectName = variables.projectName;
         const newProjectName = data.name;
@@ -126,7 +122,7 @@ export const useUpdateProjectMutation = () => {
         queryClient.invalidateQueries({ queryKey: ["effective-project", newProjectName] });
 
         // Prefetch the updated project data
-        queryClient.prefetchQuery({
+        await queryClient.prefetchQuery({
           queryKey: ["effective-project", newProjectName],
           queryFn: () => getProject({ projectName: newProjectName })
         });
