@@ -39,16 +39,18 @@
 
 .app-container {
   display: flex;
-  min-height: calc(100vh - 60px); /* Adjust based on your navbar height */
+  min-height: calc(100vh - 60px);
 }
 
 /* Force consistent sidebar width */
 .app-container > .sidebar {
-  flex: 0 0 auto; /* Don't grow, don't shrink, respect its base width */
+  flex: 0 0 auto;
+  align-self: stretch;
 }
 
 .Content {
-  flex: 1;  /* Take up remaining space */
+  flex: 1;
   transition: margin-left 0.3s;
   overflow-y: auto;
+  min-height: 100%;
 }
