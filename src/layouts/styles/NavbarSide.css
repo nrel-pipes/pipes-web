@@ -3,11 +3,14 @@
   border-right: 1px solid #ddd;
   transition: width 0.3s ease;
   position: relative;
-  height: calc(100vh - 60px); /* Adjust based on your navbar height */
+  min-height: calc(100vh - 60px);
   /* Set fixed width in both states */
   width: 200px;
   flex-shrink: 0; /* Prevent the sidebar from shrinking */
   overflow-x: hidden;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar.expanded {

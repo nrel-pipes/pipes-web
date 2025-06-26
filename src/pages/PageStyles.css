@@ -57,6 +57,7 @@
 
 .mainContent {
   min-height: calc(100vh - 455px);
+  padding-bottom: 2rem;
 }
 
 .smallCaps {
