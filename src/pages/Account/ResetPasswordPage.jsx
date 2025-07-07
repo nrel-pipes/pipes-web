@@ -102,7 +102,7 @@ const ResetPasswordPage = () => {
               </Button>
             </div>
             <div className="mt-3 text-center">
-              <Link to="/forgot-password">Request a code again? Click here</Link>
+              <Link to="/account/forgot-password">Request a code again? Click here</Link>
             </div>
           </Form>
         </Col>

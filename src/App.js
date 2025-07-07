@@ -18,6 +18,7 @@ import HomePage from "./pages/Home/HomePage";
 
 // Project
 import CreateProjectPage from "./pages/Project/CreateProjectPage";
+import DeleteProjectPage from "./pages/Project/DeleteProjectPage";
 import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 
 // Projects
@@ -46,6 +47,7 @@ import LoginPage from "./pages/Account/LoginPage";
 import LogoutPage from "./pages/Account/LogoutPage";
 import NewPasswordChallengePage from "./pages/Account/NewPasswordChallengePage";
 import ProfilePage from "./pages/Account/ProfilePage";
+import RegisterPage from "./pages/Account/RegisterPage";
 import ResetPasswordPage from "./pages/Account/ResetPasswordPage";
 import TokensPage from "./pages/Account/TokensPage";
 
@@ -119,6 +121,7 @@ function App() {
                 <Route path="/create-project" element={<CreateProjectPage />} />
                 <Route path="/create-projectrun" element={<CreateProjectRunPage />} />
                 <Route path="/update-project" element={<UpdateProjectPage />} />
+                <Route path="/delete-project" element={<DeleteProjectPage />} />
 
                 {/* Project run route */}
                 <Route
@@ -143,8 +146,9 @@ function App() {
                   element={<NewPasswordChallengePage />}
                 />
                 <Route path="/account/change-password" element={<ChangePasswordPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/account/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/account/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/register" element={<RegisterPage />} />
 
                 {/* Admin routes */}
                 <Route path="/users" element={<UserListPage />} />

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
+import { AuthenticationDetails, CognitoUser, CognitoUserAttribute, CognitoUserPool } from "amazon-cognito-identity-js";
 import { jwtDecode } from 'jwt-decode';
 
 import pipesConfig from '../configs/PipesConfig';
@@ -310,6 +310,76 @@ const useAuthStore = create(
 
     setCurrentUser: (userData) => {
       set({ currentUser: userData });
+    },
+
+    register: async (username, password, email) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
+
+      const attributeList = [];
+
+      // Add email attribute
+      const emailAttribute = new CognitoUserAttribute({
+        Name: 'email',
+        Value: email
+      });
+
+      attributeList.push(emailAttribute);
+
+      return new Promise((resolve, reject) => {
+        userPool.signUp(
+          username,
+          password,
+          attributeList,
+          null,
+          (err, result) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(result);
+          }
+        );
+      });
+    },
+
+    confirmRegister: async (username, confirmationCode) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+
+      const cognitoUser = new CognitoUser(userData);
+
+      return new Promise((resolve, reject) => {
+        cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(result);
+        });
+      });
+    },
+
+    resendConfirmationCode: async (username) => {
+      const userPool = new CognitoUserPool(pipesConfig.poolData);
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+
+      const cognitoUser = new CognitoUser(userData);
+
+      return new Promise((resolve, reject) => {
+        cognitoUser.resendConfirmationCode((err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(result);
+        });
+      });
     },
   }), {
     name: 'Pipes.Auth.Store',

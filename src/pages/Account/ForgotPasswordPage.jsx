@@ -23,7 +23,7 @@ const ForgotPasswordPage = () => {
 
   useEffect(() => {
     if (codeRequestSuccess) {
-      navigate('/reset-password');
+      navigate('/account/reset-password');
     }
   });
 
@@ -50,7 +50,7 @@ const ForgotPasswordPage = () => {
         <Col sm={4} className="mx-auto mt-5">
           <h2 className="text-center">Forgot Password</h2>
           <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="username">
+            <Form.Group controlId="username" className="my-3">
               <Form.Control
                 type="text"
                 placeholder="Email Address"
@@ -61,7 +61,12 @@ const ForgotPasswordPage = () => {
               />
             </Form.Group>
             <div className="d-flex justify-content-center">
-              <Button className="mt-3 " variant="outline-secondary" size="lg" style={{ width: '150px' }} type="submit">
+              <Button
+                className="mt-3 w-100 py-2"
+                variant="success"
+                size="lg"
+                type="submit"
+              >
                 Submit
               </Button>
             </div>

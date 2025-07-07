@@ -26,12 +26,13 @@ import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
 import useDataStore from "../../stores/DataStore";
 
 import ContentHeader from "../Components/ContentHeader";
+import ProjectDropdownButton from "./Components/ProjectDropdownButton";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
 const ProjectDashboardPage = () => {
   const navigate = useNavigate();
-  const { checkAuthStatus } = useAuthStore();
+  const { checkAuthStatus, currentUser } = useAuthStore();
   const { effectivePname } = useDataStore();
 
   // Auth check effect - updated to match ProjectListPage pattern
@@ -116,15 +117,17 @@ const ProjectDashboardPage = () => {
     );
   }
 
+  // NOTE: Hard-coded. Check if delete should be disabled for pipes101 project
+  // Allow deletion if user is a superuser, otherwise disable for pipes101
+  const isDropdownButtonDisabled = project.name === 'pipes101' && currentUser?.is_superuser !== true;
+
   return (
     <>
-      <NavbarSub navData={{ pAll: true, pName: effectivePname }} />
+      <NavbarSub navData={{ pList: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          {/* TODO: Enabled this when we have the project update page */}
-          <ContentHeader title="Project Dashboard" showUpdateProjectButton={false}/>
+          <ContentHeader title="Project Dashboard" headerButton={<ProjectDropdownButton isDisabled={isDropdownButtonDisabled} />} />
         </Row>
-        {/* Project Header with Overview */}
         <Row className="dashboard-header mb-4">
           <Col lg={8}>
             <div className="mt-4 mb-2 text-start">
@@ -180,8 +183,8 @@ const ProjectDashboardPage = () => {
               <Card.Body>
                 <Card.Title as="h5" className="summary-title">Summary</Card.Title>
                 <ScheduleComponent
-                  scheduled_start={project.scheduled_start}
-                  scheduled_end={project.scheduled_end}
+                  scheduled_start={project.scheduled_start.split("T")[0]}
+                  scheduled_end={project.scheduled_end.split("T")[0]}
                 />
                 <hr />
                 <div className="d-flex justify-content-between align-items-center mt-2">
