@@ -3,7 +3,7 @@ import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 
-const ProjectDropdownButton = () => {
+const ProjectDropdownButton = ({isDeleteDisabled = false}) => {
   const navigate = useNavigate();
 
   const handleUpdateProject = () => {
@@ -35,8 +35,9 @@ const ProjectDropdownButton = () => {
             </Dropdown.Item>
             <hr className="dropdown-divider" />
             <Dropdown.Item
-              onClick={handleDeleteProject}
-              className="d-flex align-items-center dropdown-item-delete"
+              onClick={isDeleteDisabled ? undefined : handleDeleteProject}
+              className={`d-flex align-items-center dropdown-item-delete ${isDeleteDisabled ? 'disabled' : ''}`}
+              disabled={isDeleteDisabled}
             >
               <Trash2 size={16} className="me-2" />
               Delete Project
