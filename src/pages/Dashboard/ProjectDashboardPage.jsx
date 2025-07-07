@@ -119,7 +119,7 @@ const ProjectDashboardPage = () => {
 
   // NOTE: Hard-coded. Check if delete should be disabled for pipes101 project
   // Allow deletion if user is a superuser, otherwise disable for pipes101
-  const isDropdownButtonDisabled = project.name === 'pipes131' && currentUser?.is_superuser !== true;
+  const isDropdownButtonDisabled = project.name === 'pipes101' && currentUser?.is_superuser !== true;
 
   return (
     <>
