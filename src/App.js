@@ -18,6 +18,7 @@ import HomePage from "./pages/Home/HomePage";
 
 // Project
 import CreateProjectPage from "./pages/Project/CreateProjectPage";
+import DeleteProjectPage from "./pages/Project/DeleteProjectPage";
 import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
 
 // Projects
@@ -120,6 +121,7 @@ function App() {
                 <Route path="/create-project" element={<CreateProjectPage />} />
                 <Route path="/create-projectrun" element={<CreateProjectRunPage />} />
                 <Route path="/update-project" element={<UpdateProjectPage />} />
+                <Route path="/delete-project" element={<DeleteProjectPage />} />
 
                 {/* Project run route */}
                 <Route

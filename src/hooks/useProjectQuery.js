@@ -79,11 +79,7 @@ export const useCreateProjectMutation = () => {
 // Update existing project
 export const updateProject = async ({ projectName, data }) => {
   try {
-    // Send projectName as query parameter using params object
-    const params = {
-      project: projectName
-    };
-    const response = await AxiosInstance.put('/api/projects', data, { params });
+    const response = await AxiosInstance.put(`/api/projects?project=${encodeURIComponent(projectName)}`, data);
     return response.data;
   } catch (error) {
     console.error("Failed to update project via request client:", error);
@@ -97,7 +93,7 @@ export const useUpdateProjectMutation = () => {
 
   return useMutation({
     mutationFn: ({ projectName, data }) => updateProject({ projectName, data }),
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       if (data && data.name) {
         const oldProjectName = variables.projectName;
         const newProjectName = data.name;
@@ -126,7 +122,7 @@ export const useUpdateProjectMutation = () => {
         queryClient.invalidateQueries({ queryKey: ["effective-project", newProjectName] });
 
         // Prefetch the updated project data
-        queryClient.prefetchQuery({
+        await queryClient.prefetchQuery({
           queryKey: ["effective-project", newProjectName],
           queryFn: () => getProject({ projectName: newProjectName })
         });
@@ -134,6 +130,43 @@ export const useUpdateProjectMutation = () => {
     },
     onError: (error) => {
       console.error("Failed to update project:", error);
+    }
+  });
+};
+
+// Delete Project
+export const deleteProject = async ({ projectName }) => {
+  try {
+    const params = {
+      project: projectName
+    };
+
+    const response = await AxiosInstance.delete('/api/projects', { params });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to delete project:", error);
+    throw error;
+  }
+};
+
+export const useDeleteProjectMutation = () => {
+  const queryClient = useQueryClient();
+  const { setEffectivePname } = useDataStore();
+
+  return useMutation({
+    mutationFn: ({ projectName }) => deleteProject({ projectName }),
+    onSuccess: (data, variables) => {
+      // Clear the effective project name if it was the deleted project
+      setEffectivePname(null);
+
+      // Only invalidate project lists, not the specific project query
+      queryClient.invalidateQueries({ queryKey: ["project-basics"] });
+
+      // Remove the specific project from cache since it's deleted
+      queryClient.removeQueries({ queryKey: ["effective-project", variables.projectName] });
+    },
+    onError: (error) => {
+      console.error('Error deleting project:', error);
     }
   });
 };

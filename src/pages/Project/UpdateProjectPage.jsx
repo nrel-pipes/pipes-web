@@ -37,9 +37,10 @@ const StepBasicInfo = () => {
           </Form.Label>
           <Form.Control
             id="projectName"
-            className="form-control-lg form-primary-input"
+            className="form-control-lg form-primary-input bg-light"
             isInvalid={!!errors.name}
             {...register("name", { required: "Project name (identifier) is required" })}
+            readOnly
           />
           {errors.name && (
             <Form.Control.Feedback type="invalid">
@@ -139,9 +140,10 @@ const StepProjectOwner = () => {
           </Form.Label>
           <Form.Control
             id="firstName"
-            className="form-control-lg form-primary-input"
+            className="form-control-lg form-primary-input bg-light"
             isInvalid={!!errors.owner?.first_name}
             {...register("owner.first_name", { required: "First name is required" })}
+            readOnly
           />
           {errors.owner?.first_name && (
             <Form.Control.Feedback type="invalid">
@@ -156,9 +158,10 @@ const StepProjectOwner = () => {
           </Form.Label>
           <Form.Control
             id="lastName"
-            className="form-control-lg form-primary-input"
+            className="form-control-lg form-primary-input bg-light"
             isInvalid={!!errors.owner?.last_name}
             {...register("owner.last_name", { required: "Last name is required" })}
+            readOnly
           />
           {errors.owner?.last_name && (
             <Form.Control.Feedback type="invalid">
@@ -1660,7 +1663,7 @@ const UpdateProjectPage = () => {
           <div className="alert alert-danger">
             <h4>Project Not Found</h4>
             <p>The project you are trying to update could not be found.</p>
-            <Button variant="primary" onClick={() => navigate("/project/list")}>
+            <Button variant="primary" onClick={() => navigate("/projects")}>
               Go to Project List
             </Button>
           </div>

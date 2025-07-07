@@ -44,7 +44,7 @@ const RequirementsComponent = ({requirements}) => {
               : String(valueArray); // Fallback for unexpected value format
 
             return (
-              <tr key={key || index}> {/* Use key or index as a fallback for React key */}
+              <tr key={key || index}>
                 <td className="text-start">{key.replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase())}</td>
                 <td className="text-start">{displayValue}</td>
               </tr>
