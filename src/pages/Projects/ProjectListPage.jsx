@@ -186,7 +186,7 @@ const ProjectBasicsPage = () => {
                 className="create-button"
                 onClick={handleCreateProjectClick}>
                   <Plus size={16} className="create-button-icon" />
-                  Create Project on Web
+                  Create Project via UI
               </button>
               <a
                 href="https://nrel-pipes.github.io/pipes-core/reference/workflows/initialize-a-project/"
@@ -194,7 +194,8 @@ const ProjectBasicsPage = () => {
                 rel="noreferrer"
                 className="learn-more-button"
               >
-                Create project via CLI
+                <Plus size={16} className="create-button-icon" />
+                Create Project via CLI
               </a>
             </div>
           </div>
