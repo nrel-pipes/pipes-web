@@ -57,7 +57,6 @@ export const useCreateProjectMutation = () => {
   const { setEffectivePname } = useDataStore();
 
   return useMutation({
-    mutationKey: ["create-project"],
     mutationFn: ({ data }) => postProject({ data }),
     onSuccess: (data) => {
       if (data && data.name) {
@@ -80,10 +79,10 @@ export const useCreateProjectMutation = () => {
 // Update existing project
 export const updateProject = async ({ projectName, data }) => {
   try {
+    // Send projectName as query parameter using params object
     const params = {
-      project: projectName // Axios will properly encode this
+      project: projectName
     };
-
     const response = await AxiosInstance.put('/api/projects', data, { params });
     return response.data;
   } catch (error) {
@@ -94,32 +93,47 @@ export const updateProject = async ({ projectName, data }) => {
 
 export const useUpdateProjectMutation = () => {
   const queryClient = useQueryClient();
-  const { setEffectivePname } = useDataStore();
+  const { setEffectivePname, clearEffectivePRname } = useDataStore();
 
   return useMutation({
-    mutationKey: ["update-project"],
     mutationFn: ({ projectName, data }) => updateProject({ projectName, data }),
     onSuccess: (data, variables) => {
       if (data && data.name) {
+        const oldProjectName = variables.projectName;
+        const newProjectName = data.name;
 
-        setEffectivePname(data.name);
+        // Check if project name changed
+        const projectNameChanged = oldProjectName !== newProjectName;
+
+        if (projectNameChanged) {
+          // If project name changed, clear the project run name since it's no longer valid
+          clearEffectivePRname();
+
+          // Remove old project cache entries
+          queryClient.removeQueries({ queryKey: ["effective-project", oldProjectName] });
+          queryClient.removeQueries({ queryKey: ["project-runs", oldProjectName] });
+          queryClient.removeQueries({ queryKey: ["models", oldProjectName] });
+          queryClient.removeQueries({ queryKey: ["model-runs", oldProjectName] });
+          queryClient.removeQueries({ queryKey: ["handoffs", oldProjectName] });
+          queryClient.removeQueries({ queryKey: ["datasets", oldProjectName] });
+        }
+
+        // Update the effective project name to the new name
+        setEffectivePname(newProjectName);
 
         // Invalidate relevant queries
         queryClient.invalidateQueries({ queryKey: ["project-basics"] });
+        queryClient.invalidateQueries({ queryKey: ["effective-project", newProjectName] });
 
-        queryClient.invalidateQueries({ queryKey: ["effective-project", variables.projectName] });
-        if (variables.projectName !== data.name) {
-          queryClient.invalidateQueries({ queryKey: ["effective-project", data.name] });
-        }
-
+        // Prefetch the updated project data
         queryClient.prefetchQuery({
-          queryKey: ["effective-project", data.name],
-          queryFn: () => getProject({ projectName: data.name })
+          queryKey: ["effective-project", newProjectName],
+          queryFn: () => getProject({ projectName: newProjectName })
         });
       }
     },
     onError: (error) => {
       console.error("Failed to update project:", error);
-    },
+    }
   });
 };

@@ -13,13 +13,13 @@ import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import useFormStore from "../../stores/FormStore";
+import { useCreateProjectFormStore } from "../../stores/FormStore";
 import ContentHeader from "../Components/ContentHeader";
 
 import "../Components/Cards.css";
 import "../FormStyles.css";
 import "../PageStyles.css";
-import "./CreateProjectPage.css";
+import "./ProjectPage.css";
 
 
 const StepBasicInfo = () => {
@@ -1230,17 +1230,13 @@ const CreateProjectPage = () => {
     setProjectFormData,
     setCurrentStep,
     addCompletedStep,
-    resetCompletedSteps
-  } = useFormStore();
+    resetCompletedSteps,
+    resetForm
+  } = useCreateProjectFormStore();
 
-  // Update the reset function to use the resetCompletedSteps function
+  // Update the reset function to use the resetForm function
   const resetProjectForm = () => {
-    // Clear form data
-    setProjectFormData({});
-    // Reset current step to 0
-    setCurrentStep(0);
-    // Reset completed steps
-    resetCompletedSteps();
+    resetForm();
   };
 
   const [formError, setFormError] = useState(false);
@@ -1667,7 +1663,7 @@ const CreateProjectPage = () => {
                       className="action-button"
                     >
                       {currentStep === steps.length - 1
-                        ? (mutation.isPending ? "Submitting..." : "Submit")
+                        ? (mutation.isPending ? "Creating..." : "Create Project")
                         : "Save & Continue"}
                     </Button>
                   </div>
