@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -61,6 +61,16 @@ const GraphViewComponent = ({graphNodes, graphEdges, setClickedElementData}) => 
   };
 
   const nodeClassName = (node) => node.type;
+
+  const fitViewOptions = {
+    padding: 0.05,
+    includeHiddenNodes: true,
+    minZoom: 0,
+    maxZoom: 1,
+    duration: 800,
+    interpolate: "smooth"
+  };
+
   return (
     <div
       style={{
@@ -81,9 +91,10 @@ const GraphViewComponent = ({graphNodes, graphEdges, setClickedElementData}) => 
           onNodeClick={onNodeClick}
           onEdgeClick={onEdgeClick}
           fitView
+          fitViewOptions={fitViewOptions}
         >
           <MiniMap zoomable pannable nodeClassName={nodeClassName} />
-          <Controls />
+          <Controls showFitView={true} fitViewOptions={fitViewOptions} />
           <Background />
         </ReactFlow>
       </ReactFlowProvider>

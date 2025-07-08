@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,9 +17,26 @@ const RegisterPage = () => {
   const [confirmError, setConfirmError] = useState('');
   const navigate = useNavigate();
 
-  const { register, confirmRegister, resendConfirmationCode } = useAuthStore();
+  const { register, confirmRegister, resendConfirmationCode, checkAuthStatus } = useAuthStore();
 
   const password = watch('password', '');
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
+
+        if (isAuthenticated) {
+          navigate('/');
+          return;
+        }
+      } catch (error) {
+        console.error("Authentication check error:", error);
+      }
+    };
+
+    checkAuth();
+  }, [checkAuthStatus, navigate]);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
