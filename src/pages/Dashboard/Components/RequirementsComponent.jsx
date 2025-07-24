@@ -2,12 +2,11 @@ import Table from "react-bootstrap/Table";
 
 
 const RequirementsComponent = ({requirements}) => {
-  // Check if requirements is an object and has keys and values arrays
+
+  // Check if requirements is a non-empty object
   const isValidRequirements = requirements &&
                               typeof requirements === 'object' &&
-                              Array.isArray(requirements.keys) &&
-                              Array.isArray(requirements.values) &&
-                              requirements.keys.length === requirements.values.length;
+                              Object.keys(requirements).length > 0;
 
   if (!isValidRequirements) {
     // Handle invalid or empty requirements structure, or return null/empty message
@@ -28,6 +27,24 @@ const RequirementsComponent = ({requirements}) => {
     );
   }
 
+  const formatRequirementName = (key) => {
+    return key;
+  };
+
+  const formatRequirementValue = (value) => {
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+    if (typeof value === 'object' && value !== null) {
+      return (
+        <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      );
+    }
+    return String(value);
+  };
+
   return (
     <Table striped bordered hover>
         <thead>
@@ -37,20 +54,19 @@ const RequirementsComponent = ({requirements}) => {
           </tr>
         </thead>
         <tbody>
-          {requirements.keys.map((key, index) => {
-            const valueArray = requirements.values[index];
-            const displayValue = Array.isArray(valueArray)
-              ? valueArray.join(', ')
-              : String(valueArray); // Fallback for unexpected value format
+          {Object.entries(requirements).map(([key, value]) => {
+            const displayValue = formatRequirementValue(value);
 
             return (
-              <tr key={key || index}>
-                <td className="text-start">{key.replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase())}</td>
-                <td className="text-start">{displayValue}</td>
+              <tr key={key}>
+                <td className="text-start">{formatRequirementName(key)}</td>
+                <td className="text-start">
+                  {displayValue}
+                </td>
               </tr>
             );
           })}
-          {requirements.keys.length === 0 && (
+          {Object.keys(requirements).length === 0 && (
             <tr>
               <td colSpan="2" className="text-start">No requirements defined.</td>
             </tr>

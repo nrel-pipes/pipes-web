@@ -211,168 +211,159 @@ const StepProjectOwner = () => {
 };
 
 const StepRequirements = () => {
-  const { getValues, setValue, watch } = useFormContext();
-  const [requirements, setRequirements] = useState([]);
+  const { getValues, setValue } = useFormContext();
+  const [requirements, setRequirements] = useState([{ key: "", value: "", isObject: false, subItems: [{ key: "", value: "" }] }]);
 
-  const formRequirements = watch("requirements");
-
+  // Load existing requirements from the form state into the component's local state
   useEffect(() => {
-    const formValues = getValues();
-    if (formValues.requirements?.keys?.length) {
-      const reqsArray = formValues.requirements.keys.map((key, i) => ({
-        key,
-        values: formValues.requirements.values[i] || [""]
-      }));
-      setRequirements(reqsArray);
-    } else {
-      setRequirements([{ key: "", values: [""] }]);
+    const formValues = getValues("requirements");
+    if (formValues && Object.keys(formValues).length > 0) {
+      const reqsArray = Object.entries(formValues).map(([key, value]) => {
+        const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
+        return {
+          key,
+          value: isObject ? "" : String(value),
+          isObject,
+          subItems: isObject ? Object.entries(value).map(([subKey, subValue]) => ({ key: subKey, value: String(subValue) })) : [{ key: "", value: "" }]
+        };
+      });
+      if (reqsArray.length > 0) {
+        setRequirements(reqsArray);
+      }
     }
-  }, [getValues, formRequirements]);
+  }, []); // Run only once on mount
 
+  // Update the main form state whenever the local requirements state changes
   useEffect(() => {
-    if (requirements.length > 0) {
-      const keys = requirements.map(req => req.key);
-      const values = requirements.map(req => req.values);
-      setValue("requirements.keys", keys, { shouldDirty: true });
-      setValue("requirements.values", values, { shouldDirty: true });
-    }
+    const newRequirementsObject = requirements.reduce((acc, req) => {
+      if (req.key) {
+        if (req.isObject) {
+          acc[req.key] = req.subItems.reduce((subAcc, subItem) => {
+            if (subItem.key) {
+              const numValue = Number(subItem.value);
+              subAcc[subItem.key] = isNaN(numValue) || subItem.value.trim() === '' ? subItem.value : numValue;
+            }
+            return subAcc;
+          }, {});
+        } else {
+          const numValue = Number(req.value);
+          acc[req.key] = isNaN(numValue) || req.value.trim() === '' ? req.value : numValue;
+        }
+      }
+      return acc;
+    }, {});
+    setValue("requirements", newRequirementsObject, { shouldDirty: true });
   }, [requirements, setValue]);
 
   const addRequirement = () => {
-    const newRequirements = [...requirements, { key: "", values: [""] }];
-    setRequirements(newRequirements);
-    const keys = newRequirements.map(req => req.key);
-    const values = newRequirements.map(req => req.values);
-    setValue("requirements.keys", keys, { shouldDirty: true });
-    setValue("requirements.values", values, { shouldDirty: true });
+    setRequirements([...requirements, { key: "", value: "", isObject: false, subItems: [{ key: "", value: "" }] }]);
   };
 
   const removeRequirement = (index) => {
-    const newRequirements = requirements.filter((_, i) => i !== index);
-    setRequirements(newRequirements);
-    const keys = newRequirements.map(req => req.key);
-    const values = newRequirements.map(req => req.values);
-    setValue("requirements.keys", keys, { shouldDirty: true });
-    setValue("requirements.values", values, { shouldDirty: true });
+    setRequirements(requirements.filter((_, i) => i !== index));
   };
 
-  const updateRequirementKey = (index, value) => {
+  const updateRequirement = (index, field, fieldValue) => {
     const newRequirements = [...requirements];
-    newRequirements[index].key = value;
+    newRequirements[index][field] = fieldValue;
     setRequirements(newRequirements);
-    const keys = newRequirements.map(req => req.key);
-    setValue("requirements.keys", keys, { shouldDirty: true });
   };
 
-  const addValue = (reqIndex) => {
+  const toggleRequirementType = (index) => {
     const newRequirements = [...requirements];
-    newRequirements[reqIndex].values.push("");
+    newRequirements[index].isObject = !newRequirements[index].isObject;
     setRequirements(newRequirements);
-    const values = newRequirements.map(req => req.values);
-    setValue("requirements.values", values, { shouldDirty: true });
   };
 
-  const updateValue = (reqIndex, valueIndex, value) => {
+  const addSubItem = (reqIndex) => {
     const newRequirements = [...requirements];
-    newRequirements[reqIndex].values[valueIndex] = value;
+    newRequirements[reqIndex].subItems.push({ key: "", value: "" });
     setRequirements(newRequirements);
-    const values = newRequirements.map(req => req.values);
-    setValue("requirements.values", values, { shouldDirty: true });
   };
 
-  const removeValue = (reqIndex, valueIndex) => {
+  const removeSubItem = (reqIndex, subIndex) => {
     const newRequirements = [...requirements];
-    newRequirements[reqIndex].values = newRequirements[reqIndex].values.filter((_, i) => i !== valueIndex);
+    newRequirements[reqIndex].subItems = newRequirements[reqIndex].subItems.filter((_, i) => i !== subIndex);
     setRequirements(newRequirements);
-    const values = newRequirements.map(req => req.values);
-    setValue("requirements.values", values, { shouldDirty: true });
+  };
+
+  const updateSubItem = (reqIndex, subIndex, field, fieldValue) => {
+    const newRequirements = [...requirements];
+    newRequirements[reqIndex].subItems[subIndex][field] = fieldValue;
+    setRequirements(newRequirements);
   };
 
   return (
     <div className="form-container">
       <h4 className="form-section-title">Project Requirements</h4>
+      <p className="form-section-description">Define key-value pairs. Values can be simple text/numbers or nested objects.</p>
 
-      {requirements.map((requirement, reqIndex) => (
-        <div key={reqIndex} className="card-item">
-          <div className="card-item-header">
-            <h4 className="card-item-title requirement-title">
-              Requirement {reqIndex + 1}
-            </h4>
-            {requirements.length > 1 && (
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={() => removeRequirement(reqIndex)}
-                className="item-action-button"
-              >
-                <Minus size={16} />
-              </Button>
-            )}
-          </div>
-
-          <div className="requirement-name-section">
-            <Form.Label className="form-field-label">
-              <span className="requirement-label">Requirement Name</span>
-            </Form.Label>
+      {requirements.map((requirement, index) => (
+        <div key={index} className="card-item mb-3">
+          <div className="requirement-row d-flex align-items-center gap-2">
             <Form.Control
-              id={`requirement-${reqIndex}`}
               type="text"
+              placeholder="Requirement Name"
               value={requirement.key}
-              onChange={(e) => updateRequirementKey(reqIndex, e.target.value)}
-              className="requirement-name-input"
+              onChange={(e) => updateRequirement(index, "key", e.target.value)}
+              className="requirement-key-input"
             />
+            <Form.Check
+              type="switch"
+              id={`is-object-switch-${index}`}
+              label="Object"
+              checked={requirement.isObject}
+              onChange={() => toggleRequirementType(index)}
+            />
+            <Button variant="outline-danger" size="sm" onClick={() => removeRequirement(index)} disabled={requirements.length === 1}>
+              <Minus size={16} />
+            </Button>
           </div>
 
-          <div className="requirement-values-section">
-            <div className="values-header">
-              <Form.Label className="form-field-label mb-3">
-                <span className="values-label">Requirement Values</span>
-              </Form.Label>
+          {!requirement.isObject ? (
+            <div className="mt-2">
+              <Form.Control
+                type="text"
+                placeholder="Value"
+                value={requirement.value}
+                onChange={(e) => updateRequirement(index, "value", e.target.value)}
+                className="requirement-value-input"
+              />
             </div>
-
-            {requirement.values.map((value, valueIndex) => (
-              <div key={valueIndex} className="requirement-value-item d-flex mb-3 align-items-center gap-2">
-                <div className="value-index">{valueIndex + 1}.</div>
-                <Form.Control
-                  id={`value-${reqIndex}-${valueIndex}`}
-                  type="text"
-                  value={value}
-                  onChange={(e) => updateValue(reqIndex, valueIndex, e.target.value)}
-                />
-                {requirement.values.length > 1 && (
-                  <Button
-                    variant="outline-danger"
+          ) : (
+            <div className="nested-requirements-container mt-3 p-3 border rounded">
+              {requirement.subItems.map((subItem, subIndex) => (
+                <div key={subIndex} className="requirement-row d-flex align-items-center gap-2 mb-2">
+                  <Form.Control
+                    type="text"
+                    placeholder="Key"
+                    value={subItem.key}
+                    onChange={(e) => updateSubItem(index, subIndex, "key", e.target.value)}
                     size="sm"
-                    onClick={() => removeValue(reqIndex, valueIndex)}
-                    className="item-action-button"
-                  >
+                  />
+                  <Form.Control
+                    type="text"
+                    placeholder="Value"
+                    value={subItem.value}
+                    onChange={(e) => updateSubItem(index, subIndex, "value", e.target.value)}
+                    size="sm"
+                  />
+                  <Button variant="outline-danger" size="sm" onClick={() => removeSubItem(index, subIndex)} disabled={requirement.subItems.length === 1}>
                     <Minus size={16} />
                   </Button>
-                )}
-              </div>
-            ))}
-
-            <div className="d-flex justify-content-start mt-3">
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => addValue(reqIndex)}
-                className="add-button"
-              >
-                <Plus size={16} /> Add Value
+                </div>
+              ))}
+              <Button variant="outline-secondary" size="sm" onClick={() => addSubItem(index)}>
+                <Plus size={16} /> Add Nested Pair
               </Button>
             </div>
-          </div>
+          )}
         </div>
       ))}
 
-      <div className="d-flex justify-content-start mt-4">
-        <Button
-          variant="outline-primary"
-          onClick={addRequirement}
-          className="add-button"
-        >
-          <Plus size={18} /> Add New Requirement
+      <div className="d-flex justify-content-start mt-3">
+        <Button variant="outline-primary" onClick={addRequirement} className="add-button">
+          <Plus size={16} /> Add Requirement
         </Button>
       </div>
     </div>
@@ -908,27 +899,6 @@ const StepReview = () => {
   const { getValues } = useFormContext();
   const formData = getValues();
 
-  // Preview the data as it will be formatted for API submission
-  const previewFormattedData = {
-    ...formData,
-    title: formData.name,
-    milestones: formData.milestones?.map(milestone => ({
-      ...milestone,
-      description: Array.isArray(milestone.description)
-        ? milestone.description.join(" ")
-        : milestone.description || ""
-    })) || [],
-    scenarios: formData.scenarios?.map(scenario => ({
-      ...scenario,
-      other: Array.isArray(scenario.other)
-        ? scenario.other.reduce((acc, [key, value]) => {
-            if (key) acc[key] = value || "";
-            return acc;
-          }, {})
-        : scenario.other || {}
-    })) || []
-  };
-
   const formatDate = (isoString) => {
     if (!isoString) return "";
     try {
@@ -1012,7 +982,7 @@ const StepReview = () => {
         </div>
       </div>
 
-      {formData.requirements?.keys?.filter(Boolean).length > 0 && (
+      {formData.requirements && Object.keys(formData.requirements).length > 0 && (
         <div className="review-section">
           <div className="review-section-header">
             <h5 className="review-section-title">
@@ -1024,31 +994,26 @@ const StepReview = () => {
             <table className="review-table">
               <thead>
                 <tr>
-                  <th>#</th>
                   <th>Name</th>
-                  <th>Values</th>
-                  <th></th>
+                  <th>Value</th>
                 </tr>
               </thead>
               <tbody>
-                {formData.requirements.keys
-                  .map((key, index) => key && (
-                    <tr key={index} className="review-table-row">
-                      <td className="review-table-number">{index + 1}</td>
+                {Object.entries(formData.requirements)
+                  .map(([key, value]) => (
+                    <tr key={key} className="review-table-row">
                       <td className="review-table-key">{key}</td>
-                      <td colSpan="2" className="review-table-value">
-                        {formData.requirements.values[index]?.filter(Boolean).length > 0 ? (
-                          <ul className="review-detail-list">
-                            {formData.requirements.values[index]
-                              .filter(Boolean)
-                              .map((value, vIndex) => (
-                                <li key={vIndex}>{value}</li>
-                              ))}
-                          </ul>
-                        ) : "—"}
+                      <td className="review-table-value">
+                        {typeof value === 'object' && value !== null ? (
+                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+                            {JSON.stringify(value, null, 2)}
+                          </pre>
+                        ) : (
+                          String(value)
+                        )}
                       </td>
                     </tr>
-                  )).filter(Boolean)}
+                  ))}
               </tbody>
             </table>
           </div>
@@ -1260,10 +1225,7 @@ const CreateProjectPage = () => {
       organization: ""
     },
     scenarios: [],
-    requirements: {
-      keys: [],
-      values: []
-    },
+    requirements: {},
     sensitivities: []
   };
 
@@ -1380,7 +1342,7 @@ const CreateProjectPage = () => {
     };
 
     // Handle requirements - remove if empty
-    if (!data.requirements?.keys?.filter(Boolean).length) {
+    if (!data.requirements || Object.keys(data.requirements).length === 0) {
       delete formattedData.requirements;
     }
 
