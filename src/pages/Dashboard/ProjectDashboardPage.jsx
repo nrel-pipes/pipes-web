@@ -35,6 +35,45 @@ const ProjectDashboardPage = () => {
   const { checkAuthStatus, currentUser } = useAuthStore();
   const { effectivePname } = useDataStore();
 
+  // Helper function to get formatted owner name
+  const getOwnerDisplayName = (owner) => {
+    if (!owner) return 'N/A';
+
+    // If both first_name and last_name exist and are not empty
+    const firstName = owner.first_name?.trim();
+    const lastName = owner.last_name?.trim();
+
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    }
+
+    // If only one name exists
+    if (firstName) return firstName;
+    if (lastName) return lastName;
+
+    // If no names exist, extract from email
+    if (owner.email) {
+      const emailPrefix = owner.email.split('@')[0];
+
+      if (emailPrefix.includes('.')) {
+        const nameParts = emailPrefix.split('.');
+        const extractedFirstName = nameParts[0];
+        const extractedLastName = nameParts[1];
+
+        // Title case the names
+        const titleFirst = extractedFirstName.charAt(0).toUpperCase() + extractedFirstName.slice(1).toLowerCase();
+        const titleLast = extractedLastName.charAt(0).toUpperCase() + extractedLastName.slice(1).toLowerCase();
+
+        return `${titleFirst} ${titleLast}`;
+      } else {
+        const titleName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1).toLowerCase();
+        return titleName;
+      }
+    }
+
+    return 'N/A';
+  };
+
   // Auth check effect - updated to match ProjectListPage pattern
   useEffect(() => {
     const checkAuth = async () => {
@@ -144,7 +183,7 @@ const ProjectDashboardPage = () => {
                   <span className="metadata-label">Owner:</span>
                   <span className="metadata-value mb-2">
                     <label style={{ color: "green"}} className="project-name">
-                    {project.owner ? `${project.owner.first_name || ''} ${project.owner.last_name || ''}` : 'N/A'}
+                      {getOwnerDisplayName(project.owner)}
                     </label>
                   </span>
                 </div>
