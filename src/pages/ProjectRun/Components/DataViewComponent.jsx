@@ -1,5 +1,5 @@
 // External imports
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Import CSS file
 import "./DataViewComponent.css";
@@ -234,12 +234,16 @@ export default function DataViewComponent({ selected }) {
                     </tr>
                   </>
                 )}
-                {model.other && Object.keys(model.other).length > 0 && (
+                {model.other && Object.keys(model.other).filter(key => key !== 'color').length > 0 && (
                   <tr className="data-row">
                     <td className="key-cell">Other Info</td>
                     <td className="value-cell nested-content">
                       <div className="nested-table-wrapper">
-                        {renderTableData(model.other)}
+                        {renderTableData(
+                          Object.fromEntries(
+                            Object.entries(model.other).filter(([key]) => key !== 'color')
+                          )
+                        )}
                       </div>
                     </td>
                   </tr>
