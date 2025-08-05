@@ -13,7 +13,7 @@ import { useGetProjectQuery, useUpdateProjectMutation } from "../../hooks/usePro
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import { useUpdateProjectFormStore } from "../../stores/FormStore";
+import { useUpdateProjectFormStore } from "../../stores/FormStore/ProjectStore";
 import ContentHeader from "../Components/ContentHeader";
 import ProjectUpdateCancelButton from "./Components/ProjectUpdateCancelButton";
 
@@ -1634,7 +1634,7 @@ const UpdateProjectPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pUpdate: true }} />
+      <NavbarSub navData={{ pList: true, pName: effectivePname, toUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader

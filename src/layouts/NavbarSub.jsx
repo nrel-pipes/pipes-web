@@ -7,14 +7,13 @@ import './styles/NavbarSub.css';
 const NavbarSub = ({ navData }) => {
   const {
     pList, pName, pGraph, pSchedule, pmAll,
-    pCreate, pUpdate, pDelete,
-    prName,
+    pCreate, toUpdate, toDelete,
+    prName, prCreate
   } = navData || {};
 
   if (
       pList || pName || pGraph || pSchedule  || pmAll ||
-      pCreate || pUpdate || pDelete ||
-      prName
+      pCreate || prName || prCreate || toUpdate || toDelete
     ) {
     return (
       <div className="navbar-sub">
@@ -37,33 +36,7 @@ const NavbarSub = ({ navData }) => {
                   size="xs"
                 />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="#" className="rounded-box">Create</Nav.Link>
-              </Nav.Item>
-              </>
-            )}
-
-            {pUpdate && (
-              <>
-              <FontAwesomeIcon
-                  icon={faChevronRight}
-                  style={{ margin: '0 8px', color: '#6c757d' }}
-                  size="xs"
-                />
-              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="#" className="rounded-box">Update</Nav.Link>
-              </Nav.Item>
-              </>
-            )}
-
-            {pDelete && (
-              <>
-              <FontAwesomeIcon
-                  icon={faChevronRight}
-                  style={{ margin: '0 8px', color: '#6c757d' }}
-                  size="xs"
-                />
-              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="#" className="rounded-box">Delete</Nav.Link>
+                <Nav.Link as={Link} to="#" className="rounded-box">Create Project</Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -118,6 +91,45 @@ const NavbarSub = ({ navData }) => {
                     ProjectRun ({prName})
                   </Nav.Link>
                 </Nav.Item>
+              </>
+            )}
+
+            {prCreate && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Project Run</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {toUpdate && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="#" className="rounded-box">Update</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {toDelete && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="#" className="rounded-box">Delete</Nav.Link>
+              </Nav.Item>
               </>
             )}
 

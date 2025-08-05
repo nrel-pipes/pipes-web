@@ -32,7 +32,9 @@ import ProjectDashboardPage from "./pages/Dashboard/ProjectDashboardPage";
 
 // Project Run
 import CreateProjectRunPage from "./pages/ProjectRun/CreateProjectRunPage";
+import DeleteProjectRunPage from "./pages/ProjectRun/DeleteProjectRunPage";
 import ProjectRunPage from "./pages/ProjectRun/ProjectRunPage";
+import UpdateProjectRunPage from "./pages/ProjectRun/UpdateProjectRunPage";
 
 // Project Pipeline
 import ProjectPipeline from "./pages/Pipeline/ProjectPipelinePage";
@@ -129,6 +131,8 @@ function App() {
                   exect
                   element={isAuthenticated ? <ProjectRunPage /> : <Navigate to="/login" />}
                 />
+                <Route path="/update-projectrun" element={<UpdateProjectRunPage />} />
+                <Route path="/delete-projectrun" element={<DeleteProjectRunPage />} />
 
                 {/* Milestones route */}
                 <Route path="/milestones" element={<ProjectMilestonesPage />} />

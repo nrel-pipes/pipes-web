@@ -3,17 +3,19 @@ import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 
-const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
+const ProjectRunDropdownButton = ({ projectName, projectRunName, isDisabled = false }) => {
   const navigate = useNavigate();
 
-  const handleUpdateProject = () => {
+  const handleUpdateProjectRun = () => {
     if (isDisabled) return;
-    navigate("/update-project");
+    navigate("/update-projectrun", {
+      state: { projectName: projectName, projectRunName: projectRunName }
+    });
   };
 
-  const handleDeleteProject = () => {
+  const handleDeleteProjectRun = () => {
     if (isDisabled) return;
-    navigate("/delete-project");
+    navigate("/delete-projectrun");
   };
 
   const handleCreateProjectRun = () => {
@@ -38,7 +40,7 @@ const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
           onMouseUp={(e) => e.currentTarget.style.color = 'white'}
           onClick={handleCreateProjectRun}
         >
-          + Add Project Run
+          + Add Model
         </button>
         <Dropdown>
           <Dropdown.Toggle
@@ -52,21 +54,21 @@ const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
 
           <Dropdown.Menu className="actions-dropdown-menu">
             <Dropdown.Item
-              onClick={handleUpdateProject}
+              onClick={handleUpdateProjectRun}
               className="d-flex align-items-center dropdown-item-update"
               disabled={isDisabled}
             >
               <Pencil size={16} className="me-2" />
-              Update Project
+              Update Project Run
             </Dropdown.Item>
             <hr className="dropdown-divider" />
             <Dropdown.Item
-              onClick={handleDeleteProject}
+              onClick={handleDeleteProjectRun}
               className="d-flex align-items-center dropdown-item-delete"
               disabled={isDisabled}
             >
               <Trash2 size={16} className="me-2" />
-              Delete Project
+              Delete Project Run
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
@@ -74,4 +76,4 @@ const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
   );
 }
 
-export default ProjectDropdownButton;
+export default ProjectRunDropdownButton;

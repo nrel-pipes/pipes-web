@@ -13,7 +13,7 @@ import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import { useCreateProjectFormStore } from "../../stores/FormStore";
+import { useCreateProjectFormStore } from "../../stores/FormStore/ProjectStore";
 import ContentHeader from "../Components/ContentHeader";
 
 import "../Components/Cards.css";

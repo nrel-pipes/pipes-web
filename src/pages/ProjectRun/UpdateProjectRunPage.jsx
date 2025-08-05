@@ -5,23 +5,23 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
+
 import "../FormStyles.css";
 import "../PageStyles.css";
 import "./CreateProjectRunPage.css";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
-import { useCreateProjectRunMutation } from "../../hooks/useProjectRunQuery";
+import { useGetProjectRunQuery, useUpdateProjectRunMutation } from "../../hooks/useProjectRunQuery";
 import useDataStore from "../../stores/DataStore";
-import { useCreateProjectRunFormStore } from "../../stores/FormStore/ProjectRunStore";
 
 import { useEffect, useState } from "react";
 
 // Requirements component for managing complex requirements object
-const RequirementsSection = ({ control, register, errors, watch, setValue }) => {
+const RequirementsSection = ({ control, register, errors, watch, setValue, initialData, onDataChange }) => {
 
   // Use empty object as default requirements
   const [requirements, setRequirements] = useState({});
@@ -33,10 +33,30 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
 
   // Track custom fields for each requirement
   const [objectFields, setObjectFields] = useState({});
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize with a default empty requirement
+  // Initialize with initial data from parent component
   useEffect(() => {
-    if (requirementIds.length === 0) {
+    if (initialData && Object.keys(initialData).length > 0 && !isInitialized) {
+      setRequirements(initialData);
+      setValue("requirements", initialData);
+      setRequirementIds(Object.keys(initialData));
+      setIsInitialized(true);
+
+      // Extract object fields from initial data
+      const newObjectFields = {};
+      Object.entries(initialData).forEach(([id, reqData]) => {
+        if (reqData.type === 'object' && reqData.value && typeof reqData.value === 'object') {
+          newObjectFields[id] = Object.keys(reqData.value);
+        }
+      });
+      setObjectFields(newObjectFields);
+    }
+  }, [initialData, setValue, isInitialized]);
+
+  // Initialize with a default empty requirement only if no initial data
+  useEffect(() => {
+    if (requirementIds.length === 0 && !initialData && isInitialized === false) {
       const defaultId = `req_default`;
       const defaultRequirement = {
         name: "",
@@ -47,12 +67,15 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
       setRequirements({ [defaultId]: defaultRequirement });
       setValue("requirements", { [defaultId]: defaultRequirement });
       setRequirementIds([defaultId]);
+      setIsInitialized(true);
     }
-  }, [requirementIds.length, setValue]);
+  }, [requirementIds.length, setValue, initialData, isInitialized]);
 
   useEffect(() => {
-    setRequirements(watchedRequirements);
-  }, [watchedRequirements]);
+    if (isInitialized) {
+      setRequirements(watchedRequirements);
+    }
+  }, [watchedRequirements, isInitialized]);
 
   const addRequirement = () => {
     const timestamp = Date.now();
@@ -367,38 +390,33 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
   );
 };
 
-const CreateProjectRunPage = () => {
+const UpdateProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { projectName: urlProjectName, runName: urlRunName } = useParams();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
+  const { effectivePname, effectivePRname } = useDataStore();
 
-  // Zustand form store - simple persistence
-  const {
-    formData: storedFormData,
-    updateFormData,
-    clearFormData,
-    setProjectName
-  } = useCreateProjectRunFormStore();
+  // Determine current project and run names
+  const currentProjectName = urlProjectName || effectivePname;
+  const currentRunName = urlRunName || location.state?.projectRunName || effectivePRname;
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
   const [scenarioNames, setScenarioNames] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [objectFields, setObjectFields] = useState({}); // Add this state for object fields
+  const [requirementsInitialData, setRequirementsInitialData] = useState(null);
 
-  const projectName = location.state?.currentProject?.name || location.state?.projectName || effectivePname;
+  // Get current project run data
+  const {
+    data: projectRun,
+    isLoading: isLoadingProjectRun,
+    error: projectRunError
+  } = useGetProjectRunQuery(currentProjectName, currentRunName);
 
-  // Clear form data if project changes
-  useEffect(() => {
-    if (projectName && storedFormData.projectName && storedFormData.projectName !== projectName) {
-      clearFormData();
-    }
-    if (projectName) {
-      setProjectName(projectName);
-    }
-  }, [projectName, storedFormData.projectName, clearFormData, setProjectName]);
-
-  // Initialize react-hook-form with stored data or defaults
+  // Initialize react-hook-form without default values initially
   const {
     register,
     control,
@@ -411,19 +429,112 @@ const CreateProjectRunPage = () => {
     reset
   } = useForm({
     defaultValues: {
-      name: storedFormData.name || "",
-      description: storedFormData.description || "",
-      assumptions: storedFormData.assumptions || [""],
-      requirements: storedFormData.requirements || {},
-      scenarios: storedFormData.scenarios || [""],
-      scheduledStart: storedFormData.scheduledStart || "",
-      scheduledEnd: storedFormData.scheduledEnd || "",
+      name: "",
+      description: "",
+      assumptions: [""],
+      requirements: {},
+      scenarios: [""],
+      scheduledStart: "",
+      scheduledEnd: "",
     }
   });
 
   // Local state for assumptions and scenarios
-  const [assumptions, setAssumptions] = useState(storedFormData.assumptions || [""]);
-  const [scenarios, setScenarios] = useState(storedFormData.scenarios || [""]);
+  const [assumptions, setAssumptions] = useState([""]);
+  const [scenarios, setScenarios] = useState([""]);
+
+  // Load project data
+  const {
+    data: currentProject,
+    isLoading: isLoadingProject,
+  } = useGetProjectQuery(currentProjectName);
+
+  // Update mutation
+  const updateMutation = useUpdateProjectRunMutation();
+
+  // If params are missing, redirect to project dashboard
+  useEffect(() => {
+    if (!currentProjectName || !currentRunName) {
+      navigate('/project/dashboard');
+    }
+  }, [currentProjectName, currentRunName, navigate]);
+
+  // Load project run data into form when available
+  useEffect(() => {
+    if (projectRun && !isLoaded) {
+      try {
+        const convertedRequirements = convertRequirementsToFormFormat(projectRun.requirements || {});
+
+        const formData = {
+          name: projectRun.name || "",
+          description: projectRun.description || "",
+          assumptions: Array.isArray(projectRun.assumptions) && projectRun.assumptions.length > 0
+            ? projectRun.assumptions
+            : [""],
+          scenarios: Array.isArray(projectRun.scenarios) && projectRun.scenarios.length > 0
+            ? projectRun.scenarios
+            : [""],
+          requirements: convertedRequirements,
+          scheduledStart: projectRun.scheduled_start ? new Date(projectRun.scheduled_start).toISOString().split('T')[0] : "",
+          scheduledEnd: projectRun.scheduled_end ? new Date(projectRun.scheduled_end).toISOString().split('T')[0] : ""
+        };
+
+        reset(formData);
+        setAssumptions(formData.assumptions);
+        setScenarios(formData.scenarios);
+        setRequirementsInitialData(convertedRequirements);
+        setIsLoaded(true);
+      } catch (error) {
+        console.error("Error setting form data:", error);
+      }
+    }
+  }, [projectRun, isLoaded, reset]);
+
+  // Helper function to convert requirements from API to form format
+  const convertRequirementsToFormFormat = (apiRequirements) => {
+    if (!apiRequirements || typeof apiRequirements !== 'object') {
+      return {};
+    }
+
+    try {
+      const formRequirements = {};
+      let counter = 0;
+      const newObjectFields = {};
+
+      Object.entries(apiRequirements).forEach(([key, value]) => {
+        const id = `req_${counter++}`;
+        const isObjectType = typeof value === 'object' && value !== null;
+
+        formRequirements[id] = {
+          name: key,
+          type: isObjectType ? 'object' : 'string',
+          value: value
+        };
+
+        if (isObjectType) {
+          const fieldNames = Object.keys(value);
+          if (fieldNames.length > 0) {
+            newObjectFields[id] = fieldNames;
+          }
+        }
+      });
+
+      setObjectFields(newObjectFields);
+
+      if (Object.keys(formRequirements).length === 0) {
+        formRequirements.req_default = {
+          name: "",
+          type: "string",
+          value: ""
+        };
+      }
+
+      return formRequirements;
+    } catch (error) {
+      console.error("Error converting requirements:", error);
+      return {};
+    }
+  };
 
   // Add handlers for assumptions and scenarios
   const addAssumption = () => {
@@ -452,22 +563,7 @@ const CreateProjectRunPage = () => {
     setValue("scenarios", newScenarios.length ? newScenarios : [""]);
   };
 
-  // Save form data to store when it changes (debounced)
-  const saveFormData = () => {
-    const currentData = watch();
-    updateFormData({
-      ...currentData,
-      assumptions,
-      scenarios,
-    });
-  };
-
-  // Debounce save function
-  useEffect(() => {
-    const timer = setTimeout(saveFormData, 1000); // Save after 1 second of inactivity
-    return () => clearTimeout(timer);
-  }, [watch(), assumptions, scenarios]);
-
+  // Authentication check
   useEffect(() => {
     const checkAuth = async () => {
       const isAuthenticated = await checkAuthStatus();
@@ -479,19 +575,6 @@ const CreateProjectRunPage = () => {
     checkAuth();
   }, [navigate, checkAuthStatus]);
 
-  const {
-    data: currentProject,
-    isLoading: isLoadingProject,
-  } = useGetProjectQuery(projectName);
-
-  const mutation = useCreateProjectRunMutation();
-
-  useEffect(() => {
-    if (!isLoadingProject && !currentProject && !projectName) {
-      navigate("/projects");
-    }
-  }, [isLoadingProject, currentProject, projectName, navigate]);
-
   // Extract scenario names when project data is available
   useEffect(() => {
     if (currentProject?.scenarios) {
@@ -501,14 +584,6 @@ const CreateProjectRunPage = () => {
       setScenarioNames(names);
     }
   }, [currentProject]);
-
-  const validateProjectRunName = (name) => {
-    if (!name) {
-      return "Project run name is required";
-    }
-
-    return true;
-  };
 
   const validateDates = (scheduledStart, scheduledEnd) => {
     if (!scheduledStart || isNaN(new Date(scheduledStart))) {
@@ -607,25 +682,6 @@ const CreateProjectRunPage = () => {
       formData.scheduledEnd = endDate.toISOString();
     }
 
-    // Handle date synchronization with project dates if same day
-    if (currentProject?.scheduled_start) {
-      const projectStartDate = new Date(currentProject.scheduled_start);
-      const formStartDate = new Date(data.scheduledStart + 'T00:00:00.000Z');
-
-      if (projectStartDate.toISOString().split('T')[0] === formStartDate.toISOString().split('T')[0]) {
-        formData.scheduledStart = currentProject.scheduled_start;
-      }
-    }
-
-    if (currentProject?.scheduled_end) {
-      const projectEndDate = new Date(currentProject.scheduled_end);
-      const formEndDate = new Date(data.scheduledEnd + 'T00:00:00.000Z');
-
-      if (projectEndDate.toISOString().split('T')[0] === formEndDate.toISOString().split('T')[0]) {
-        formData.scheduledEnd = currentProject.scheduled_end;
-      }
-    }
-
     // Format final payload
     const cleanedFormData = {
       name: formData.name.trim(),
@@ -638,19 +694,17 @@ const CreateProjectRunPage = () => {
     };
 
     try {
-      await mutation.mutateAsync({
-        projectName: currentProject?.name || projectName,
+      await updateMutation.mutateAsync({
+        projectName: currentProjectName,
+        projectRunName: currentRunName,
         data: cleanedFormData
       });
 
-      // Clear stored form data on successful submission
-      clearFormData();
-
-      // Navigate to dashboard on success
-      navigate('/project/dashboard');
+      // Navigate to project run details page after successful update
+      navigate('/projectrun');
     } catch (error) {
       setFormError(true);
-      setFormErrorMessage("Failed to create project run");
+      setFormErrorMessage("Failed to update project run");
 
       if (error.response?.data?.message) {
         setFormErrorMessage(error.response.data.message);
@@ -676,24 +730,43 @@ const CreateProjectRunPage = () => {
     }
   };
 
-  // Show loading state while project data is being fetched
-  if (isLoadingProject) {
+  // Show loading state while data is being fetched
+  if (isLoadingProject || isLoadingProjectRun) {
     return (
-      <Container className="mt-5 text-center">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Loading project data...</p>
-      </Container>
+      <>
+        <NavbarSub navData={{ pList: true, pName: currentProjectName }} />
+        <Container className="mt-5 text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-3">Loading project run data...</p>
+        </Container>
+      </>
+    );
+  }
+
+  // Show error if project run couldn't be loaded
+  if (projectRunError) {
+    return (
+      <>
+        <NavbarSub navData={{ pList: true, pName: currentProjectName }} />
+        <Container className="mt-5">
+          <div className="alert alert-danger">
+            <h4 className="alert-heading">Error Loading Project Run</h4>
+            <p>{projectRunError.message || "Failed to load project run data"}</p>
+            <Button variant="outline-primary" onClick={() => navigate(-1)}>Go Back</Button>
+          </div>
+        </Container>
+      </>
     );
   }
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: effectivePname, prCreate: true }} />
+      <NavbarSub navData={{ pList: true, pName: currentProjectName, prName: currentRunName, toUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Create Project Run"/>
+          <ContentHeader title="Update Project Run" />
         </Row>
 
         <Row className="g-0">
@@ -726,10 +799,7 @@ const CreateProjectRunPage = () => {
                     className="form-control-lg form-primary-input"
                     placeholder="Enter project run name"
                     isInvalid={!!errors.name}
-                    {...register("name", {
-                      required: "Project run name is required",
-                      validate: validateProjectRunName
-                    })}
+                    {...register("name", { required: "Project run name is required" })}
                   />
                   {errors.name && (
                     <Form.Control.Feedback type="invalid" className="text-start">
@@ -845,6 +915,7 @@ const CreateProjectRunPage = () => {
                   errors={errors}
                   watch={watch}
                   setValue={setValue}
+                  initialData={requirementsInitialData}
                 />
 
                 <Row>
@@ -910,7 +981,14 @@ const CreateProjectRunPage = () => {
                     disabled={isSubmitting}
                     className="form-submit-button"
                   >
-                    {isSubmitting ? "Creating Project Run..." : "Create Project Run"}
+                    {isSubmitting ? "Updating Project Run..." : "Update Project Run"}
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate(-1)}
+                    className="form-submit-button ms-2"
+                  >
+                    Cancel
                   </Button>
                 </div>
               </Form>
@@ -922,4 +1000,4 @@ const CreateProjectRunPage = () => {
   );
 };
 
-export default CreateProjectRunPage;
+export default UpdateProjectRunPage;

@@ -1,5 +1,6 @@
 import { Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -118,12 +119,12 @@ const DeleteProjectPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pDelete: true }} />
+      <NavbarSub navData={{ pList: true, pName: effectivePname, toDelete: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="justify-content-center">
           <Col className='mx-auto mt-5' md={8} lg={6}>
             <div className="text-center">
-              <h3 className="fw-light mb-4" style={{"paddingTop": "30px", "paddingBottom": "30px"}}>
+              <h3 className="mb-4 text-danger" style={{"paddingTop": "30px", "paddingBottom": "30px"}}>
                 Delete Project
               </h3>
 
@@ -138,12 +139,18 @@ const DeleteProjectPage = () => {
                 </div>
               )}
 
-              <p className="mb-5">
-                Are you sure you want to delete project '<strong>{effectivePname || projectName}</strong>'?
-                The project data will be permanently removed, and this action cannot be undone.
-              </p>
+              <Alert variant="warning">
+                <Alert.Heading>Warning: This action cannot be undone</Alert.Heading>
+                <p>
+                  You are about to delete project '<strong>{effectivePname || projectName}</strong>'.
+                </p>
+                <p>
+                  All data associated with this project will be permanently removed.
+                  Please confirm that you want to delete this project.
+                </p>
+              </Alert>
 
-              <div className="d-flex justify-content-center gap-3">
+              <div className="d-flex justify-content-center gap-3 mt-5">
                 <Button
                   variant="danger"
                   onClick={handleConfirm}

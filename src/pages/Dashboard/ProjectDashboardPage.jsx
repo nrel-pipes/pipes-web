@@ -126,7 +126,7 @@ const ProjectDashboardPage = () => {
       <NavbarSub navData={{ pList: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Project Dashboard" headerButton={<ProjectDropdownButton isDisabled={isDropdownButtonDisabled} />} />
+          <ContentHeader title="Project Dashboard" headerButton={<ProjectDropdownButton projectName={project.name} isDisabled={isDropdownButtonDisabled} />} />
         </Row>
         <Row className="dashboard-header mb-4">
           <Col lg={8}>
@@ -219,23 +219,7 @@ const ProjectDashboardPage = () => {
           {/* Project Runs - Highlighted as important activities */}
           <Col lg={12} className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-              <h3 className="section-title">Activities</h3>
-              {/* <button
-                className="btn create-run-button"
-                style={{
-                  backgroundColor: 'rgb(71, 148, 218)',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  width: '180px'
-                }}
-                onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
-                onMouseUp={(e) => e.currentTarget.style.color = 'white'}
-                onClick={() => navigate("/create-projectrun", {
-                  state: { projectName: project.name }
-                })}
-              >
-                + Create project run
-              </button> */}
+              <h3 className="section-title">Activities (Runs)</h3>
             </div>
             <Card className="dashboard-card highlight-card">
               <Card.Header className="d-flex justify-content-between align-items-center highlight-header">
