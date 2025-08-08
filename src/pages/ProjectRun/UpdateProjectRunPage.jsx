@@ -22,41 +22,44 @@ import { useEffect, useState } from "react";
 
 // Requirements component for managing complex requirements object
 const RequirementsSection = ({ control, register, errors, watch, setValue, initialData, onDataChange }) => {
-
-  // Use empty object as default requirements
   const [requirements, setRequirements] = useState({});
-  // Keep track of internal IDs for each requirement
   const [requirementIds, setRequirementIds] = useState([]);
-
-  // Watch the requirements field
-  const watchedRequirements = watch("requirements", {});
-
-  // Track custom fields for each requirement
-  const [objectFields, setObjectFields] = useState({});
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Watch the requirements field for changes
+  const watchedRequirements = watch("requirements", {});
 
   // Initialize with initial data from parent component
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0 && !isInitialized) {
-      setRequirements(initialData);
-      setValue("requirements", initialData);
-      setRequirementIds(Object.keys(initialData));
-      setIsInitialized(true);
+    if (initialData && Object.keys(initialData).length > 0) {
+      try {
+        // Force fresh initialization regardless of previous state
+        setIsInitialized(false);
 
-      // Extract object fields from initial data
-      const newObjectFields = {};
-      Object.entries(initialData).forEach(([id, reqData]) => {
-        if (reqData.type === 'object' && reqData.value && typeof reqData.value === 'object') {
-          newObjectFields[id] = Object.keys(reqData.value);
-        }
-      });
-      setObjectFields(newObjectFields);
+        // Create a deep copy to avoid reference issues
+        const initialCopy = JSON.parse(JSON.stringify(initialData));
+
+        // Set requirements first
+        setRequirements(initialCopy);
+
+        // Then update the IDs for rendering
+        const ids = Object.keys(initialCopy);
+        setRequirementIds(ids);
+
+        // Force update the form value
+        setTimeout(() => {
+          setValue("requirements", initialCopy);
+          setIsInitialized(true);
+        }, 50);
+      } catch (err) {
+        console.error("Error initializing requirements:", err);
+      }
     }
-  }, [initialData, setValue, isInitialized]);
+  }, [initialData, setValue]); // Remove isInitialized dependency
 
   // Initialize with a default empty requirement only if no initial data
   useEffect(() => {
-    if (requirementIds.length === 0 && !initialData && isInitialized === false) {
+    if (!isInitialized && (!initialData || Object.keys(initialData).length === 0)) {
       const defaultId = `req_default`;
       const defaultRequirement = {
         name: "",
@@ -69,10 +72,11 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
       setRequirementIds([defaultId]);
       setIsInitialized(true);
     }
-  }, [requirementIds.length, setValue, initialData, isInitialized]);
+  }, [isInitialized, initialData, setValue]);
 
+  // Update local state when form values change
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && Object.keys(watchedRequirements).length > 0) {
       setRequirements(watchedRequirements);
     }
   }, [watchedRequirements, isInitialized]);
@@ -100,10 +104,6 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
 
     // Update requirement IDs
     setRequirementIds(requirementIds.filter(reqId => reqId !== id));
-
-    // Also clean up the objectFields if any
-    const { [id]: removedFields, ...remainingFields } = objectFields;
-    setObjectFields(remainingFields);
   };
 
   const updateRequirementName = (id, newName) => {
@@ -132,22 +132,6 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
     setValue("requirements", newRequirements);
   };
 
-  const updateRequirementObjectValue = (id, field, value) => {
-    const currentValue = requirements[id]?.value || {};
-    const newValue = { ...currentValue, [field]: value };
-
-    const newRequirements = {
-      ...requirements,
-      [id]: {
-        ...requirements[id],
-        value: newValue
-      }
-    };
-
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
   const toggleRequirementType = (id) => {
     const currentType = requirements[id]?.type;
     const newType = currentType === "string" ? "object" : "string";
@@ -158,16 +142,11 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
       // If converting from object to string, use empty string
       newValue = "";
     } else {
-      // If converting from string to object, create empty object
-      newValue = {};
-
-      // Initialize object fields if not already set
-      if (!objectFields[id]) {
-        setObjectFields({
-          ...objectFields,
-          [id]: ["field1", "field2"]
-        });
-      }
+      // If converting from string to object, create object with two initial fields
+      newValue = {
+        field1: "",
+        field2: ""
+      };
     }
 
     const newRequirements = {
@@ -183,76 +162,120 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
     setValue("requirements", newRequirements);
   };
 
-  const addNestedField = (id) => {
-    // Get current fields or initialize if not present
-    const currentFields = objectFields[id] || [];
-    const newFieldName = `field${currentFields.length + 1}`;
+  // Object field methods
+  const addObjectField = (reqId) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
 
-    const updatedFields = [...currentFields, newFieldName];
-    setObjectFields({
-      ...objectFields,
-      [id]: updatedFields
-    });
-
-    // Also ensure the value object has this field initialized
-    const currentValue = requirements[id]?.value || {};
-    if (!currentValue[newFieldName]) {
-      updateRequirementObjectValue(id, newFieldName, "");
+    // Find a unique field name that doesn't exist yet
+    let fieldIndex = 1;
+    let newFieldName = `field${fieldIndex}`;
+    while (reqData.value && Object.prototype.hasOwnProperty.call(reqData.value, newFieldName)) {
+      fieldIndex++;
+      newFieldName = `field${fieldIndex}`;
     }
-  };
 
-  const removeNestedField = (id, fieldToRemove) => {
-    const currentFields = objectFields[id] || [];
-    const updatedFields = currentFields.filter(field => field !== fieldToRemove);
+    const updatedValue = {
+      ...reqData.value,
+      [newFieldName]: ""
+    };
 
-    setObjectFields({
-      ...objectFields,
-      [id]: updatedFields
-    });
-
-    // Also remove this field from the value object
-    const currentValue = requirements[id]?.value || {};
-    const { [fieldToRemove]: removed, ...restValue } = currentValue;
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
 
     const newRequirements = {
       ...requirements,
-      [id]: {
-        ...requirements[id],
-        value: restValue
-      }
+      [reqId]: updatedRequirement
     };
 
     setRequirements(newRequirements);
     setValue("requirements", newRequirements);
   };
 
-  // Add function to update a nested field name
-  const updateNestedFieldName = (id, oldFieldName, newFieldName) => {
-    // Update the field names in objectFields
-    const currentFields = objectFields[id] || [];
-    const updatedFields = currentFields.map(field =>
-      field === oldFieldName ? newFieldName : field
-    );
+  const updateObjectFieldValue = (reqId, fieldKey, fieldValue) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
 
-    setObjectFields({
-      ...objectFields,
-      [id]: updatedFields
-    });
+    const updatedValue = {
+      ...reqData.value,
+      [fieldKey]: fieldValue
+    };
 
-    // Also transfer the value from the old field name to the new one
-    const currentValue = requirements[id]?.value || {};
-    const oldValue = currentValue[oldFieldName];
-
-    // Create a new value object without the old field, but with the new field
-    const { [oldFieldName]: removedValue, ...restValues } = currentValue;
-    const newValue = { ...restValues, [newFieldName]: oldValue };
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
 
     const newRequirements = {
       ...requirements,
-      [id]: {
-        ...requirements[id],
-        value: newValue
+      [reqId]: updatedRequirement
+    };
+
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const updateObjectFieldKey = (reqId, oldKey, newKey) => {
+    if (!newKey || oldKey === newKey) return;
+
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+
+    // Check if the new key already exists
+    if (Object.prototype.hasOwnProperty.call(reqData.value, newKey) && oldKey !== newKey) {
+      return; // Don't allow duplicate keys
+    }
+
+    // Create a new value object with the renamed key
+    const updatedValue = {};
+    Object.entries(reqData.value).forEach(([key, value]) => {
+      if (key === oldKey) {
+        updatedValue[newKey] = value;
+      } else {
+        updatedValue[key] = value;
       }
+    });
+
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
+    };
+
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const removeObjectField = (reqId, fieldKey) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+
+    // Don't remove if it's the only field
+    const fieldKeys = Object.keys(reqData.value || {});
+    if (fieldKeys.length <= 1) return;
+
+    // Create a new value object without the removed field
+    const updatedValue = {};
+    Object.entries(reqData.value).forEach(([key, value]) => {
+      if (key !== fieldKey) {
+        updatedValue[key] = value;
+      }
+    });
+
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
     };
 
     setRequirements(newRequirements);
@@ -321,32 +344,32 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
                     />
                   ) : (
                     <div className="p-2 border rounded">
-                      {(objectFields[id] || ["field1", "field2"]).map((fieldName, fieldIdx) => (
-                        <Row key={fieldIdx} className="mb-2">
+                      {Object.keys(reqData.value || {}).map((fieldKey) => (
+                        <Row key={`${id}-${fieldKey}`} className="mb-2">
                           <Col>
                             <Form.Control
                               type="text"
                               className="form-control-sm"
                               placeholder="Field Name"
-                              value={fieldName}
-                              onChange={(e) => updateNestedFieldName(id, fieldName, e.target.value)}
+                              defaultValue={fieldKey}
+                              onBlur={(e) => updateObjectFieldKey(id, fieldKey, e.target.value)}
                             />
                           </Col>
                           <Col>
                             <Form.Control
                               type="text"
                               className="form-control-sm"
-                              placeholder="field value"
-                              value={reqData.value?.[fieldName] || ""}
-                              onChange={(e) => updateRequirementObjectValue(id, fieldName, e.target.value)}
+                              placeholder="Field Value"
+                              value={reqData.value[fieldKey] || ""}
+                              onChange={(e) => updateObjectFieldValue(id, fieldKey, e.target.value)}
                             />
                           </Col>
-                          {objectFields[id]?.length > 1 && (
+                          {Object.keys(reqData.value || {}).length > 1 && (
                             <Col xs="auto">
                               <Button
                                 variant="outline-danger"
                                 type="button"
-                                onClick={() => removeNestedField(id, fieldName)}
+                                onClick={() => removeObjectField(id, fieldKey)}
                                 className="d-flex align-items-center justify-content-center"
                                 style={{ width: "32px", height: "32px", padding: "4px" }}
                               >
@@ -360,7 +383,7 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
                         variant="outline-primary"
                         type="button"
                         size="sm"
-                        onClick={() => addNestedField(id)}
+                        onClick={() => addObjectField(id)}
                         className="d-flex align-items-center gap-1 mt-2"
                       >
                         <Plus size={16} />
@@ -406,7 +429,6 @@ const UpdateProjectRunPage = () => {
   const [errorDetails, setErrorDetails] = useState([]);
   const [scenarioNames, setScenarioNames] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [objectFields, setObjectFields] = useState({}); // Add this state for object fields
   const [requirementsInitialData, setRequirementsInitialData] = useState(null);
 
   // Get current project run data
@@ -443,99 +465,6 @@ const UpdateProjectRunPage = () => {
   const [assumptions, setAssumptions] = useState([""]);
   const [scenarios, setScenarios] = useState([""]);
 
-  // Load project data
-  const {
-    data: currentProject,
-    isLoading: isLoadingProject,
-  } = useGetProjectQuery(currentProjectName);
-
-  // Update mutation
-  const updateMutation = useUpdateProjectRunMutation();
-
-  // If params are missing, redirect to project dashboard
-  useEffect(() => {
-    if (!currentProjectName || !currentRunName) {
-      navigate('/project/dashboard');
-    }
-  }, [currentProjectName, currentRunName, navigate]);
-
-  // Load project run data into form when available
-  useEffect(() => {
-    if (projectRun && !isLoaded) {
-      try {
-        const convertedRequirements = convertRequirementsToFormFormat(projectRun.requirements || {});
-
-        const formData = {
-          name: projectRun.name || "",
-          description: projectRun.description || "",
-          assumptions: Array.isArray(projectRun.assumptions) && projectRun.assumptions.length > 0
-            ? projectRun.assumptions
-            : [""],
-          scenarios: Array.isArray(projectRun.scenarios) && projectRun.scenarios.length > 0
-            ? projectRun.scenarios
-            : [""],
-          requirements: convertedRequirements,
-          scheduledStart: projectRun.scheduled_start ? new Date(projectRun.scheduled_start).toISOString().split('T')[0] : "",
-          scheduledEnd: projectRun.scheduled_end ? new Date(projectRun.scheduled_end).toISOString().split('T')[0] : ""
-        };
-
-        reset(formData);
-        setAssumptions(formData.assumptions);
-        setScenarios(formData.scenarios);
-        setRequirementsInitialData(convertedRequirements);
-        setIsLoaded(true);
-      } catch (error) {
-        console.error("Error setting form data:", error);
-      }
-    }
-  }, [projectRun, isLoaded, reset]);
-
-  // Helper function to convert requirements from API to form format
-  const convertRequirementsToFormFormat = (apiRequirements) => {
-    if (!apiRequirements || typeof apiRequirements !== 'object') {
-      return {};
-    }
-
-    try {
-      const formRequirements = {};
-      let counter = 0;
-      const newObjectFields = {};
-
-      Object.entries(apiRequirements).forEach(([key, value]) => {
-        const id = `req_${counter++}`;
-        const isObjectType = typeof value === 'object' && value !== null;
-
-        formRequirements[id] = {
-          name: key,
-          type: isObjectType ? 'object' : 'string',
-          value: value
-        };
-
-        if (isObjectType) {
-          const fieldNames = Object.keys(value);
-          if (fieldNames.length > 0) {
-            newObjectFields[id] = fieldNames;
-          }
-        }
-      });
-
-      setObjectFields(newObjectFields);
-
-      if (Object.keys(formRequirements).length === 0) {
-        formRequirements.req_default = {
-          name: "",
-          type: "string",
-          value: ""
-        };
-      }
-
-      return formRequirements;
-    } catch (error) {
-      console.error("Error converting requirements:", error);
-      return {};
-    }
-  };
-
   // Add handlers for assumptions and scenarios
   const addAssumption = () => {
     const newAssumptions = [...assumptions, ""];
@@ -562,6 +491,145 @@ const UpdateProjectRunPage = () => {
     setScenarios(newScenarios.length ? newScenarios : [""]);
     setValue("scenarios", newScenarios.length ? newScenarios : [""]);
   };
+
+  // Load project data
+  const {
+    data: currentProject,
+    isLoading: isLoadingProject,
+  } = useGetProjectQuery(currentProjectName);
+
+  // Update mutation
+  const updateMutation = useUpdateProjectRunMutation();
+
+  // If params are missing, redirect to project dashboard
+  useEffect(() => {
+    if (!currentProjectName || !currentRunName) {
+      navigate('/project/dashboard');
+    }
+  }, [currentProjectName, currentRunName, navigate]);
+
+  // Load project run data into form when available
+  useEffect(() => {
+    if (projectRun && !isLoaded) {
+      try {
+        let targetRun = projectRun;
+        if (Array.isArray(projectRun)) {
+          targetRun = projectRun.find(run => run.name === currentRunName);
+        }
+
+        if (!targetRun) {
+          console.error("Could not find run with name:", currentRunName);
+          return;
+        }
+
+        const rawRequirements = targetRun.requirements || {};
+
+        // Convert requirements to form format
+        const convertedRequirements = convertRequirementsToFormFormat(rawRequirements);
+
+        // Basic form data without requirements first
+        const basicFormData = {
+          name: targetRun.name || "",
+          description: targetRun.description || "",
+          assumptions: Array.isArray(targetRun.assumptions) && targetRun.assumptions.length > 0
+            ? targetRun.assumptions
+            : [""],
+          scenarios: Array.isArray(targetRun.scenarios) && targetRun.scenarios.length > 0
+            ? targetRun.scenarios
+            : [""],
+          scheduledStart: targetRun.scheduled_start ? new Date(targetRun.scheduled_start).toISOString().split('T')[0] : "",
+          scheduledEnd: targetRun.scheduled_end ? new Date(targetRun.scheduled_end).toISOString().split('T')[0] : ""
+        };
+
+        // Update state first
+        setAssumptions(basicFormData.assumptions);
+        setScenarios(basicFormData.scenarios);
+
+        // Reset form without requirements
+        reset(basicFormData);
+
+        // After a short delay, set requirements directly and then set requirements initial data
+        setTimeout(() => {
+          // Set form requirements value directly
+          setValue("requirements", convertedRequirements);
+
+          // Set the requirements initial data last
+          setRequirementsInitialData(null); // Clear first to force re-render
+          setTimeout(() => {
+            setRequirementsInitialData(convertedRequirements);
+            setIsLoaded(true);
+          }, 100);
+        }, 100);
+
+      } catch (error) {
+        console.error("Error setting form data:", error);
+      }
+    }
+  }, [projectRun, reset, currentRunName, setValue]);
+
+  // Helper function to convert requirements from API to form format
+  const convertRequirementsToFormFormat = (apiRequirements) => {
+    if (!apiRequirements || typeof apiRequirements !== 'object') {
+      return {};
+    }
+
+    try {
+      const formRequirements = {};
+      let counter = 0;
+
+      // Handle the specific structure we're seeing in the logs
+      Object.entries(apiRequirements).forEach(([reqKey, reqValue]) => {
+        const id = `req_${counter++}`;
+
+        if (typeof reqValue === 'object' && reqValue !== null) {
+          // This is an object requirement (like r1: { k1: "v1", k2: "v2" })
+          formRequirements[id] = {
+            name: reqKey,
+            type: 'object',
+            value: { ...reqValue } // Deep copy the object
+          };
+        } else {
+          // This is a string requirement
+          formRequirements[id] = {
+            name: reqKey,
+            type: 'string',
+            value: reqValue
+          };
+        }
+      });
+
+      // If no requirements were found, add a default empty one
+      if (Object.keys(formRequirements).length === 0) {
+        formRequirements.req_default = {
+          name: "",
+          type: "string",
+          value: ""
+        };
+      }
+
+      return formRequirements;
+    } catch (error) {
+      console.error("Error converting requirements:", error);
+      return {};
+    }
+  };
+
+  // Force refresh the component when projectRun data changes
+  useEffect(() => {
+    if (projectRun && isLoaded) {
+      const watchedValues = watch();
+      let targetRun = projectRun;
+
+      if (Array.isArray(projectRun)) {
+        targetRun = projectRun.find(run => run.name === currentRunName);
+      }
+
+      if (targetRun && !watchedValues.name && targetRun.name) {
+        // Form wasn't initialized properly, try again
+        setIsLoaded(false);
+      }
+    }
+  }, [projectRun, isLoaded, watch, currentRunName]);
 
   // Authentication check
   useEffect(() => {
@@ -974,21 +1042,23 @@ const UpdateProjectRunPage = () => {
                   </Col>
                 </Row>
 
-                <div className="mt-4">
+                <div className="mt-4 d-flex justify-content-end form-action-buttons">
                   <Button
+                    variant="outline-secondary"
+                    type="button"
+                    onClick={() => navigate('/project/dashboard')}
+                    className="action-button me-3"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
                     variant="primary"
                     type="submit"
                     disabled={isSubmitting}
-                    className="form-submit-button"
+                    className="action-button"
                   >
                     {isSubmitting ? "Updating Project Run..." : "Update Project Run"}
-                  </Button>
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => navigate(-1)}
-                    className="form-submit-button ms-2"
-                  >
-                    Cancel
                   </Button>
                 </div>
               </Form>

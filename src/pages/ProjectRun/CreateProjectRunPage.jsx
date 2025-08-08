@@ -22,7 +22,6 @@ import { useEffect, useState } from "react";
 
 // Requirements component for managing complex requirements object
 const RequirementsSection = ({ control, register, errors, watch, setValue }) => {
-
   // Use empty object as default requirements
   const [requirements, setRequirements] = useState({});
   // Keep track of internal IDs for each requirement
@@ -30,9 +29,6 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
 
   // Watch the requirements field
   const watchedRequirements = watch("requirements", {});
-
-  // Track custom fields for each requirement
-  const [objectFields, setObjectFields] = useState({});
 
   // Initialize with a default empty requirement
   useEffect(() => {
@@ -77,10 +73,6 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
 
     // Update requirement IDs
     setRequirementIds(requirementIds.filter(reqId => reqId !== id));
-
-    // Also clean up the objectFields if any
-    const { [id]: removedFields, ...remainingFields } = objectFields;
-    setObjectFields(remainingFields);
   };
 
   const updateRequirementName = (id, newName) => {
@@ -109,22 +101,6 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
     setValue("requirements", newRequirements);
   };
 
-  const updateRequirementObjectValue = (id, field, value) => {
-    const currentValue = requirements[id]?.value || {};
-    const newValue = { ...currentValue, [field]: value };
-
-    const newRequirements = {
-      ...requirements,
-      [id]: {
-        ...requirements[id],
-        value: newValue
-      }
-    };
-
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
   const toggleRequirementType = (id) => {
     const currentType = requirements[id]?.type;
     const newType = currentType === "string" ? "object" : "string";
@@ -135,16 +111,11 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
       // If converting from object to string, use empty string
       newValue = "";
     } else {
-      // If converting from string to object, create empty object
-      newValue = {};
-
-      // Initialize object fields if not already set
-      if (!objectFields[id]) {
-        setObjectFields({
-          ...objectFields,
-          [id]: ["field1", "field2"]
-        });
-      }
+      // If converting from string to object, create object with two initial fields
+      newValue = {
+        field1: "",
+        field2: ""
+      };
     }
 
     const newRequirements = {
@@ -160,76 +131,120 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
     setValue("requirements", newRequirements);
   };
 
-  const addNestedField = (id) => {
-    // Get current fields or initialize if not present
-    const currentFields = objectFields[id] || [];
-    const newFieldName = `field${currentFields.length + 1}`;
+  // Object field methods
+  const addObjectField = (reqId) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
 
-    const updatedFields = [...currentFields, newFieldName];
-    setObjectFields({
-      ...objectFields,
-      [id]: updatedFields
-    });
-
-    // Also ensure the value object has this field initialized
-    const currentValue = requirements[id]?.value || {};
-    if (!currentValue[newFieldName]) {
-      updateRequirementObjectValue(id, newFieldName, "");
+    // Find a unique field name that doesn't exist yet
+    let fieldIndex = 1;
+    let newFieldName = `field${fieldIndex}`;
+    while (reqData.value && Object.prototype.hasOwnProperty.call(reqData.value, newFieldName)) {
+      fieldIndex++;
+      newFieldName = `field${fieldIndex}`;
     }
-  };
 
-  const removeNestedField = (id, fieldToRemove) => {
-    const currentFields = objectFields[id] || [];
-    const updatedFields = currentFields.filter(field => field !== fieldToRemove);
+    const updatedValue = {
+      ...reqData.value,
+      [newFieldName]: ""
+    };
 
-    setObjectFields({
-      ...objectFields,
-      [id]: updatedFields
-    });
-
-    // Also remove this field from the value object
-    const currentValue = requirements[id]?.value || {};
-    const { [fieldToRemove]: removed, ...restValue } = currentValue;
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
 
     const newRequirements = {
       ...requirements,
-      [id]: {
-        ...requirements[id],
-        value: restValue
-      }
+      [reqId]: updatedRequirement
     };
 
     setRequirements(newRequirements);
     setValue("requirements", newRequirements);
   };
 
-  // Add function to update a nested field name
-  const updateNestedFieldName = (id, oldFieldName, newFieldName) => {
-    // Update the field names in objectFields
-    const currentFields = objectFields[id] || [];
-    const updatedFields = currentFields.map(field =>
-      field === oldFieldName ? newFieldName : field
-    );
+  const updateObjectFieldValue = (reqId, fieldKey, fieldValue) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
 
-    setObjectFields({
-      ...objectFields,
-      [id]: updatedFields
-    });
+    const updatedValue = {
+      ...reqData.value,
+      [fieldKey]: fieldValue
+    };
 
-    // Also transfer the value from the old field name to the new one
-    const currentValue = requirements[id]?.value || {};
-    const oldValue = currentValue[oldFieldName];
-
-    // Create a new value object without the old field, but with the new field
-    const { [oldFieldName]: removedValue, ...restValues } = currentValue;
-    const newValue = { ...restValues, [newFieldName]: oldValue };
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
 
     const newRequirements = {
       ...requirements,
-      [id]: {
-        ...requirements[id],
-        value: newValue
+      [reqId]: updatedRequirement
+    };
+
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const updateObjectFieldKey = (reqId, oldKey, newKey) => {
+    if (!newKey || oldKey === newKey) return;
+
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+
+    // Check if the new key already exists
+    if (Object.prototype.hasOwnProperty.call(reqData.value, newKey) && oldKey !== newKey) {
+      return; // Don't allow duplicate keys
+    }
+
+    // Create a new value object with the renamed key
+    const updatedValue = {};
+    Object.entries(reqData.value).forEach(([key, value]) => {
+      if (key === oldKey) {
+        updatedValue[newKey] = value;
+      } else {
+        updatedValue[key] = value;
       }
+    });
+
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
+    };
+
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const removeObjectField = (reqId, fieldKey) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+
+    // Don't remove if it's the only field
+    const fieldKeys = Object.keys(reqData.value || {});
+    if (fieldKeys.length <= 1) return;
+
+    // Create a new value object without the removed field
+    const updatedValue = {};
+    Object.entries(reqData.value).forEach(([key, value]) => {
+      if (key !== fieldKey) {
+        updatedValue[key] = value;
+      }
+    });
+
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
     };
 
     setRequirements(newRequirements);
@@ -298,32 +313,32 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
                     />
                   ) : (
                     <div className="p-2 border rounded">
-                      {(objectFields[id] || ["field1", "field2"]).map((fieldName, fieldIdx) => (
-                        <Row key={fieldIdx} className="mb-2">
+                      {Object.keys(reqData.value || {}).map((fieldKey) => (
+                        <Row key={`${id}-${fieldKey}`} className="mb-2">
                           <Col>
                             <Form.Control
                               type="text"
                               className="form-control-sm"
                               placeholder="Field Name"
-                              value={fieldName}
-                              onChange={(e) => updateNestedFieldName(id, fieldName, e.target.value)}
+                              defaultValue={fieldKey}
+                              onBlur={(e) => updateObjectFieldKey(id, fieldKey, e.target.value)}
                             />
                           </Col>
                           <Col>
                             <Form.Control
                               type="text"
                               className="form-control-sm"
-                              placeholder="field value"
-                              value={reqData.value?.[fieldName] || ""}
-                              onChange={(e) => updateRequirementObjectValue(id, fieldName, e.target.value)}
+                              placeholder="Field Value"
+                              value={reqData.value[fieldKey] || ""}
+                              onChange={(e) => updateObjectFieldValue(id, fieldKey, e.target.value)}
                             />
                           </Col>
-                          {objectFields[id]?.length > 1 && (
+                          {Object.keys(reqData.value || {}).length > 1 && (
                             <Col xs="auto">
                               <Button
                                 variant="outline-danger"
                                 type="button"
-                                onClick={() => removeNestedField(id, fieldName)}
+                                onClick={() => removeObjectField(id, fieldKey)}
                                 className="d-flex align-items-center justify-content-center"
                                 style={{ width: "32px", height: "32px", padding: "4px" }}
                               >
@@ -337,7 +352,7 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
                         variant="outline-primary"
                         type="button"
                         size="sm"
-                        onClick={() => addNestedField(id)}
+                        onClick={() => addObjectField(id)}
                         className="d-flex align-items-center gap-1 mt-2"
                       >
                         <Plus size={16} />
@@ -717,198 +732,209 @@ const CreateProjectRunPage = () => {
 
             <div className="px-3 py-5">
               <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <div className="mb-4">
-                  <Form.Label className="form-field-label required-field">
-                    <span className="form-field-text">Project Run Name</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    className="form-control-lg form-primary-input"
-                    placeholder="Enter project run name"
-                    isInvalid={!!errors.name}
-                    {...register("name", {
-                      required: "Project run name is required",
-                      validate: validateProjectRunName
-                    })}
-                  />
-                  {errors.name && (
-                    <Form.Control.Feedback type="invalid" className="text-start">
-                      {errors.name.message}
-                    </Form.Control.Feedback>
-                  )}
-                </div>
-
-                <div className="mb-4">
-                  <Form.Label className="form-field-label">
-                    <span className="form-field-text">Description</span>
-                  </Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    className="form-control-lg form-primary-input"
-                    placeholder="Enter a brief description"
-                    {...register("description")}
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <Form.Label className="form-field-label">
-                    <span className="form-field-text">Scenarios</span>
-                  </Form.Label>
-                  <div>
-                    {scenarios.map((scenario, index) => (
-                      <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                        <Form.Select
-                          className="form-control-lg"
-                          value={scenario}
-                          onChange={(e) => {
-                            const newScenarios = [...scenarios];
-                            newScenarios[index] = e.target.value;
-                            setScenarios(newScenarios);
-                            setValue("scenarios", newScenarios);
-                          }}
-                        >
-                          <option value="">Select a scenario</option>
-                          {scenarioNames.map((name, idx) => (
-                            <option key={idx} value={name}>
-                              {name}
-                            </option>
-                          ))}
-                        </Form.Select>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          type="button"
-                          onClick={() => removeScenario(index)}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      variant="outline-primary"
-                      type="button"
-                      onClick={addScenario}
-                      className="d-flex align-items-center gap-2"
-                      style={{ padding: "0.5rem 1rem" }}
-                    >
-                      <Plus size={16} />
-                      Scenario
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <Form.Label className="form-field-label">
-                    <span className="form-field-text">Assumptions</span>
-                  </Form.Label>
-                  <div>
-                    {assumptions.map((assumption, index) => (
-                      <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                        <Form.Control
-                          className="form-control-lg form-primary-input"
-                          placeholder="Enter assumption"
-                          value={assumption}
-                          onChange={(e) => {
-                            const newAssumptions = [...assumptions];
-                            newAssumptions[index] = e.target.value;
-                            setAssumptions(newAssumptions);
-                            setValue("assumptions", newAssumptions);
-                          }}
-                        />
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          type="button"
-                          onClick={() => removeAssumption(index)}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      variant="outline-primary"
-                      type="button"
-                      onClick={addAssumption}
-                      className="d-flex align-items-center gap-2"
-                      style={{ padding: "0.5rem 1rem" }}
-                    >
-                      <Plus size={16} />
-                      Assumption
-                    </Button>
-                  </div>
-                </div>
-
-                <RequirementsSection
-                  control={control}
-                  register={register}
-                  errors={errors}
-                  watch={watch}
-                  setValue={setValue}
-                />
-
-                <Row>
-                  <Col md={6} className="form-field-group">
+                <div className="form-container">
+                  <div className="mb-4">
                     <Form.Label className="form-field-label required-field">
-                      <span className="form-field-text">Scheduled Start</span>
+                      <span className="form-field-text">Project Run Name</span>
                     </Form.Label>
-                    {currentProject?.scheduled_start && (
-                      <Form.Text className="text-muted d-block text-start">
-                        Date must be after{" "}
-                        {new Date(currentProject.scheduled_start).toLocaleDateString()}
-                      </Form.Text>
-                    )}
                     <Form.Control
-                      id="scheduledStart"
-                      type="date"
-                      className="form-control-lg form-date-input"
-                      isInvalid={!!errors.scheduledStart}
-                      placeholder="mm/dd/yyyy"
-                      {...register("scheduledStart", {
-                        required: "Start date is required"
+                      type="text"
+                      className="form-control-lg form-primary-input"
+                      placeholder="Enter project run name"
+                      isInvalid={!!errors.name}
+                      {...register("name", {
+                        required: "Project run name is required",
+                        validate: validateProjectRunName
                       })}
                     />
-                    {errors.scheduledStart && (
-                      <Form.Control.Feedback type="invalid">
-                        {errors.scheduledStart.message}
+                    {errors.name && (
+                      <Form.Control.Feedback type="invalid" className="text-start">
+                        {errors.name.message}
                       </Form.Control.Feedback>
                     )}
-                  </Col>
+                  </div>
 
-                  <Col md={6} className="form-field-group">
-                    <Form.Label className="form-field-label required-field">
-                      <span className="form-field-text">Scheduled End</span>
+                  <div className="mb-4">
+                    <Form.Label className="form-field-label">
+                      <span className="form-field-text">Description</span>
                     </Form.Label>
-                    {currentProject?.scheduled_end && (
-                      <Form.Text className="text-muted d-block text-start">
-                        Date must be before{" "}
-                        {new Date(currentProject.scheduled_end).toLocaleDateString()}
-                      </Form.Text>
-                    )}
                     <Form.Control
-                      id="scheduledEnd"
-                      type="date"
-                      className="form-control-lg form-date-input"
-                      isInvalid={!!errors.scheduledEnd}
-                      placeholder="mm/dd/yyyy"
-                      {...register("scheduledEnd", {
-                        required: "Start date is required"
-                      })}
+                      as="textarea"
+                      rows={3}
+                      className="form-control-lg form-primary-input"
+                      placeholder="Enter a brief description"
+                      {...register("description")}
                     />
-                    {errors.scheduledEnd && (
-                      <Form.Control.Feedback type="invalid">
-                        {errors.scheduledEnd.message}
-                      </Form.Control.Feedback>
-                    )}
-                  </Col>
-                </Row>
+                  </div>
 
-                <div className="mt-4">
+                  <div className="mb-4">
+                    <Form.Label className="form-field-label">
+                      <span className="form-field-text">Scenarios</span>
+                    </Form.Label>
+                    <div>
+                      {scenarios.map((scenario, index) => (
+                        <div key={index} className="d-flex mb-2 align-items-center gap-2">
+                          <Form.Select
+                            className="form-control-lg"
+                            value={scenario}
+                            onChange={(e) => {
+                              const newScenarios = [...scenarios];
+                              newScenarios[index] = e.target.value;
+                              setScenarios(newScenarios);
+                              setValue("scenarios", newScenarios);
+                            }}
+                          >
+                            <option value="">Select a scenario</option>
+                            {scenarioNames.map((name, idx) => (
+                              <option key={idx} value={name}>
+                                {name}
+                              </option>
+                            ))}
+                          </Form.Select>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            type="button"
+                            onClick={() => removeScenario(index)}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline-primary"
+                        type="button"
+                        onClick={addScenario}
+                        className="d-flex align-items-center gap-2"
+                        style={{ padding: "0.5rem 1rem" }}
+                      >
+                        <Plus size={16} />
+                        Scenario
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <Form.Label className="form-field-label">
+                      <span className="form-field-text">Assumptions</span>
+                    </Form.Label>
+                    <div>
+                      {assumptions.map((assumption, index) => (
+                        <div key={index} className="d-flex mb-2 align-items-center gap-2">
+                          <Form.Control
+                            className="form-control-lg form-primary-input"
+                            placeholder="Enter assumption"
+                            value={assumption}
+                            onChange={(e) => {
+                              const newAssumptions = [...assumptions];
+                              newAssumptions[index] = e.target.value;
+                              setAssumptions(newAssumptions);
+                              setValue("assumptions", newAssumptions);
+                            }}
+                          />
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            type="button"
+                            onClick={() => removeAssumption(index)}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline-primary"
+                        type="button"
+                        onClick={addAssumption}
+                        className="d-flex align-items-center gap-2"
+                        style={{ padding: "0.5rem 1rem" }}
+                      >
+                        <Plus size={16} />
+                        Assumption
+                      </Button>
+                    </div>
+                  </div>
+
+                  <RequirementsSection
+                    control={control}
+                    register={register}
+                    errors={errors}
+                    watch={watch}
+                    setValue={setValue}
+                  />
+
+                  <Row>
+                    <Col md={6} className="form-field-group">
+                      <Form.Label className="form-field-label required-field">
+                        <span className="form-field-text">Scheduled Start</span>
+                      </Form.Label>
+                      {currentProject?.scheduled_start && (
+                        <Form.Text className="text-muted d-block text-start">
+                          Date must be after{" "}
+                          {new Date(currentProject.scheduled_start).toLocaleDateString()}
+                        </Form.Text>
+                      )}
+                      <Form.Control
+                        id="scheduledStart"
+                        type="date"
+                        className="form-control-lg form-date-input"
+                        isInvalid={!!errors.scheduledStart}
+                        placeholder="mm/dd/yyyy"
+                        {...register("scheduledStart", {
+                          required: "Start date is required"
+                        })}
+                      />
+                      {errors.scheduledStart && (
+                        <Form.Control.Feedback type="invalid">
+                          {errors.scheduledStart.message}
+                        </Form.Control.Feedback>
+                      )}
+                    </Col>
+
+                    <Col md={6} className="form-field-group">
+                      <Form.Label className="form-field-label required-field">
+                        <span className="form-field-text">Scheduled End</span>
+                      </Form.Label>
+                      {currentProject?.scheduled_end && (
+                        <Form.Text className="text-muted d-block text-start">
+                          Date must be before{" "}
+                          {new Date(currentProject.scheduled_end).toLocaleDateString()}
+                        </Form.Text>
+                      )}
+                      <Form.Control
+                        id="scheduledEnd"
+                        type="date"
+                        className="form-control-lg form-date-input"
+                        isInvalid={!!errors.scheduledEnd}
+                        placeholder="mm/dd/yyyy"
+                        {...register("scheduledEnd", {
+                          required: "Start date is required"
+                        })}
+                      />
+                      {errors.scheduledEnd && (
+                        <Form.Control.Feedback type="invalid">
+                          {errors.scheduledEnd.message}
+                        </Form.Control.Feedback>
+                      )}
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="mt-4 d-flex justify-content-end form-action-buttons">
                   <Button
+                    variant="outline-secondary"
+                    type="button"
+                    onClick={() => navigate('/project/dashboard')}
+                    className="action-button me-3"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
                     variant="primary"
                     type="submit"
                     disabled={isSubmitting}
-                    className="form-submit-button"
+                    className="action-button"
                   >
                     {isSubmitting ? "Creating Project Run..." : "Create Project Run"}
                   </Button>

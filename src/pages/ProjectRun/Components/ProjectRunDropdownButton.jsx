@@ -18,10 +18,10 @@ const ProjectRunDropdownButton = ({ projectName, projectRunName, isDisabled = fa
     navigate("/delete-projectrun");
   };
 
-  const handleCreateProjectRun = () => {
+  const handleCreateModel = () => {
     if (isDisabled) return;
-    navigate("/create-projectrun", {
-      state: { projectName: projectName }
+    navigate("/create-model", {
+      state: { projectName: projectName, projectRunName: projectRunName }
     });
   };
 
@@ -38,7 +38,7 @@ const ProjectRunDropdownButton = ({ projectName, projectRunName, isDisabled = fa
           }}
           onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
           onMouseUp={(e) => e.currentTarget.style.color = 'white'}
-          onClick={handleCreateProjectRun}
+          onClick={handleCreateModel}
         >
           + Add Model
         </button>

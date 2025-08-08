@@ -219,7 +219,7 @@ const ProjectDashboardPage = () => {
           {/* Project Runs - Highlighted as important activities */}
           <Col lg={12} className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-              <h3 className="section-title">Activities (Runs)</h3>
+              <h3 className="section-title">Project Runs</h3>
             </div>
             <Card className="dashboard-card highlight-card">
               <Card.Header className="d-flex justify-content-between align-items-center highlight-header">
