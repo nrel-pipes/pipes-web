@@ -111,7 +111,11 @@ const ProjectRunPage = () => {
           </Col>
           {!isGraphExpanded && (
             <Col sm={4} className="border-start text-start ml-4 data-view-col">
-              <DataViewComponent selected={selectedModel} />
+              <DataViewComponent
+                selected={selectedModel}
+                projectRun={projectRun}
+                showProjectRunData={!selectedModel}
+              />
             </Col>
           )}
         </Row>

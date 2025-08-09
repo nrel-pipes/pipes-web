@@ -38,13 +38,50 @@ const nodeHeight = 130;
 const scenarioNodeWidth = 320;
 
 export function createEdgesOverview(edges) {
+  // Track used IDs to ensure uniqueness
+  const usedIds = new Set();
+  const usedHandles = new Set();
+  
   return edges.map((edge, index) => {
+    // Create unique edge ID
+    let baseId = edge.from_model + "_" + edge.to_model;
+    let uniqueId = baseId;
+    let counter = 1;
+    
+    while (usedIds.has(uniqueId)) {
+      uniqueId = `${baseId}_${counter}`;
+      counter++;
+    }
+    usedIds.add(uniqueId);
+    
+    // Create unique target handle
+    let baseTargetHandle = edge.to_model + "_input_" + edge.from_model;
+    let uniqueTargetHandle = baseTargetHandle;
+    counter = 1;
+    
+    while (usedHandles.has(uniqueTargetHandle)) {
+      uniqueTargetHandle = `${baseTargetHandle}_${counter}`;
+      counter++;
+    }
+    usedHandles.add(uniqueTargetHandle);
+    
+    // Create unique source handle
+    let baseSourceHandle = edge.from_model + "_output_" + edge.to_model;
+    let uniqueSourceHandle = baseSourceHandle;
+    counter = 1;
+    
+    while (usedHandles.has(uniqueSourceHandle)) {
+      uniqueSourceHandle = `${baseSourceHandle}_${counter}`;
+      counter++;
+    }
+    usedHandles.add(uniqueSourceHandle);
+    
     return {
-      id: edge.from_model + "_" + edge.to_model,
+      id: uniqueId,
       source: edge.from_model,
       target: edge.to_model,
-      targetHandle: edge.to_model + "_input_" + edge.from_model,
-      sourceHandle: edge.from_model + "_output_" + edge.to_model,
+      targetHandle: uniqueTargetHandle,
+      sourceHandle: uniqueSourceHandle,
       style: {},
       data: edge.description,
       animated: false,
@@ -166,6 +203,48 @@ export function createNodesOverview(models, modelRuns, lastCheckIns, edges) {
     }
     numCheckIns = Math.floor(Math.random() * 200) + 1;
 
+    // Track used handle IDs to ensure uniqueness
+    const usedInputHandles = new Set();
+    const usedOutputHandles = new Set();
+    
+    // Create unique handles for inputs
+    const uniqueInputs = edges
+      .filter((edge) => edge.to_model === model.name)
+      .map((e, idx) => {
+        // Create base handle ID
+        const baseHandleId = model.name + "_input_" + e.from_model;
+        let uniqueHandleId = baseHandleId;
+        let counter = 1;
+        
+        // Make the handle ID unique if needed
+        while (usedInputHandles.has(uniqueHandleId)) {
+          uniqueHandleId = `${baseHandleId}_${counter}`;
+          counter++;
+        }
+        
+        usedInputHandles.add(uniqueHandleId);
+        return uniqueHandleId;
+      });
+    
+    // Create unique handles for outputs
+    const uniqueOutputs = edges
+      .filter((edge) => edge.from_model === model.name)
+      .map((e, idx) => {
+        // Create base handle ID
+        const baseHandleId = model.name + "_output_" + e.to_model;
+        let uniqueHandleId = baseHandleId;
+        let counter = 1;
+        
+        // Make the handle ID unique if needed
+        while (usedOutputHandles.has(uniqueHandleId)) {
+          uniqueHandleId = `${baseHandleId}_${counter}`;
+          counter++;
+        }
+        
+        usedOutputHandles.add(uniqueHandleId);
+        return uniqueHandleId;
+      });
+
     return {
       id: model.name,
       data: {
@@ -176,12 +255,8 @@ export function createNodesOverview(models, modelRuns, lastCheckIns, edges) {
         total_handoffs: totalHandoffs,
         percentages: handoffProgress,
         handoffs: [{ value: 0, color: "", label: "" }],
-        inputs: edges
-          .filter((edge) => edge.to_model === model.name)
-          .map((e) => model.name + "_input_" + e.from_model),
-        outputs: edges
-          .filter((edge) => edge.from_model === model.name)
-          .map((e) => model.name + "_output_" + e.to_model),
+        inputs: uniqueInputs,  // Use the unique input handles
+        outputs: uniqueOutputs, // Use the unique output handles
         color: color,
       },
 
@@ -286,6 +361,7 @@ function getLayout(models, edges) {
       height: nodeHeight + 50,
     });
   });
+  
   if (edges.length > 0) {
     edges.forEach((edge) => {
       g.setEdge(edge.from_model, edge.to_model);
@@ -297,7 +373,7 @@ function getLayout(models, edges) {
       }
     });
   }
+  
   layout(g);
-
   return g._nodes;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   useEdgesState,
@@ -40,8 +40,8 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
     };
   }, []);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState();
-  const [edges, setEdges, onEdgesChange] = useEdgesState();
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const {
     data: models = [],
@@ -60,19 +60,47 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
 
   const [lastCheckIns, setLastCheckIns] = useState({});
 
-  function onSelect(s) {
-    if (selectedModel) {
-      selectedModel.style.boxShadow = null;
+  // Fixed onSelect handler to properly handle selection state
+  const onSelect = useCallback((selection) => {
+    // Clear previous selection if it exists
+    if (selectedModel && selectedModel.style) {
+      // Create a copy of the current nodes and remove highlighting
+      const updatedNodes = nodes.map(node => {
+        if (node.id === selectedModel.id) {
+          return {
+            ...node,
+            style: { ...node.style, boxShadow: null }
+          };
+        }
+        return node;
+      });
+      setNodes(updatedNodes);
     }
 
-    if (s.nodes[0] && s.nodes[0].type === "custom") {
-      s.nodes[0].style.boxShadow = "0px 0px 2px 3px rgba(255, 255, 255, 0.5)";
+    // Apply new selection if a node is selected
+    if (selection.nodes.length > 0 && selection.nodes[0].type === "custom") {
+      const selectedNode = selection.nodes[0];
 
-      setSelectedModel(s.nodes[0]);
+      // Update the nodes array with the new selection
+      const updatedNodes = nodes.map(node => {
+        if (node.id === selectedNode.id) {
+          return {
+            ...node,
+            style: {
+              ...(node.style || {}),
+              boxShadow: "0px 0px 2px 3px rgba(255, 255, 255, 0.5)"
+            }
+          };
+        }
+        return node;
+      });
+
+      setNodes(updatedNodes);
+      setSelectedModel(selectedNode);
     } else {
       setSelectedModel(null);
     }
-  }
+  }, [selectedModel, nodes, setNodes, setSelectedModel]);
 
   const nodeTypes = useMemo(() => {
     return {
@@ -145,13 +173,11 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
           elevateEdgesOnSelect={true}
           fitView={{ padding: 10.0}}
           nodesConnectable={false}
-          onInit={null}
         >
         </ReactFlow>
       </ReactFlowProvider>
     </div>
   );
-
 }
 
 export default GraphViewComponent;

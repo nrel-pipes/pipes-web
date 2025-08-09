@@ -1,5 +1,5 @@
 // External imports
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Import CSS file
 import "./DataViewComponent.css";
@@ -104,7 +104,7 @@ function renderValue(value, key) {
   }
 }
 
-export default function DataViewComponent({ selected }) {
+export default function DataViewComponent({ selected, projectRun, showProjectRunData }) {
   const { effectivePname, effectivePRname } = useDataStore();
   const [showInstructions, setShowInstructions] = useState(true);
 
@@ -173,7 +173,7 @@ export default function DataViewComponent({ selected }) {
         }
       });
     }
-  }, [models, getColor]); // Add proper dependencies
+  }, [models, getColor]);
 
   // Hide instructions when data is received
   useEffect(() => {
@@ -184,9 +184,88 @@ export default function DataViewComponent({ selected }) {
     }
   }, [selected, model]);
 
-  //
-  // Render
-  //
+  // If we should show project run data (no model selected)
+  if (showProjectRunData && projectRun) {
+    return (
+      <div className="data-view p-3 project-run-view">
+        <div className="project-run-header">
+          <h3 className="model-name">Project Run: {projectRun.name}</h3>
+        </div>
+
+        {projectRun.description && (
+          <div className="section-container">
+            <h5 className="section-title">Description</h5>
+            <p className="mb-0">{projectRun.description}</p>
+          </div>
+        )}
+
+        {projectRun.assumptions && projectRun.assumptions.length > 0 && (
+          <div className="section-container">
+            <h5 className="section-title">Assumptions</h5>
+            <div className="badge-list">
+              {projectRun.assumptions.map((assumption, idx) => (
+                <div key={idx} className="data-badge">{assumption}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {projectRun.scenarios && projectRun.scenarios.length > 0 && (
+          <div className="section-container">
+            <h5 className="section-title">Scenarios</h5>
+            <div className="badge-list">
+              {projectRun.scenarios.map((scenario, idx) => (
+                <div key={idx} className="data-badge">{scenario}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {projectRun.requirements && Object.keys(projectRun.requirements).length > 0 && (
+          <div className="section-container">
+            <h5 className="section-title">Requirements</h5>
+            <div className="requirements-list">
+              {Object.entries(projectRun.requirements).map(([key, value], idx) => (
+                <div key={idx} className="requirement-item">
+                  <strong>{key}:</strong>
+                  {typeof value === 'object' ? (
+                    <div className="nested-requirements">
+                      {Object.entries(value).map(([nestedKey, nestedValue], nestedIdx) => (
+                        <div key={nestedIdx} className="nested-requirement-item">
+                          <span>{nestedKey}:</span> &nbsp;
+                          <span>{nestedValue.toString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span>{value.toString()}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {projectRun.scheduled_start && (
+          <div className="section-container">
+            <h5 className="section-title">Scheduled Duration</h5>
+            <div className="duration-container">
+              <div className="duration-column">
+                <span className="duration-label">Start:</span>
+                <span>{new Date(projectRun.scheduled_start).toLocaleDateString()}</span>
+              </div>
+              <div className="duration-column">
+                <span className="duration-label">End:</span>
+                <span>{new Date(projectRun.scheduled_end).toLocaleDateString()}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ORIGINAL CODE FOR MODEL DISPLAY
   if (!model) {
     return (
       <div className="data-view-wrapper">
@@ -234,12 +313,16 @@ export default function DataViewComponent({ selected }) {
                     </tr>
                   </>
                 )}
-                {model.other && Object.keys(model.other).length > 0 && (
+                {model.other && Object.keys(model.other).filter(key => key !== 'color').length > 0 && (
                   <tr className="data-row">
                     <td className="key-cell">Other Info</td>
                     <td className="value-cell nested-content">
                       <div className="nested-table-wrapper">
-                        {renderTableData(model.other)}
+                        {renderTableData(
+                          Object.fromEntries(
+                            Object.entries(model.other).filter(([key]) => key !== 'color')
+                          )
+                        )}
                       </div>
                     </td>
                   </tr>
