@@ -17,12 +17,12 @@ import SiteNavbar from "./layouts/NavbarTop";
 import HomePage from "./pages/Home/HomePage";
 
 // Project
-import CreateProjectPage from "./pages/Project/CreateProjectPage";
-import DeleteProjectPage from "./pages/Project/DeleteProjectPage";
-import UpdateProjectPage from "./pages/Project/UpdateProjectPage";
+import CreateProjectPage from "./pages/Projects/CreateProjectPage";
+import DeleteProjectPage from "./pages/Projects/DeleteProjectPage";
+import UpdateProjectPage from "./pages/Projects/UpdateProjectPage";
 
 // Projects
-import ProjectBasicsPage from "./pages/Projects/ProjectListPage";
+import ListMyProjectsPage from "./pages/Projects/ListMyProjectsPage";
 
 // Project Milestones
 import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";
@@ -30,17 +30,22 @@ import ProjectMilestonesPage from "./pages/Milestones/ProjectMilestonesPage";
 // Project Dashboard
 import ProjectDashboardPage from "./pages/Dashboard/ProjectDashboardPage";
 
-// Project Run
-import CreateProjectRunPage from "./pages/ProjectRun/CreateProjectRunPage";
-import DeleteProjectRunPage from "./pages/ProjectRun/DeleteProjectRunPage";
-import ProjectRunPage from "./pages/ProjectRun/ProjectRunPage";
-import UpdateProjectRunPage from "./pages/ProjectRun/UpdateProjectRunPage";
-
 // Project Pipeline
 import ProjectPipeline from "./pages/Pipeline/ProjectPipelinePage";
 
 // Project Schedule
 import ProjectSchedulePage from "./pages/Schedule/ProjectSchedulePage";
+
+// Project Run
+import CreateProjectRunPage from "./pages/ProjectRuns/CreateProjectRunPage";
+import DeleteProjectRunPage from "./pages/ProjectRuns/DeleteProjectRunPage";
+import ProjectRunPage from "./pages/ProjectRuns/ProjectRunPage";
+import UpdateProjectRunPage from "./pages/ProjectRuns/UpdateProjectRunPage";
+
+// Model
+import CreateModelPage from "./pages/Models/CreateModelPage";
+import GetModelPage from "./pages/Models/GetModelPage";
+import ListModelsPage from "./pages/Models/ListModelsPage";
 
 // User
 import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
@@ -56,6 +61,13 @@ import TokensPage from "./pages/Account/TokensPage";
 // Users
 import UserEditPage from "./pages/Users/UserEditPage";
 import UserListPage from "./pages/Users/UserListPage";
+
+// Teams
+import CreateTeamPage from "./pages/Teams/CreateTeamPage";
+import DeleteTeamPage from "./pages/Teams/DeleteTeamPage";
+import GetTeamPage from "./pages/Teams/GetTeamPage";
+import ListTeamsPage from "./pages/Teams/ListTeamsPage";
+import UpdateTeamPage from "./pages/Teams/UpdateTeamPage";
 
 import useAuthStore from "./stores/AuthStore";
 
@@ -96,7 +108,7 @@ function App() {
                   path="/projects"
                   exact
                   element={
-                    isAuthenticated ? <ProjectBasicsPage /> : <Navigate to="/login" />
+                    isAuthenticated ? <ListMyProjectsPage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
@@ -120,10 +132,18 @@ function App() {
                     isAuthenticated ? <ProjectPipeline /> : <Navigate to="/login" />
                   }
                 />
-                <Route path="/create-project" element={<CreateProjectPage />} />
-                <Route path="/create-projectrun" element={<CreateProjectRunPage />} />
-                <Route path="/update-project" element={<UpdateProjectPage />} />
-                <Route path="/delete-project" element={<DeleteProjectPage />} />
+                <Route path="/create-project" element={
+                  isAuthenticated ? <CreateProjectPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/create-projectrun" element={
+                  isAuthenticated ? <CreateProjectRunPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/update-project" element={
+                  isAuthenticated ? <UpdateProjectPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/delete-project" element={
+                  isAuthenticated ? <DeleteProjectPage /> : <Navigate to="/login" />
+                } />
 
                 {/* Project run route */}
                 <Route
@@ -131,11 +151,34 @@ function App() {
                   exect
                   element={isAuthenticated ? <ProjectRunPage /> : <Navigate to="/login" />}
                 />
-                <Route path="/update-projectrun" element={<UpdateProjectRunPage />} />
-                <Route path="/delete-projectrun" element={<DeleteProjectRunPage />} />
+                <Route path="/update-projectrun" element={
+                  isAuthenticated ? <UpdateProjectRunPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/delete-projectrun" element={
+                  isAuthenticated ? <DeleteProjectRunPage /> : <Navigate to="/login" />
+                } />
 
                 {/* Milestones route */}
                 <Route path="/milestones" element={<ProjectMilestonesPage />} />
+
+                {/* Model route */}
+                <Route
+                  path="/models"
+                  exact
+                  element={
+                    isAuthenticated ? <ListModelsPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/model"
+                  exact
+                  element={
+                    isAuthenticated ? <GetModelPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route path="/create-model" element={
+                  isAuthenticated ? <CreateModelPage /> : <Navigate to="/login" />
+                } />
 
                 {/* User auth routes */}
                 <Route
@@ -158,6 +201,30 @@ function App() {
                 <Route path="/users" element={<UserListPage />} />
                 <Route path="/users/edit/:userEmail" element={
                   isAuthenticated ? <UserEditPage /> : <Navigate to="/login" />
+                } />
+
+                {/* Team routes */}
+                <Route
+                  path="/teams"
+                  exact
+                  element={
+                    isAuthenticated ? <ListTeamsPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="/teams/:projectName/:teamName"
+                  element={
+                    isAuthenticated ? <GetTeamPage /> : <Navigate to="/login" />
+                  }
+                />
+                <Route path="/create-team" element={
+                  isAuthenticated ? <CreateTeamPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/update-team" element={
+                  isAuthenticated ? <UpdateTeamPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/delete-team" element={
+                  isAuthenticated ? <DeleteTeamPage /> : <Navigate to="/login" />
                 } />
               </Routes>
             </div>

@@ -1,20 +1,21 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Calendar, Check, FileText, Layers, Lightbulb, List, Minus, Plus, Users, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Minus, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useCreateProjectMutation } from "../../hooks/useProjectQuery";
+import { useGetProjectQuery, useUpdateProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import useDataStore from "../../stores/DataStore";
-import { useCreateProjectFormStore } from "../../stores/FormStore/ProjectStore";
+import { useUpdateProjectFormStore } from "../../stores/FormStore/ProjectStore";
 import ContentHeader from "../Components/ContentHeader";
+import ProjectUpdateCancelButton from "./Components/ProjectUpdateCancelButton";
 
 import "../Components/Cards.css";
 import "../FormStyles.css";
@@ -27,8 +28,6 @@ const StepBasicInfo = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Basic Info</h4>
-
       <div className="form-content-section">
         <div className="form-field-group">
           <Form.Label className="form-field-label required-field">
@@ -36,9 +35,10 @@ const StepBasicInfo = () => {
           </Form.Label>
           <Form.Control
             id="projectName"
-            className="form-control-lg form-primary-input"
+            className="form-control-lg form-primary-input bg-light"
             isInvalid={!!errors.name}
             {...register("name", { required: "Project name (identifier) is required" })}
+            readOnly
           />
           {errors.name && (
             <Form.Control.Feedback type="invalid">
@@ -129,8 +129,6 @@ const StepProjectOwner = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Project Owner</h4>
-
       <div className="form-content-section">
         <div className="form-field-group">
           <Form.Label className="form-field-label required-field">
@@ -138,7 +136,7 @@ const StepProjectOwner = () => {
           </Form.Label>
           <Form.Control
             id="firstName"
-            className="form-control-lg form-primary-input"
+            className="form-control-lg form-primary-input bg-light"
             isInvalid={!!errors.owner?.first_name}
             {...register("owner.first_name", { required: "First name is required" })}
           />
@@ -155,7 +153,7 @@ const StepProjectOwner = () => {
           </Form.Label>
           <Form.Control
             id="lastName"
-            className="form-control-lg form-primary-input"
+            className="form-control-lg form-primary-input bg-light"
             isInvalid={!!errors.owner?.last_name}
             {...register("owner.last_name", { required: "Last name is required" })}
           />
@@ -211,35 +209,46 @@ const StepProjectOwner = () => {
 };
 
 const StepRequirements = () => {
-  const { getValues, setValue } = useFormContext();
+  const { setValue, watch } = useFormContext();
   const [requirements, setRequirements] = useState([{ key: "", value: "", isObject: false, subItems: [{ key: "", value: "" }] }]);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const formRequirements = watch("requirements");
 
   // Load existing requirements from the form state into the component's local state
   useEffect(() => {
-    const formValues = getValues("requirements");
-    if (formValues && Object.keys(formValues).length > 0) {
-      const reqsArray = Object.entries(formValues).map(([key, value]) => {
-        const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
-        return {
-          key,
-          value: isObject ? "" : String(value),
-          isObject,
-          subItems: isObject ? Object.entries(value).map(([subKey, subValue]) => ({ key: subKey, value: String(subValue) })) : [{ key: "", value: "" }]
-        };
-      });
-      if (reqsArray.length > 0) {
-        setRequirements(reqsArray);
+    // This effect should only run once to initialize the component from the form's state.
+    if (formRequirements && !isInitialized) {
+      const formValues = formRequirements || {};
+      if (Object.keys(formValues).length > 0) {
+        const reqsArray = Object.entries(formValues).map(([key, value]) => {
+          const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
+          return {
+            key,
+            value: isObject ? "" : String(value),
+            isObject,
+            subItems: isObject ? Object.entries(value).map(([subKey, subValue]) => ({ key: subKey, value: String(subValue) })) : [{ key: "", value: "" }]
+          };
+        });
+        if (reqsArray.length > 0) {
+          setRequirements(reqsArray);
+        }
       }
+      setIsInitialized(true);
     }
-  }, []); // Run only once on mount
+  }, [formRequirements, isInitialized]);
 
   // Update the main form state whenever the local requirements state changes
   useEffect(() => {
+    // Do not run this effect on the initial render until the component is initialized.
+    if (!isInitialized) return;
+
     const newRequirementsObject = requirements.reduce((acc, req) => {
-      if (req.key) {
+      // Only add valid requirements to the form state.
+      // A requirement is valid if its key is not empty.
+      if (req.key && req.key.trim() !== "") {
         if (req.isObject) {
           acc[req.key] = req.subItems.reduce((subAcc, subItem) => {
-            if (subItem.key) {
+            if (subItem.key && subItem.key.trim() !== "") {
               const numValue = Number(subItem.value);
               subAcc[subItem.key] = isNaN(numValue) || subItem.value.trim() === '' ? subItem.value : numValue;
             }
@@ -252,8 +261,8 @@ const StepRequirements = () => {
       }
       return acc;
     }, {});
-    setValue("requirements", newRequirementsObject, { shouldDirty: true });
-  }, [requirements, setValue]);
+    setValue("requirements", newRequirementsObject, { shouldDirty: true, shouldValidate: true });
+  }, [requirements, setValue, isInitialized]);
 
   const addRequirement = () => {
     setRequirements([...requirements, { key: "", value: "", isObject: false, subItems: [{ key: "", value: "" }] }]);
@@ -295,7 +304,6 @@ const StepRequirements = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Project Requirements</h4>
       <p className="form-section-description">Define key-value pairs. Values can be simple text/numbers or nested objects.</p>
 
       {requirements.map((requirement, index) => (
@@ -445,8 +453,6 @@ const StepScenarios = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Project Scenarios</h4>
-
       {scenarios.map((scenario, scenarioIndex) => (
         <div key={scenarioIndex} className="card-item">
           <div className="card-item-header">
@@ -625,8 +631,6 @@ const StepMilestones = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Project Milestones</h4>
-
       {milestones.map((milestone, milestoneIndex) => (
         <div key={milestoneIndex} className="card-item">
           <div className="card-item-header">
@@ -747,7 +751,6 @@ const StepAssumptions = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Project Assumptions</h4>
       <div style={{ textAlign: 'left', width: '100%' }} className="mb-3">List of Assumptions</div>
       {assumptions.map((assumption, index) => (
         <div key={index} className="d-flex mb-3 align-items-center gap-2">
@@ -830,8 +833,6 @@ const StepSensitivities = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Project Sensitivities</h4>
-
       {sensitivities.map((sensitivity, sensitivityIndex) => (
         <div key={sensitivityIndex} className="card-item">
           <div className="card-item-header">
@@ -911,15 +912,13 @@ const StepReview = () => {
 
   return (
     <div className="form-container">
-      <h4 className="form-section-title">Review Your Project</h4>
       <div className="review-intro-note">
-        <p>Your form data is <b>TEMPORARILY </b> saved in your browser's local storage before submtting it. Please review all information and submit to PIPES server for permanent storage.</p>
+        <p>Your form data is <b>TEMPORARILY </b> saved in your browser's local storage before submitting it. Please review all information and submit to PIPES server for permanent storage.</p>
       </div>
 
       <div className="review-section">
         <div className="review-section-header">
           <h5 className="review-section-title">
-            <FileText size={18} className="review-section-icon" />
             Basic Info
           </h5>
         </div>
@@ -956,7 +955,6 @@ const StepReview = () => {
       <div className="review-section">
         <div className="review-section-header">
           <h5 className="review-section-title">
-            <Users size={18} className="review-section-icon" />
             Project Owner
           </h5>
         </div>
@@ -986,7 +984,6 @@ const StepReview = () => {
         <div className="review-section">
           <div className="review-section-header">
             <h5 className="review-section-title">
-              <List size={18} className="review-section-icon" />
               Requirements
             </h5>
           </div>
@@ -1024,7 +1021,6 @@ const StepReview = () => {
         <div className="review-section">
           <div className="review-section-header">
             <h5 className="review-section-title">
-              <Layers size={18} className="review-section-icon" />
               Scenarios
             </h5>
           </div>
@@ -1074,7 +1070,6 @@ const StepReview = () => {
         <div className="review-section">
           <div className="review-section-header">
             <h5 className="review-section-title">
-              <Calendar size={18} className="review-section-icon" />
               Milestones
             </h5>
           </div>
@@ -1109,7 +1104,6 @@ const StepReview = () => {
         <div className="review-section">
           <div className="review-section-header">
             <h5 className="review-section-title">
-              <Lightbulb size={18} className="review-section-icon" />
               Assumptions
             </h5>
           </div>
@@ -1142,7 +1136,6 @@ const StepReview = () => {
         <div className="review-section">
           <div className="review-section-header">
             <h5 className="review-section-title">
-              <Zap size={18} className="review-section-icon" />
               Sensitivities
             </h5>
           </div>
@@ -1173,20 +1166,22 @@ const StepReview = () => {
       )}
 
       <div className="review-submit-note">
-        <p>Once you click "Submit", your project will be created and you'll be redirected to the project dashboard.</p>
+        <p>Once you click "Update Project", your project will be updated and you'll be redirected to the project dashboard.</p>
       </div>
     </div>
   );
 };
 
 // Main component with updated layout
-const CreateProjectPage = () => {
+const UpdateProjectPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { checkAuthStatus } = useAuthStore();
-  const { setEffectivePname } = useDataStore();
+  const { setEffectivePname, effectivePname } = useDataStore();
+  const { projectName } = useParams();
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isProjectLoading, setIsProjectLoading] = useState(true);
 
   const {
     projectFormData,
@@ -1197,7 +1192,10 @@ const CreateProjectPage = () => {
     addCompletedStep,
     resetCompletedSteps,
     resetForm
-  } = useCreateProjectFormStore();
+  } = useUpdateProjectFormStore();
+
+  // Fetch existing project data
+  const projectQuery = useGetProjectQuery(projectName || effectivePname);
 
   // Update the reset function to use the resetForm function
   const resetProjectForm = () => {
@@ -1207,32 +1205,82 @@ const CreateProjectPage = () => {
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
-  const mutation = useCreateProjectMutation();
+  const mutation = useUpdateProjectMutation();
 
-  // Form default values - use persisted data if available
-  const defaultValues = projectFormData || {
-    name: "",
-    title: "", // Add title field
-    description: "",
-    scheduled_start: "",
-    scheduled_end: "",
-    assumptions: [""],
-    milestones: [],
-    owner: {
-      email: "",
-      first_name: "",
-      last_name: "",
-      organization: ""
-    },
-    scenarios: [],
-    requirements: {},
-    sensitivities: []
+  // Transform project data for form consumption
+  const cleanProjectDataForForm = (projectData) => {
+    if (!projectData) return {};
+
+    return {
+      name: projectData.name || "",
+      title: projectData.title || "",
+      description: projectData.description || "",
+      scheduled_start: projectData.scheduled_start ? projectData.scheduled_start.split('T')[0] : "",
+      scheduled_end: projectData.scheduled_end ? projectData.scheduled_end.split('T')[0] : "",
+      owner: {
+        email: projectData.owner?.email || "",
+        first_name: projectData.owner?.first_name || "",
+        last_name: projectData.owner?.last_name || "",
+        organization: projectData.owner?.organization || ""
+      },
+      requirements: projectData.requirements || {},
+      scenarios: projectData.scenarios?.map(scenario => ({
+        name: scenario.name || "",
+        description: [scenario.description || ""],
+        other: scenario.other ? Object.entries(scenario.other) : []
+      })) || [],
+      milestones: projectData.milestones?.map(milestone => ({
+        name: milestone.name || "",
+        description: [milestone.description || ""],
+        milestone_date: milestone.milestone_date ? milestone.milestone_date.split('T')[0] : ""
+      })) || [],
+      assumptions: projectData.assumptions || [""],
+      sensitivities: projectData.sensitivities?.map(sensitivity => ({
+        name: sensitivity.name || "",
+        description: [sensitivity.description || ""]
+      })) || []
+    };
   };
+
+  // Form default values - use project data if available, otherwise use persisted update form data
+  const defaultValues = useMemo(() => {
+    if (projectQuery.data) {
+      return cleanProjectDataForForm(projectQuery.data);
+    }
+    return projectFormData || {
+      name: "",
+      title: "",
+      description: "",
+      scheduled_start: "",
+      scheduled_end: "",
+      assumptions: [""],
+      milestones: [],
+      owner: {
+        email: "",
+        first_name: "",
+        last_name: "",
+        organization: ""
+      },
+      scenarios: [],
+      requirements: {},
+      sensitivities: []
+    };
+  }, [projectQuery.data, projectFormData]);
 
   const methods = useForm({
     defaultValues,
     mode: "onChange"
   });
+
+  // Reset form when project data changes
+  useEffect(() => {
+    if (projectQuery.data) {
+      const transformedData = cleanProjectDataForForm(projectQuery.data);
+      methods.reset(transformedData);
+      setProjectFormData(transformedData);
+      setIsProjectLoading(false);
+    }
+  }, [projectQuery.data, methods, setProjectFormData]);
 
   // Save form data to Zustand store whenever it changes
   useEffect(() => {
@@ -1321,16 +1369,6 @@ const CreateProjectPage = () => {
     setFormErrorMessage("");
     setErrorDetails([]);
 
-    const projectBasicsFromCache = queryClient.getQueryData(["project-basics"]);
-    if (projectBasicsFromCache) {
-      const names = projectBasicsFromCache.map(project => project.name);
-      if (names.includes(data.name)) {
-        setFormError(true);
-        setFormErrorMessage(`Project with "${data.name}" already exists. Please choose a unique name.`);
-        return;
-      }
-    }
-
     // Create a clean copy of the data for submission
     const formattedData = {
       ...data,
@@ -1341,8 +1379,36 @@ const CreateProjectPage = () => {
       }
     };
 
-    // Handle requirements - remove if empty
-    if (!data.requirements || Object.keys(data.requirements).length === 0) {
+    // Handle requirements - remove if empty or key is empty
+    if (data.requirements && Object.keys(data.requirements).length > 0) {
+      const cleanedRequirements = Object.fromEntries(
+        Object.entries(data.requirements)
+          // Filter out top-level entries with empty keys
+          .filter(([key]) => key && key.trim() !== "")
+          .map(([key, value]) => {
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              const cleanedSubItems = Object.fromEntries(
+                Object.entries(value).filter(([subKey]) => subKey && subKey.trim() !== "")
+              );
+              return [key, cleanedSubItems];
+            }
+            return [key, value];
+          })
+          // Filter out entries where the value is an empty object
+          .filter(([key, value]) => {
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              return Object.keys(value).length > 0;
+            }
+            return true; // Keep non-object values
+          })
+      );
+
+      if (Object.keys(cleanedRequirements).length > 0) {
+        formattedData.requirements = cleanedRequirements;
+      } else {
+        delete formattedData.requirements;
+      }
+    } else {
       delete formattedData.requirements;
     }
 
@@ -1418,7 +1484,9 @@ const CreateProjectPage = () => {
       delete formattedData.sensitivities;
     }
 
-    mutation.mutate({ data: formattedData });
+    // Use the project name from params or effectivePname for the update
+    const projectToUpdate = projectName || effectivePname;
+    mutation.mutate({ projectName: projectToUpdate, data: formattedData });
   };
 
   useEffect(() => {
@@ -1426,7 +1494,7 @@ const CreateProjectPage = () => {
       if (mutation.data.name) {
         setEffectivePname(mutation.data.name);
       }
-      // Clear form data on successful submission
+      // Only clear form data on successful submission
       resetProjectForm();
       navigate("/project/dashboard");
     }
@@ -1434,12 +1502,14 @@ const CreateProjectPage = () => {
     if (mutation.isError) {
       setFormError(true);
       // Set a generic error heading that doesn't duplicate the details
-      setFormErrorMessage("Error creating project");
+      setFormErrorMessage("Error updating project");
       // Get detailed error information
       setErrorDetails(parseErrorResponse(mutation.error));
 
       // Scroll to top to make error visible
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Don't clear form data on error - preserve user changes for retry
     }
   }, [mutation.isSuccess, mutation.isError, mutation.data, mutation.error, setEffectivePname, navigate]);
 
@@ -1489,45 +1559,16 @@ const CreateProjectPage = () => {
   };
 
   const goToStep = (stepIndex) => {
-    // Allow going to Review step if all previous steps are completed
-    if (stepIndex === steps.length - 1) {
-      // Check if all previous steps are completed
-      const allPreviousStepsCompleted = Array.from(
-        { length: steps.length - 1 },
-        (_, i) => i
-      ).every(i => completedSteps.includes(i));
-
-      if (allPreviousStepsCompleted) {
-        setCurrentStep(stepIndex);
-        setFormError(false);
-        setFormErrorMessage("");
-        return;
-      }
-    }
-
-    // Original logic for other steps
-    if (completedSteps.includes(stepIndex) || stepIndex === currentStep) {
-      setCurrentStep(stepIndex);
-      setFormError(false);
-      setFormErrorMessage("");
-    }
+    // For update page, allow navigation to any step
+    setCurrentStep(stepIndex);
+    setFormError(false);
+    setFormErrorMessage("");
   };
 
   const progressPercentage = Math.round(((completedSteps.length + (currentStep > Math.max(...completedSteps || [-1]) ? 1 : 0)) / steps.length) * 100);
 
-  const stepIcons = [
-    <FileText size={18} />,
-    <Users size={18} />,
-    <List size={18} />,
-    <Layers size={18} />,
-    <Calendar size={18} />,
-    <Lightbulb size={18} />,
-    <Zap size={18} />,
-    <Check size={18} />
-  ];
-
-  // Don't render content until auth check is complete
-  if (isAuthChecking) {
+  // Don't render content until auth check is complete and project is loaded
+  if (isAuthChecking || isProjectLoading || projectQuery.isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
         <div className="spinner-border text-primary" role="status">
@@ -1537,106 +1578,123 @@ const CreateProjectPage = () => {
     );
   }
 
+  // Handle project not found
+  if (projectQuery.isError) {
+    return (
+      <>
+        <NavbarSub navData={{ pList: true, pUpdate: true }} />
+        <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+          <Row className="w-100 mx-0">
+            <ContentHeader title="Update Project"/>
+          </Row>
+          <div className="alert alert-danger">
+            <h4>Project Not Found</h4>
+            <p>The project you are trying to update could not be found.</p>
+            <Button variant="primary" onClick={() => navigate("/projects")}>
+              Go to Project List
+            </Button>
+          </div>
+        </Container>
+      </>
+    );
+  }
+
   return (
     <>
-      <NavbarSub navData={{ pList: true, pCreate: true }} />
+      <NavbarSub navData={{ pList: true, pName: effectivePname, toUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Create Project"/>
+          <ContentHeader
+            title={`Update Project: ${projectQuery.data?.name || ''}`}
+            headerButton={<ProjectUpdateCancelButton />}
+          />
         </Row>
 
-        <div className="create-project-container">
-          <div className="step-sidebar">
+        <div className="px-3 py-2">
+          <div className="step-form-container">
 
-            <div className="progress-indicator">
-              <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
-            </div>
-
-            <div className="step-navigation">
-              {steps.map((step, i) => (
+            {/* Progress Bar */}
+            <div className="progress-wrapper">
+              <div className="progress">
                 <div
-                  key={i}
-                  className={`step-item ${currentStep === i ? 'active' : ''} ${completedSteps.includes(i) ? 'completed' : ''}`}
-                >
-                  <button
-                    className="step-button"
-                    onClick={() => goToStep(i)}
-                    disabled={!completedSteps.includes(i) && i !== currentStep && i !== steps.length - 1}
-                  >
-                    <span className="step-icon">
-                      {completedSteps.includes(i) ? <Check size={16} /> : stepIcons[i]}
-                    </span>
-                    <span className="step-title">{step.title}</span>
-                  </button>
-                </div>
-              ))}
+                  className="progress-bar progress-bar-striped"
+                  role="progressbar"
+                  style={{ width: `${progressPercentage}%` }}
+                  aria-valuenow={progressPercentage}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                />
+              </div>
             </div>
+
+            {/* Step Navigation */}
+            <ul className="nav nav-pills nav-justified step-nav">
+              {steps.map((step, i) => (
+                <li key={i} className="nav-item">
+                  <button
+                    type="button"
+                    onClick={() => goToStep(i)}
+                    className={`nav-link ${currentStep === i ? 'active' : ''} ${completedSteps.includes(i) ? 'completed' : ''} clickable`}
+                  >
+                    {step.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="form-content-container">
-            {/* Error Alert - Displayed at the top of the form */}
-            {formError && (
-              <div className="error-container mb-4 text-start">
-                <div className="alert alert-danger">
-                  <h5 className="alert-heading text-start">{formErrorMessage}</h5>
-                  {errorDetails.length > 0 && (
-                    <div className="mt-2">
-                      <ul className="error-details-list mb-0 ps-3">
-                        {errorDetails.map((detail, idx) => (
-                          <li key={idx}>{detail}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+          {/* Error Alert - Displayed at the top of the form */}
+          {formError && (
+            <div className="error-container mb-4 text-start">
+              <div className="alert alert-danger">
+                <h5 className="alert-heading text-start">{formErrorMessage}</h5>
+                {errorDetails.length > 0 && (
+                  <div className="mt-2">
+                    <ul className="error-details-list mb-0 ps-3">
+                      {errorDetails.map((detail, idx) => (
+                        <li key={idx}>{detail}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          )}
 
-            <FormProvider {...methods}>
-              <Form>
-                {steps[currentStep].component}
+          <FormProvider {...methods}>
+            <Form>
+              {steps[currentStep].component}
 
-                <div className="form-action-buttons">
+              <div className="mt-5 d-flex justify-content-between form-action-buttons">
+                <Button
+                  variant="outline-secondary"
+                  onClick={prevStep}
+                  disabled={currentStep === 0}
+                  className="action-button"
+                >
+                  Previous
+                </Button>
+
+                <div className="action-buttons-right">
                   <Button
-                    variant="outline-secondary"
-                    onClick={prevStep}
-                    disabled={currentStep === 0}
+                    style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
+                    variant="primary"
+                    onClick={saveAndContinue}
+                    disabled={mutation.isPending}
                     className="action-button"
                   >
-                    Previous
+                    {currentStep === steps.length - 1
+                      ? (mutation.isPending ? "Updating..." : "Update Project")
+                      : "Save & Continue"}
                   </Button>
-
-                  <div className="action-buttons-right">
-                    <Button
-                      style={{ borderColor: "#0079c2", color: "#0079c2" }}
-                      variant="outline-primary"
-                      onClick={saveFormData}
-                      disabled={mutation.isPending}
-                      className="action-button me-2"
-                    >
-                      Save
-                    </Button>
-
-                    <Button
-                      style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
-                      variant="primary"
-                      onClick={saveAndContinue}
-                      disabled={mutation.isPending}
-                      className="action-button"
-                    >
-                      {currentStep === steps.length - 1
-                        ? (mutation.isPending ? "Creating..." : "Create Project")
-                        : "Save & Continue"}
-                    </Button>
-                  </div>
                 </div>
-              </Form>
-            </FormProvider>
-          </div>
+              </div>
+            </Form>
+          </FormProvider>
         </div>
       </Container>
     </>
   );
 };
 
-export default CreateProjectPage;
+export default UpdateProjectPage;

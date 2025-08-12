@@ -18,30 +18,8 @@ const ProjectRunDropdownButton = ({ projectName, projectRunName, isDisabled = fa
     navigate("/delete-projectrun");
   };
 
-  const handleCreateModel = () => {
-    if (isDisabled) return;
-    navigate("/create-model", {
-      state: { projectName: projectName, projectRunName: projectRunName }
-    });
-  };
-
   return (
     <div className="content-header-actions d-flex justify-content-end">
-      <button
-          className={`btn create-run-button me-3 ${isDisabled ? 'disabled' : ''}`}
-          style={{
-            backgroundColor: 'rgb(71, 148, 218)',
-            color: 'white',
-            fontWeight: 'bold',
-            width: '180px',
-            height: '50px',
-          }}
-          onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
-          onMouseUp={(e) => e.currentTarget.style.color = 'white'}
-          onClick={handleCreateModel}
-        >
-          + Add Model
-        </button>
         <Dropdown>
           <Dropdown.Toggle
             variant="primary"

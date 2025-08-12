@@ -7,13 +7,14 @@ import './styles/NavbarSub.css';
 const NavbarSub = ({ navData }) => {
   const {
     pList, pName, pGraph, pSchedule, pmAll,
-    pCreate, toUpdate, toDelete,
-    prName, prCreate
+    pCreate, tList, tName, toUpdate, toDelete,
+    prName, prCreate, mCreate, mList
   } = navData || {};
 
   if (
-      pList || pName || pGraph || pSchedule  || pmAll ||
-      pCreate || prName || prCreate || toUpdate || toDelete
+      pList || pName || pGraph || pSchedule  || pmAll || pCreate ||
+      prName || prCreate || tList || tName ||
+      mCreate || mList || toUpdate || toDelete
     ) {
     return (
       <div className="navbar-sub">
@@ -104,6 +105,60 @@ const NavbarSub = ({ navData }) => {
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Project Run</Nav.Link>
               </Nav.Item>
+              </>
+            )}
+
+            {mCreate && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Model</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {mList && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="/models" className="rounded-box">Models</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {tList && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="/teams" className="rounded-box">Teams</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {tName && (
+              <>
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+                <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <Nav.Link as={Link} to={`/teams?project=${pName}&team=${tName}`} className="active rounded-box">
+                    Team ({tName})
+                  </Nav.Link>
+                </Nav.Item>
               </>
             )}
 

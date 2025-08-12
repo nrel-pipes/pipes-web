@@ -38,7 +38,7 @@ const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
           onMouseUp={(e) => e.currentTarget.style.color = 'white'}
           onClick={handleCreateProjectRun}
         >
-          + Add Project Run
+          + Create Project Run
         </button>
         <Dropdown>
           <Dropdown.Toggle
