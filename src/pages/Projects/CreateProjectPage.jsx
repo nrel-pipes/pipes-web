@@ -1153,7 +1153,7 @@ const StepReview = () => {
       )}
 
       <div className="review-submit-note">
-        <p>Once you click "Submit", your project will be created and you'll be redirected to the project dashboard.</p>
+        <p>Once you click "Create Project", your project will be created and you'll be redirected to the project dashboard.</p>
       </div>
     </div>
   );
