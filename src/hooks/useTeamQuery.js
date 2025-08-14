@@ -17,7 +17,7 @@ export const useListTeamsQuery = (projectName, options = {}) => {
     queryKey: ["teams", projectName],
     queryFn: async () => {
       const params = projectName ? { project: projectName } : {};
-      const response = await AxiosInstance.get("/api/teams/", { params });
+      const response = await AxiosInstance.get("/api/teams", { params });
       return response.data;
     },
     enabled: !!projectName && (options.enabled !== false),
