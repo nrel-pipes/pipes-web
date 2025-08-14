@@ -324,16 +324,11 @@ const ListMyProjectsPage = () => {
                               textAlign: 'left'
                             }}>
                               {(() => {
-                                if (currentUser?.first_name && currentUser?.last_name) {
-                                  return `${currentUser.first_name} ${currentUser.last_name}`;
-                                } else if (currentUser?.first_name) {
-                                  return currentUser.first_name;
-                                } else if (currentUser?.last_name) {
-                                  return currentUser.last_name;
-                                } else if (currentUser?.name) {
-                                  return currentUser.name;
-                                } else if (currentUser?.email) {
-                                  return currentUser.email;
+                                const owner = project.owner || {};
+                                if (owner.first_name && owner.last_name) {
+                                  return `${owner.first_name} ${owner.last_name}`;
+                                } else if (owner.email) {
+                                  return owner.email;
                                 } else {
                                   return 'Unknown';
                                 }
