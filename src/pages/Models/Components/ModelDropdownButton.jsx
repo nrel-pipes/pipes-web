@@ -12,10 +12,11 @@ const ModelDropdownButton = ({ isDisabled = false }) => {
 
     const searchParams = new URLSearchParams(location.search);
     const projectName = searchParams.get('project');
+    const projectRunName = searchParams.get('projectrun');
     const modelName = searchParams.get('model');
 
-    if (projectName && modelName) {
-      navigate(`/update-model?project=${encodeURIComponent(projectName)}&model=${encodeURIComponent(modelName)}`);
+    if (projectName && projectRunName && modelName) {
+      navigate(`/update-model?project=${encodeURIComponent(projectName)}&projectrun=${encodeURIComponent(projectRunName)}&model=${encodeURIComponent(modelName)}`);
     } else {
       // Fallback - redirect to models list if parameters are missing
       navigate("/models");
@@ -25,13 +26,14 @@ const ModelDropdownButton = ({ isDisabled = false }) => {
   const handleDeleteModel = () => {
     const searchParams = new URLSearchParams(location.search);
     const projectName = searchParams.get('project');
+    const projectRunName = searchParams.get('projectrun');
     const modelName = searchParams.get('model');
 
-    if (projectName && modelName) {
-      navigate(`/delete-model?project=${encodeURIComponent(projectName)}&model=${encodeURIComponent(modelName)}`);
+    if (projectName && projectRunName && modelName) {
+      navigate(`/delete-model?project=${encodeURIComponent(projectName)}&projectrun=${encodeURIComponent(projectRunName)}&model=${encodeURIComponent(modelName)}`);
     } else {
       // Fallback to using store values
-      navigate(`/delete-model?project=${encodeURIComponent(projectName)}&model=${encodeURIComponent(modelName || 'unknown')}`);
+      navigate(`/models?project=${encodeURIComponent(projectName)}`);
     }
   };
 

@@ -63,8 +63,8 @@ const ListModelsPage = () => {
     navigate("/create-model");
   };
 
-  const handleViewModelClick = (modelName) => {
-    navigate(`/model?project=${encodeURIComponent(effectivePname)}&model=${encodeURIComponent(modelName)}`);
+  const handleViewModelClick = (projectRunName, modelName) => {
+    navigate(`/model?project=${encodeURIComponent(effectivePname)}&projectrun=${encodeURIComponent(projectRunName)}&model=${encodeURIComponent(modelName)}`);
   };
 
   if (isLoading) {
@@ -137,7 +137,13 @@ const ListModelsPage = () => {
       <NavbarSub navData={{pList: true, pName: effectivePname, mList: true}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Models" cornerMark={models.length} headerButton={<ModelCreationButton />} />
+          <ContentHeader
+            title="Models"
+            cornerMark={models.length}
+            headerButton={
+              <ModelCreationButton isDisabled={effectivePname === 'pipes101'} />
+            }
+          />
         </Row>
 
         {/* Models Table */}
@@ -219,10 +225,17 @@ const ListModelsPage = () => {
                     </thead>
                     <tbody>
                       {models.map((model, index) => (
-                        <tr key={model.id || model.name || index} style={{
-                          borderBottom: '1px solid var(--bs-border-color)',
-                          color: 'var(--bs-body-color)'
-                        }}>
+                        <tr
+                          key={[
+                            model.context?.project || '',
+                            model.context?.projectrun || '',
+                            model.name || index
+                          ].join(':')}
+                          style={{
+                            borderBottom: '1px solid var(--bs-border-color)',
+                            color: 'var(--bs-body-color)'
+                          }}
+                        >
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
@@ -278,7 +291,7 @@ const ListModelsPage = () => {
                               className="btn btn-sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleViewModelClick(model.name);
+                                handleViewModelClick(model.context.projectrun, model.name);
                               }}
                               style={{
                                 fontWeight: '500',

@@ -8,13 +8,13 @@ const NavbarSub = ({ navData }) => {
   const {
     pList, pName, pGraph, pSchedule, pmAll,
     pCreate, tList, tName, toUpdate, toDelete,
-    prName, prCreate, mCreate, mList
+    prName, prCreate, mCreate, mList, mName
   } = navData || {};
 
   if (
       pList || pName || pGraph || pSchedule  || pmAll || pCreate ||
       prName || prCreate || tList || tName ||
-      mCreate || mList || toUpdate || toDelete
+      mCreate || mList || mName || toUpdate || toDelete
     ) {
     return (
       <div className="navbar-sub">
@@ -131,6 +131,26 @@ const NavbarSub = ({ navData }) => {
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Nav.Link as={Link} to="/models" className="rounded-box">Models</Nav.Link>
               </Nav.Item>
+              </>
+            )}
+
+            {/* Show project name if provided */}
+            {mName && (
+              <>
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+                <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <Nav.Link
+                    as={Link}
+                    to={`/model?project=${pName}&projectrun=${prName}&model=${mName}`}
+                    className="active rounded-box"
+                  >
+                    Model ({mName})
+                  </Nav.Link>
+                </Nav.Item>
               </>
             )}
 

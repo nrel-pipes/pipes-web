@@ -222,11 +222,11 @@ const ProjectDashboardPage = () => {
           {/* Project Runs - Highlighted as important activities */}
           <Col lg={12} className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-              <h3 className="section-title" style={{ fontSize: "1.5rem" }}>Project Runs</h3>
+              <h3 className="section-title" style={{ fontSize: "1.5rem" }}>Activities</h3>
             </div>
             <Card className="dashboard-card highlight-card">
               <Card.Header className="d-flex justify-content-between align-items-center highlight-header">
-                <h4 className="smallCaps mb-0" style={{color: '#fff'}}>Project Runs</h4>
+                <h4 className="smallCaps mb-0">Project Runs</h4>
                 <Badge bg="primary" pill>{projectRuns?.length || 0}</Badge>
               </Card.Header>
               <Card.Body className="dashboard-card-body">

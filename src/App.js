@@ -44,8 +44,11 @@ import UpdateProjectRunPage from "./pages/ProjectRuns/UpdateProjectRunPage";
 
 // Model
 import CreateModelPage from "./pages/Models/CreateModelPage";
+import CreateModelPreparePage from "./pages/Models/CreateModelPreparePage";
+import DeleteModelPage from "./pages/Models/DeleteModelPage";
 import GetModelPage from "./pages/Models/GetModelPage";
 import ListModelsPage from "./pages/Models/ListModelsPage";
+import UpdateModelPage from "./pages/Models/UpdateModelPage";
 
 // User
 import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
@@ -178,6 +181,15 @@ function App() {
                 />
                 <Route path="/create-model" element={
                   isAuthenticated ? <CreateModelPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/delete-model" element={
+                  isAuthenticated ? <DeleteModelPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/create-model-prepare" element={
+                  isAuthenticated ? <CreateModelPreparePage /> : <Navigate to="/login" />
+                } />
+                <Route path="/update-model" element={
+                  isAuthenticated ? <UpdateModelPage /> : <Navigate to="/login" />
                 } />
 
                 {/* User auth routes */}

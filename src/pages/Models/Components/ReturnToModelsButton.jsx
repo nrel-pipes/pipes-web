@@ -1,19 +1,18 @@
-import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const ModelCreationButton = ({ isDisabled = false }) => {
+const ReturnToModelsButton = ({ isDisabled = false }) => {
   const navigate = useNavigate();
 
-  const handleCreateModel = () => {
+  const handleReturnToModels = () => {
     if (isDisabled) return;
-    navigate("/create-model-prepare");
+    navigate("/models");
   };
 
   return (
     <div className="content-header-actions d-flex justify-content-end">
       <button
         className="btn btn-primary px-4 py-3"
-        onClick={handleCreateModel}
+        onClick={handleReturnToModels}
         disabled={isDisabled}
         style={{
           backgroundColor: '#0079c2',
@@ -26,11 +25,10 @@ const ModelCreationButton = ({ isDisabled = false }) => {
           opacity: isDisabled ? 0.65 : 1
         }}
       >
-        <Plus size={20} className="me-2" />
-        Create Model
+        ← Back to Models
       </button>
     </div>
   );
 }
 
-export default ModelCreationButton;
+export default ReturnToModelsButton;

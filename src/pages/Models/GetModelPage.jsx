@@ -24,10 +24,11 @@ const GetModelPage = () => {
 
   const modelName = searchParams.get('model');
   const projectName = searchParams.get('project') || effectivePname;
+  const projectRunName = searchParams.get('projectrun');
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  const { data: model, isLoading, error } = useGetModelQuery(projectName, modelName);
+  const { data: model, isLoading, error } = useGetModelQuery(projectName, projectRunName, modelName);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -120,7 +121,7 @@ const GetModelPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, mList: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mName: modelName }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader

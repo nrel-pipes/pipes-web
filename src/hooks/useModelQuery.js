@@ -104,15 +104,16 @@ export const useCreateModelMutation = () => {
   });
 };
 
-// Delete team API function
-const deleteTeam = async ({ projectName, teamName }) => {
+// Delete model API function
+const deleteModel = async ({ projectName, projectRunName, modelName }) => {
   try {
     const params = {
       project: projectName,
-      team: teamName
+      projectrun: projectRunName,
+      model: modelName
     };
 
-    const response = await AxiosInstance.delete('/api/teams', { params });
+    const response = await AxiosInstance.delete('/api/models', { params });
     return response.data;
   } catch (error) {
     // Enhanced error logging with details
@@ -131,37 +132,43 @@ const deleteTeam = async ({ projectName, teamName }) => {
   }
 };
 
-export const useDeleteTeamMutation = () => {
+export const useDeleteModelMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteTeam,
+    mutationFn: deleteModel,
     onSuccess: (data, variables) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({
-        queryKey: ["teams", variables.projectName]
+        queryKey: ["models", variables.projectName, variables.projectRunName]
       });
 
-      // Also invalidate specific team query
+      // Also invalidate queries without projectRunName to refresh general model lists
       queryClient.invalidateQueries({
-        queryKey: ["team", variables.projectName, variables.teamName]
+        queryKey: ["models", variables.projectName]
       });
 
-      // Remove the deleted team from cache
+      // Also invalidate specific model query
+      queryClient.invalidateQueries({
+        queryKey: ["model", variables.projectName, variables.modelName]
+      });
+
+      // Remove the deleted model from cache
       queryClient.removeQueries({
-        queryKey: ["team", variables.projectName, variables.teamName]
+        queryKey: ["model", variables.projectName, variables.modelName]
       });
     },
     onError: (error) => {
-      console.error("Failed to delete team:", error);
+      console.error("Failed to delete model:", error);
     }
   });
 };
 
-export const getModel = async (projectName, modelName) => {
+export const getModel = async (projectName, projectRunName, modelName) => {
   try {
     const params = {
       project: projectName,
+      projectrun: projectRunName,
       model: modelName
     };
 
@@ -173,16 +180,16 @@ export const getModel = async (projectName, modelName) => {
   }
 };
 
-export const useGetModelQuery = (projectName, modelName, options = {}) => {
+export const useGetModelQuery = (projectName, projectRunName, modelName, options = {}) => {
   return useQuery({
-    queryKey: ["model", projectName, modelName],
+    queryKey: ["model", projectName, projectRunName, modelName],
     queryFn: async () => {
-      if (!projectName || !modelName) {
-        throw new Error("Project name and model name are required");
+      if (!projectName || !projectRunName || !modelName) {
+        throw new Error("Project name, project run name, and model name are required");
       }
-      return await getModel(projectName, modelName);
+      return await getModel(projectName, projectRunName, modelName);
     },
-    enabled: !!(projectName && modelName),
+    enabled: !!(projectName && projectRunName && modelName),
     retry: (failureCount, error) => {
       // Don't retry 4xx errors
       if (error.response && error.response.status >= 400 && error.response.status < 500) {
@@ -199,6 +206,62 @@ export const useGetModelQuery = (projectName, modelName, options = {}) => {
       console.error("Error in model query:", error);
     },
     ...options
+  });
+};
+
+// Update model API function
+const updateModel = async ({ projectName, projectRunName, modelName, data }) => {
+  try {
+    const params = {
+      project: projectName,
+      projectrun: projectRunName,
+      model: modelName
+    };
+
+    const response = await AxiosInstance.patch('/api/models', data, { params });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error("Server responded with error:", {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+    } else if (error.request) {
+      console.error("No response received:", error.request);
+    } else {
+      console.error("Error setting up request:", error.message);
+    }
+    throw error;
+  }
+};
+
+export const useUpdateModelMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateModel,
+    onSuccess: (data, variables) => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({
+        queryKey: ["models", variables.projectName, variables.projectRunName]
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["models", variables.projectName]
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["model", variables.projectName, variables.projectRunName, variables.modelName]
+      });
+
+      queryClient.removeQueries({
+        queryKey: ["model", variables.projectName, variables.projectRunName, variables.modelName]
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to update model:", error);
+    }
   });
 };
 
