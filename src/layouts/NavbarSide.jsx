@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FaAngleDoubleLeft,
   FaBars,
   FaCalendarAlt,
+  FaCube,
   FaFlag,
   FaKey,
   FaLayerGroup,
@@ -11,6 +12,7 @@ import {
   FaSignOutAlt,
   FaTachometerAlt,
   FaUser,
+  FaUserFriends,
   FaUsers
 } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
@@ -52,13 +54,13 @@ const Sidebar = () => {
   // Function to determine if a link should be disabled
   const getNavItemClass = (path) => {
     // Check if this is a project-specific page that should be disabled
-    const shouldDisable = ['/project/dashboard', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected;
+    const shouldDisable = ['/project/dashboard', '/models', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected;
     return `${isActive(path)} ${shouldDisable ? 'disabled' : ''}`;
   };
 
   // Function to handle click on disabled links
   const handleNavClick = (e, path) => {
-    if (['/project/dashboard', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected) {
+    if (['/project/dashboard', '/models', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected) {
       e.preventDefault();
     }
   };
@@ -101,6 +103,17 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
+              to="/models"
+              className={getNavItemClass("/models")}
+              title={projectSelected ? "Models" : "Select a project first"}
+              onClick={(e) => handleNavClick(e, "/models")}
+            >
+              <span className="icon"><FaCube /></span>
+              {expanded && <span className="nav-text">Models</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/project/pipeline"
               className={getNavItemClass("/project/pipeline")}
               title={projectSelected ? "Pipeline" : "Select a project first"}
@@ -119,6 +132,12 @@ const Sidebar = () => {
             >
               <span className="icon"><FaCalendarAlt /></span>
               {expanded && <span className="nav-text">Schedule</span>}
+            </Link>
+          </li>
+          <li>
+            <Link to="/teams" className={isActive("/teams")} title="Teams">
+              <span className="icon"><FaUserFriends /></span>
+              {expanded && <span className="nav-text">Teams</span>}
             </Link>
           </li>
 

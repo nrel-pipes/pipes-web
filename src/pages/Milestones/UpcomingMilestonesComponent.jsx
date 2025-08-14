@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import Table from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
 import useDataStore from "../../stores/DataStore";
@@ -85,11 +85,43 @@ const UpcomingMilestonesComponent = ({ projectBasics }) => {
       <div className="milestone-container">
         <Table striped bordered hover className="milestone-table" responsive>
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Project</th>
-              <th>Milestone</th>
-              <th>Description</th>
+            <tr style={{ borderTop: '3px solid #0071b8' }}>
+              <th scope="col" style={{
+                  padding: '1.5rem 1.5rem',
+                  fontWeight: '700',
+                  color: 'var(--bs-gray-700)',
+                  border: 'none',
+                  borderBottom: '1px solid var(--bs-border-color)',
+                  textAlign: 'left',
+                  width: '15%'
+              }}>Date</th>
+              <th scope="col" style={{
+                  padding: '1.5rem 1.5rem',
+                  fontWeight: '700',
+                  color: 'var(--bs-gray-700)',
+                  border: 'none',
+                  borderBottom: '1px solid var(--bs-border-color)',
+                  textAlign: 'left',
+                  width: '15%'
+              }}>Project</th>
+              <th scope="col" style={{
+                  padding: '1.5rem 1.5rem',
+                  fontWeight: '700',
+                  color: 'var(--bs-gray-700)',
+                  border: 'none',
+                  borderBottom: '1px solid var(--bs-border-color)',
+                  textAlign: 'left',
+                  width: '15%'
+              }}>Milestone</th>
+              <th scope="col" style={{
+                  padding: '1.5rem 1.5rem',
+                  fontWeight: '700',
+                  color: 'var(--bs-gray-700)',
+                  border: 'none',
+                  borderBottom: '1px solid var(--bs-border-color)',
+                  textAlign: 'left',
+                  width: '15%'
+              }}>Description</th>
             </tr>
           </thead>
           <tbody>

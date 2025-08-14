@@ -1,17 +1,7 @@
 /* Modern Page Layout with horizontal navigation */
-.create-project-container {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 120px);
-  background-color: #f8f9fa;
-  width: 100%;
-}
-
 /* Horizontal Step Navigation - spread across page */
-.step-sidebar {
+.step-form-container {
   background-color: white;
-  border-bottom: 1px solid #e9ecef;
-  padding: 1.25rem 1.5rem;
   width: 100%;
 }
 
