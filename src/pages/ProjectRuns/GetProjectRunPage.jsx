@@ -6,7 +6,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
 import "../PageStyles.css";
-import "./ProjectRunPage.css";
+import "./GetProjectRunPage.css";
 
 import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
 import useAuthStore from "../../stores/AuthStore";
@@ -23,7 +23,7 @@ import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
-const ProjectRunPage = () => {
+const GetProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { checkAuthStatus } = useAuthStore();
@@ -134,4 +134,4 @@ const ProjectRunPage = () => {
   );
 };
 
-export default ProjectRunPage;
+export default GetProjectRunPage;

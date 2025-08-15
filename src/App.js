@@ -39,7 +39,7 @@ import ProjectSchedulePage from "./pages/Schedule/ProjectSchedulePage";
 // Project Run
 import CreateProjectRunPage from "./pages/ProjectRuns/CreateProjectRunPage";
 import DeleteProjectRunPage from "./pages/ProjectRuns/DeleteProjectRunPage";
-import ProjectRunPage from "./pages/ProjectRuns/ProjectRunPage";
+import GetProjectRunPage from "./pages/ProjectRuns/GetProjectRunPage";
 import UpdateProjectRunPage from "./pages/ProjectRuns/UpdateProjectRunPage";
 
 // Model
@@ -152,7 +152,7 @@ function App() {
                 <Route
                   path="/projectrun"
                   exect
-                  element={isAuthenticated ? <ProjectRunPage /> : <Navigate to="/login" />}
+                  element={isAuthenticated ? <GetProjectRunPage /> : <Navigate to="/login" />}
                 />
                 <Route path="/update-projectrun" element={
                   isAuthenticated ? <UpdateProjectRunPage /> : <Navigate to="/login" />
