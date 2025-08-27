@@ -182,7 +182,7 @@ const ProjectDashboardPage = () => {
                 <div className="metadata-item">
                   <span className="metadata-label">Owner:</span>
                   <span className="metadata-value mb-2">
-                    <label style={{ color: "green"}} className="project-name">
+                    <label style={{ color: "green"}}>
                       {getOwnerDisplayName(project.owner)}
                     </label>
                   </span>
