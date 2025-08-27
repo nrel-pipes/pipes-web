@@ -26,7 +26,7 @@ import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
 import useDataStore from "../../stores/DataStore";
 
 import ContentHeader from "../Components/ContentHeader";
-import ProjectDropdownButton from "./Components/ProjectDropdownButton";
+import ProjectContentHeaderButton from "./Components/ProjectContentHeaderButton";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
@@ -158,14 +158,14 @@ const ProjectDashboardPage = () => {
 
   // NOTE: Hard-coded. Check if delete should be disabled for pipes101 project
   // Allow deletion if user is a superuser, otherwise disable for pipes101
-  const isDropdownButtonDisabled = project.name === 'pipes101' && currentUser?.is_superuser !== true;
+  const isContentHeaderButtonDisabled = project.name === 'pipes101' && currentUser?.is_superuser !== true;
 
   return (
     <>
       <NavbarSub navData={{ pList: true, pName: effectivePname }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Project Dashboard" headerButton={<ProjectDropdownButton projectName={project.name} isDisabled={isDropdownButtonDisabled} />} />
+          <ContentHeader title="Project Dashboard" headerButton={<ProjectContentHeaderButton projectName={project.name} isDisabled={isContentHeaderButtonDisabled} />} />
         </Row>
         <Row className="dashboard-header mb-4">
           <Col lg={8}>

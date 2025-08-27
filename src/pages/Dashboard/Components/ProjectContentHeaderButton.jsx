@@ -3,7 +3,7 @@ import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 
-const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
+const ProjectContentHeaderButton = ({ projectName, isDisabled = false }) => {
   const navigate = useNavigate();
 
   const handleUpdateProject = () => {
@@ -31,7 +31,6 @@ const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
             backgroundColor: 'rgb(71, 148, 218)',
             color: 'white',
             fontWeight: 'bold',
-            width: '180px',
             height: '50px',
           }}
           onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
@@ -74,4 +73,4 @@ const ProjectDropdownButton = ({ projectName, isDisabled = false }) => {
   );
 }
 
-export default ProjectDropdownButton;
+export default ProjectContentHeaderButton;
