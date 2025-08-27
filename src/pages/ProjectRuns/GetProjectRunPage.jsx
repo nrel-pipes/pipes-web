@@ -14,7 +14,7 @@ import useDataStore from "../../stores/DataStore";
 
 import DataViewComponent from "./Components/DataViewComponent";
 import GraphViewComponent from "./Components/GraphViewComponent";
-import ProjectRunDropdownButton from "./Components/ProjectRunDropdownButton";
+import ProjectRunContentHeaderButton from "./Components/ProjectRunContentHeaderButton";
 
 import NavbarSub from "../../layouts/NavbarSub";
 import ContentHeader from "../Components/ContentHeader";
@@ -100,7 +100,7 @@ const GetProjectRunPage = () => {
       <NavbarSub navData = {{pList: true, pName: effectivePname, prName: projectRun.name}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Project Run" cornerMark={projectRun.name} headerButton={<ProjectRunDropdownButton projectName={effectivePname} projectRunName={effectivePRname} />} />
+          <ContentHeader title="Project Run" cornerMark={projectRun.name} headerButton={<ProjectRunContentHeaderButton projectName={effectivePname} projectRunName={effectivePRname} />} />
         </Row>
         <Row id="projectrun-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
           <Col md={isGraphExpanded ? 12 : 8}>
