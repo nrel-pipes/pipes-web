@@ -16,7 +16,7 @@ import ContentHeader from '../Components/ContentHeader';
 
 import "../Components/Cards.css";
 import "../PageStyles.css";
-import ModelCreationButton from "./Components/CreateModelButton";
+
 
 const ListModelsPage = () => {
   const { checkAuthStatus } = useAuthStore();
@@ -105,7 +105,7 @@ const ListModelsPage = () => {
         <NavbarSub/>
         <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
           <Row className="w-100 mx-0">
-            <ContentHeader title="Models" cornerMark={models.length} headerButton={<ModelCreationButton />} />
+            <ContentHeader title="Models" cornerMark={models.length}/>
           </Row>
           <div className="empty-state-container">
             <div className="empty-state-card">
@@ -140,9 +140,6 @@ const ListModelsPage = () => {
           <ContentHeader
             title="Models"
             cornerMark={models.length}
-            headerButton={
-              <ModelCreationButton isDisabled={effectivePname === 'pipes101'} />
-            }
           />
         </Row>
 

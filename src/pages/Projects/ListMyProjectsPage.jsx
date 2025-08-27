@@ -282,7 +282,7 @@ const ListMyProjectsPage = () => {
                             textAlign: 'center',
                             width: '10%'
                           }}>
-                            Actions
+                            Created on
                           </th>
                         </tr>
                       </thead>
@@ -299,7 +299,17 @@ const ListMyProjectsPage = () => {
                               textAlign: 'left',
                               fontWeight: '500'
                             }}>
-                              {project.name}
+                              <a
+                                href="#"
+                                style={{ color: '#0071b8', textDecoration: 'underline', cursor: 'pointer' }}
+                                onClick={e => {
+                                  e.preventDefault();
+                                  setEffectivePname(project.name);
+                                  navigate("/project/dashboard");
+                                }}
+                              >
+                                {project.name}
+                              </a>
                             </td>
                             <td style={{
                               padding: '1rem 1.5rem',
@@ -339,32 +349,14 @@ const ListMyProjectsPage = () => {
                               border: 'none',
                               textAlign: 'center'
                             }}>
-                              <button
-                                className="btn btn-sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleProjectClick(e, project);
-                                }}
-                                style={{
-                                  fontWeight: '500',
-                                  padding: '0.5rem 1rem',
-                                  borderRadius: 'var(--bs-border-radius)',
-                                  fontSize: '0.875rem',
-                                  backgroundColor: '#0079c2',
-                                  borderColor: '#0079c2',
-                                  color: 'white'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = '#005a94';
-                                  e.target.style.borderColor = '#005a94';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = '#0079c2';
-                                  e.target.style.borderColor = '#0079c2';
-                                }}
-                              >
-                                Go to Dashboard
-                              </button>
+                              {project.created_at
+                                ? (() => {
+                                    const d = new Date(project.created_at);
+                                    return isNaN(d.getTime())
+                                      ? 'Unknown'
+                                      : d.toISOString().slice(0, 10);
+                                  })()
+                                : 'Unknown'}
                             </td>
                           </tr>
                         ))}
