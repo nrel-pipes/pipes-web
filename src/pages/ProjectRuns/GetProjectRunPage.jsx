@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -10,7 +10,6 @@ import "./GetProjectRunPage.css";
 
 import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 
 import DataViewComponent from "./Components/DataViewComponent";
 import GraphViewComponent from "./Components/GraphViewComponent";
@@ -24,10 +23,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
 const GetProjectRunPage = () => {
-  const navigate = useNavigate();
+  const { projectRunName } = useParams();
   const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
+
+  const navigate = useNavigate();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname, effectivePRname } = useDataStore();
 
   const [selectedModel, setSelectedModel] = useState(null);
   const [isGraphExpanded, setIsGraphExpanded] = useState(false);
@@ -40,13 +42,11 @@ const GetProjectRunPage = () => {
     location.state?.projectRun || null
   );
 
-  const shouldFetchProjectRun = !projectRunFromState && !!effectivePname && !!effectivePRname;
-
   const { data: projectRunFetched, isLoading } = useGetProjectRunQuery(
-    effectivePname,
-    effectivePRname,
+    projectName,
+    projectRunName,
     {
-      enabled: shouldFetchProjectRun
+      enabled: !projectRunFromState
     }
   );
 
@@ -63,9 +63,6 @@ const GetProjectRunPage = () => {
           return;
         }
 
-        if (!projectRun && !projectRunFromState) {
-          navigate("/projects");
-        }
       } catch (error) {
         console.error("Authentication error:", error);
         navigate("/login");
@@ -97,14 +94,16 @@ const GetProjectRunPage = () => {
 
   return (
     <>
-      <NavbarSub navData = {{pList: true, pName: effectivePname, prName: projectRun.name}} />
+      <NavbarSub navData = {{pList: true, pName: projectName, prName: projectRun.name}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Project Run" cornerMark={projectRun.name} headerButton={<ProjectRunContentHeaderButton projectName={effectivePname} projectRunName={effectivePRname} />} />
+          <ContentHeader title="Project Run" cornerMark={projectRun.name} headerButton={<ProjectRunContentHeaderButton projectName={projectName} projectRunName={projectRun.name} />} />
         </Row>
         <Row id="projectrun-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
           <Col md={isGraphExpanded ? 12 : 8}>
             <GraphViewComponent
+              projectName={projectName}
+              projectRunName={projectRunName}
               selectedModel={selectedModel}
               setSelectedModel={setSelectedModel}
             />

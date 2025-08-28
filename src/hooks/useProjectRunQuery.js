@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import useDataStore from '../stores/DataStore';
 import AxiosInstance from './AxiosInstance';
 
 // All Project Runs
@@ -191,16 +190,10 @@ const updateProjectRun = async ({ projectName, projectRunName, data }) => {
 
 export const useUpdateProjectRunMutation = () => {
   const queryClient = useQueryClient();
-  const { setEffectivePRname } = useDataStore();
 
   return useMutation({
     mutationFn: updateProjectRun,
     onSuccess: (data, variables) => {
-      // Update the effective project run name if the name changed
-      if (data.name && data.name !== variables.projectRunName) {
-        setEffectivePRname(data.name);
-      }
-
       // Invalidate relevant queries
       queryClient.invalidateQueries({
         queryKey: ["project-runs", variables.projectName]
@@ -259,16 +252,10 @@ const deleteProjectRun = async ({ projectName, projectRunName }) => {
 
 export const useDeleteProjectRunMutation = () => {
   const queryClient = useQueryClient();
-  const { effectivePRname, setEffectivePRname } = useDataStore();
 
   return useMutation({
     mutationFn: deleteProjectRun,
     onSuccess: (data, variables) => {
-      // Clear effectivePRname in DataStore if the deleted project run is currently selected
-      if (effectivePRname === variables.projectRunName) {
-        setEffectivePRname(null);
-      }
-
       // Invalidate relevant queries
       queryClient.invalidateQueries(["project-runs", variables.projectName]);
 

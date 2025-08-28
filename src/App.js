@@ -44,7 +44,7 @@ import UpdateProjectRunPage from "./pages/ProjectRuns/UpdateProjectRunPage";
 
 // Model
 import CreateModelPage from "./pages/Models/CreateModelPage";
-import CreateModelPreparePage from "./pages/Models/CreateModelPreparePage";
+import CreateModelStartPage from "./pages/Models/CreateModelStartPage";
 import DeleteModelPage from "./pages/Models/DeleteModelPage";
 import GetModelPage from "./pages/Models/GetModelPage";
 import ListModelsPage from "./pages/Models/ListModelsPage";
@@ -115,49 +115,49 @@ function App() {
                   }
                 />
                 <Route
-                  path="/project/dashboard"
-                  exact
+                  path="/dashboard"
                   element={
                     isAuthenticated ? <ProjectDashboardPage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
-                  path="/project/schedule"
-                  exact
+                  path="/schedule"
                   element={
                     isAuthenticated ? <ProjectSchedulePage /> : <Navigate to="/login" />
                   }
                 />
                 <Route
-                  path="/project/pipeline"
-                  exact
+                  path="/pipeline"
                   element={
                     isAuthenticated ? <ProjectPipeline /> : <Navigate to="/login" />
                   }
                 />
-                <Route path="/create-project" element={
+                <Route path="/project/new" element={
                   isAuthenticated ? <CreateProjectPage /> : <Navigate to="/login" />
                 } />
-                <Route path="/create-projectrun" element={
-                  isAuthenticated ? <CreateProjectRunPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/update-project" element={
+                <Route path="/project/update" element={
                   isAuthenticated ? <UpdateProjectPage /> : <Navigate to="/login" />
                 } />
-                <Route path="/delete-project" element={
+                <Route path="/project/delete" element={
                   isAuthenticated ? <DeleteProjectPage /> : <Navigate to="/login" />
                 } />
 
                 {/* Project run route */}
+                <Route path="/projectrun/new" element={
+                  isAuthenticated ? <CreateProjectRunPage /> : <Navigate to="/login" />
+                } />
                 <Route
-                  path="/projectrun"
-                  exect
-                  element={isAuthenticated ? <GetProjectRunPage /> : <Navigate to="/login" />}
+                  path="/projectrun/:projectRunName"
+                  element={
+                    isAuthenticated
+                      ? <GetProjectRunPage />
+                      : <Navigate to="/login" />
+                  }
                 />
-                <Route path="/update-projectrun" element={
+                <Route path="/projectrun/:projectRunName/update" element={
                   isAuthenticated ? <UpdateProjectRunPage /> : <Navigate to="/login" />
                 } />
-                <Route path="/delete-projectrun" element={
+                <Route path="/projectrun/:projectRunName/delete" element={
                   isAuthenticated ? <DeleteProjectRunPage /> : <Navigate to="/login" />
                 } />
 
@@ -166,30 +166,28 @@ function App() {
 
                 {/* Model route */}
                 <Route
-                  path="/models"
-                  exact
+                  path={`/models`}
                   element={
                     isAuthenticated ? <ListModelsPage /> : <Navigate to="/login" />
                   }
                 />
+                <Route path="/model/startnew" element={
+                  isAuthenticated ? <CreateModelStartPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/model/new" element={
+                  isAuthenticated ? <CreateModelPage /> : <Navigate to="/login" />
+                } />
                 <Route
-                  path="/model"
-                  exact
+                  path="/model/:modelName"
                   element={
                     isAuthenticated ? <GetModelPage /> : <Navigate to="/login" />
                   }
                 />
-                <Route path="/create-model" element={
-                  isAuthenticated ? <CreateModelPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/delete-model" element={
-                  isAuthenticated ? <DeleteModelPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/create-model-prepare" element={
-                  isAuthenticated ? <CreateModelPreparePage /> : <Navigate to="/login" />
-                } />
-                <Route path="/update-model" element={
+                <Route path="/model/:modelName/update" element={
                   isAuthenticated ? <UpdateModelPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/model/:modelName/delete" element={
+                  isAuthenticated ? <DeleteModelPage /> : <Navigate to="/login" />
                 } />
 
                 {/* User auth routes */}
@@ -218,24 +216,23 @@ function App() {
                 {/* Team routes */}
                 <Route
                   path="/teams"
-                  exact
                   element={
                     isAuthenticated ? <ListTeamsPage /> : <Navigate to="/login" />
                   }
                 />
+                <Route path="/team/new" element={
+                  isAuthenticated ? <CreateTeamPage /> : <Navigate to="/login" />
+                } />
                 <Route
-                  path="/teams/:projectName/:teamName"
+                  path="/team/:teamName"
                   element={
                     isAuthenticated ? <GetTeamPage /> : <Navigate to="/login" />
                   }
                 />
-                <Route path="/create-team" element={
-                  isAuthenticated ? <CreateTeamPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/update-team" element={
+                <Route path="/team/:teamName/update" element={
                   isAuthenticated ? <UpdateTeamPage /> : <Navigate to="/login" />
                 } />
-                <Route path="/delete-team" element={
+                <Route path="/team/:teamName/delete" element={
                   isAuthenticated ? <DeleteTeamPage /> : <Navigate to="/login" />
                 } />
               </Routes>

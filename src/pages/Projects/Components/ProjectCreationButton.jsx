@@ -7,7 +7,7 @@ const ProjectCreationButton = ({ isDisabled = false }) => {
 
   const handleCreateProject = () => {
     if (isDisabled) return;
-    navigate("/create-project");
+    navigate("/project/new");
   };
 
   return (
@@ -20,8 +20,7 @@ const ProjectCreationButton = ({ isDisabled = false }) => {
           borderColor: '#0079c2',
           fontSize: '1rem',
           fontWeight: 'bold',
-          borderRadius: '6px',
-          minWidth: '180px'
+          borderRadius: '6px'
         }}
       >
         <Plus size={20} className="me-2" />

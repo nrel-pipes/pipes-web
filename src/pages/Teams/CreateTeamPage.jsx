@@ -5,10 +5,9 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 import ContentHeader from "../Components/ContentHeader";
 import "../FormStyles.css";
 import "../PageStyles.css";
@@ -171,7 +170,9 @@ const MembersSection = ({ control, register, errors, watch, setValue }) => {
 const CreateTeamPage = () => {
   const navigate = useNavigate();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
@@ -297,12 +298,12 @@ const CreateTeamPage = () => {
 
     try {
       await mutation.mutateAsync({
-        projectName: effectivePname,
+        projectName: projectName,
         teamData: cleanedFormData
       });
 
       // Navigate to teams list on success
-      navigate('/teams');
+      navigate(`/teams?P=${encodeURIComponent(projectName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to create team");
@@ -333,7 +334,7 @@ const CreateTeamPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: effectivePname, tList: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, tList: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Create Team" />
@@ -408,7 +409,7 @@ const CreateTeamPage = () => {
                   <Button
                     variant="outline-secondary"
                     type="button"
-                    onClick={() => navigate('/teams')}
+                    onClick={() => navigate(`/teams?P=${encodeURIComponent(projectName)}`)}
                     className="action-button me-3"
                   >
                     Cancel

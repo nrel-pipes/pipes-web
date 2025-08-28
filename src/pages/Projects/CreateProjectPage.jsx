@@ -1408,7 +1408,7 @@ const CreateProjectPage = () => {
       }
       // Clear form data on successful submission
       resetProjectForm();
-      navigate("/project/dashboard");
+      navigate('/projects');
     }
 
     if (mutation.isError) {

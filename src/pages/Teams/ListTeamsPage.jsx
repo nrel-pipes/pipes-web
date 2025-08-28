@@ -11,9 +11,7 @@ import Row from "react-bootstrap/Row";
 import { useListTeamsQuery } from '../../hooks/useTeamQuery';
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 import ContentHeader from '../Components/ContentHeader';
-import GetTeamPage from "./GetTeamPage";
 
 import "../Components/Cards.css";
 import "../PageStyles.css";
@@ -22,12 +20,14 @@ import TeamCreationButton from "./Components/TeamCreationButton";
 
 const ListTeamsPage = () => {
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
   const location = useLocation();
   const navigate = useNavigate();
 
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get('P');
+
   // All hooks must be called before any conditional logic
-  const { data: teams = [], isLoading, error } = useListTeamsQuery(effectivePname);
+  const { data: teams = [], isLoading, error } = useListTeamsQuery(projectName);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,21 +46,12 @@ const ListTeamsPage = () => {
     checkAuth();
   }, [navigate, checkAuthStatus]);
 
-  // Check if we have query parameters for team details
-  const searchParams = new URLSearchParams(location.search);
-  const teamName = searchParams.get('team');
-
-  // If we have a team parameter, render the GetTeamPage instead
-  if (teamName) {
-    return <GetTeamPage />;
-  }
-
   const handleCreateTeamClick = () => {
-    navigate("/create-team");
+    navigate(`/team/new?P=${encodeURIComponent(projectName)}`);
   };
 
   const handleViewTeamClick = (teamName) => {
-    navigate(`/teams?project=${encodeURIComponent(effectivePname)}&team=${encodeURIComponent(teamName)}`);
+    navigate(`/team/${encodeURIComponent(teamName)}?P=${encodeURIComponent(projectName)}`);
   };
 
   if (isLoading) {
@@ -127,13 +118,13 @@ const ListTeamsPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{pList: true, pName: effectivePname, tList: true}} />
+      <NavbarSub navData={{pList: true, pName: projectName, tList: true}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader
             title="Teams"
             cornerMark={teams.length}
-            headerButton={<TeamCreationButton isDisabled={effectivePname === "pipes101"} />}
+            headerButton={<TeamCreationButton isDisabled={projectName === "pipes101"} />}
           />
         </Row>
 
@@ -232,7 +223,7 @@ const ListTeamsPage = () => {
                             color: 'var(--bs-gray-600)',
                             textAlign: 'left'
                           }}>
-                            {effectivePname || 'N/A'}
+                            {projectName || 'N/A'}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',

@@ -6,7 +6,7 @@ const ModelCreationButton = ({ isDisabled = false }) => {
 
   const handleCreateModel = () => {
     if (isDisabled) return;
-    navigate("/create-model-prepare");
+    navigate("/model/startnew");
   };
 
   return (
@@ -21,7 +21,6 @@ const ModelCreationButton = ({ isDisabled = false }) => {
           fontSize: '1rem',
           fontWeight: 'bold',
           borderRadius: '6px',
-          minWidth: '180px',
           cursor: isDisabled ? 'not-allowed' : 'pointer',
           opacity: isDisabled ? 0.65 : 1
         }}

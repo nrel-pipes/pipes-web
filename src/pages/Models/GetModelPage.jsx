@@ -5,26 +5,25 @@ import { Badge, Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { useGetModelQuery } from "../../hooks/useModelQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 import ContentHeader from "../Components/ContentHeader";
 
 import "../PageStyles.css";
-import ModelDropdownButton from "./Components/ModelDropdownButton";
+import ModelContentHeaderButton from "./Components/ModelContentHeaderButton";
 
 const GetModelPage = () => {
   const navigate = useNavigate();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
-  const [searchParams] = useSearchParams();
+  const { modelName } = useParams();
 
-  const modelName = searchParams.get('model');
-  const projectName = searchParams.get('project') || effectivePname;
-  const projectRunName = searchParams.get('projectrun');
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get('P');
+  const projectRunName = searchParams.get('p');
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
@@ -59,7 +58,7 @@ const GetModelPage = () => {
   };
 
   const handleBackToList = () => {
-    navigate('/models');
+    navigate(`/models?P=${projectName}&p=${projectRunName}`);
   };
 
   // Loading/auth/error states
@@ -126,7 +125,7 @@ const GetModelPage = () => {
         <Row className="w-100 mx-0">
           <ContentHeader
             title={model.display_name || model.name}
-            headerButton={<ModelDropdownButton isDisabled={effectivePname === 'pipes101'} />}
+            headerButton={<ModelContentHeaderButton isDisabled={projectName === 'pipes101'} />}
           />
         </Row>
         <Row className="mt-4">

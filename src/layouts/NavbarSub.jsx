@@ -37,7 +37,7 @@ const NavbarSub = ({ navData }) => {
                   size="xs"
                 />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="#" className="rounded-box">Create Project</Nav.Link>
+                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Project</Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -66,7 +66,7 @@ const NavbarSub = ({ navData }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/project/dashboard`}
+                    to={`/dashboard?P=${encodeURIComponent(pName)}`}
                     className="active rounded-box"
                   >
                     Project ({pName})
@@ -86,7 +86,7 @@ const NavbarSub = ({ navData }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/projectrun`}
+                    to={`/projectrun/${encodeURIComponent(prName)}?P=${encodeURIComponent(pName)}`}
                     className="active rounded-box"
                   >
                     ProjectRun ({prName})
@@ -129,7 +129,7 @@ const NavbarSub = ({ navData }) => {
                   size="xs"
                 />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="/models" className="rounded-box">Models</Nav.Link>
+                <Nav.Link as={Link} to={`/models?P=${encodeURIComponent(pName)}`} className="rounded-box">Models</Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -145,7 +145,7 @@ const NavbarSub = ({ navData }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/model?project=${pName}&projectrun=${prName}&model=${mName}`}
+                    to={`/model/${mName}?P=${encodeURIComponent(pName)}&p=${encodeURIComponent(prName)}`}
                     className="active rounded-box"
                   >
                     Model ({mName})
@@ -162,7 +162,13 @@ const NavbarSub = ({ navData }) => {
                   size="xs"
                 />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="/teams" className="rounded-box">Teams</Nav.Link>
+                <Nav.Link
+                  as={Link}
+                  to={`/teams?P=${encodeURIComponent(pName)}`}
+                  className="rounded-box"
+                >
+                  Teams
+                </Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -175,7 +181,11 @@ const NavbarSub = ({ navData }) => {
                   size="xs"
                 />
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                  <Nav.Link as={Link} to={`/teams?project=${pName}&team=${tName}`} className="active rounded-box">
+                  <Nav.Link
+                    as={Link}
+                    to={`/team/${tName}?P=${pName}`}
+                    className="active rounded-box"
+                  >
                     Team ({tName})
                   </Nav.Link>
                 </Nav.Item>
@@ -190,7 +200,7 @@ const NavbarSub = ({ navData }) => {
                   size="xs"
                 />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="#" className="rounded-box">Update</Nav.Link>
+                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Update</Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -203,7 +213,7 @@ const NavbarSub = ({ navData }) => {
                   size="xs"
                 />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as={Link} to="#" className="rounded-box">Delete</Nav.Link>
+                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Delete</Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -219,7 +229,7 @@ const NavbarSub = ({ navData }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/project/pipeline`}
+                    to={`/pipeline?P=${encodeURIComponent(pName)}`}
                     className="active rounded-box"
                   >
                     Pipeline
@@ -240,7 +250,7 @@ const NavbarSub = ({ navData }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link
                     as={Link}
-                    to={`/project/schedule`}
+                    to={`/schedule?P=${encodeURIComponent(pName)}`}
                     className="active rounded-box"
                   >
                     Schedule

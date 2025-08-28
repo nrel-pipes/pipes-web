@@ -8,19 +8,17 @@ const ProjectContentHeaderButton = ({ projectName, isDisabled = false }) => {
 
   const handleUpdateProject = () => {
     if (isDisabled) return;
-    navigate("/update-project");
+    navigate(`/project/update?P=${encodeURIComponent(projectName)}`);
   };
 
   const handleDeleteProject = () => {
     if (isDisabled) return;
-    navigate("/delete-project");
+    navigate(`/project/delete?P=${encodeURIComponent(projectName)}`);
   };
 
   const handleCreateProjectRun = () => {
     if (isDisabled) return;
-    navigate("/create-projectrun", {
-      state: { projectName: projectName }
-    });
+    navigate(`/projectrun/new?P=${encodeURIComponent(projectName)}`);
   };
 
   return (

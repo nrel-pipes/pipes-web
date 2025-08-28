@@ -4,39 +4,26 @@ import { useEffect } from "react";
 import { Badge, Card, Container } from 'react-bootstrap';
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { useGetTeamQuery } from '../../hooks/useTeamQuery';
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 import ContentHeader from '../Components/ContentHeader';
 
 import "../Components/Cards.css";
 import "../PageStyles.css";
-import TeamDropdownButton from "./Components/TeamDropdownButton";
+import TeamContentHeaderButton from "./Components/TeamContentHeaderButton";
 
 const GetTeamPage = () => {
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const { teamName } = useParams();
 
   // Get project and team names from query parameters
   const searchParams = new URLSearchParams(location.search);
-  const projectName = searchParams.get('project');
-  const teamName = searchParams.get('team');
-
-  // Use project name from URL params, fallback to effective project name
-  const currentProjectName = projectName || effectivePname;
-
-  // Add validation for required parameters
-  useEffect(() => {
-    if (!teamName) {
-      navigate("/teams");
-      return;
-    }
-  }, [teamName, navigate]);
+  const projectName = searchParams.get('P');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -56,10 +43,10 @@ const GetTeamPage = () => {
 
   // Only make the query if we have teamName
   const { data: team, isLoading, error } = useGetTeamQuery(
-    currentProjectName,
+    projectName,
     teamName,
     {
-      enabled: !!teamName && !!currentProjectName,
+      enabled: !!teamName && !!projectName,
       retry: false, // Don't retry at all to prevent repeated calls
       staleTime: 30000, // Consider data fresh for 30 seconds
       refetchOnMount: false, // Don't refetch when component mounts
@@ -68,7 +55,7 @@ const GetTeamPage = () => {
   );
 
   const handleBackToTeams = () => {
-    navigate("/teams");
+    navigate(`/teams?P=${encodeURIComponent(projectName)}`);
   };
 
   // Show loading while redirecting if no teamName
@@ -150,10 +137,10 @@ const GetTeamPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{pList: true, pName: effectivePname, tList: true}} />
+      <NavbarSub navData={{pList: true, pName: projectName, tList: true, tName: teamName}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title={`Team: ${team.name}`} headerButton={<TeamDropdownButton isDisabled={effectivePname === "pipes101"} />} />
+          <ContentHeader title={`Team: ${team.name}`} headerButton={<TeamContentHeaderButton isDisabled={projectName === "pipes101"} />} />
         </Row>
 
         {/* Team Information Banner */}
@@ -185,7 +172,7 @@ const GetTeamPage = () => {
                       <strong style={{ color: '#495057' }}>Project:</strong>
                     </Col>
                     <Col md={9} style={{ textAlign: 'left' }}>
-                      <span style={{ color: '#2c3e50' }}>{currentProjectName}</span>
+                      <span style={{ color: '#2c3e50' }}>{projectName}</span>
                     </Col>
                   </Row>
                   <Row className="mb-3">

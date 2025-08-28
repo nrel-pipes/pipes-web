@@ -5,10 +5,9 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 import ContentHeader from "../Components/ContentHeader";
 import "../FormStyles.css";
 import "../PageStyles.css";
@@ -172,7 +171,6 @@ const UpdateTeamPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
@@ -180,14 +178,12 @@ const UpdateTeamPage = () => {
 
   // Get team name from URL params
   const searchParams = new URLSearchParams(location.search);
-  const projectName = searchParams.get('project');
-  const teamName = searchParams.get('team');
-
-  const currentProjectName = projectName || effectivePname;
+  const projectName = searchParams.get('P');
+  const { teamName } = useParams();
 
   // Get existing team data
   const { data: team, isLoading: teamLoading, error: teamError } = useGetTeamQuery(
-    currentProjectName,
+    projectName,
     teamName,
     { enabled: !!teamName }
   );
@@ -234,13 +230,6 @@ const UpdateTeamPage = () => {
       });
     }
   }, [team, reset]);
-
-  // Redirect if no team name
-  useEffect(() => {
-    if (!teamName) {
-      navigate('/teams');
-    }
-  }, [teamName, navigate]);
 
   const validateTeamName = (name) => {
     if (!name || name.trim() === "") {
@@ -311,14 +300,14 @@ const UpdateTeamPage = () => {
 
     try {
       const result = await mutation.mutateAsync({
-        projectName: currentProjectName,
+        projectName: projectName,
         teamName: teamName,
         teamData: cleanedFormData
       });
 
       // Navigate to the updated team detail page using the new team name
       const newTeamName = result?.name || cleanedFormData.name;
-      navigate(`/teams?project=${encodeURIComponent(currentProjectName)}&team=${encodeURIComponent(newTeamName)}`);
+      navigate(`/team/${encodeURIComponent(newTeamName)}?P=${encodeURIComponent(projectName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to update team");
@@ -351,7 +340,7 @@ const UpdateTeamPage = () => {
   if (teamLoading) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: currentProjectName, tList: true }} />
+        <NavbarSub navData={{ pList: true, pName: projectName, tList: true }} />
         <Container className="mainContent">
           <Row className="mt-5">
             <Col>
@@ -370,14 +359,14 @@ const UpdateTeamPage = () => {
   if (teamError || !team) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: currentProjectName, tList: true }} />
+        <NavbarSub navData={{ pList: true, pName: projectName, tList: true }} />
         <Container className="mainContent">
           <Row className="mt-5">
             <Col>
               <div className="alert alert-danger">
                 <h5>Error</h5>
                 <p>{teamError?.message || 'Failed to load team details. The team may not exist.'}</p>
-                <Button variant="outline-primary" onClick={() => navigate('/teams')}>
+                <Button variant="outline-primary" onClick={() => navigate(`/teams?P=${encodeURIComponent(projectName)}`)}>
                   Go Back to Teams
                 </Button>
               </div>
@@ -390,7 +379,7 @@ const UpdateTeamPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: currentProjectName, tList: true, tName: teamName, toUpdate:true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, tList: true, tName: teamName, toUpdate:true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title={`Update Team: ${team.name}`} />
@@ -465,7 +454,7 @@ const UpdateTeamPage = () => {
                   <Button
                     variant="outline-secondary"
                     type="button"
-                    onClick={() => navigate(`/teams?project=${encodeURIComponent(currentProjectName)}&team=${encodeURIComponent(teamName)}`)}
+                    onClick={() => navigate(`/team/${teamName}?P=${encodeURIComponent(projectName)}`)}
                     className="action-button me-3"
                   >
                     Cancel

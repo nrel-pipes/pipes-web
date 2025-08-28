@@ -5,12 +5,11 @@ import Button from "react-bootstrap/Button";
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { useDeleteProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 
 import "../Components/Cards.css";
 import "../FormStyles.css";
@@ -21,8 +20,10 @@ import "./ProjectPage.css";
 const DeleteProjectPage = () => {
   const navigate = useNavigate();
   const { checkAuthStatus } = useAuthStore();
-  const { setEffectivePname, effectivePname } = useDataStore();
-  const { projectName } = useParams();
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [deleteError, setDeleteError] = useState(null);
@@ -51,16 +52,14 @@ const DeleteProjectPage = () => {
 
   // Handle cancel button click
   const handleCancel = () => {
-    navigate("/project/dashboard");
+    navigate(`/dashboard?P=${encodeURIComponent(projectName)}`);
   };
 
   // Handle confirm button click
   const handleConfirm = () => {
-    const targetProject = projectName || effectivePname;
-
     setDeleteError(null);
 
-    deleteProjectMutation.mutate({ projectName: targetProject }, {
+    deleteProjectMutation.mutate({ projectName }, {
       onSuccess: () => {
         // Navigate to projects list after successful deletion
         navigate("/projects");
@@ -119,7 +118,7 @@ const DeleteProjectPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: effectivePname, toDelete: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, toDelete: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="justify-content-center">
           <Col className='mx-auto mt-5' md={8} lg={6}>
@@ -142,7 +141,7 @@ const DeleteProjectPage = () => {
               <Alert variant="warning">
                 <Alert.Heading>Warning: This action cannot be undone</Alert.Heading>
                 <p>
-                  You are about to delete project '<strong>{effectivePname || projectName}</strong>'.
+                  You are about to delete project '<strong>{projectName}</strong>'.
                 </p>
                 <p>
                   All data associated with this project will be permanently removed.

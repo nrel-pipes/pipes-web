@@ -15,7 +15,6 @@ import "./CreateProjectRunPage.css";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 import { useCreateProjectRunMutation } from "../../hooks/useProjectRunQuery";
-import useDataStore from "../../stores/DataStore";
 import { useCreateProjectRunFormStore } from "../../stores/FormStore/ProjectRunStore";
 
 import { useEffect, useState } from "react";
@@ -385,8 +384,10 @@ const RequirementsSection = ({ control, register, errors, watch, setValue }) => 
 const CreateProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
+
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
 
   // Zustand form store - simple persistence
   const {
@@ -400,8 +401,6 @@ const CreateProjectRunPage = () => {
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
   const [scenarioNames, setScenarioNames] = useState([]);
-
-  const projectName = location.state?.currentProject?.name || location.state?.projectName || effectivePname;
 
   // Clear form data if project changes
   useEffect(() => {
@@ -654,7 +653,7 @@ const CreateProjectRunPage = () => {
 
     try {
       await mutation.mutateAsync({
-        projectName: currentProject?.name || projectName,
+        projectName: projectName,
         data: cleanedFormData
       });
 
@@ -662,7 +661,7 @@ const CreateProjectRunPage = () => {
       clearFormData();
 
       // Navigate to dashboard on success
-      navigate('/project/dashboard');
+      navigate(`/dashboard?P=${encodeURIComponent(projectName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to create project run");
@@ -705,7 +704,7 @@ const CreateProjectRunPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: effectivePname, prCreate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Create Project Run"/>
@@ -924,7 +923,7 @@ const CreateProjectRunPage = () => {
                   <Button
                     variant="outline-secondary"
                     type="button"
-                    onClick={() => navigate('/project/dashboard')}
+                    onClick={() => navigate(`/dashboard?P=${encodeURIComponent(projectName)}`)}
                     className="action-button me-3"
                   >
                     Cancel

@@ -17,6 +17,7 @@ export const useCreateModelFormStore = create(
         scheduled_end: '',
         expected_scenarios: [''],
         scenario_mappings: {},
+        requirements: {}, // <-- add requirements here
         other: {}
       },
 
@@ -45,6 +46,7 @@ export const useCreateModelFormStore = create(
           scheduled_end: '',
           expected_scenarios: [''],
           scenario_mappings: {},
+          requirements: {}, // <-- add requirements here
           other: {}
         }
       }),
@@ -59,7 +61,8 @@ export const useCreateModelFormStore = create(
                  data.scheduled_start || data.scheduled_end ||
                  (data.assumptions && data.assumptions.some(a => a.trim())) ||
                  (data.expected_scenarios && data.expected_scenarios.some(s => s.trim())) ||
-                 (data.scenario_mappings && Object.keys(data.scenario_mappings).length > 0));
+                 (data.scenario_mappings && Object.keys(data.scenario_mappings).length > 0) ||
+                 (data.requirements && Object.keys(data.requirements).length > 0)); // <-- check requirements
       }
     }),
     {
@@ -86,6 +89,7 @@ export const useUpdateModelFormStore = create(
         scheduled_end: '',
         expected_scenarios: [''],
         scenario_mappings: {},
+        requirements: {}, // <-- add requirements here
         other: {}
       },
 
@@ -115,6 +119,7 @@ export const useUpdateModelFormStore = create(
           scheduled_end: '',
           expected_scenarios: [''],
           scenario_mappings: {},
+          requirements: {}, // <-- add requirements here
           other: {}
         }
       }),
@@ -129,7 +134,8 @@ export const useUpdateModelFormStore = create(
                  data.scheduled_start || data.scheduled_end ||
                  (data.assumptions && data.assumptions.some(a => a.trim())) ||
                  (data.expected_scenarios && data.expected_scenarios.some(s => s.trim())) ||
-                 (data.scenario_mappings && Object.keys(data.scenario_mappings).length > 0));
+                 (data.scenario_mappings && Object.keys(data.scenario_mappings).length > 0) ||
+                 (data.requirements && Object.keys(data.requirements).length > 0)); // <-- check requirements
       }
     }),
     {

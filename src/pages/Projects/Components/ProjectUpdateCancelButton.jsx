@@ -2,11 +2,11 @@ import { X } from "lucide-react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const ProjectUpdateCancelButton = () => {
+const ProjectUpdateCancelButton = ({projectName}) => {
   const navigate = useNavigate();
 
   const handleCancelProjectUpdate = () => {
-    navigate("/project/dashboard");
+    navigate(`/dashboard?P=${encodeURIComponent(projectName)}`);
   };
 
   return (
@@ -18,8 +18,7 @@ const ProjectUpdateCancelButton = () => {
         style={{
           fontSize: '1rem',
           fontWeight: 'bold',
-          borderRadius: '6px',
-          minWidth: '180px'
+          borderRadius: '6px'
         }}
       >
         <X size={16} className="update-button-icon me-1" />

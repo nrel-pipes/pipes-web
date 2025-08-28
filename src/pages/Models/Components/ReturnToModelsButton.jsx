@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 
-const ReturnToModelsButton = ({ isDisabled = false }) => {
+
+const ReturnToModelsButton = ({ projectName, projectRunName, isDisabled = false }) => {
   const navigate = useNavigate();
 
   const handleReturnToModels = () => {
     if (isDisabled) return;
-    navigate("/models");
+    navigate(`/models?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
 
   return (
@@ -20,7 +21,6 @@ const ReturnToModelsButton = ({ isDisabled = false }) => {
           fontSize: '1rem',
           fontWeight: 'bold',
           borderRadius: '6px',
-          minWidth: '180px',
           cursor: isDisabled ? 'not-allowed' : 'pointer',
           opacity: isDisabled ? 0.65 : 1
         }}

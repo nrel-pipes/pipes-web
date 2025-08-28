@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,17 +23,20 @@ import ScenariosComponent from "./Components/ScenariosComponent";
 import ScheduleComponent from "./Components/ScheduleComponent";
 
 import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
-import useDataStore from "../../stores/DataStore";
 
 import ContentHeader from "../Components/ContentHeader";
 import ProjectContentHeaderButton from "./Components/ProjectContentHeaderButton";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 
+
 const ProjectDashboardPage = () => {
   const navigate = useNavigate();
   const { checkAuthStatus, currentUser } = useAuthStore();
-  const { effectivePname } = useDataStore();
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
 
   // Helper function to get formatted owner name
   const getOwnerDisplayName = (owner) => {
@@ -100,7 +103,7 @@ const ProjectDashboardPage = () => {
     isLoading,
     isError,
     error
-  } = useGetProjectQuery(effectivePname);
+  } = useGetProjectQuery(projectName);
 
   // fetch project runs data
   const {
@@ -109,7 +112,7 @@ const ProjectDashboardPage = () => {
     isError: isErrorRuns,
     error: errorRuns,
     refetch: refetchRuns
-  } = useGetProjectRunsQuery(effectivePname)
+  } = useGetProjectRunsQuery(projectName)
 
   // Add effect to refetch when returning to the page
   useEffect(() => {
@@ -162,7 +165,7 @@ const ProjectDashboardPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: effectivePname }} />
+      <NavbarSub navData={{ pList: true, pName: projectName }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Project Dashboard" headerButton={<ProjectContentHeaderButton projectName={project.name} isDisabled={isContentHeaderButtonDisabled} />} />

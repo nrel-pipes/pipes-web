@@ -8,19 +8,17 @@ const ProjectRunContentHeaderButton = ({ projectName, projectRunName, isDisabled
 
   const handleUpdateProjectRun = () => {
     if (isDisabled) return;
-    navigate("/update-projectrun", {
-      state: { projectName: projectName, projectRunName: projectRunName }
-    });
+    navigate(`/projectrun/${encodeURIComponent(projectRunName)}/update?P=${encodeURIComponent(projectName)}`);
   };
 
   const handleDeleteProjectRun = () => {
     if (isDisabled) return;
-    navigate("/delete-projectrun");
+    navigate(`/projectrun/${encodeURIComponent(projectRunName)}/delete?P=${encodeURIComponent(projectName)}`);
   };
 
   const handleCreateModel = () => {
     if (isDisabled) return;
-    navigate("/create-model-prepare");
+    navigate(`/model/startnew?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
 
   return (

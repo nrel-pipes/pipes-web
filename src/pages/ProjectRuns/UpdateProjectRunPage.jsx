@@ -16,7 +16,6 @@ import "./CreateProjectRunPage.css";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 import { useGetProjectRunQuery, useUpdateProjectRunMutation } from "../../hooks/useProjectRunQuery";
-import useDataStore from "../../stores/DataStore";
 
 import { useEffect, useState } from "react";
 
@@ -416,13 +415,11 @@ const RequirementsSection = ({ control, register, errors, watch, setValue, initi
 const UpdateProjectRunPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { projectName: urlProjectName, runName: urlRunName } = useParams();
+  const { projectRunName } = useParams();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname, effectivePRname } = useDataStore();
 
-  // Determine current project and run names
-  const currentProjectName = urlProjectName || effectivePname;
-  const currentRunName = urlRunName || location.state?.projectRunName || effectivePRname;
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
 
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
@@ -436,7 +433,7 @@ const UpdateProjectRunPage = () => {
     data: projectRun,
     isLoading: isLoadingProjectRun,
     error: projectRunError
-  } = useGetProjectRunQuery(currentProjectName, currentRunName);
+  } = useGetProjectRunQuery(projectName, projectRunName);
 
   // Initialize react-hook-form without default values initially
   const {
@@ -496,17 +493,10 @@ const UpdateProjectRunPage = () => {
   const {
     data: currentProject,
     isLoading: isLoadingProject,
-  } = useGetProjectQuery(currentProjectName);
+  } = useGetProjectQuery(projectName);
 
   // Update mutation
   const updateMutation = useUpdateProjectRunMutation();
-
-  // If params are missing, redirect to project dashboard
-  useEffect(() => {
-    if (!currentProjectName || !currentRunName) {
-      navigate('/project/dashboard');
-    }
-  }, [currentProjectName, currentRunName, navigate]);
 
   // Load project run data into form when available
   useEffect(() => {
@@ -514,11 +504,11 @@ const UpdateProjectRunPage = () => {
       try {
         let targetRun = projectRun;
         if (Array.isArray(projectRun)) {
-          targetRun = projectRun.find(run => run.name === currentRunName);
+          targetRun = projectRun.find(run => run.name === projectRunName);
         }
 
         if (!targetRun) {
-          console.error("Could not find run with name:", currentRunName);
+          console.error("Could not find run with name:", projectRunName);
           return;
         }
 
@@ -565,7 +555,7 @@ const UpdateProjectRunPage = () => {
         console.error("Error setting form data:", error);
       }
     }
-  }, [projectRun, reset, currentRunName, setValue]);
+  }, [projectRun, reset, projectRunName, setValue]);
 
   // Helper function to convert requirements from API to form format
   const convertRequirementsToFormFormat = (apiRequirements) => {
@@ -621,7 +611,7 @@ const UpdateProjectRunPage = () => {
       let targetRun = projectRun;
 
       if (Array.isArray(projectRun)) {
-        targetRun = projectRun.find(run => run.name === currentRunName);
+        targetRun = projectRun.find(run => run.name === projectRunName);
       }
 
       if (targetRun && !watchedValues.name && targetRun.name) {
@@ -629,7 +619,7 @@ const UpdateProjectRunPage = () => {
         setIsLoaded(false);
       }
     }
-  }, [projectRun, isLoaded, watch, currentRunName]);
+  }, [projectRun, isLoaded, watch, projectRunName]);
 
   // Authentication check
   useEffect(() => {
@@ -763,13 +753,11 @@ const UpdateProjectRunPage = () => {
 
     try {
       await updateMutation.mutateAsync({
-        projectName: currentProjectName,
-        projectRunName: currentRunName,
+        projectName: projectName,
+        projectRunName: projectRunName,
         data: cleanedFormData
       });
-
-      // Navigate to project run details page after successful update
-      navigate('/projectrun');
+      navigate(`/projectrun/${encodeURIComponent(projectRunName)}?P=${encodeURIComponent(projectName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to update project run");
@@ -802,7 +790,7 @@ const UpdateProjectRunPage = () => {
   if (isLoadingProject || isLoadingProjectRun) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: currentProjectName }} />
+        <NavbarSub navData={{ pList: true, pName: projectName }} />
         <Container className="mt-5 text-center">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -817,7 +805,7 @@ const UpdateProjectRunPage = () => {
   if (projectRunError) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: currentProjectName }} />
+        <NavbarSub navData={{ pList: true, pName: projectName }} />
         <Container className="mt-5">
           <div className="alert alert-danger">
             <h4 className="alert-heading">Error Loading Project Run</h4>
@@ -831,7 +819,7 @@ const UpdateProjectRunPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: currentProjectName, prName: currentRunName, toUpdate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, toUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Update Project Run" />
@@ -1046,7 +1034,7 @@ const UpdateProjectRunPage = () => {
                   <Button
                     variant="outline-secondary"
                     type="button"
-                    onClick={() => navigate('/project/dashboard')}
+                    onClick={() => navigate(`/dashboard?P=${encodeURIComponent(projectName)}`)}
                     className="action-button me-3"
                   >
                     Cancel

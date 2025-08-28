@@ -2,7 +2,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Plus } from "lucide-react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Badge, Card, Container, Table } from 'react-bootstrap';
 import Col from "react-bootstrap/Col";
@@ -11,7 +11,6 @@ import Row from "react-bootstrap/Row";
 import { useGetModelsQuery } from '../../hooks/useModelQuery';
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 import ContentHeader from '../Components/ContentHeader';
 
 import "../Components/Cards.css";
@@ -20,11 +19,14 @@ import "../PageStyles.css";
 
 const ListModelsPage = () => {
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
+  const projectRunName = searchParams.get("p");
 
   // All hooks must be called before any conditional logic
-  const { data: modelsData = [], isLoading, error } = useGetModelsQuery(effectivePname);
+  const { data: modelsData = [], isLoading, error } = useGetModelsQuery(projectName);
 
   // Sort models by project and project run
   const models = modelsData.sort((a, b) => {
@@ -60,11 +62,11 @@ const ListModelsPage = () => {
   }, [navigate, checkAuthStatus]);
 
   const handleCreateModelClick = () => {
-    navigate("/create-model");
+    navigate("/model/startnew");
   };
 
   const handleViewModelClick = (projectRunName, modelName) => {
-    navigate(`/model?project=${encodeURIComponent(effectivePname)}&projectrun=${encodeURIComponent(projectRunName)}&model=${encodeURIComponent(modelName)}`);
+    navigate(`/model/${modelName}?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
 
   if (isLoading) {
@@ -134,7 +136,7 @@ const ListModelsPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{pList: true, pName: effectivePname, mList: true}} />
+      <NavbarSub navData={{pList: true, pName: projectName, mList: true}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader
@@ -269,7 +271,7 @@ const ListModelsPage = () => {
                             color: 'var(--bs-gray-600)',
                             textAlign: 'left'
                           }}>
-                            {effectivePname || 'N/A'}
+                            {projectName || 'N/A'}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',

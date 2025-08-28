@@ -1,29 +1,24 @@
 import { Trash2, X } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { Alert, Button, Col, Container, Row } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useDeleteTeamMutation, useGetTeamQuery } from '../../hooks/useTeamQuery';
 import NavbarSub from '../../layouts/NavbarSub';
-import useDataStore from '../../stores/DataStore';
 
 
 const DeleteTeamPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [errorMessage, setErrorMessage] = useState('');
-  const { effectivePname } = useDataStore();
+  const { teamName } = useParams();
 
   // Get project and team names from query parameters
   const searchParams = new URLSearchParams(location.search);
-  const projectName = searchParams.get('project');
-  const teamName = searchParams.get('team');
-
-  const currentProjectName = projectName || effectivePname;
-  const currentTeamName = teamName;
+  const projectName = searchParams.get('P');
 
   // Add debugging
   useEffect(() => {
-  }, [currentProjectName, currentTeamName, location.search]);
+  }, [projectName, teamName, location.search]);
 
   // Get team data for confirmation
   const {
@@ -31,28 +26,21 @@ const DeleteTeamPage = () => {
     isLoading,
     isError,
     error
-  } = useGetTeamQuery(currentProjectName, currentTeamName);
+  } = useGetTeamQuery(projectName, teamName);
 
   // Delete team mutation
   const deleteTeamMutation = useDeleteTeamMutation();
-
-  // If params are missing, redirect to teams list
-  useEffect(() => {
-    if (!currentProjectName || !currentTeamName) {
-      navigate('/teams');
-    }
-  }, [currentProjectName, currentTeamName, navigate]);
 
   // Handle delete confirmation
   const handleDelete = async () => {
     try {
       await deleteTeamMutation.mutateAsync({
-        projectName: currentProjectName,
-        teamName: currentTeamName
+        projectName: projectName,
+        teamName: teamName
       });
       // Navigate to teams list after successful deletion
-      navigate('/teams', {
-        state: { deleteSuccess: true, deletedTeamName: currentTeamName }
+      navigate(`/teams?P=${encodeURIComponent(projectName)}`, {
+        state: { deleteSuccess: true, deletedTeamName: teamName }
       });
     } catch (err) {
       setErrorMessage(
@@ -72,7 +60,7 @@ const DeleteTeamPage = () => {
   if (isLoading) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: currentProjectName, tList: true }} />
+        <NavbarSub navData={{ pList: true, pName: projectName, tList: true }} />
         <Container className="mt-5 text-center">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -87,7 +75,7 @@ const DeleteTeamPage = () => {
   if (isError || !team) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: currentProjectName, tList: true }} />
+        <NavbarSub navData={{ pList: true, pName: projectName, tList: true }} />
         <Container className="mt-5">
           <Alert variant="danger">
             <Alert.Heading>Error</Alert.Heading>
@@ -105,7 +93,7 @@ const DeleteTeamPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: currentProjectName, tList: true, tName: currentTeamName, toDelete: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, tList: true, tName: teamName, toDelete: true }} />
       <Container className="mainContent" fluid>
         <Row className="g-0">
           <Col className='mx-auto mt-5' md={8} lg={6}>
@@ -123,8 +111,8 @@ const DeleteTeamPage = () => {
               <Alert variant="warning">
                 <Alert.Heading>Warning: This action cannot be undone</Alert.Heading>
                 <p>
-                  You are about to delete the team <strong>{currentTeamName}</strong> from
-                  project <strong>{currentProjectName}</strong>.
+                  You are about to delete the team <strong>{teamName}</strong> from
+                  project <strong>{projectName}</strong>.
                 </p>
                 <p>
                   All data associated with this team will be permanently removed.

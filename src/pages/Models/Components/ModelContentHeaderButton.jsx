@@ -1,42 +1,31 @@
 import { Pencil, Settings, Trash2 } from "lucide-react";
 import { Dropdown } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 
-const TeamDropdownButton = ({ isDisabled = false }) => {
+const ModelContentHeaderButton = ({ isDisabled = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleUpdateTeam = () => {
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get('P');
+  const projectRunName = searchParams.get('p');
+
+  const { modelName } = useParams();
+
+
+  const handleUpdateModel = () => {
     if (isDisabled) return;
-
-    const searchParams = new URLSearchParams(location.search);
-    const projectName = searchParams.get('project');
-    const teamName = searchParams.get('team');
-
-    if (projectName && teamName) {
-      navigate(`/update-team?project=${encodeURIComponent(projectName)}&team=${encodeURIComponent(teamName)}`);
-    } else {
-      // Fallback - redirect to teams list if parameters are missing
-      navigate("/teams");
-    }
+    navigate(`/model/${modelName}/update?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
 
-  const handleDeleteTeam = () => {
-    const searchParams = new URLSearchParams(location.search);
-    const projectName = searchParams.get('project');
-    const teamName = searchParams.get('team');
-
-    if (projectName && teamName) {
-      navigate(`/delete-team?project=${encodeURIComponent(projectName)}&team=${encodeURIComponent(teamName)}`);
-    } else {
-      // Fallback to using store values
-      navigate(`/delete-team?project=${encodeURIComponent(projectName)}&team=${encodeURIComponent(teamName || 'unknown')}`);
-    }
+  const handleDeleteModel = () => {
+    if (isDisabled) return;
+    navigate(`/model/${modelName}/delete?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
 
-  const handleBackToTeams = () => {
-    navigate("/teams");
+  const handleBackToModels = () => {
+    navigate(`/models?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
 
   return (
@@ -47,14 +36,13 @@ const TeamDropdownButton = ({ isDisabled = false }) => {
             backgroundColor: 'rgb(71, 148, 218)',
             color: 'white',
             fontWeight: 'bold',
-            width: '180px',
             height: '50px',
           }}
           onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
           onMouseUp={(e) => e.currentTarget.style.color = 'white'}
-          onClick={handleBackToTeams}
+          onClick={handleBackToModels}
         >
-          ← Back to Teams
+          ← Back to Models
       </button>
       <Dropdown>
         <Dropdown.Toggle
@@ -68,21 +56,21 @@ const TeamDropdownButton = ({ isDisabled = false }) => {
 
         <Dropdown.Menu className="actions-dropdown-menu">
           <Dropdown.Item
-            onClick={handleUpdateTeam}
+            onClick={handleUpdateModel}
             className="d-flex align-items-center dropdown-item-update"
             disabled={isDisabled}
           >
             <Pencil size={16} className="me-2" />
-            Update Team
+            Update Model
           </Dropdown.Item>
           <hr className="dropdown-divider" />
           <Dropdown.Item
-            onClick={handleDeleteTeam}
+            onClick={handleDeleteModel}
             className="d-flex align-items-center dropdown-item-delete"
             disabled={isDisabled}
           >
             <Trash2 size={16} className="me-2" />
-            Delete Team
+            Delete Model
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -90,4 +78,4 @@ const TeamDropdownButton = ({ isDisabled = false }) => {
   );
 }
 
-export default TeamDropdownButton;
+export default ModelContentHeaderButton;

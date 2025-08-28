@@ -11,7 +11,6 @@ import ScenarioMappingComponent from "./ScenarioMappingComponent";
 import { useGetModelsQuery } from "../../../hooks/useModelQuery";
 import { useGetModelRunsQuery } from "../../../hooks/useModelRunQuery";
 
-import useDataStore from "../../../stores/DataStore";
 
 // Helper function to render table data (since we can't import it from Pipeline component)
 function renderTableData(obj) {
@@ -104,26 +103,20 @@ function renderValue(value, key) {
   }
 }
 
-export default function DataViewComponent({ selected, projectRun, showProjectRunData }) {
-  const { effectivePname, effectivePRname } = useDataStore();
-  const [showInstructions, setShowInstructions] = useState(true);
 
-  // Only run the query once both values are available
-  const shouldFetchData = Boolean(effectivePname) && Boolean(effectivePRname);
+export default function DataViewComponent({ selected, projectRun, showProjectRunData }) {
+  const projectName = projectRun.context.project;
+  const [showInstructions, setShowInstructions] = useState(true);
 
   const {
     data: models = [],
     isLoading: isLoadingModels,
-  } = useGetModelsQuery(effectivePname, effectivePRname, {
-    enabled: shouldFetchData,
-  });
+  } = useGetModelsQuery(projectName, projectRun.name, {});
 
   const {
     data: modelRuns = [],
     isLoading: isLoadingModelRuns,
-  } = useGetModelRunsQuery(effectivePname, effectivePRname, null, {
-    enabled: !!effectivePname && !!effectivePRname,
-  });
+  } = useGetModelRunsQuery(projectName, projectRun.name, null, {});
 
   const getColor = useUIStore((state) => state.getColor);
   const scenarioColors = useUIStore((state) => state.scenarios);

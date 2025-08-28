@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { Minus, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
@@ -7,7 +6,7 @@ import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { useGetProjectQuery, useUpdateProjectMutation } from "../../hooks/useProjectQuery";
 import NavbarSub from "../../layouts/NavbarSub";
@@ -1175,10 +1174,12 @@ const StepReview = () => {
 // Main component with updated layout
 const UpdateProjectPage = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { checkAuthStatus } = useAuthStore();
-  const { setEffectivePname, effectivePname } = useDataStore();
-  const { projectName } = useParams();
+  const { setEffectivePname } = useDataStore();
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isProjectLoading, setIsProjectLoading] = useState(true);
@@ -1190,12 +1191,11 @@ const UpdateProjectPage = () => {
     setProjectFormData,
     setCurrentStep,
     addCompletedStep,
-    resetCompletedSteps,
     resetForm
   } = useUpdateProjectFormStore();
 
   // Fetch existing project data
-  const projectQuery = useGetProjectQuery(projectName || effectivePname);
+  const projectQuery = useGetProjectQuery(projectName);
 
   // Update the reset function to use the resetForm function
   const resetProjectForm = () => {
@@ -1483,10 +1483,7 @@ const UpdateProjectPage = () => {
     } else {
       delete formattedData.sensitivities;
     }
-
-    // Use the project name from params or effectivePname for the update
-    const projectToUpdate = projectName || effectivePname;
-    mutation.mutate({ projectName: projectToUpdate, data: formattedData });
+    mutation.mutate({ projectName: projectName, data: formattedData });
   };
 
   useEffect(() => {
@@ -1496,7 +1493,7 @@ const UpdateProjectPage = () => {
       }
       // Only clear form data on successful submission
       resetProjectForm();
-      navigate("/project/dashboard");
+      navigate(`/dashboard?P=${encodeURIComponent(projectName)}`);
     }
 
     if (mutation.isError) {
@@ -1601,12 +1598,12 @@ const UpdateProjectPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: effectivePname, toUpdate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, toUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader
             title={`Update Project: ${projectQuery.data?.name || ''}`}
-            headerButton={<ProjectUpdateCancelButton />}
+            headerButton={<ProjectUpdateCancelButton projectName={projectName} />}
           />
         </Row>
 

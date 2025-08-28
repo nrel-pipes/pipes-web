@@ -5,7 +5,7 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
@@ -17,7 +17,6 @@ import { useGetModelQuery, useUpdateModelMutation } from "../../hooks/useModelQu
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
 import { useListTeamsQuery } from "../../hooks/useTeamQuery";
-import useDataStore from "../../stores/DataStore";
 import { useCreateModelFormStore } from "../../stores/FormStore/ModelStore";
 
 import { useEffect, useState } from "react";
@@ -218,19 +217,18 @@ const UpdateModelPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
+  const { modelName } = useParams();
 
   // Get params from URL
   const searchParams = new URLSearchParams(location.search);
-  const urlProjectRunName = searchParams.get('projectrun');
-  const urlModelName = searchParams.get('model');
+  const projectName = searchParams.get('P');
+  const projectRunName = searchParams.get('p');
 
   // Zustand form store - simple persistence
   const {
-    formData: storedFormData,
+    formData,
     updateFormData,
     clearFormData,
-    setProjectContext
   } = useCreateModelFormStore();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -240,16 +238,6 @@ const UpdateModelPage = () => {
   const [projectScenarios, setProjectScenarios] = useState([]);
   const [expectedScenarios, setExpectedScenarios] = useState([""]);
   const [assumptions, setAssumptions] = useState([""]);
-
-  const projectName = location.state?.projectName || effectivePname || storedFormData.projectName;
-  const projectRunName =
-    urlProjectRunName ||
-    location.state?.projectRunName ||
-    storedFormData.projectRunName;
-  const modelName =
-    urlModelName ||
-    location.state?.modelName ||
-    storedFormData.name;
 
   // Fetch model data for update
   const {
@@ -528,7 +516,7 @@ const UpdateModelPage = () => {
       });
 
       clearFormData();
-      navigate('/models');
+      navigate(`/model/${encodeURIComponent(modelName)}?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to update model");
@@ -601,7 +589,7 @@ const UpdateModelPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mUpdate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mName: modelName, toUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Update Model"/>

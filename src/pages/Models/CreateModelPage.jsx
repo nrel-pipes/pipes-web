@@ -17,7 +17,6 @@ import { useCreateModelMutation } from "../../hooks/useModelQuery";
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
 import { useListTeamsQuery } from "../../hooks/useTeamQuery";
-import useDataStore from "../../stores/DataStore";
 import { useCreateModelFormStore } from "../../stores/FormStore/ModelStore";
 
 import { useEffect, useState } from "react";
@@ -171,13 +170,10 @@ const ScenarioMappingsSection = ({ control, register, errors, watch, setValue, p
   );
 };
 
-const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) => {
-  const steps = ["Basic Info", "Scenarios", "Assumptions", "Modeling Team", "Review"];
+const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, steps }) => {
   const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
-
   return (
     <div className="step-form-container">
-      {/* Progress Bar */}
       <div className="progress-wrapper">
         <div className="progress">
           <div
@@ -190,8 +186,6 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) 
           />
         </div>
       </div>
-
-      {/* Step Navigation */}
       <ul className="nav nav-pills nav-justified step-nav">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
@@ -214,15 +208,328 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) 
   );
 };
 
+// RequirementsSection for model creation
+const RequirementsSection = ({ control, register, errors, watch, setValue, storedRequirements }) => {
+  // Use storedRequirements for initial state if present and not empty
+  const initialRequirements = Object.keys(storedRequirements || {}).length > 0
+    ? storedRequirements
+    : { req_default: { name: "", type: "string", value: "" } };
+
+  const [requirements, setRequirements] = useState(initialRequirements);
+  const [requirementIds, setRequirementIds] = useState(Object.keys(initialRequirements));
+
+  const watchedRequirements = watch("requirements", {});
+
+  // Prefill from zustand store if available when mounting or when storedRequirements changes
+  useEffect(() => {
+    if (Object.keys(storedRequirements || {}).length > 0) {
+      setRequirements(storedRequirements);
+      setRequirementIds(Object.keys(storedRequirements));
+      setValue("requirements", storedRequirements);
+    }
+  }, [storedRequirements, setValue]);
+
+  useEffect(() => {
+    setRequirements(watchedRequirements);
+  }, [watchedRequirements]);
+
+  const addRequirement = () => {
+    const timestamp = Date.now();
+    const newId = `req_${timestamp}`;
+    const newRequirements = {
+      ...requirements,
+      [newId]: {
+        name: "",
+        type: "string",
+        value: ""
+      }
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+    setRequirementIds([...requirementIds, newId]);
+  };
+
+  const removeRequirement = (id) => {
+    const { [id]: removed, ...rest } = requirements;
+    setRequirements(rest);
+    setValue("requirements", rest);
+    setRequirementIds(requirementIds.filter(reqId => reqId !== id));
+  };
+
+  const updateRequirementName = (id, newName) => {
+    const newRequirements = {
+      ...requirements,
+      [id]: {
+        ...requirements[id],
+        name: newName
+      }
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const updateRequirementValue = (id, value) => {
+    const newRequirements = {
+      ...requirements,
+      [id]: {
+        ...requirements[id],
+        value: value
+      }
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const toggleRequirementType = (id) => {
+    const currentType = requirements[id]?.type;
+    const newType = currentType === "string" ? "object" : "string";
+    let newValue;
+    if (newType === "string") {
+      newValue = "";
+    } else {
+      newValue = { field1: "", field2: "" };
+    }
+    const newRequirements = {
+      ...requirements,
+      [id]: {
+        ...requirements[id],
+        type: newType,
+        value: newValue
+      }
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const addObjectField = (reqId) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+    let fieldIndex = 1;
+    let newFieldName = `field${fieldIndex}`;
+    while (reqData.value && Object.prototype.hasOwnProperty.call(reqData.value, newFieldName)) {
+      fieldIndex++;
+      newFieldName = `field${fieldIndex}`;
+    }
+    const updatedValue = {
+      ...reqData.value,
+      [newFieldName]: ""
+    };
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const updateObjectFieldValue = (reqId, fieldKey, fieldValue) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+    const updatedValue = {
+      ...reqData.value,
+      [fieldKey]: fieldValue
+    };
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const updateObjectFieldKey = (reqId, oldKey, newKey) => {
+    if (!newKey || oldKey === newKey) return;
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+    if (Object.prototype.hasOwnProperty.call(reqData.value, newKey) && oldKey !== newKey) {
+      return;
+    }
+    const updatedValue = {};
+    Object.entries(reqData.value).forEach(([key, value]) => {
+      if (key === oldKey) {
+        updatedValue[newKey] = value;
+      } else {
+        updatedValue[key] = value;
+      }
+    });
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  const removeObjectField = (reqId, fieldKey) => {
+    const reqData = requirements[reqId];
+    if (!reqData || reqData.type !== "object") return;
+    const fieldKeys = Object.keys(reqData.value || {});
+    if (fieldKeys.length <= 1) return;
+    const updatedValue = {};
+    Object.entries(reqData.value).forEach(([key, value]) => {
+      if (key !== fieldKey) {
+        updatedValue[key] = value;
+      }
+    });
+    const updatedRequirement = {
+      ...reqData,
+      value: updatedValue
+    };
+    const newRequirements = {
+      ...requirements,
+      [reqId]: updatedRequirement
+    };
+    setRequirements(newRequirements);
+    setValue("requirements", newRequirements);
+  };
+
+  return (
+    <div className="form-field-group">
+      <Form.Label className="form-field-label">
+        <span className="form-field-text">Requirements</span>
+      </Form.Label>
+      <div>
+        {requirementIds.map((id, idx) => {
+          const reqData = requirements[id];
+          if (!reqData) return null;
+          return (
+            <div key={id} className="mb-4 border p-3 rounded">
+              <Row className="mb-2">
+                <Col>
+                  <Form.Label className="small fw-bold">Requirement Name</Form.Label>
+                  <div className="d-flex gap-2">
+                    <Form.Control
+                      type="text"
+                      className="form-control-lg form-primary-input"
+                      placeholder="Requirement"
+                      value={reqData.name || ""}
+                      onChange={(e) => updateRequirementName(id, e.target.value)}
+                    />
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      type="button"
+                      onClick={() => removeRequirement(id)}
+                      className="d-flex align-items-center justify-content-center"
+                      style={{ width: "32px", height: "38px", padding: "4px" }}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <Form.Label className="small fw-bold mb-0">Value</Form.Label>
+                    <Form.Check
+                      type="switch"
+                      id={`req-type-switch-${idx}`}
+                      label="Object"
+                      checked={reqData.type === "object"}
+                      onChange={() => toggleRequirementType(id)}
+                    />
+                  </div>
+                  {reqData.type === "string" ? (
+                    <Form.Control
+                      type="text"
+                      className="form-control-lg form-primary-input"
+                      placeholder="Value"
+                      value={reqData.value || ""}
+                      onChange={(e) => updateRequirementValue(id, e.target.value)}
+                    />
+                  ) : (
+                    <div className="p-2 border rounded">
+                      {Object.keys(reqData.value || {}).map((fieldKey) => (
+                        <Row key={`${id}-${fieldKey}`} className="mb-2">
+                          <Col>
+                            <Form.Control
+                              type="text"
+                              className="form-control-sm"
+                              placeholder="Field Name"
+                              defaultValue={fieldKey}
+                              onBlur={(e) => updateObjectFieldKey(id, fieldKey, e.target.value)}
+                            />
+                          </Col>
+                          <Col>
+                            <Form.Control
+                              type="text"
+                              className="form-control-sm"
+                              placeholder="Field Value"
+                              value={reqData.value[fieldKey] || ""}
+                              onChange={(e) => updateObjectFieldValue(id, fieldKey, e.target.value)}
+                            />
+                          </Col>
+                          {Object.keys(reqData.value || {}).length > 1 && (
+                            <Col xs="auto">
+                              <Button
+                                variant="outline-danger"
+                                type="button"
+                                onClick={() => removeObjectField(id, fieldKey)}
+                                className="d-flex align-items-center justify-content-center"
+                                style={{ width: "32px", height: "32px", padding: "4px" }}
+                              >
+                                <Minus size={16} />
+                              </Button>
+                            </Col>
+                          )}
+                        </Row>
+                      ))}
+                      <Button
+                        variant="outline-primary"
+                        type="button"
+                        size="sm"
+                        onClick={() => addObjectField(id)}
+                        className="d-flex align-items-center gap-1 mt-2"
+                      >
+                        <Plus size={16} />
+                        Add nested pair
+                      </Button>
+                    </div>
+                  )}
+                </Col>
+              </Row>
+            </div>
+          );
+        })}
+        <div className="d-flex justify-content-start mt-2">
+          <Button
+            variant="outline-primary"
+            type="button"
+            onClick={addRequirement}
+            className="d-flex align-items-center me-2"
+            style={{ padding: "0.5rem 1rem" }}
+          >
+            <Plus className="mr-1" size={16} />
+            Requirement
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const CreateModelPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { checkAuthStatus, currentUser } = useAuthStore();
-  const { effectivePname } = useDataStore();
-
-  // Get projectRunName from URL parameter if present
   const searchParams = new URLSearchParams(location.search);
-  const urlProjectRunName = searchParams.get('projectrun');
+  const projectName = searchParams.get("P");
+  const projectRunName = searchParams.get("p");
+
+  const { checkAuthStatus } = useAuthStore();
 
   // Zustand form store - simple persistence
   const {
@@ -238,12 +545,9 @@ const CreateModelPage = () => {
   const [errorDetails, setErrorDetails] = useState([]);
   const [projectScenarios, setProjectScenarios] = useState([]);
   const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expected_scenarios || [""]);
-
-  const projectName = location.state?.projectName || effectivePname || storedFormData.projectName;
-  const projectRunName =
-    urlProjectRunName ||
-    location.state?.projectRunName ||
-    storedFormData.projectRunName;
+  const [requirements, setRequirements] = useState(storedFormData.requirements || {});
+  // Add local state for scenario mappings
+  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenario_mappings || {});
 
   // Clear form data if project context changes
   useEffect(() => {
@@ -272,6 +576,7 @@ const CreateModelPage = () => {
     setError,
     clearErrors,
     trigger,
+    reset // <-- add reset from useForm
   } = useForm({
     defaultValues: {
       name: storedFormData.name || "",
@@ -284,6 +589,7 @@ const CreateModelPage = () => {
       scheduled_end: storedFormData.scheduled_end || "",
       expected_scenarios: storedFormData.expected_scenarios || [""],
       scenario_mappings: storedFormData.scenario_mappings || {},
+      requirements: storedFormData.requirements || {},
       other: storedFormData.other || {}
     }
   });
@@ -401,7 +707,8 @@ const CreateModelPage = () => {
     return true;
   };
 
-  const handleNextStep = async () => {
+  const handleNextStep = async (e) => {
+    if (e && e.preventDefault) e.preventDefault(); // Prevent accidental form submit
     let fieldsToValidate = [];
     switch (currentStep) {
       case 1:
@@ -426,6 +733,11 @@ const CreateModelPage = () => {
     setCurrentStep(prev => prev - 1);
   };
 
+  // Update scenarioMappings state when form changes
+  useEffect(() => {
+    setScenarioMappings(watch("scenario_mappings"));
+  }, [watch("scenario_mappings")]);
+
   // Save form data to store when it changes (debounced)
   const saveFormData = () => {
     const currentData = watch();
@@ -433,6 +745,8 @@ const CreateModelPage = () => {
       ...currentData,
       assumptions,
       expected_scenarios: expectedScenarios,
+      requirements,
+      scenario_mappings: scenarioMappings, // <-- persist scenario mappings
       projectName,
       projectRunName
     });
@@ -442,7 +756,15 @@ const CreateModelPage = () => {
   useEffect(() => {
     const timer = setTimeout(saveFormData, 1000); // Save after 1 second of inactivity
     return () => clearTimeout(timer);
-  }, [watch(), assumptions, expectedScenarios, projectName, projectRunName]);
+  }, [
+    watch(),
+    assumptions,
+    expectedScenarios,
+    requirements,
+    scenarioMappings, // <-- add scenarioMappings to dependency array
+    projectName,
+    projectRunName
+  ]);
 
   const onSubmit = async (data) => {
     clearErrors();
@@ -472,6 +794,28 @@ const CreateModelPage = () => {
       }
     });
     formData.scenario_mappings = cleanedMappings;
+
+    // Clean requirements - convert internal structure to API expected format
+    const cleanedRequirements = {};
+    Object.entries(data.requirements || {}).forEach(([id, reqData]) => {
+      const key = reqData.name?.trim();
+      if (key) {
+        if (reqData.type === "string" && reqData.value.trim() !== "") {
+          cleanedRequirements[key] = reqData.value;
+        } else if (reqData.type === "object") {
+          const cleanedObject = {};
+          Object.entries(reqData.value || {}).forEach(([field, val]) => {
+            if (val && val.trim() !== "") {
+              cleanedObject[field] = val;
+            }
+          });
+          if (Object.keys(cleanedObject).length > 0) {
+            cleanedRequirements[key] = cleanedObject;
+          }
+        }
+      }
+    });
+    formData.requirements = cleanedRequirements;
 
     // Validate dates
     const dateValidation = validateDates(formData.scheduled_start, formData.scheduled_end);
@@ -512,6 +856,7 @@ const CreateModelPage = () => {
       scheduled_end: formData.scheduled_end,
       expected_scenarios: formData.expected_scenarios,
       scenario_mappings: formData.scenario_mappings,
+      requirements: formData.requirements,
       other: formData.other || {}
     };
 
@@ -525,8 +870,27 @@ const CreateModelPage = () => {
       // Clear stored form data on successful submission
       clearFormData();
 
+      // Reset local state and form to initial values
+      setAssumptions([""]);
+      setRequirements({});
+      reset({
+        name: "",
+        display_name: "",
+        type: "",
+        description: "",
+        modeling_team: "",
+        assumptions: [""],
+        scheduled_start: "",
+        scheduled_end: "",
+        expected_scenarios: [""],
+        scenario_mappings: {},
+        requirements: {},
+        other: {}
+      });
+      setCurrentStep(1);
+
       // Navigate to models page on success
-      navigate('/models');
+      navigate(`/projectrun/${encodeURIComponent(projectRunName)}?P=${encodeURIComponent(projectName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to create model");
@@ -604,6 +968,9 @@ const CreateModelPage = () => {
     }
   };
 
+  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Modeling Team", "Review"];
+  const totalSteps = steps.length;
+
   return (
     <>
       <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mCreate: true }} />
@@ -634,9 +1001,10 @@ const CreateModelPage = () => {
             <div className="px-3 py-3">
               <StepIndicator
                 currentStep={currentStep}
-                totalSteps={5}
+                totalSteps={totalSteps}
                 onStepClick={handleStepClick}
                 canNavigateTo={canNavigateToStep}
+                steps={steps}
               />
 
               <div className="step-content">
@@ -800,6 +1168,19 @@ const CreateModelPage = () => {
 
                     {currentStep === 3 && (
                       <div className="step-panel">
+                        <RequirementsSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedRequirements={storedFormData.requirements}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 4 && (
+                      <div className="step-panel">
                         <div className="mb-4">
                           <Form.Label className="form-field-label">Assumptions</Form.Label>
                           <div>
@@ -841,7 +1222,7 @@ const CreateModelPage = () => {
                       </div>
                     )}
 
-                    {currentStep === 4 && (
+                    {currentStep === 5 && (
                       <div className="step-panel">
                         <div className="mb-4">
                           <Form.Label className="form-field-label required-field">Modeling Team</Form.Label>
@@ -882,9 +1263,8 @@ const CreateModelPage = () => {
                       </div>
                     )}
 
-                    {currentStep === 5 && (
+                    {currentStep === 6 && (
                       <div className="step-panel">
-
                         {/* Basic Information Section */}
                         <div className="review-section mb-4">
                           <div className="review-content">
@@ -939,6 +1319,80 @@ const CreateModelPage = () => {
                           </div>
                         </div>
 
+                        {/* Requirements Section */}
+                        <div className="review-section mb-4">
+                          <div className="review-content">
+                            <div className="review-item">
+                              <div className="review-label">Requirements</div>
+                              {allData.requirements &&
+                                Object.values(allData.requirements)
+                                  .filter((value) => {
+                                    // Hide any requirements with empty name or empty value
+                                    if (
+                                      value &&
+                                      typeof value === "object" &&
+                                      ("name" in value || "type" in value || "value" in value)
+                                    ) {
+                                      if (!value.name || value.name.trim() === "") return false;
+                                    }
+                                    if (
+                                      value === "" ||
+                                      (typeof value === "object" && Object.keys(value).length === 0)
+                                    ) {
+                                      return false;
+                                    }
+                                    return true;
+                                  }).length > 0 ? (
+                                <div className="table-responsive rounded">
+                                  <table className="table table-borderless table-sm mb-0">
+                                    <thead>
+                                      <tr>
+                                        <th>Name</th>
+                                        <th>Value</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {Object.values(allData.requirements)
+                                        .filter((value) => {
+                                          if (
+                                            value &&
+                                            typeof value === "object" &&
+                                            ("name" in value || "type" in value || "value" in value)
+                                          ) {
+                                            if (!value.name || value.name.trim() === "") return false;
+                                          }
+                                          if (
+                                            value === "" ||
+                                            (typeof value === "object" && Object.keys(value).length === 0)
+                                          ) {
+                                            return false;
+                                          }
+                                          return true;
+                                        })
+                                        .map((value, idx) => (
+                                          <tr key={idx}>
+                                            <td>{value.name}</td>
+                                            <td>
+                                              {value.type === "object"
+                                                ? (
+                                                    <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+                                                      {JSON.stringify(value.value, null, 2)}
+                                                    </pre>
+                                                  )
+                                                : value.value}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <div className="review-value text-muted">No requirements specified</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Assumptions Section */}
                         <div className="review-section mb-4">
                           <div className="review-content">
@@ -962,7 +1416,23 @@ const CreateModelPage = () => {
                           <div className="review-content">
                             <div className="review-item">
                               <div className="review-label">Modeling Team</div>
-                              <div className="review-value">{allData.modeling_team || 'Not selected'}</div>
+                              <div className="review-value">
+                                {(() => {
+                                  const team = allData.modeling_team;
+                                  if (!team) return 'Not selected';
+                                  if (typeof team === "string") return team;
+                                  if (typeof team === "object" && team !== null) {
+                                    // Render team name if present, else prettified JSON string
+                                    if (team.name) return team.name;
+                                    return (
+                                      <pre style={{ margin: 0, display: "inline", whiteSpace: "pre-wrap" }}>
+                                        {JSON.stringify(team, null, 2)}
+                                      </pre>
+                                    );
+                                  }
+                                  return String(team);
+                                })()}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -981,7 +1451,10 @@ const CreateModelPage = () => {
                       Previous
                     </Button>
 
-                    {currentStep < 5 ? (
+                    {/* Add a hidden submit button to prevent accidental Enter key submission */}
+                    <button type="submit" style={{ display: "none" }} tabIndex={-1} aria-hidden="true"></button>
+
+                    {currentStep !== totalSteps ? (
                       <Button
                         style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
                         variant="primary"

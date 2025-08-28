@@ -19,7 +19,7 @@ const UpcomingMilestonesComponent = ({ projectBasics }) => {
       setEffectivePname(projectName);
       // Prefetch the project data
       queryClient.prefetchQuery(["project", projectName]);
-      navigate("/project/dashboard");
+      navigate(`/dashboard?P=${encodeURIComponent(projectName)}`);
     },
     [setEffectivePname, queryClient, navigate],
   );

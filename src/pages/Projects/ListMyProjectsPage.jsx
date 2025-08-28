@@ -80,14 +80,8 @@ const ListMyProjectsPage = () => {
     (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleProjectClick = (event, project) => {
-    event.preventDefault();
-    setEffectivePname(project.name);
-    navigate("/project/dashboard");
-  };
-
   const handleCreateProjectClick = () => {
-    navigate("/create-project");
+    navigate("/project/new");
   };
 
   const handleSearchChange = (e) => {
@@ -305,7 +299,7 @@ const ListMyProjectsPage = () => {
                                 onClick={e => {
                                   e.preventDefault();
                                   setEffectivePname(project.name);
-                                  navigate("/project/dashboard");
+                                  navigate(`/dashboard?P=${encodeURIComponent(project.name)}`);
                                 }}
                               >
                                 {project.name}

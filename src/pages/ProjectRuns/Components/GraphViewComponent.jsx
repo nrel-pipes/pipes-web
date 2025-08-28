@@ -14,15 +14,13 @@ import Row from "react-bootstrap/Row";
 import { useGetHandoffsQuery } from "../../../hooks/useHandoffQuery";
 import { useGetModelsQuery } from "../../../hooks/useModelQuery";
 import { useGetModelRunsQuery } from "../../../hooks/useModelRunQuery";
-import useDataStore from "../../../stores/DataStore";
 import useUIStore from "../../../stores/UIStore";
 import { DecoratedNode } from "../../Components/graph/DecoratedNode";
 import { createEdgesOverview, createNodesOverview } from "./RunUtils";
 
 
-const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
+const GraphViewComponent = ({projectName, projectRunName, selectedModel, setSelectedModel}) => {
   const getModelColor = useUIStore(state => state.getModelColor);
-  const { effectivePname, effectivePRname } = useDataStore();
 
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
 
@@ -46,17 +44,17 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
   const {
     data: models = [],
     isLoading: isLoadingModels
-  } = useGetModelsQuery(effectivePname, effectivePRname);
+  } = useGetModelsQuery(projectName, projectRunName);
 
   const {
     data: modelRuns = [],
     isLoading: isLoadingModelRuns
-  } = useGetModelRunsQuery(effectivePname, effectivePRname, null);
+  } = useGetModelRunsQuery(projectName, projectRunName, null);
 
   const {
     data: handoffs = [],
     isLoading: isLoadingHandoffs
-  } = useGetHandoffsQuery(effectivePname, effectivePRname);
+  } = useGetHandoffsQuery(projectName, projectRunName);
 
   const [lastCheckIns, setLastCheckIns] = useState({});
 
@@ -115,7 +113,7 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
         const color = getModelColor(model.name);
         model.other = model.other || {};
         model.other.color = color;
-        if (model.context && model.context.projectrun === effectivePRname) {
+        if (model.context && model.context.projectrun === projectRunName) {
           prModels.push(model);
         }
       });
@@ -132,7 +130,7 @@ const GraphViewComponent = ({selectedModel, setSelectedModel}) => {
       setEdges(dcEdges);
     }
   }, [
-    effectivePRname,
+    projectRunName,
     models,
     modelRuns,
     handoffs,
