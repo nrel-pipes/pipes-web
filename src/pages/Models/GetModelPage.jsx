@@ -14,6 +14,7 @@ import ContentHeader from "../Components/ContentHeader";
 
 import "../PageStyles.css";
 import ModelContentHeaderButton from "./Components/ModelContentHeaderButton";
+import "./GetModelPage.css";
 
 const GetModelPage = () => {
   const navigate = useNavigate();
@@ -106,7 +107,7 @@ const GetModelPage = () => {
     );
   }
 
-  // --- Sectioned, professional layout ---
+  // --- Data preparation ---
   const requirements = model.requirements || {};
   const tags = model.tags || [];
   const assumptions = model.assumptions || [];
@@ -116,12 +117,11 @@ const GetModelPage = () => {
   const description = Array.isArray(model.description)
     ? model.description.join("\n")
     : (model.description || "");
-  const other = model.other || {};
 
   return (
     <>
       <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mName: modelName }} />
-      <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+      <Container className="mainContent model-page-container" fluid>
         <Row className="w-100 mx-0">
           <ContentHeader
             title={model.display_name || model.name}
@@ -130,243 +130,249 @@ const GetModelPage = () => {
         </Row>
         <Row className="mt-4">
           <Col xs={12}>
-            {/* Basic Information */}
-            <section style={{ marginBottom: "2.5rem" }}>
-              <h4 className="mb-3" style={{ fontWeight: 700, textAlign: "left" }}>Basic Information</h4>
-              <table style={{ width: "100%", marginBottom: 0, borderCollapse: "separate", borderSpacing: 0 }}>
-                <tbody>
-                  <tr>
-                    <td className="text-muted" style={{ width: 220, textAlign: "left", fontWeight: 500, padding: "8px 12px" }}>Model Name</td>
-                    <td style={{ textAlign: "left", fontWeight: 600, padding: "8px 12px" }}>{model.name || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px" }}>Display Name</td>
-                    <td style={{ textAlign: "left", fontWeight: 600, padding: "8px 12px" }}>{model.display_name || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px" }}>Type</td>
-                    <td style={{ textAlign: "left", padding: "8px 12px" }}>
-                      <Badge bg="success" style={{ fontSize: "1em", fontWeight: 500 }}>
-                        {model.type || "Model"}
-                      </Badge>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px" }}>Project</td>
-                    <td style={{ textAlign: "left", fontWeight: 600, padding: "8px 12px" }}>{model.context?.project || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px" }}>Project Run</td>
-                    <td style={{ textAlign: "left", fontWeight: 600, padding: "8px 12px" }}>{model.context?.projectrun || "—"}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px" }}>Scheduled Start</td>
-                    <td style={{ textAlign: "left", fontWeight: 600, padding: "8px 12px" }}>{formatDate(model.scheduled_start)}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px" }}>Scheduled End</td>
-                    <td style={{ textAlign: "left", fontWeight: 600, padding: "8px 12px" }}>{formatDate(model.scheduled_end)}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px", verticalAlign: "top" }}>Description</td>
-                    <td style={{ textAlign: "left", whiteSpace: "pre-line", padding: "8px 12px" }}>
-                      {description || <span className="text-muted">No description.</span>}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted" style={{ textAlign: "left", fontWeight: 500, padding: "8px 12px", verticalAlign: "top" }}>Tags</td>
-                    <td style={{ textAlign: "left", padding: "8px 12px" }}>
-                      {tags.length > 0 ? (
-                        tags.map((tag, idx) => (
-                          <Badge
-                            key={idx}
-                            bg="primary"
-                            style={{
-                              fontSize: "0.95rem",
-                              fontWeight: 500,
-                              marginRight: 8,
-                              marginBottom: 4,
-                              padding: "0.45em 0.9em",
-                              borderRadius: 16,
-                            }}
-                          >
-                            {tag}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-muted">No tags.</span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
+            {/* Basic Information Section */}
+            <div className="model-section">
+              <div className="model-section-header">
+                <h4 className="model-section-title">Basic Information</h4>
+              </div>
+              <div className="model-section-content">
+                <div className="model-field-row">
+                  <div className="model-field-label">Model Name</div>
+                  <div className="model-field-value">{model.name || "—"}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Display Name</div>
+                  <div className="model-field-value">{model.display_name || "—"}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Type</div>
+                  <div className="model-field-value">
+                    <Badge bg="success" className="model-type-badge">
+                      {model.type || "Model"}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Project</div>
+                  <div className="model-field-value">{model.context?.project || "—"}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Project Run</div>
+                  <div className="model-field-value">{model.context?.projectrun || "—"}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Scheduled Start</div>
+                  <div className="model-field-value">{formatDate(model.scheduled_start)}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Scheduled End</div>
+                  <div className="model-field-value">{formatDate(model.scheduled_end)}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Description</div>
+                  <div className="model-field-value model-field-value-pre">
+                    {description || <span className="model-field-value-empty">No description provided</span>}
+                  </div>
+                </div>
+                {tags.length > 0 && (
+                  <div className="model-field-row">
+                    <div className="model-field-label">Tags</div>
+                    <div className="model-field-value">
+                      {tags.map((tag, idx) => (
+                        <Badge key={idx} bg="secondary" className="model-tag-badge">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Scenarios Section */}
-            <section style={{ marginBottom: "2.5rem" }}>
-              <h4 className="mb-3" style={{ fontWeight: 700, textAlign: "left" }}>Scenarios</h4>
-              <div className="mb-2">
-                <strong className="text-muted">Expected Scenarios:</strong>
-                {expectedScenarios.length > 0 ? (
-                  <ul className="mb-2" style={{ paddingLeft: 24 }}>
-                    {expectedScenarios.map((sc, idx) => (
-                      <li key={idx} style={{ textAlign: "left" }}>{sc}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <span className="text-muted ms-2">None</span>
-                )}
+            {(expectedScenarios.length > 0 || scenarioMappings.length > 0) && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Scenarios</h4>
+                </div>
+                <div className="model-section-content">
+                  {expectedScenarios.length > 0 && (
+                    <div style={{ marginBottom: scenarioMappings.length > 0 ? '32px' : '0' }}>
+                      <h6 className="model-subsection-title">Expected Scenarios</h6>
+                      <ul className="model-list">
+                        {expectedScenarios.map((scenario, idx) => (
+                          <li key={idx} className="model-list-item">
+                            {scenario}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {scenarioMappings.length > 0 && (
+                    <div>
+                      <h6 className="model-subsection-title">Scenario Mappings</h6>
+                      <div className="model-table-container">
+                        <table className="model-table">
+                          <thead>
+                            <tr>
+                              <th className="model-table-header">Model Scenario</th>
+                              <th className="model-table-header">Project Scenarios</th>
+                              <th className="model-table-header">Description</th>
+                              <th className="model-table-header">Other</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {scenarioMappings.map((mapping, idx) => (
+                              <tr key={idx}>
+                                <td className="model-table-cell model-table-cell-bold">
+                                  {mapping.model_scenario}
+                                </td>
+                                <td className="model-table-cell">
+                                  {Array.isArray(mapping.project_scenarios)
+                                    ? mapping.project_scenarios.join(", ")
+                                    : String(mapping.project_scenarios || "")}
+                                </td>
+                                <td className="model-table-cell">
+                                  {Array.isArray(mapping.description)
+                                    ? mapping.description.join(" ")
+                                    : String(mapping.description || "")}
+                                </td>
+                                <td className="model-table-cell">
+                                  {mapping.other && Object.keys(mapping.other).length > 0 ? (
+                                    <pre className="model-code-block">
+                                      {JSON.stringify(mapping.other, null, 2)}
+                                    </pre>
+                                  ) : (
+                                    <span className="model-table-cell-empty">—</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <strong className="text-muted">Scenario Mappings:</strong>
-                {scenarioMappings.length > 0 ? (
-                  <table className="table table-bordered mt-2" style={{ background: "#fff", width: "100%" }}>
-                    <thead>
-                      <tr>
-                        <th style={{ textAlign: "left" }}>Model Scenario</th>
-                        <th style={{ textAlign: "left" }}>Project Scenarios</th>
-                        <th style={{ textAlign: "left" }}>Description</th>
-                        <th style={{ textAlign: "left" }}>Other</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {scenarioMappings.map((mapping, idx) => (
-                        <tr key={idx}>
-                          <td style={{ textAlign: "left" }}>{mapping.model_scenario}</td>
-                          <td style={{ textAlign: "left" }}>
-                            {Array.isArray(mapping.project_scenarios)
-                              ? mapping.project_scenarios.join(", ")
-                              : String(mapping.project_scenarios || "")}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {Array.isArray(mapping.description)
-                              ? mapping.description.join(" ")
-                              : String(mapping.description || "")}
-                          </td>
-                          <td style={{ textAlign: "left" }}>
-                            {mapping.other && Object.keys(mapping.other).length > 0
-                              ? <pre style={{
-                                  margin: 0,
-                                  background: "#f8f9fa",
-                                  borderRadius: 6,
-                                  padding: "0.5em 1em",
-                                  fontSize: "0.97em",
-                                  fontFamily: "Menlo, Monaco, Consolas, monospace",
-                                  color: "#444"
-                                }}>{JSON.stringify(mapping.other, null, 2)}</pre>
-                              : <span className="text-muted">—</span>
-                            }
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <span className="text-muted ms-2">No scenario mappings.</span>
-                )}
-              </div>
-            </section>
+            )}
 
             {/* Assumptions Section */}
-            <section style={{ marginBottom: "2.5rem" }}>
-              <h4 className="mb-3" style={{ fontWeight: 700, textAlign: "left" }}>Assumptions</h4>
-              {assumptions.length > 0 ? (
-                <ul style={{ paddingLeft: 24 }}>
-                  {assumptions.map((a, idx) => (
-                    <li key={idx} style={{ textAlign: "left" }}>{a}</li>
-                  ))}
-                </ul>
-              ) : (
-                <span className="text-muted">No assumptions defined for this model.</span>
-              )}
-            </section>
+            {assumptions.length > 0 && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Assumptions</h4>
+                </div>
+                <div className="model-section-content">
+                  <ul className="model-list">
+                    {assumptions.map((assumption, idx) => (
+                      <li key={idx} className="model-list-item-spaced">
+                        {assumption}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             {/* Requirements Section */}
-            <section style={{ marginBottom: "2.5rem" }}>
-              <h4 className="mb-3" style={{ fontWeight: 700, textAlign: "left" }}>Requirements</h4>
-              {Object.keys(requirements).length > 0 ? (
-                <div style={{ overflowX: "auto" }}>
-                  <table className="table table-bordered" style={{ background: "#fff", width: "100%" }}>
-                    <thead>
-                      <tr>
-                        <th style={{ textAlign: "left" }}>Name</th>
-                        <th style={{ textAlign: "left" }}>Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(requirements).map(([key, value]) => (
-                        <tr key={key}>
-                          <td style={{ fontWeight: 500, textAlign: "left" }}>{key}</td>
-                          <td style={{ textAlign: "left" }}>
-                            {typeof value === "object" && value !== null ? (
-                              <pre style={{
-                                margin: 0,
-                                background: "#f4f6fa",
-                                borderRadius: 6,
-                                padding: "0.7em 1em",
-                                fontSize: "0.97em",
-                                fontFamily: "Menlo, Monaco, Consolas, monospace",
-                                color: "#444"
-                              }}>
-                                {JSON.stringify(value, null, 2)}
-                              </pre>
-                            ) : (
-                              <span>{String(value)}</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {Object.keys(requirements).length > 0 && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Requirements</h4>
                 </div>
-              ) : (
-                <span className="text-muted">No requirements defined for this model.</span>
-              )}
-            </section>
+                <div className="model-section-content">
+                  <div className="model-table-container">
+                    <table className="model-table">
+                      <thead>
+                        <tr>
+                          <th className="model-table-header model-requirements-name-column">Name</th>
+                          <th className="model-table-header">Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(requirements).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="model-table-cell model-table-cell-bold">{key}</td>
+                            <td className="model-table-cell">
+                              {typeof value === "object" && value !== null ? (
+                                <pre className="model-code-block-large">
+                                  {JSON.stringify(value, null, 2)}
+                                </pre>
+                              ) : (
+                                <span>{String(value)}</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Modeling Team Section */}
-            <section style={{ marginBottom: "2.5rem" }}>
-              <h4 className="mb-3" style={{ fontWeight: 700, textAlign: "left" }}>Modeling Team</h4>
-              {modelingTeam && typeof modelingTeam === "object" && modelingTeam.name ? (
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ fontWeight: 600, fontSize: "1.1em" }}>Name: {modelingTeam.name}</div>
-                  {modelingTeam.description && (
-                    <div className="text-muted mb-2" style={{ fontSize: "0.97em" }}>
-                      {modelingTeam.description}
+            {modelingTeam && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Modeling Team</h4>
+                </div>
+                <div className="model-section-content">
+                  {typeof modelingTeam === "object" && modelingTeam.name ? (
+                    <div>
+                      <div className="model-field-row">
+                        <div className="model-field-label">Team Name</div>
+                        <div className="model-field-value model-team-name-value">{modelingTeam.name}</div>
+                      </div>
+                      {modelingTeam.description && (
+                        <div className="model-field-row">
+                          <div className="model-field-label">Description</div>
+                          <div className="model-field-value">{modelingTeam.description}</div>
+                        </div>
+                      )}
+                      {Array.isArray(modelingTeam.members) && modelingTeam.members.length > 0 && (
+                        <div className="model-subsection-divider">
+                          <h6 className="model-subsection-title">Team Members</h6>
+                          <div className="model-table-container">
+                            <table className="model-table">
+                              <thead>
+                                <tr>
+                                  <th className="model-table-header">Name</th>
+                                  <th className="model-table-header">Email</th>
+                                  <th className="model-table-header">Organization</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {modelingTeam.members.map((member, idx) => (
+                                  <tr key={idx}>
+                                    <td className="model-table-cell model-table-cell-bold">
+                                      {member.first_name} {member.last_name}
+                                    </td>
+                                    <td className="model-table-cell">
+                                      <a
+                                        href={`mailto:${member.email}`}
+                                        className="model-table-cell-link"
+                                      >
+                                        {member.email}
+                                      </a>
+                                    </td>
+                                    <td className="model-table-cell">{member.organization}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {Array.isArray(modelingTeam.members) && modelingTeam.members.length > 0 && (
-                    <div className="mt-2">
-                      <div style={{ fontWeight: 500, marginBottom: 6 }}>Members:</div>
-                      <table className="table table-sm table-bordered" style={{ background: "#fff", width: "100%" }}>
-                        <thead>
-                          <tr>
-                            <th style={{ textAlign: "left" }}>Name</th>
-                            <th style={{ textAlign: "left" }}>Email</th>
-                            <th style={{ textAlign: "left" }}>Organization</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {modelingTeam.members.map((member, idx) => (
-                            <tr key={idx}>
-                              <td style={{ textAlign: "left" }}>
-                                {member.first_name} {member.last_name}
-                              </td>
-                              <td style={{ textAlign: "left" }}>{member.email}</td>
-                              <td style={{ textAlign: "left" }}>{member.organization}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                  ) : (
+                    <div className="model-field-value">{modelingTeam}</div>
                   )}
                 </div>
-              ) : modelingTeam ? (
-                <span style={{ textAlign: "left" }}>{modelingTeam}</span>
-              ) : (
-                <span className="text-muted">No modeling team specified.</span>
-              )}
-            </section>
+              </div>
+            )}
           </Col>
         </Row>
       </Container>
