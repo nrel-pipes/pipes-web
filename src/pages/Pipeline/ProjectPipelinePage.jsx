@@ -171,7 +171,7 @@ const ProjectPipelinePage = () => {
                   // Return empty array instead of throwing to prevent breaking the UI
                   return [];
                 }),
-                enabled: project,
+                enabled: !!project,
                 onSuccess: (data) => {
                   setDatasetsMap(prev => {
                     const updated = new Map(prev);
