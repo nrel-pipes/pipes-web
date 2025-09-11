@@ -1,0 +1,136 @@
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+
+import "../PageStyles.css";
+import "./GetProjectRunPage.css";
+
+import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
+import useAuthStore from "../../stores/AuthStore";
+
+import DataViewComponent from "./Components/DataViewComponent";
+import GraphViewComponent from "./Components/GraphViewComponent";
+import ProjectRunContentHeaderButton from "./Components/ProjectRunContentHeaderButton";
+
+import NavbarSub from "../../layouts/NavbarSub";
+import ContentHeader from "../Components/ContentHeader";
+
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+
+const GetProjectRunPage = () => {
+  const { projectRunName } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
+
+  const navigate = useNavigate();
+  const { checkAuthStatus } = useAuthStore();
+
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [isGraphExpanded, setIsGraphExpanded] = useState(false);
+
+  const toggleGraphExpansion = () => {
+    setIsGraphExpanded(!isGraphExpanded);
+  };
+
+  const [projectRunFromState, setProjectRunFromState] = useState(
+    location.state?.projectRun || null
+  );
+
+  const { data: projectRunFetched, isLoading } = useGetProjectRunQuery(
+    projectName,
+    projectRunName,
+    {
+      enabled: !projectRunFromState
+    }
+  );
+
+  // Use project run from state or from API
+  const projectRun = projectRunFromState || projectRunFetched;
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await checkAuthStatus();
+
+        if (!isAuthenticated) {
+          navigate("/login");
+          return;
+        }
+
+      } catch (error) {
+        console.error("Authentication error:", error);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [
+    navigate,
+    checkAuthStatus,
+    projectRun,
+    projectRunFromState
+  ]);
+
+  if (isLoading) {
+    return (
+      <Container className="mainContent text-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Loading project run data...</p>
+      </Container>
+    );
+  }
+
+  if (!projectRun) {
+    return null;
+  }
+
+  return (
+    <>
+      <NavbarSub navData = {{pList: true, pName: projectName, prName: projectRun.name}} />
+      <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+        <Row className="w-100 mx-0">
+          <ContentHeader title="Project Run" cornerMark={projectRun.name} headerButton={<ProjectRunContentHeaderButton projectName={projectName} projectRunName={projectRun.name} />} />
+        </Row>
+        <Row id="projectrun-flowview" className="pt-3" style={{ borderTop: '1px solid #dee2e6' }}>
+          <Col md={isGraphExpanded ? 12 : 8}>
+            <GraphViewComponent
+              projectName={projectName}
+              projectRunName={projectRunName}
+              selectedModel={selectedModel}
+              setSelectedModel={setSelectedModel}
+            />
+          </Col>
+          {!isGraphExpanded && (
+            <Col sm={4} className="border-start text-start ml-4 data-view-col">
+              <DataViewComponent
+                selected={selectedModel}
+                projectRun={projectRun}
+                showProjectRunData={!selectedModel}
+              />
+            </Col>
+          )}
+        </Row>
+        <div
+          className={`toggle-button-container2 ${isGraphExpanded ? 'expanded' : ''}`}
+          onClick={toggleGraphExpansion}
+          title={isGraphExpanded ? "Show data panel" : "Expand graph"}
+        >
+          <FontAwesomeIcon
+            icon={isGraphExpanded ? faChevronLeft : faChevronRight}
+            className="toggle-button"
+          />
+        </div>
+      </Container>
+    </>
+  );
+};
+
+export default GetProjectRunPage;

@@ -1,0 +1,379 @@
+import { graphlib, layout } from "dagre";
+import { MarkerType } from "reactflow";
+
+import * as d3 from "d3";
+
+export const modelTypeMap = d3
+  .scaleOrdinal()
+  .domain([
+    "dsgrid",
+    "rpm",
+    "dgen",
+    "ComStock",
+    "ResStock",
+    "jobs",
+    "engage",
+    "load",
+    "sienna",
+    "pras",
+    "rev",
+  ])
+  .range([
+    "Loads",
+    "Capacity Expansion",
+    "Distributed Generation",
+    "Building Loads",
+    "Building Loads",
+    "Jobs Analysis",
+    "Capacity Expansion",
+    "Electricity Generation",
+    "Production Cost Model",
+    "Resource Adequacy",
+    "Renewable Resource Potential",
+  ])
+  .unknown("");
+
+const nodeWidth = 130;
+const nodeHeight = 130;
+const scenarioNodeWidth = 320;
+
+export function createEdgesOverview(edges) {
+  // Track used IDs to ensure uniqueness
+  const usedIds = new Set();
+  const usedHandles = new Set();
+  
+  return edges.map((edge, index) => {
+    // Create unique edge ID
+    let baseId = edge.from_model + "_" + edge.to_model;
+    let uniqueId = baseId;
+    let counter = 1;
+    
+    while (usedIds.has(uniqueId)) {
+      uniqueId = `${baseId}_${counter}`;
+      counter++;
+    }
+    usedIds.add(uniqueId);
+    
+    // Create unique target handle
+    let baseTargetHandle = edge.to_model + "_input_" + edge.from_model;
+    let uniqueTargetHandle = baseTargetHandle;
+    counter = 1;
+    
+    while (usedHandles.has(uniqueTargetHandle)) {
+      uniqueTargetHandle = `${baseTargetHandle}_${counter}`;
+      counter++;
+    }
+    usedHandles.add(uniqueTargetHandle);
+    
+    // Create unique source handle
+    let baseSourceHandle = edge.from_model + "_output_" + edge.to_model;
+    let uniqueSourceHandle = baseSourceHandle;
+    counter = 1;
+    
+    while (usedHandles.has(uniqueSourceHandle)) {
+      uniqueSourceHandle = `${baseSourceHandle}_${counter}`;
+      counter++;
+    }
+    usedHandles.add(uniqueSourceHandle);
+    
+    return {
+      id: uniqueId,
+      source: edge.from_model,
+      target: edge.to_model,
+      targetHandle: uniqueTargetHandle,
+      sourceHandle: uniqueSourceHandle,
+      style: {},
+      data: edge.description,
+      animated: false,
+      type: "smoothstep",
+      interactionWidth: 0,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 20,
+        height: 20,
+      },
+    };
+  });
+}
+
+export function createNodesOverview(models, modelRuns, lastCheckIns, edges) {
+  let names = edges.length
+    ? [
+        ...new Set([
+          ...edges.map((edge) => edge.from_model),
+          ...edges.map((edge) => edge.to_model),
+        ]),
+      ]
+    : models.map((model) => model.name);
+
+  let nodePos = getLayout(names, edges);
+
+  // Subset the models based on ones that currently in the edge network
+
+  models = models.filter((m) => ~names.indexOf(m.name));
+
+  // Create parent labels from the model types
+  var parents = [];
+  const defaultColor = "#084343";
+  // Build the model nodes
+  let nodes = models.map((model, index) => {
+    const runs = modelRuns[model.name];
+
+    const parent = parents.find((p) => p.name === model.type);
+    const x = nodePos[model.name].x - nodeWidth / 2;
+    const y = nodePos[model.name].y - (nodeHeight + 50) / 2;
+    const lastCheckIn = lastCheckIns[model.name]
+      ? lastCheckIns[model.name].toLocaleDateString()
+      : null;
+
+    const type = modelTypeMap(model.name);
+    let numCheckIns = runs
+      ? Object.values(runs)
+          .map((run) => run.datasets.length)
+          .reduce((a, b) => a + b, 0)
+      : 0;
+    const totalHandoffs = runs
+      ? Object.values(runs)
+          .map((run) => run.model_run_props.handoffs.length)
+          .reduce((a, b) => a + b, 0)
+      : 0;
+    let handoffProgress = runs
+      ? Object.values(runs)
+          .map((run) => {
+            const datasets = run.datasets;
+            const doneDatasetIds = datasets.map((d) => d.dataset_id);
+            // const doneTasks = run.tasks.map((task) => task.subtask_ids).flat();
+            // const plannedTasks = run.model_run_props.handoffs
+            //   .map((handoff) => {
+
+            //     const transformIds = handoff.transformation.map((t) => t.id);
+            //     const visIds = handoff.visualization.map((v) => v.id);
+            //     const qaqcIds = handoff.qaqc.map((q) => q.id);
+            //     return [...transformIds, ...visIds, ...qaqcIds];
+            //   })
+            //   .flat();
+            // const taskProgress =
+            //   doneTasks && plannedTasks.length > 0
+            //     ? plannedTasks
+            //         .map((t) => (doneTasks.includes(t) ? 1 : 0))
+            //         .reduce((a, b) => a + b, 0) / plannedTasks.length
+            //     : plannedTasks.length > 0
+            //     ? 0
+            //     : 1;
+
+            const plannedDatasetIds = run.model_run_props.datasets.map(
+              (d) => d.dataset_id
+            );
+            const datasetProgress =
+              plannedDatasetIds && doneDatasetIds
+                ? plannedDatasetIds
+                    .map((d) => (doneDatasetIds.includes(d) ? 1 : 0))
+                    .reduce((a, b) => a + b, 0) / plannedDatasetIds.length
+                : plannedDatasetIds
+                ? 0
+                : 1;
+
+            return { datasets: datasetProgress, tasks: 0 }; //taskProgress };
+          })
+          .reduce(
+            (a, b) => {
+              return {
+                datasets: a.datasets + b.datasets,
+                tasks: a.tasks + b.tasks,
+              };
+            },
+            { datasets: 0, tasks: 0 }
+          )
+      : { datasets: 0, tasks: 0 };
+    const numRuns = runs ? Object.keys(runs).length : 1;
+
+    handoffProgress.datasets = runs
+      ? handoffProgress.datasets / numRuns
+      : handoffProgress.datasets;
+
+    handoffProgress.tasks = runs
+      ? handoffProgress.tasks / numRuns
+      : handoffProgress.tasks;
+    const color = "color" in model.other ? model.other.color : defaultColor;
+
+    // TODO: hard-code, refactor later
+    handoffProgress = {
+      datasets: Math.random() * 0.5 + 0.5,
+      tasks: Math.random() * 0.5 + 0.5,
+    }
+    numCheckIns = Math.floor(Math.random() * 200) + 1;
+
+    // Track used handle IDs to ensure uniqueness
+    const usedInputHandles = new Set();
+    const usedOutputHandles = new Set();
+    
+    // Create unique handles for inputs
+    const uniqueInputs = edges
+      .filter((edge) => edge.to_model === model.name)
+      .map((e, idx) => {
+        // Create base handle ID
+        const baseHandleId = model.name + "_input_" + e.from_model;
+        let uniqueHandleId = baseHandleId;
+        let counter = 1;
+        
+        // Make the handle ID unique if needed
+        while (usedInputHandles.has(uniqueHandleId)) {
+          uniqueHandleId = `${baseHandleId}_${counter}`;
+          counter++;
+        }
+        
+        usedInputHandles.add(uniqueHandleId);
+        return uniqueHandleId;
+      });
+    
+    // Create unique handles for outputs
+    const uniqueOutputs = edges
+      .filter((edge) => edge.from_model === model.name)
+      .map((e, idx) => {
+        // Create base handle ID
+        const baseHandleId = model.name + "_output_" + e.to_model;
+        let uniqueHandleId = baseHandleId;
+        let counter = 1;
+        
+        // Make the handle ID unique if needed
+        while (usedOutputHandles.has(uniqueHandleId)) {
+          uniqueHandleId = `${baseHandleId}_${counter}`;
+          counter++;
+        }
+        
+        usedOutputHandles.add(uniqueHandleId);
+        return uniqueHandleId;
+      });
+
+    return {
+      id: model.name,
+      data: {
+        label: model.name,
+        type: type,
+        last_checkin: lastCheckIn,
+        checkins: numCheckIns,
+        total_handoffs: totalHandoffs,
+        percentages: handoffProgress,
+        handoffs: [{ value: 0, color: "", label: "" }],
+        inputs: uniqueInputs,  // Use the unique input handles
+        outputs: uniqueOutputs, // Use the unique output handles
+        color: color,
+      },
+
+      type: "custom",
+      position: {
+        x: parent ? x - parent.position.x : x,
+        y: parent ? y - parent.position.y : y,
+      },
+      style: {
+        width: nodeWidth,
+        border: "transparent",
+      },
+    };
+  });
+
+  return parents.concat(nodes);
+}
+
+export function createScenarioNodes(model_scenarios, scenarios, colorMap) {
+  // Build the model nodes
+
+  let nodes = model_scenarios.map((scenario, index) => {
+    let x = -scenarioNodeWidth / 2;
+    let y = (index * nodeHeight) / (model_scenarios.length / 3);
+
+    const color = colorMap[scenario.model_scenario];
+
+    return {
+      id: "model_" + scenario.model_scenario,
+      data: {
+        label: scenario.model_scenario,
+        scope: "model",
+      },
+      type: "scenario",
+      sourcePosition: "right",
+      position: {
+        x: x,
+        y: y,
+      },
+      style: {
+        backgroundColor: color,
+      },
+    };
+  });
+
+  let pnodes = scenarios.map((scenario, index) => {
+    let x = 2 * nodeWidth;
+    let y = (index * nodeHeight) / 3;
+
+    const color = colorMap[scenario.name]
+
+    return {
+      id: "project_" + scenario.name,
+      data: {
+        label: scenario.name,
+        scope: "project",
+      },
+      type: "scenario",
+      targetPosition: "left",
+      position: {
+        x: x,
+        y: y,
+      },
+      style: {
+        backgroundColor: color,
+      },
+    };
+  });
+
+  return nodes.concat(pnodes);
+}
+
+export function createScenarioEdges(mapping) {
+  return mapping
+    .map((edge, index) => {
+      return edge.project_scenarios.map((ps) => {
+        return {
+          id: edge.model_scenario + "_" + ps,
+          source: "model_" + edge.model_scenario,
+          target: "project_" + ps,
+          animated: false,
+          interactionWidth: 0,
+          connectionMode: "loose",
+          type: "simplebezier",
+        };
+      });
+    })
+    .flat();
+}
+
+function getLayout(models, edges) {
+  let g = new graphlib.Graph();
+  g.setGraph({ rankdir: "LR" });
+  g.setDefaultEdgeLabel(function () {
+    return {};
+  });
+
+  models.forEach((model) => {
+    g.setNode(model, {
+      label: model,
+      width: nodeWidth,
+      height: nodeHeight + 50,
+    });
+  });
+  
+  if (edges.length > 0) {
+    edges.forEach((edge) => {
+      g.setEdge(edge.from_model, edge.to_model);
+    });
+  } else {
+    models.forEach((model, i) => {
+      if (i > 0) {
+        g.setEdge(models[i - 1], model);
+      }
+    });
+  }
+  
+  layout(g);
+  return g._nodes;
+}

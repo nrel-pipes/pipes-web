@@ -4,19 +4,15 @@ import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
-import useDataStore from "../../../stores/DataStore";
 import "../../Components/Cards.css";
 import "./ProjectRunsComponent.css";
 
 const ProjectRunsComponent = ({ projectRuns, isLoading, isError }) => {
-  const { setEffectivePRname } = useDataStore();
   const navigate = useNavigate();
 
   const handleProjectRunClick = (projectRun) => {
     if (projectRun && projectRun.name) {
-      setEffectivePRname(projectRun.name);
-
-      navigate("/projectrun", {
+      navigate(`/projectrun/${encodeURIComponent(projectRun.name)}?P=${encodeURIComponent(projectRun.context.project)}`, {
         state: {
           projectRun: projectRun,
           timestamp: Date.now()

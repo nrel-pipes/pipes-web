@@ -89,7 +89,7 @@ export const updateProject = async ({ projectName, data }) => {
 
 export const useUpdateProjectMutation = () => {
   const queryClient = useQueryClient();
-  const { setEffectivePname, clearEffectivePRname } = useDataStore();
+  const { setEffectivePname } = useDataStore();
 
   return useMutation({
     mutationFn: ({ projectName, data }) => updateProject({ projectName, data }),
@@ -102,9 +102,6 @@ export const useUpdateProjectMutation = () => {
         const projectNameChanged = oldProjectName !== newProjectName;
 
         if (projectNameChanged) {
-          // If project name changed, clear the project run name since it's no longer valid
-          clearEffectivePRname();
-
           // Remove old project cache entries
           queryClient.removeQueries({ queryKey: ["effective-project", oldProjectName] });
           queryClient.removeQueries({ queryKey: ["project-runs", oldProjectName] });

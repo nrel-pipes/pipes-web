@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,17 +23,20 @@ import ScenariosComponent from "./Components/ScenariosComponent";
 import ScheduleComponent from "./Components/ScheduleComponent";
 
 import { useGetProjectRunsQuery } from "../../hooks/useProjectRunQuery";
-import useDataStore from "../../stores/DataStore";
 
 import ContentHeader from "../Components/ContentHeader";
-import ProjectDropdownButton from "./Components/ProjectDropdownButton";
+import ProjectContentHeaderButton from "./Components/ProjectContentHeaderButton";
 
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
+
 
 const ProjectDashboardPage = () => {
   const navigate = useNavigate();
   const { checkAuthStatus, currentUser } = useAuthStore();
-  const { effectivePname } = useDataStore();
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
 
   // Helper function to get formatted owner name
   const getOwnerDisplayName = (owner) => {
@@ -100,7 +103,7 @@ const ProjectDashboardPage = () => {
     isLoading,
     isError,
     error
-  } = useGetProjectQuery(effectivePname);
+  } = useGetProjectQuery(projectName);
 
   // fetch project runs data
   const {
@@ -109,7 +112,7 @@ const ProjectDashboardPage = () => {
     isError: isErrorRuns,
     error: errorRuns,
     refetch: refetchRuns
-  } = useGetProjectRunsQuery(effectivePname)
+  } = useGetProjectRunsQuery(projectName)
 
   // Add effect to refetch when returning to the page
   useEffect(() => {
@@ -158,14 +161,14 @@ const ProjectDashboardPage = () => {
 
   // NOTE: Hard-coded. Check if delete should be disabled for pipes101 project
   // Allow deletion if user is a superuser, otherwise disable for pipes101
-  const isDropdownButtonDisabled = project.name === 'pipes101' && currentUser?.is_superuser !== true;
+  const isContentHeaderButtonDisabled = project.name === 'pipes101' && currentUser?.is_superuser !== true;
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: effectivePname }} />
+      <NavbarSub navData={{ pList: true, pName: projectName }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Project Dashboard" headerButton={<ProjectDropdownButton isDisabled={isDropdownButtonDisabled} />} />
+          <ContentHeader title="Project Dashboard" headerButton={<ProjectContentHeaderButton projectName={project.name} isDisabled={isContentHeaderButtonDisabled} />} />
         </Row>
         <Row className="dashboard-header mb-4">
           <Col lg={8}>
@@ -182,7 +185,7 @@ const ProjectDashboardPage = () => {
                 <div className="metadata-item">
                   <span className="metadata-label">Owner:</span>
                   <span className="metadata-value mb-2">
-                    <label style={{ color: "green"}} className="project-name">
+                    <label style={{ color: "green"}}>
                       {getOwnerDisplayName(project.owner)}
                     </label>
                   </span>
@@ -241,6 +244,10 @@ const ProjectDashboardPage = () => {
                   <Badge bg="info" pill>{project.assumptions?.length || 0}</Badge>
                 </div>
                 <div className="d-flex justify-content-between align-items-center mt-2">
+                  <span>Sensitivities</span>
+                  <Badge bg="info" pill>{project.sensitivities?.length || 0}</Badge>
+                </div>
+                <div className="d-flex justify-content-between align-items-center mt-2">
                   <span>Scenarios</span>
                   <Badge bg="warning" text="dark" pill>{project.scenarios?.length || 0}</Badge>
                 </div>
@@ -253,32 +260,15 @@ const ProjectDashboardPage = () => {
           </Col>
         </Row>
 
-        <hr className="mb-4" />
         <Row>
           {/* Project Runs - Highlighted as important activities */}
           <Col lg={12} className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-              <h3 className="section-title">Activities</h3>
-              {/* <button
-                className="btn create-run-button"
-                style={{
-                  backgroundColor: 'rgb(71, 148, 218)',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  width: '180px'
-                }}
-                onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
-                onMouseUp={(e) => e.currentTarget.style.color = 'white'}
-                onClick={() => navigate("/create-projectrun", {
-                  state: { projectName: project.name }
-                })}
-              >
-                + Create project run
-              </button> */}
+              <h3 className="section-title" style={{ fontSize: "1.5rem" }}>Activities</h3>
             </div>
             <Card className="dashboard-card highlight-card">
               <Card.Header className="d-flex justify-content-between align-items-center highlight-header">
-                <h4 className="smallCaps mb-0" style={{color: '#fff'}}>Project Runs</h4>
+                <h4 className="smallCaps mb-0">Project Runs</h4>
                 <Badge bg="primary" pill>{projectRuns?.length || 0}</Badge>
               </Card.Header>
               <Card.Body className="dashboard-card-body">
@@ -297,11 +287,11 @@ const ProjectDashboardPage = () => {
           {/* Project Attributes Group */}
           <Col lg={12}>
             <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-              <h3 className="section-title">Attributes</h3>
+              <h3 className="section-title" style={{ fontSize: "1.5rem" }}>Attributes</h3>
             </div>
             <Row>
               {/* Requirements Section */}
-              <Col md={12} lg={6} className="mb-4">
+              <Col md={12} lg={12} className="mb-4">
                 <Card className="dashboard-card attribute-card">
                   <Card.Header className="d-flex justify-content-between align-items-center">
                     <h4 className="smallCaps mb-0">Requirements</h4>
@@ -316,7 +306,8 @@ const ProjectDashboardPage = () => {
                   </Card.Body>
                 </Card>
               </Col>
-
+            </Row>
+            <Row>
               {/* Assumptions Section */}
               <Col md={12} lg={6} className="mb-4">
                 <Card className="dashboard-card attribute-card">
@@ -331,8 +322,41 @@ const ProjectDashboardPage = () => {
                   </Card.Body>
                 </Card>
               </Col>
-            </Row>
+              {/* Sensitivity Section */}
+              <Col md={12} lg={6} className="mb-4">
+                <Card className="dashboard-card attribute-card">
+                  <Card.Header className="d-flex justify-content-between align-items-center">
+                    <h4 className="smallCaps mb-0">Sensitivity</h4>
+                    <Badge bg="info">{project.sensitivities?.length || 0}</Badge>
+                  </Card.Header>
+                  <Card.Body className="dashboard-card-body">
+                    <div className="sensitivity-content">
+                      {project.sensitivities && project.sensitivities.length > 0 ? (
+                        <table className="table table-sm table-bordered" style={{ background: "#fff", fontSize: "0.98em" }}>
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: "left" }}>Name</th>
+                              <th style={{ textAlign: "left" }}>Description</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {project.sensitivities.map((item, index) => (
+                              <tr key={index}>
+                                <td style={{ textAlign: "left", fontWeight: 500 }}>{item.name}</td>
+                                <td style={{ textAlign: "left" }}>{item.description}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <span className="text-muted">No sensitivity data available</span>
+                      )}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
 
+            </Row>
             <Row>
               {/* Scenarios Section */}
               <Col md={12} lg={12} className="mb-4">

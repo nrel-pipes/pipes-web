@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FaAngleDoubleLeft,
   FaBars,
   FaCalendarAlt,
+  FaCube,
   FaFlag,
   FaKey,
   FaLayerGroup,
@@ -11,6 +12,7 @@ import {
   FaSignOutAlt,
   FaTachometerAlt,
   FaUser,
+  FaUserFriends,
   FaUsers
 } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
@@ -21,14 +23,16 @@ import './styles/NavbarSide.css';
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(true);
   const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
   const { effectivePname } = useDataStore();
   const { currentUser } = useAuthStore();
+  const projectName = searchParams.get('P') || effectivePname;
 
   // Check if the user is an admin
   const isAdmin = currentUser?.is_superuser === true;
 
-  // Check if a project is selected
-  const projectSelected = !!effectivePname;
+  // Use effectivePname for project context
+  const hasProject = !!effectivePname;
 
   const toggleSidebar = () => {
     setExpanded(!expanded);
@@ -51,14 +55,28 @@ const Sidebar = () => {
 
   // Function to determine if a link should be disabled
   const getNavItemClass = (path) => {
-    // Check if this is a project-specific page that should be disabled
-    const shouldDisable = ['/project/dashboard', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected;
+    // Only disable if project context is missing
+    const shouldDisable = [
+      '/dashboard',
+      '/models',
+      '/pipeline',
+      '/schedule',
+      '/teams'
+    ].includes(path) && !hasProject;
     return `${isActive(path)} ${shouldDisable ? 'disabled' : ''}`;
   };
 
   // Function to handle click on disabled links
   const handleNavClick = (e, path) => {
-    if (['/project/dashboard', '/project/pipeline', '/project/schedule'].includes(path) && !projectSelected) {
+    if (
+      [
+        '/dashboard',
+        '/models',
+        '/pipeline',
+        '/schedule',
+        '/teams'
+      ].includes(path) && !hasProject
+    ) {
       e.preventDefault();
     }
   };
@@ -90,10 +108,10 @@ const Sidebar = () => {
 
           <li>
             <Link
-              to="/project/dashboard"
-              className={getNavItemClass("/project/dashboard")}
-              title={projectSelected ? "Dashboard" : "Select a project first"}
-              onClick={(e) => handleNavClick(e, "/project/dashboard")}
+              to={`/dashboard?P=${encodeURIComponent(projectName)}`}
+              className={getNavItemClass("/dashboard")}
+              title={projectName ? "Dashboard" : "Select a project first"}
+              onClick={(e) => handleNavClick(e, "/dashboard")}
             >
               <span className="icon"><FaTachometerAlt /></span>
               {expanded && <span className="nav-text">Dashboard</span>}
@@ -101,10 +119,21 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
-              to="/project/pipeline"
-              className={getNavItemClass("/project/pipeline")}
-              title={projectSelected ? "Pipeline" : "Select a project first"}
-              onClick={(e) => handleNavClick(e, "/project/pipeline")}
+              to={`/models?P=${encodeURIComponent(projectName)}`}
+              className={getNavItemClass("/models")}
+              title={projectName ? "Models" : "Select a project first"}
+              onClick={(e) => handleNavClick(e, "/models")}
+            >
+              <span className="icon"><FaCube /></span>
+              {expanded && <span className="nav-text">Models</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to={`/pipeline?P=${encodeURIComponent(projectName)}`}
+              className={getNavItemClass("/pipeline")}
+              title={projectName ? "Pipeline" : "Select a project first"}
+              onClick={(e) => handleNavClick(e, "/pipeline")}
             >
               <span className="icon"><FaProjectDiagram /></span>
               {expanded && <span className="nav-text">Pipeline</span>}
@@ -112,13 +141,24 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
-              to="/project/schedule"
-              className={getNavItemClass("/project/schedule")}
-              title={projectSelected ? "Schedule" : "Select a project first"}
-              onClick={(e) => handleNavClick(e, "/project/schedule")}
+              to={`/schedule?P=${encodeURIComponent(projectName)}`}
+              className={getNavItemClass("/schedule")}
+              title={projectName ? "Schedule" : "Select a project first"}
+              onClick={(e) => handleNavClick(e, "/schedule")}
             >
               <span className="icon"><FaCalendarAlt /></span>
               {expanded && <span className="nav-text">Schedule</span>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to={`/teams?P=${encodeURIComponent(projectName)}`}
+              className={getNavItemClass("/teams")}
+              title={projectName ? "Models" : "Select a project first"}
+              onClick={(e) => handleNavClick(e, "/teams")}
+            >
+              <span className="icon"><FaUserFriends /></span>
+              {expanded && <span className="nav-text">Teams</span>}
             </Link>
           </li>
 
