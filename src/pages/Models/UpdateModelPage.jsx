@@ -1,4 +1,5 @@
-import { Minus, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -10,29 +11,27 @@ import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
+import AssumptionsSection from "./Components/StepFroms/AssumptionsSection";
 import BasicInfoSection from "./Components/StepFroms/BasicInfoSection";
-import ScenarioMappingsSection from "./Components/StepFroms/ScenarioMappingsSection";
+import ExpectedScenariosSection from "./Components/StepFroms/ExpectedScenariosSection";
+import FinalReviewSection from "./Components/StepFroms/FinalReviewSection";
+import ModelingTeamSection from "./Components/StepFroms/ModelingTeamSection";
+import RequirementsSection from "./Components/StepFroms/RequirementsSection";
 
 import { useGetModelQuery, useUpdateModelMutation } from "../../hooks/useModelQuery";
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
-import { useListTeamsQuery } from "../../hooks/useTeamQuery";
-import { useCreateModelFormStore } from "../../stores/FormStore/ModelStore";
-
-import { useEffect, useState } from "react";
+import { useUpdateModelFormStore } from "../../stores/FormStore/ModelStore";
 
 import "../FormStyles.css";
 import "../PageStyles.css";
 import "./CreateModelPage.css";
 
 
-const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) => {
-  const steps = ["Basic Info", "Scenarios", "Assumptions", "Modeling Team", "Review"];
+const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, steps }) => {
   const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
-
   return (
     <div className="step-form-container">
-      {/* Progress Bar */}
       <div className="progress-wrapper">
         <div className="progress">
           <div
@@ -45,8 +44,6 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) 
           />
         </div>
       </div>
-
-      {/* Step Navigation */}
       <ul className="nav nav-pills nav-justified step-nav">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
@@ -73,68 +70,83 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) 
 const UpdateModelPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { checkAuthStatus } = useAuthStore();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
+  const projectRunName = searchParams.get("p");
   const { modelName } = useParams();
 
-  // Get params from URL
-  const searchParams = new URLSearchParams(location.search);
-  const projectName = searchParams.get('P');
-  const projectRunName = searchParams.get('p');
+  const { checkAuthStatus } = useAuthStore();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        setIsAuthChecking(true);
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
+          navigate("/login");
+        }
+      } catch (error) {
+        navigate("/login");
+      } finally {
+        setIsAuthChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate, checkAuthStatus]);
 
   // Zustand form store - simple persistence
   const {
-    formData,
+    formData: storedFormData,
     updateFormData,
-    clearFormData,
-  } = useCreateModelFormStore();
+    clearFormData
+  } = useUpdateModelFormStore();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
   const [projectScenarios, setProjectScenarios] = useState([]);
-  const [expectedScenarios, setExpectedScenarios] = useState([""]);
-  const [assumptions, setAssumptions] = useState([""]);
+  const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
+  const [requirements, setRequirements] = useState(storedFormData.requirements || {});
+  const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
+  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenarioMappings || {});
+  const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
 
-  // Fetch model data for update
-  const {
-    data: modelData,
-    isLoading: isLoadingModel,
-    isError: isErrorModel,
-    error: errorModel,
-  } = useGetModelQuery(projectName, projectRunName, modelName);
+  // Clear form data if project context changes
+  useEffect(() => {
+    if (projectName && projectRunName) {
+      if (storedFormData.projectName && storedFormData.projectRunName &&
+          (storedFormData.projectName !== projectName || storedFormData.projectRunName !== projectRunName)) {
+        clearFormData();
+      }
+    }
+  }, [projectName, projectRunName, storedFormData.projectName, storedFormData.projectRunName, clearFormData]);
 
-  // Fetch teams for the modeling team dropdown
-  const { data: teams = [] } = useListTeamsQuery(projectName, {
-    enabled: !!projectName,
-  });
-
-  // Fetch project and project run
+  // Load project data
   const {
     data: currentProject,
     isLoading: isLoadingProject,
   } = useGetProjectQuery(projectName);
 
+  // Load project run data
   const {
     data: currentProjectRun,
     isLoading: isLoadingProjectRun,
   } = useGetProjectRunQuery(projectName, projectRunName);
 
+  // Load existing model data
+  const {
+    data: existingModel,
+    isLoading: isLoadingModel,
+    error: modelError
+  } = useGetModelQuery(projectName, projectRunName, modelName);
+
   // Update model mutation
   const updateModelMutation = useUpdateModelMutation();
 
-  // Authentication check
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isAuthenticated = await checkAuthStatus();
-      if (!isAuthenticated) {
-        navigate("/login");
-      }
-    };
-    checkAuth();
-  }, [navigate, checkAuthStatus]);
-
-  // Initialize react-hook-form
+  // Initialize react-hook-form with existing model data or defaults
   const {
     register,
     control,
@@ -145,162 +157,148 @@ const UpdateModelPage = () => {
     setError,
     clearErrors,
     trigger,
-    reset, // <-- add reset from useForm
+    reset
   } = useForm({
     defaultValues: {
       name: "",
-      display_name: "",
+      displayName: "",
       type: "",
       description: "",
-      modeling_team: "",
+      scheduledStart: "",
+      scheduledEnd: "",
+      expectedScenarios: [""],
+      modelingTeam: "",
       assumptions: [""],
-      scheduled_start: "",
-      scheduled_end: "",
-      expected_scenarios: [""],
-      scenario_mappings: {},
+      scenarioMappings: {},
+      requirements: {},
       other: {}
     }
   });
 
-  // Fill form with model data when loaded
+  // Populate form with existing model data when available
   useEffect(() => {
-    if (modelData) {
-      // Use reset to fill the form with all fields at once
-      reset({
-        name: modelData.name || "",
-        display_name: modelData.display_name || "",
-        type: modelData.type || "",
-        description: modelData.description || "",
-        modeling_team: modelData.modeling_team || "",
-        scheduled_start: modelData.scheduled_start ? modelData.scheduled_start.slice(0, 10) : "",
-        scheduled_end: modelData.scheduled_end ? modelData.scheduled_end.slice(0, 10) : "",
-        assumptions: Array.isArray(modelData.assumptions) ? modelData.assumptions : [""],
-        expected_scenarios: Array.isArray(modelData.expected_scenarios) ? modelData.expected_scenarios : [""],
-        scenario_mappings: modelData.scenario_mappings || {},
-        other: modelData.other || {}
+    if (existingModel) {
+      const formatDate = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+      };
+
+      // Format scenario mappings for form
+      const formattedMappings = {};
+      if (existingModel.scenario_mappings && Array.isArray(existingModel.scenario_mappings)) {
+        existingModel.scenario_mappings.forEach((mapping, index) => {
+          formattedMappings[`mapping_${index}`] = {
+            modelScenario: mapping.model_scenario || "",
+            projectScenarios: mapping.project_scenarios || [],
+            description: mapping.description || [],
+            other: mapping.other || {}
+          };
+        });
+      }
+
+      // Format requirements for form
+      const formattedRequirements = {};
+      if (existingModel.requirements && typeof existingModel.requirements === 'object') {
+        Object.entries(existingModel.requirements).forEach(([key, value], index) => {
+          formattedRequirements[`req_${index}`] = {
+            name: key,
+            type: typeof value === 'object' ? 'object' : 'string',
+            value: value
+          };
+        });
+      }
+
+      const formData = {
+        name: existingModel.name || "",
+        displayName: existingModel.display_name || "",
+        type: existingModel.type || "",
+        description: existingModel.description || "",
+        scheduledStart: formatDate(existingModel.scheduled_start),
+        scheduledEnd: formatDate(existingModel.scheduled_end),
+        expectedScenarios: existingModel.expected_scenarios || [""],
+        modelingTeam: existingModel.modeling_team?.name || existingModel.modeling_team || "",
+        assumptions: existingModel.assumptions || [""],
+        scenarioMappings: formattedMappings,
+        requirements: formattedRequirements,
+        other: existingModel.other || {}
+      };
+      console.log("Existing model", existingModel);
+      console.log("Existing model scenarios", existingModel.expected_scenarios);
+      console.log("Existing model modeling team", existingModel.modeling_team);
+
+      // Update form values
+      Object.entries(formData).forEach(([key, value]) => {
+        setValue(key, value);
       });
-      setAssumptions(Array.isArray(modelData.assumptions) ? modelData.assumptions : [""]);
-      setExpectedScenarios(Array.isArray(modelData.expected_scenarios) ? modelData.expected_scenarios : [""]);
-    }
-    // eslint-disable-next-line
-  }, [modelData, reset]);
 
-  // Extract scenarios from project run or project
-  useEffect(() => {
-    let scenarios = [];
-    if (currentProjectRun?.scenarios) {
-      scenarios = currentProjectRun.scenarios;
-    } else if (currentProject?.scenarios) {
-      scenarios = currentProject.scenarios.map(scenario =>
-        typeof scenario === 'string' ? scenario : scenario.name
-      );
-    }
-    setProjectScenarios(scenarios);
-    setExpectedScenarios(scenarios.length > 0 ? scenarios : [""]);
-    setValue("expected_scenarios", scenarios);
-  }, [currentProject, currentProjectRun, setValue]);
+      // Update local state
+      setExpectedScenarios(formData.expectedScenarios);
+      setRequirements(formData.requirements);
+      setAssumptions(formData.assumptions);
+      setModelingTeam(formData.modelingTeam);
+      setScenarioMappings(formData.scenarioMappings);
 
-  // Handlers for dynamic arrays
-  const addAssumption = () => {
-    const newAssumptions = [...assumptions, ""];
-    setAssumptions(newAssumptions);
-    setValue("assumptions", newAssumptions);
-  };
-
-  const removeAssumption = (index) => {
-    const newAssumptions = [...assumptions];
-    newAssumptions.splice(index, 1);
-    setAssumptions(newAssumptions.length ? newAssumptions : [""]);
-    setValue("assumptions", newAssumptions.length ? newAssumptions : [""]);
-  };
-
-  const addExpectedScenario = () => {
-    const newScenarios = [...expectedScenarios, ""];
-    setExpectedScenarios(newScenarios);
-    setValue("expected_scenarios", newScenarios);
-  };
-
-  const removeExpectedScenario = (index) => {
-    const newScenarios = [...expectedScenarios];
-    newScenarios.splice(index, 1);
-    setExpectedScenarios(newScenarios.length ? newScenarios : [""]);
-    setValue("expected_scenarios", newScenarios.length ? newScenarios : [""]);
-  };
-
-  const validateDates = (scheduledStart, scheduledEnd) => {
-    if (!scheduledStart || isNaN(new Date(scheduledStart))) {
-      return "Valid start date is required";
+      // Update form store
+      updateFormData({
+        ...formData,
+        projectName,
+        projectRunName
+      });
     }
-    if (!scheduledEnd || isNaN(new Date(scheduledEnd))) {
-      return "Valid end date is required";
-    }
-    if (currentProject?.scheduled_start) {
-      const projectStart = new Date(currentProject.scheduled_start);
-      const modelStart = new Date(scheduledStart);
-      if (modelStart < projectStart) {
-        setError("scheduled_start", {
-          message: `Start date must be after project start date (${projectStart.toLocaleDateString()})`
-        });
-        return false;
-      }
-    }
-    if (currentProject?.scheduled_end) {
-      const projectEnd = new Date(currentProject.scheduled_end);
-      const modelEnd = new Date(scheduledEnd);
-      if (modelEnd > projectEnd) {
-        setError("scheduled_end", {
-          message: `End date must be before project end date (${projectEnd.toLocaleDateString()})`
-        });
-        return false;
-      }
-    }
-    if (new Date(scheduledStart) > new Date(scheduledEnd)) {
-      setError("scheduled_end", { message: "End date must be after start date" });
-      return false;
-    }
-    clearErrors(["scheduled_start", "scheduled_end"]);
-    return true;
-  };
-
-  const handleNextStep = async () => {
-    let fieldsToValidate = [];
-    switch (currentStep) {
-      case 1:
-        fieldsToValidate = ['name', 'type', 'scheduled_start', 'scheduled_end'];
-        break;
-      case 4:
-        fieldsToValidate = ['modeling_team'];
-        break;
-      default:
-        break;
-    }
-    const isValid = await trigger(fieldsToValidate);
-    const datesAreValid = currentStep === 1 ? validateDates(watch('scheduled_start'), watch('scheduled_end')) : true;
-    if (isValid && datesAreValid) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrevStep = () => {
-    setCurrentStep(prev => prev - 1);
-  };
+  }, [existingModel, setValue, updateFormData, projectName, projectRunName]);
 
   // Save form data to store when it changes (debounced)
   const saveFormData = () => {
     const currentData = watch();
     updateFormData({
       ...currentData,
+      expectedScenarios,
+      requirements,
       assumptions,
-      expected_scenarios: expectedScenarios,
+      modelingTeam,
+      scenarioMappings,
       projectName,
       projectRunName
     });
   };
 
+  // Update local state when form requirements and assumptions change
   useEffect(() => {
-    const timer = setTimeout(saveFormData, 1000);
+    const subscription = watch((value, { name }) => {
+      if (name && name.startsWith('requirements')) {
+        setRequirements(value.requirements || {});
+      }
+      if (name && name.startsWith('assumptions')) {
+        setAssumptions(value.assumptions || []);
+      }
+      if (name === 'modelingTeam') {
+        setModelingTeam(value.modelingTeam || "");
+      }
+      if (name && name.startsWith('expectedScenarios')) {
+        setExpectedScenarios(value.expectedScenarios || []);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  // Debounce save function
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentData = watch();
+      updateFormData({
+        ...currentData,
+        expectedScenarios: currentData.expectedScenarios || [],
+        requirements: currentData.requirements || {},
+        assumptions: currentData.assumptions || [],
+        modelingTeam: currentData.modelingTeam || "",
+        scenarioMappings: currentData.scenarioMappings || {},
+        projectName,
+        projectRunName
+      });
+    }, 1000); // Save after 1 second of inactivity
     return () => clearTimeout(timer);
-  }, [watch(), assumptions, expectedScenarios, projectName, projectRunName]);
+  }, [watch, updateFormData, projectName, projectRunName]);
 
   const onSubmit = async (data) => {
     clearErrors();
@@ -310,38 +308,69 @@ const UpdateModelPage = () => {
 
     // Clean and format data for API
     const formData = { ...data };
-    formData.assumptions = assumptions.filter(assumption => assumption.trim() !== "");
-    formData.expected_scenarios = expectedScenarios.filter(scenario => scenario.trim() !== "");
+
+    // Clean assumptions - now comes directly from form data
+    formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
+
+    // Clean expected scenarios
+    formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
+
+    // Clean scenario mappings
     const cleanedMappings = [];
-    Object.entries(data.scenario_mappings || {}).forEach(([id, mappingData]) => {
-      if (mappingData.model_scenario?.trim()) {
+    Object.entries(data.scenarioMappings || {}).forEach(([id, mappingData]) => {
+      if (mappingData.modelScenario?.trim()) {
         cleanedMappings.push({
-          model_scenario: mappingData.model_scenario.trim(),
-          project_scenarios: mappingData.project_scenarios || [],
+          model_scenario: mappingData.modelScenario.trim(),
+          project_scenarios: mappingData.projectScenarios || [],
           description: mappingData.description?.filter(desc => desc.trim() !== "") || [],
           other: mappingData.other || {}
         });
       }
     });
-    formData.scenario_mappings = cleanedMappings;
+    formData.scenarioMappings = cleanedMappings;
 
-    const dateValidation = validateDates(formData.scheduled_start, formData.scheduled_end);
+    // Clean requirements - convert internal structure to API expected format
+    const cleanedRequirements = {};
+    Object.entries(data.requirements || {}).forEach(([id, reqData]) => {
+      const key = reqData.name?.trim();
+      if (key) {
+        if (reqData.type === "string" && reqData.value.trim() !== "") {
+          cleanedRequirements[key] = reqData.value;
+        } else if (reqData.type === "object") {
+          const cleanedObject = {};
+          Object.entries(reqData.value || {}).forEach(([field, val]) => {
+            if (val && val.trim() !== "") {
+              cleanedObject[field] = val;
+            }
+          });
+          if (Object.keys(cleanedObject).length > 0) {
+            cleanedRequirements[key] = cleanedObject;
+          }
+        }
+      }
+    });
+    formData.requirements = cleanedRequirements;
+
+    // Validate dates
+    const dateValidation = validateDates(formData.scheduledStart, formData.scheduledEnd);
     if (dateValidation !== true) {
-      setError("scheduled_start", { message: dateValidation });
-      setError("scheduled_end", { message: dateValidation });
+      setError("scheduledStart", { message: dateValidation });
+      setError("scheduledEnd", { message: dateValidation });
       return;
     }
 
-    if (formData.scheduled_start) {
-      const startDate = new Date(formData.scheduled_start + 'T00:00:00.000Z');
-      formData.scheduled_start = startDate.toISOString();
-    }
-    if (formData.scheduled_end) {
-      const endDate = new Date(formData.scheduled_end + 'T23:59:59.999Z');
-      formData.scheduled_end = endDate.toISOString();
+    // Convert date strings to ISO datetime format for API
+    if (formData.scheduledStart) {
+      const startDate = new Date(formData.scheduledStart + 'T00:00:00.000Z');
+      formData.scheduledStart = startDate.toISOString();
     }
 
-    // Clean up description
+    if (formData.scheduledEnd) {
+      const endDate = new Date(formData.scheduledEnd + 'T23:59:59.999Z');
+      formData.scheduledEnd = endDate.toISOString();
+    }
+
+    // Format final payload
     let descriptionValue = formData.description;
     if (Array.isArray(descriptionValue)) {
       descriptionValue = descriptionValue.filter(Boolean).join(" ");
@@ -352,15 +381,16 @@ const UpdateModelPage = () => {
 
     const cleanedFormData = {
       name: formData.name.trim(),
-      display_name: formData.display_name?.trim() || null,
+      display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
-      modeling_team: formData.modeling_team.name,
+      modeling_team: formData.modelingTeam?.name || formData.modelingTeam,
       assumptions: formData.assumptions,
-      scheduled_start: formData.scheduled_start,
-      scheduled_end: formData.scheduled_end,
-      expected_scenarios: formData.expected_scenarios,
-      scenario_mappings: formData.scenario_mappings,
+      scheduled_start: formData.scheduledStart,
+      scheduled_end: formData.scheduledEnd,
+      expected_scenarios: formData.expectedScenarios,
+      scenario_mappings: formData.scenarioMappings,
+      requirements: formData.requirements,
       other: formData.other || {}
     };
 
@@ -372,14 +402,19 @@ const UpdateModelPage = () => {
         data: cleanedFormData
       });
 
+      // Clear stored form data on successful submission
       clearFormData();
-      navigate(`/model/${encodeURIComponent(modelName)}?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
+
+      // Navigate to models page on success
+      navigate(`/projectrun/${encodeURIComponent(projectRunName)}?P=${encodeURIComponent(projectName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to update model");
+
       if (error.response?.data?.message) {
         setFormErrorMessage(error.response.data.message);
       }
+
       if (error.response?.data?.detail) {
         if (Array.isArray(error.response.data.detail)) {
           setErrorDetails(error.response.data.detail.map(detail =>
@@ -391,6 +426,7 @@ const UpdateModelPage = () => {
       } else {
         setErrorDetails([error.message || "An unexpected error occurred"]);
       }
+
       if (error.response?.data?.fields) {
         Object.entries(error.response.data.fields).forEach(([field, message]) => {
           setError(field, { message });
@@ -399,24 +435,121 @@ const UpdateModelPage = () => {
     }
   };
 
-  // Show loading state
-  if (isLoadingModel || isLoadingProject || isLoadingProjectRun) {
+  // Extract scenarios from project run or project
+  useEffect(() => {
+    let scenarios = [];
+    if (currentProjectRun?.scenarios) {
+      scenarios = currentProjectRun.scenarios;
+    }
+    if (scenarios.length === 0 && currentProject?.scenarios) {
+      scenarios = currentProject.scenarios.map(scenario =>
+        typeof scenario === 'string' ? scenario : scenario.name
+      );
+    }
+    setProjectScenarios(scenarios);
+
+    // Only set expected scenarios from stored data if we don't have existing model data
+    if (!existingModel && storedFormData.expectedScenarios) {
+      setValue("expectedScenarios", storedFormData.expectedScenarios);
+    }
+  }, [currentProject, currentProjectRun, setValue, storedFormData.expectedScenarios, existingModel]);
+
+  const validateDates = (scheduledStart, scheduledEnd) => {
+    if (!scheduledStart || isNaN(new Date(scheduledStart))) {
+      return "Valid start date is required";
+    }
+
+    if (!scheduledEnd || isNaN(new Date(scheduledEnd))) {
+      return "Valid end date is required";
+    }
+
+    // Check if model dates are within project boundaries
+    if (currentProject?.scheduled_start) {
+      const projectStart = new Date(currentProject.scheduled_start);
+      const modelStart = new Date(scheduledStart);
+      if (modelStart < projectStart) {
+        setError("scheduledStart", {
+          message: `Start date must be after project start date (${projectStart.toLocaleDateString()})`
+        });
+        return false;
+      }
+    }
+
+    if (currentProject?.scheduled_end) {
+      const projectEnd = new Date(currentProject.scheduled_end);
+      const modelEnd = new Date(scheduledEnd);
+      if (modelEnd > projectEnd) {
+        setError("scheduledEnd", {
+          message: `End date must be before project end date (${projectEnd.toLocaleDateString()})`
+        });
+        return false;
+      }
+    }
+
+    if (new Date(scheduledStart) > new Date(scheduledEnd)) {
+      setError("scheduledEnd", { message: "End date must be after start date" });
+      return false;
+    }
+
+    clearErrors(["scheduledStart", "scheduledEnd"]);
+    return true;
+  };
+
+  const handleNextStep = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    let fieldsToValidate = [];
+    switch (currentStep) {
+      case 1:
+        fieldsToValidate = ['name', 'type', 'scheduledStart', 'scheduledEnd'];
+        break;
+      case 5:
+        fieldsToValidate = ['modelingTeam'];
+        break;
+      default:
+        break;
+    }
+
+    const isValid = await trigger(fieldsToValidate);
+    const datesAreValid = currentStep === 1 ? validateDates(watch('scheduledStart'), watch('scheduledEnd')) : true;
+
+    if (isValid && datesAreValid) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  // Loading/auth/error states
+  if (isAuthChecking) {
     return (
-      <Container className="mt-5 text-center">
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state
+  if (isLoadingProject || isLoadingProjectRun || isLoadingModel) {
+    return (
+      <Container className="mt-5 text-center" style={{ height: '100vh' }}>
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
-        <p className="mt-3">Loading model data...</p>
       </Container>
     );
   }
 
-  if (isErrorModel) {
+  // Show error state if model not found
+  if (modelError) {
     return (
       <Container className="mt-5 text-center">
         <div className="alert alert-danger">
-          <h5>Error loading model</h5>
-          <div>{errorModel?.message || "Model not found."}</div>
+          <h4>Error Loading Model</h4>
+          <p>Could not load model "{modelName}". Please check if the model exists.</p>
         </div>
       </Container>
     );
@@ -425,28 +558,21 @@ const UpdateModelPage = () => {
   const allData = watch();
 
   const canNavigateToStep = (stepNumber) => {
-    if (stepNumber <= currentStep) return true;
-    if (stepNumber === currentStep + 1) return true;
-    return false;
+    // For update model page, allow navigation to any step
+    return true;
   };
 
   const handleStepClick = async (stepNumber) => {
-    if (stepNumber < currentStep) {
-      setCurrentStep(stepNumber);
-      return;
-    }
-    if (stepNumber === currentStep + 1) {
-      await handleNextStep();
-      return;
-    }
-    if (stepNumber === currentStep) {
-      return;
-    }
+    // For update model page, allow direct navigation to any step
+    setCurrentStep(stepNumber);
   };
+
+  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Modeling Team", "Review"];
+  const totalSteps = steps.length;
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mName: modelName, toUpdate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Update Model"/>
@@ -474,9 +600,10 @@ const UpdateModelPage = () => {
             <div className="px-3 py-3">
               <StepIndicator
                 currentStep={currentStep}
-                totalSteps={5}
+                totalSteps={totalSteps}
                 onStepClick={handleStepClick}
                 canNavigateTo={canNavigateToStep}
+                steps={steps}
               />
 
               <div className="step-content">
@@ -490,58 +617,21 @@ const UpdateModelPage = () => {
                           errors={errors}
                           watch={watch}
                           setValue={setValue}
-                          projectRun={null}
-                          storedData={null}
+                          storedData={storedFormData}
+                          projectRun={currentProjectRun}
                         />
                       </div>
                     )}
 
                     {currentStep === 2 && (
                       <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Expected Scenarios</Form.Label>
-                          <div>
-                            {expectedScenarios.map((scenario, index) => (
-                              <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                                <Form.Control
-                                  className="form-control-lg form-primary-input"
-                                  placeholder="Enter expected scenario"
-                                  value={scenario}
-                                  onChange={(e) => {
-                                    const newScenarios = [...expectedScenarios];
-                                    newScenarios[index] = e.target.value;
-                                    setExpectedScenarios(newScenarios);
-                                    setValue("expected_scenarios", newScenarios);
-                                  }}
-                                />
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  type="button"
-                                  onClick={() => removeExpectedScenario(index)}
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            <Button
-                              variant="outline-primary"
-                              type="button"
-                              onClick={addExpectedScenario}
-                              className="d-flex align-items-center gap-2"
-                              style={{ padding: "0.5rem 1rem" }}
-                            >
-                              <Plus size={16} />
-                              Expected Scenario
-                            </Button>
-                          </div>
-                        </div>
-                        <ScenarioMappingsSection
+                        <ExpectedScenariosSection
                           control={control}
                           register={register}
                           errors={errors}
                           watch={watch}
                           setValue={setValue}
+                          storedData={storedFormData}
                           projectScenarios={projectScenarios}
                         />
                       </div>
@@ -549,172 +639,56 @@ const UpdateModelPage = () => {
 
                     {currentStep === 3 && (
                       <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Assumptions</Form.Label>
-                          <div>
-                            {assumptions.map((assumption, index) => (
-                              <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                                <Form.Control
-                                  className="form-control-lg form-primary-input"
-                                  placeholder="Enter assumption"
-                                  value={assumption}
-                                  onChange={(e) => {
-                                    const newAssumptions = [...assumptions];
-                                    newAssumptions[index] = e.target.value;
-                                    setAssumptions(newAssumptions);
-                                    setValue("assumptions", newAssumptions);
-                                  }}
-                                />
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  type="button"
-                                  onClick={() => removeAssumption(index)}
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            <Button
-                              variant="outline-primary"
-                              type="button"
-                              onClick={addAssumption}
-                              className="d-flex align-items-center gap-2"
-                              style={{ padding: "0.5rem 1rem" }}
-                            >
-                              <Plus size={16} />
-                              Assumption
-                            </Button>
-                          </div>
-                        </div>
+                        <RequirementsSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
                       </div>
                     )}
 
                     {currentStep === 4 && (
                       <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label required-field">Modeling Team</Form.Label>
-                          <div className="d-flex align-items-start gap-2">
-                            <div className="flex-grow-1">
-                              <Form.Select
-                                className="form-control-lg form-primary-input"
-                                isInvalid={!!errors.modeling_team}
-                                {...register("modeling_team", { required: "Modeling team is required" })}
-                              >
-                                <option value="">Select a team</option>
-                                {teams.map((team) => (
-                                  <option key={team.name} value={team.name}>
-                                    {team.name}
-                                  </option>
-                                ))}
-                              </Form.Select>
-                              <Form.Control.Feedback type="invalid" className="text-start">
-                                {errors.modeling_team?.message}
-                              </Form.Control.Feedback>
-                            </div>
-                            <Button
-                              variant="outline-primary"
-                              type="button"
-                              onClick={() => navigate(`/team/new?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`)}
-                              className="d-flex align-items-center justify-content-center"
-                              style={{
-                                minWidth: '48px',
-                                height: '48px',
-                                padding: '0'
-                              }}
-                              title="Create a new team"
-                            >
-                              <Plus size={20} />
-                            </Button>
-                          </div>
-                        </div>
+                        <AssumptionsSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                          projectRun={currentProjectRun}
+                        />
                       </div>
                     )}
 
                     {currentStep === 5 && (
                       <div className="step-panel">
+                        <ModelingTeamSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                          projectName={projectName}
+                        />
+                      </div>
+                    )}
 
-                        {/* Basic Information Section */}
-                        <div className="review-section mb-4">
-                          <div className="review-content">
-                            <Row>
-                              <Col md={6}>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Model Name</div>
-                                  <div className="review-value">{allData.name || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Display Name</div>
-                                  <div className="review-value">{allData.display_name || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Type</div>
-                                  <div className="review-value">{allData.type || 'Not specified'}</div>
-                                </div>
-                              </Col>
-                              <Col md={6}>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Scheduled Start</div>
-                                  <div className="review-value">{allData.scheduled_start || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Scheduled End</div>
-                                  <div className="review-value">{allData.scheduled_end || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Description</div>
-                                  <div className="review-value">{allData.description || 'Not specified'}</div>
-                                </div>
-                              </Col>
-                            </Row>
-                          </div>
-                        </div>
-
-                        {/* Scenarios Section */}
-                        <div className="review-section mb-4">
-                          <div className="review-content">
-                            <div className="review-item">
-                              <div className="review-label">Expected Scenarios</div>
-                              {expectedScenarios.filter(s => s.trim()).length > 0 ? (
-                                <ul className="review-list-items mt-2 ps-3">
-                                  {expectedScenarios.filter(s => s.trim()).map((scenario, i) => (
-                                    <li key={i}>{scenario}</li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <div className="review-value text-muted">No scenarios specified</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Assumptions Section */}
-                        <div className="review-section mb-4">
-                          <div className="review-content">
-                            <div className="review-item">
-                              <div className="review-label">Assumptions</div>
-                              {assumptions.filter(a => a.trim()).length > 0 ? (
-                                <ul className="review-list-items mt-2 ps-3">
-                                  {assumptions.filter(a => a.trim()).map((assumption, i) => (
-                                    <li key={i}>{assumption}</li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <div className="review-value text-muted">No assumptions specified</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Modeling Team Section */}
-                        <div className="review-section">
-                          <div className="review-content">
-                            <div className="review-item">
-                              <div className="review-label">Modeling Team</div>
-                              <div className="review-value">{allData.modeling_team || 'Not selected'}</div>
-                            </div>
-                          </div>
-                        </div>
+                    {currentStep === 6 && (
+                      <div className="step-panel">
+                        <FinalReviewSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          projectRun={currentProjectRun}
+                          storedData={storedFormData}
+                        />
                       </div>
                     )}
                   </div>
@@ -730,7 +704,10 @@ const UpdateModelPage = () => {
                       Previous
                     </Button>
 
-                    {currentStep < 5 ? (
+                    {/* Add a hidden submit button to prevent accidental Enter key submission */}
+                    <button type="submit" style={{ display: "none" }} tabIndex={-1} aria-hidden="true"></button>
+
+                    {currentStep !== totalSteps ? (
                       <Button
                         style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
                         variant="primary"

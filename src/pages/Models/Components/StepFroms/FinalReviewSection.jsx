@@ -85,7 +85,7 @@ const FinalReviewSection = ({ control, register, errors, watch, setValue, projec
                   <thead>
                     <tr>
                       <th style={{ width: '30%', textAlign: 'left', fontSize: '0.85rem', color: '#6c757d' }}>Model Scenario</th>
-                      <th style={{ width: '35%', textAlign: 'left', fontSize: '0.85rem', color: '#6c757d' }}>Project Scenario</th>
+                      <th style={{ width: '35%', textAlign: 'left', fontSize: '0.85rem', color: '#6c757d' }}>Project Scenarios</th>
                       <th style={{ width: '35%', textAlign: 'left', fontSize: '0.85rem', color: '#6c757d' }}>Description</th>
                     </tr>
                   </thead>
