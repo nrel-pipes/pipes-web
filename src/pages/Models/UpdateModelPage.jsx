@@ -9,9 +9,9 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
-import "../FormStyles.css";
-import "../PageStyles.css";
-import "./CreateModelPage.css";
+
+import BasicInfoSection from "./Components/StepFroms/BasicInfoSection";
+import ScenarioMappingsSection from "./Components/StepFroms/ScenarioMappingsSection";
 
 import { useGetModelQuery, useUpdateModelMutation } from "../../hooks/useModelQuery";
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
@@ -21,154 +21,10 @@ import { useCreateModelFormStore } from "../../stores/FormStore/ModelStore";
 
 import { useEffect, useState } from "react";
 
-// Scenario Mappings component for managing model scenario mappings
-const ScenarioMappingsSection = ({ control, register, errors, watch, setValue, projectScenarios }) => {
-  const [mappings, setMappings] = useState({});
-  const [mappingIds, setMappingIds] = useState([]);
-  const watchedMappings = watch("scenario_mappings", {});
+import "../FormStyles.css";
+import "../PageStyles.css";
+import "./CreateModelPage.css";
 
-  useEffect(() => {
-    if (mappingIds.length === 0) {
-      const defaultId = `mapping_default`;
-      const defaultMapping = {
-        model_scenario: "",
-        project_scenarios: [],
-        description: [""],
-        other: {}
-      };
-
-      setMappings({ [defaultId]: defaultMapping });
-      setValue("scenario_mappings", { [defaultId]: defaultMapping });
-      setMappingIds([defaultId]);
-    }
-  }, [mappingIds.length, setValue]);
-
-  useEffect(() => {
-    setMappings(watchedMappings);
-  }, [watchedMappings]);
-
-  const addMapping = () => {
-    const timestamp = Date.now();
-    const newId = `mapping_${timestamp}`;
-    const newMappings = {
-      ...mappings,
-      [newId]: {
-        model_scenario: "",
-        project_scenarios: [],
-        description: [""],
-        other: {}
-      }
-    };
-    setMappings(newMappings);
-    setValue("scenario_mappings", newMappings);
-    setMappingIds([...mappingIds, newId]);
-  };
-
-  const removeMapping = (id) => {
-    const { [id]: removed, ...rest } = mappings;
-    setMappings(rest);
-    setValue("scenario_mappings", rest);
-    setMappingIds(mappingIds.filter(mappingId => mappingId !== id));
-  };
-
-  const updateMapping = (id, field, value) => {
-    const newMappings = {
-      ...mappings,
-      [id]: {
-        ...mappings[id],
-        [field]: value
-      }
-    };
-    setMappings(newMappings);
-    setValue("scenario_mappings", newMappings);
-  };
-
-  return (
-    <div className="form-field-group">
-      <Form.Label className="form-field-label">
-        <span className="form-field-text">Scenario Mappings</span>
-      </Form.Label>
-      <div>
-        {mappingIds.map((id, idx) => {
-          const mappingData = mappings[id];
-          if (!mappingData) return null;
-
-          return (
-            <div key={id} className="mb-4 border p-3 rounded">
-              <Row className="mb-2">
-                <Col md={6}>
-                  <Form.Label className="small fw-bold">Model Scenario</Form.Label>
-                  <Form.Control
-                    type="text"
-                    className="form-control-lg form-primary-input"
-                    placeholder="Model scenario name"
-                    value={mappingData.model_scenario || ""}
-                    onChange={(e) => updateMapping(id, "model_scenario", e.target.value)}
-                  />
-                </Col>
-                <Col md={6}>
-                  <Form.Label className="small fw-bold">Project Scenarios</Form.Label>
-                  <Form.Select
-                    className="form-control-lg"
-                    multiple
-                    value={mappingData.project_scenarios || []}
-                    onChange={(e) => {
-                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                      updateMapping(id, "project_scenarios", selectedOptions);
-                    }}
-                  >
-                    {projectScenarios.map((scenario, idx) => (
-                      <option key={idx} value={scenario}>
-                        {scenario}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Col>
-              </Row>
-              <Row className="mb-2">
-                <Col>
-                  <Form.Label className="small fw-bold">Description</Form.Label>
-                  <div className="d-flex gap-2">
-                    <Form.Control
-                      as="textarea"
-                      rows={2}
-                      className="form-control-lg form-primary-input"
-                      placeholder="Mapping description"
-                      value={mappingData.description?.[0] || ""}
-                      onChange={(e) => updateMapping(id, "description", [e.target.value])}
-                    />
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      type="button"
-                      onClick={() => removeMapping(id)}
-                      className="d-flex align-items-center justify-content-center"
-                      style={{ width: "32px", height: "38px", padding: "4px" }}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-            </div>
-          );
-        })}
-        <div className="d-flex justify-content-start mt-2">
-          <Button
-            variant="outline-primary"
-            type="button"
-            onClick={addMapping}
-            className="d-flex align-items-center me-2"
-            style={{ padding: "0.5rem 1rem" }}
-          >
-            <Plus className="mr-1" size={16} />
-            Scenario Mapping
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) => {
   const steps = ["Basic Info", "Scenarios", "Assumptions", "Modeling Team", "Review"];
@@ -212,6 +68,7 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo }) 
     </div>
   );
 };
+
 
 const UpdateModelPage = () => {
   const navigate = useNavigate();
@@ -498,7 +355,7 @@ const UpdateModelPage = () => {
       display_name: formData.display_name?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
-      modeling_team: formData.modeling_team.trim(),
+      modeling_team: formData.modeling_team.name,
       assumptions: formData.assumptions,
       scheduled_start: formData.scheduled_start,
       scheduled_end: formData.scheduled_end,
@@ -627,106 +484,15 @@ const UpdateModelPage = () => {
                   <div className="form-container">
                     {currentStep === 1 && (
                       <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label required-field">Model Name</Form.Label>
-                          <Form.Control
-                            type="text"
-                            className="form-control-lg form-primary-input"
-                            placeholder="Enter model name"
-                            isInvalid={!!errors.name}
-                            {...register("name", { required: "Model name is required" })}
-                          />
-                          <Form.Control.Feedback type="invalid" className="text-start">
-                            {errors.name?.message}
-                          </Form.Control.Feedback>
-                        </div>
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Display Name</Form.Label>
-                          <Form.Control
-                            type="text"
-                            className="form-control-lg form-primary-input"
-                            placeholder="Enter display name (optional)"
-                            {...register("display_name")}
-                          />
-                        </div>
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label required-field">Type</Form.Label>
-                          <Form.Control
-                            type="text"
-                            className="form-control-lg form-primary-input"
-                            placeholder="e.g., Capacity Expansion"
-                            isInvalid={!!errors.type}
-                            {...register("type", { required: "Model type is required" })}
-                          />
-                          <Form.Control.Feedback type="invalid" className="text-start">
-                            {errors.type?.message}
-                          </Form.Control.Feedback>
-                        </div>
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Description</Form.Label>
-                          <Form.Control
-                            as="textarea"
-                            rows={3}
-                            className="form-control-lg form-primary-input"
-                            placeholder="Enter a brief description for the model"
-                            {...register("description")}
-                          />
-                        </div>
-                        <Row>
-                          <Col md={6} className="form-field-group">
-                            <Form.Label className="form-field-label required-field">
-                              <span className="form-field-text">Scheduled Start</span>
-                            </Form.Label>
-                            {currentProjectRun?.scheduled_start && (
-                              <Form.Text className="text-muted d-block text-start">
-                                Date must be after{" "}
-                                {new Date(currentProjectRun.scheduled_start).toLocaleDateString()}
-                              </Form.Text>
-                            )}
-                            <Form.Control
-                              id="scheduled_start"
-                              type="date"
-                              className="form-control-lg form-date-input"
-                              isInvalid={!!errors.scheduled_start}
-                              placeholder="mm/dd/yyyy"
-                              {...register("scheduled_start", {
-                                required: "Start date is required"
-                              })}
-                            />
-                            {errors.scheduled_start && (
-                              <Form.Control.Feedback type="invalid">
-                                {errors.scheduled_start.message}
-                              </Form.Control.Feedback>
-                            )}
-                          </Col>
-
-                          <Col md={6} className="form-field-group">
-                            <Form.Label className="form-field-label required-field">
-                              <span className="form-field-text">Scheduled End</span>
-                            </Form.Label>
-                            {currentProjectRun?.scheduled_end && (
-                              <Form.Text className="text-muted d-block text-start">
-                                Date must be before{" "}
-                                {new Date(currentProjectRun.scheduled_end).toLocaleDateString()}
-                              </Form.Text>
-                            )}
-                            <Form.Control
-                              id="scheduled_end"
-                              type="date"
-                              className="form-control-lg form-date-input"
-                              isInvalid={!!errors.scheduled_end}
-                              placeholder="mm/dd/yyyy"
-                              {...register("scheduled_end", {
-                                required: "End date is required"
-                              })}
-                            />
-                            {errors.scheduled_end && (
-                              <Form.Control.Feedback type="invalid">
-                                {errors.scheduled_end.message}
-                              </Form.Control.Feedback>
-                            )}
-                          </Col>
-                        </Row>
+                        <BasicInfoSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          projectRun={null}
+                          storedData={null}
+                        />
                       </div>
                     )}
 
@@ -849,7 +615,7 @@ const UpdateModelPage = () => {
                             <Button
                               variant="outline-primary"
                               type="button"
-                              onClick={() => navigate('/create-team')}
+                              onClick={() => navigate(`/team/new?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`)}
                               className="d-flex align-items-center justify-content-center"
                               style={{
                                 minWidth: '48px',

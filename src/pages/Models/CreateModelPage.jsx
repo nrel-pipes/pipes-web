@@ -1,4 +1,5 @@
-import { Minus, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -9,166 +10,23 @@ import { useLocation, useNavigate } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
-import "../FormStyles.css";
-import "../PageStyles.css";
-import "./CreateModelPage.css";
+
+import AssumptionsSection from "./Components/StepFroms/AssumptionsSection";
+import BasicInfoSection from "./Components/StepFroms/BasicInfoSection";
+import ExpectedScenariosSection from "./Components/StepFroms/ExpectedScenariosSection";
+import FinalReviewSection from "./Components/StepFroms/FinalReviewSection";
+import ModelingTeamSection from "./Components/StepFroms/ModelingTeamSection";
+import RequirementsSection from "./Components/StepFroms/RequirementsSection";
 
 import { useCreateModelMutation } from "../../hooks/useModelQuery";
 import { useGetProjectQuery } from "../../hooks/useProjectQuery";
 import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
-import { useListTeamsQuery } from "../../hooks/useTeamQuery";
 import { useCreateModelFormStore } from "../../stores/FormStore/ModelStore";
 
-import { useEffect, useState } from "react";
+import "../FormStyles.css";
+import "../PageStyles.css";
+import "./CreateModelPage.css";
 
-// Scenario Mappings component for managing model scenario mappings
-const ScenarioMappingsSection = ({ control, register, errors, watch, setValue, projectScenarios }) => {
-  const [mappings, setMappings] = useState({});
-  const [mappingIds, setMappingIds] = useState([]);
-  const watchedMappings = watch("scenario_mappings", {});
-
-  useEffect(() => {
-    if (mappingIds.length === 0) {
-      const defaultId = `mapping_default`;
-      const defaultMapping = {
-        model_scenario: "",
-        project_scenarios: [],
-        description: [""],
-        other: {}
-      };
-
-      setMappings({ [defaultId]: defaultMapping });
-      setValue("scenario_mappings", { [defaultId]: defaultMapping });
-      setMappingIds([defaultId]);
-    }
-  }, [mappingIds.length, setValue]);
-
-  useEffect(() => {
-    setMappings(watchedMappings);
-  }, [watchedMappings]);
-
-  const addMapping = () => {
-    const timestamp = Date.now();
-    const newId = `mapping_${timestamp}`;
-    const newMappings = {
-      ...mappings,
-      [newId]: {
-        model_scenario: "",
-        project_scenarios: [],
-        description: [""],
-        other: {}
-      }
-    };
-    setMappings(newMappings);
-    setValue("scenario_mappings", newMappings);
-    setMappingIds([...mappingIds, newId]);
-  };
-
-  const removeMapping = (id) => {
-    const { [id]: removed, ...rest } = mappings;
-    setMappings(rest);
-    setValue("scenario_mappings", rest);
-    setMappingIds(mappingIds.filter(mappingId => mappingId !== id));
-  };
-
-  const updateMapping = (id, field, value) => {
-    const newMappings = {
-      ...mappings,
-      [id]: {
-        ...mappings[id],
-        [field]: value
-      }
-    };
-    setMappings(newMappings);
-    setValue("scenario_mappings", newMappings);
-  };
-
-  return (
-    <div className="form-field-group">
-      <Form.Label className="form-field-label">
-        <span className="form-field-text">Scenario Mappings</span>
-      </Form.Label>
-      <div>
-        {mappingIds.map((id, idx) => {
-          const mappingData = mappings[id];
-          if (!mappingData) return null;
-
-          return (
-            <div key={id} className="mb-4 border p-3 rounded">
-              <Row className="mb-2">
-                <Col md={6}>
-                  <Form.Label className="small fw-bold">Model Scenario</Form.Label>
-                  <Form.Control
-                    type="text"
-                    className="form-control-lg form-primary-input"
-                    placeholder="Model scenario name"
-                    value={mappingData.model_scenario || ""}
-                    onChange={(e) => updateMapping(id, "model_scenario", e.target.value)}
-                  />
-                </Col>
-                <Col md={6}>
-                  <Form.Label className="small fw-bold">Project Scenarios</Form.Label>
-                  <Form.Select
-                    className="form-control-lg"
-                    multiple
-                    value={mappingData.project_scenarios || []}
-                    onChange={(e) => {
-                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-                      updateMapping(id, "project_scenarios", selectedOptions);
-                    }}
-                  >
-                    {projectScenarios.map((scenario, idx) => (
-                      <option key={idx} value={scenario}>
-                        {scenario}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Col>
-              </Row>
-              <Row className="mb-2">
-                <Col>
-                  <Form.Label className="small fw-bold">Description</Form.Label>
-                  <div className="d-flex gap-2">
-                    <Form.Control
-                      as="textarea"
-                      rows={2}
-                      className="form-control-lg form-primary-input"
-                      placeholder="Mapping description"
-                      value={mappingData.description?.[0] || ""}
-                      onChange={(e) => updateMapping(id, "description", [e.target.value])}
-                    />
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      type="button"
-                      onClick={() => removeMapping(id)}
-                      className="d-flex align-items-center justify-content-center"
-                      style={{ width: "32px", height: "38px", padding: "4px" }}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-            </div>
-          );
-        })}
-        <div className="d-flex justify-content-start mt-2">
-          <Button
-            variant="outline-primary"
-            type="button"
-            onClick={addMapping}
-            className="d-flex align-items-center me-2"
-            style={{ padding: "0.5rem 1rem" }}
-          >
-            <Plus className="mr-1" size={16} />
-            Scenario Mapping
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, steps }) => {
   const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
@@ -208,319 +66,6 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, st
   );
 };
 
-// RequirementsSection for model creation
-const RequirementsSection = ({ control, register, errors, watch, setValue, storedRequirements }) => {
-  // Use storedRequirements for initial state if present and not empty
-  const initialRequirements = Object.keys(storedRequirements || {}).length > 0
-    ? storedRequirements
-    : { req_default: { name: "", type: "string", value: "" } };
-
-  const [requirements, setRequirements] = useState(initialRequirements);
-  const [requirementIds, setRequirementIds] = useState(Object.keys(initialRequirements));
-
-  const watchedRequirements = watch("requirements", {});
-
-  // Prefill from zustand store if available when mounting or when storedRequirements changes
-  useEffect(() => {
-    if (Object.keys(storedRequirements || {}).length > 0) {
-      setRequirements(storedRequirements);
-      setRequirementIds(Object.keys(storedRequirements));
-      setValue("requirements", storedRequirements);
-    }
-  }, [storedRequirements, setValue]);
-
-  useEffect(() => {
-    setRequirements(watchedRequirements);
-  }, [watchedRequirements]);
-
-  const addRequirement = () => {
-    const timestamp = Date.now();
-    const newId = `req_${timestamp}`;
-    const newRequirements = {
-      ...requirements,
-      [newId]: {
-        name: "",
-        type: "string",
-        value: ""
-      }
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-    setRequirementIds([...requirementIds, newId]);
-  };
-
-  const removeRequirement = (id) => {
-    const { [id]: removed, ...rest } = requirements;
-    setRequirements(rest);
-    setValue("requirements", rest);
-    setRequirementIds(requirementIds.filter(reqId => reqId !== id));
-  };
-
-  const updateRequirementName = (id, newName) => {
-    const newRequirements = {
-      ...requirements,
-      [id]: {
-        ...requirements[id],
-        name: newName
-      }
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
-  const updateRequirementValue = (id, value) => {
-    const newRequirements = {
-      ...requirements,
-      [id]: {
-        ...requirements[id],
-        value: value
-      }
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
-  const toggleRequirementType = (id) => {
-    const currentType = requirements[id]?.type;
-    const newType = currentType === "string" ? "object" : "string";
-    let newValue;
-    if (newType === "string") {
-      newValue = "";
-    } else {
-      newValue = { field1: "", field2: "" };
-    }
-    const newRequirements = {
-      ...requirements,
-      [id]: {
-        ...requirements[id],
-        type: newType,
-        value: newValue
-      }
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
-  const addObjectField = (reqId) => {
-    const reqData = requirements[reqId];
-    if (!reqData || reqData.type !== "object") return;
-    let fieldIndex = 1;
-    let newFieldName = `field${fieldIndex}`;
-    while (reqData.value && Object.prototype.hasOwnProperty.call(reqData.value, newFieldName)) {
-      fieldIndex++;
-      newFieldName = `field${fieldIndex}`;
-    }
-    const updatedValue = {
-      ...reqData.value,
-      [newFieldName]: ""
-    };
-    const updatedRequirement = {
-      ...reqData,
-      value: updatedValue
-    };
-    const newRequirements = {
-      ...requirements,
-      [reqId]: updatedRequirement
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
-  const updateObjectFieldValue = (reqId, fieldKey, fieldValue) => {
-    const reqData = requirements[reqId];
-    if (!reqData || reqData.type !== "object") return;
-    const updatedValue = {
-      ...reqData.value,
-      [fieldKey]: fieldValue
-    };
-    const updatedRequirement = {
-      ...reqData,
-      value: updatedValue
-    };
-    const newRequirements = {
-      ...requirements,
-      [reqId]: updatedRequirement
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
-  const updateObjectFieldKey = (reqId, oldKey, newKey) => {
-    if (!newKey || oldKey === newKey) return;
-    const reqData = requirements[reqId];
-    if (!reqData || reqData.type !== "object") return;
-    if (Object.prototype.hasOwnProperty.call(reqData.value, newKey) && oldKey !== newKey) {
-      return;
-    }
-    const updatedValue = {};
-    Object.entries(reqData.value).forEach(([key, value]) => {
-      if (key === oldKey) {
-        updatedValue[newKey] = value;
-      } else {
-        updatedValue[key] = value;
-      }
-    });
-    const updatedRequirement = {
-      ...reqData,
-      value: updatedValue
-    };
-    const newRequirements = {
-      ...requirements,
-      [reqId]: updatedRequirement
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
-  const removeObjectField = (reqId, fieldKey) => {
-    const reqData = requirements[reqId];
-    if (!reqData || reqData.type !== "object") return;
-    const fieldKeys = Object.keys(reqData.value || {});
-    if (fieldKeys.length <= 1) return;
-    const updatedValue = {};
-    Object.entries(reqData.value).forEach(([key, value]) => {
-      if (key !== fieldKey) {
-        updatedValue[key] = value;
-      }
-    });
-    const updatedRequirement = {
-      ...reqData,
-      value: updatedValue
-    };
-    const newRequirements = {
-      ...requirements,
-      [reqId]: updatedRequirement
-    };
-    setRequirements(newRequirements);
-    setValue("requirements", newRequirements);
-  };
-
-  return (
-    <div className="form-field-group">
-      <Form.Label className="form-field-label">
-        <span className="form-field-text">Requirements</span>
-      </Form.Label>
-      <div>
-        {requirementIds.map((id, idx) => {
-          const reqData = requirements[id];
-          if (!reqData) return null;
-          return (
-            <div key={id} className="mb-4 border p-3 rounded">
-              <Row className="mb-2">
-                <Col>
-                  <Form.Label className="small fw-bold">Requirement Name</Form.Label>
-                  <div className="d-flex gap-2">
-                    <Form.Control
-                      type="text"
-                      className="form-control-lg form-primary-input"
-                      placeholder="Requirement"
-                      value={reqData.name || ""}
-                      onChange={(e) => updateRequirementName(id, e.target.value)}
-                    />
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      type="button"
-                      onClick={() => removeRequirement(id)}
-                      className="d-flex align-items-center justify-content-center"
-                      style={{ width: "32px", height: "38px", padding: "4px" }}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <Form.Label className="small fw-bold mb-0">Value</Form.Label>
-                    <Form.Check
-                      type="switch"
-                      id={`req-type-switch-${idx}`}
-                      label="Object"
-                      checked={reqData.type === "object"}
-                      onChange={() => toggleRequirementType(id)}
-                    />
-                  </div>
-                  {reqData.type === "string" ? (
-                    <Form.Control
-                      type="text"
-                      className="form-control-lg form-primary-input"
-                      placeholder="Value"
-                      value={reqData.value || ""}
-                      onChange={(e) => updateRequirementValue(id, e.target.value)}
-                    />
-                  ) : (
-                    <div className="p-2 border rounded">
-                      {Object.keys(reqData.value || {}).map((fieldKey) => (
-                        <Row key={`${id}-${fieldKey}`} className="mb-2">
-                          <Col>
-                            <Form.Control
-                              type="text"
-                              className="form-control-sm"
-                              placeholder="Field Name"
-                              defaultValue={fieldKey}
-                              onBlur={(e) => updateObjectFieldKey(id, fieldKey, e.target.value)}
-                            />
-                          </Col>
-                          <Col>
-                            <Form.Control
-                              type="text"
-                              className="form-control-sm"
-                              placeholder="Field Value"
-                              value={reqData.value[fieldKey] || ""}
-                              onChange={(e) => updateObjectFieldValue(id, fieldKey, e.target.value)}
-                            />
-                          </Col>
-                          {Object.keys(reqData.value || {}).length > 1 && (
-                            <Col xs="auto">
-                              <Button
-                                variant="outline-danger"
-                                type="button"
-                                onClick={() => removeObjectField(id, fieldKey)}
-                                className="d-flex align-items-center justify-content-center"
-                                style={{ width: "32px", height: "32px", padding: "4px" }}
-                              >
-                                <Minus size={16} />
-                              </Button>
-                            </Col>
-                          )}
-                        </Row>
-                      ))}
-                      <Button
-                        variant="outline-primary"
-                        type="button"
-                        size="sm"
-                        onClick={() => addObjectField(id)}
-                        className="d-flex align-items-center gap-1 mt-2"
-                      >
-                        <Plus size={16} />
-                        Add nested pair
-                      </Button>
-                    </div>
-                  )}
-                </Col>
-              </Row>
-            </div>
-          );
-        })}
-        <div className="d-flex justify-content-start mt-2">
-          <Button
-            variant="outline-primary"
-            type="button"
-            onClick={addRequirement}
-            className="d-flex align-items-center me-2"
-            style={{ padding: "0.5rem 1rem" }}
-          >
-            <Plus className="mr-1" size={16} />
-            Requirement
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 
 const CreateModelPage = () => {
   const navigate = useNavigate();
@@ -544,10 +89,11 @@ const CreateModelPage = () => {
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
   const [projectScenarios, setProjectScenarios] = useState([]);
-  const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expected_scenarios || [""]);
+  const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
-  // Add local state for scenario mappings
-  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenario_mappings || {});
+  const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
+  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenarioMappings || {});
+  const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
 
   // Clear form data if project context changes
   useEffect(() => {
@@ -559,11 +105,6 @@ const CreateModelPage = () => {
       setProjectContext(projectName, projectRunName);
     }
   }, [projectName, projectRunName, storedFormData.projectName, storedFormData.projectRunName, clearFormData, setProjectContext]);
-
-  // Fetch teams for the modeling team dropdown
-  const { data: teams = [] } = useListTeamsQuery(projectName, {
-    enabled: !!projectName,
-  });
 
   // Initialize react-hook-form with stored data or defaults
   const {
@@ -580,191 +121,68 @@ const CreateModelPage = () => {
   } = useForm({
     defaultValues: {
       name: storedFormData.name || "",
-      display_name: storedFormData.display_name || "",
+      displayName: storedFormData.displayName || "",
       type: storedFormData.type || "",
       description: storedFormData.description || "",
-      modeling_team: storedFormData.modeling_team || "",
+      scheduledStart: storedFormData.scheduledStart || "",
+      scheduledEnd: storedFormData.scheduledEnd || "",
+      expectedScenarios: storedFormData.expectedScenarios || [""],
+      modelingTeam: storedFormData.modelingTeam || "",
       assumptions: storedFormData.assumptions || [""],
-      scheduled_start: storedFormData.scheduled_start || "",
-      scheduled_end: storedFormData.scheduled_end || "",
-      expected_scenarios: storedFormData.expected_scenarios || [""],
-      scenario_mappings: storedFormData.scenario_mappings || {},
+      scenarioMappings: storedFormData.scenarioMappings || {},
       requirements: storedFormData.requirements || {},
       other: storedFormData.other || {}
     }
   });
-
-  // Local state for dynamic arrays
-  const [assumptions, setAssumptions] = useState(storedFormData.assumptions || [""]);
-
-  // Load project data
-  const {
-    data: currentProject,
-    isLoading: isLoadingProject,
-  } = useGetProjectQuery(projectName);
-
-  // Load project run data
-  const {
-    data: currentProjectRun,
-    isLoading: isLoadingProjectRun,
-  } = useGetProjectRunQuery(projectName, projectRunName);
-
-  // Create model mutation
-  const createModelMutation = useCreateModelMutation();
-
-  // Authentication check
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isAuthenticated = await checkAuthStatus();
-      if (!isAuthenticated) {
-        navigate("/login");
-      }
-    };
-
-    checkAuth();
-  }, [navigate, checkAuthStatus]);
-
-  // Extract scenarios from project run or project
-  useEffect(() => {
-    let scenarios = [];
-    if (currentProjectRun?.scenarios) {
-      scenarios = currentProjectRun.scenarios;
-    } else if (currentProject?.scenarios) {
-      scenarios = currentProject.scenarios.map(scenario =>
-        typeof scenario === 'string' ? scenario : scenario.name
-      );
-    }
-    setProjectScenarios(scenarios);
-    setExpectedScenarios(scenarios.length > 0 ? scenarios : [""]);
-    setValue("expected_scenarios", scenarios);
-  }, [currentProject, currentProjectRun, setValue]);
-
-  // Handlers for dynamic arrays
-  const addAssumption = () => {
-    const newAssumptions = [...assumptions, ""];
-    setAssumptions(newAssumptions);
-    setValue("assumptions", newAssumptions);
-  };
-
-  const removeAssumption = (index) => {
-    const newAssumptions = [...assumptions];
-    newAssumptions.splice(index, 1);
-    setAssumptions(newAssumptions.length ? newAssumptions : [""]);
-    setValue("assumptions", newAssumptions.length ? newAssumptions : [""]);
-  };
-
-  const addExpectedScenario = () => {
-    const newScenarios = [...expectedScenarios, ""];
-    setExpectedScenarios(newScenarios);
-    setValue("expected_scenarios", newScenarios);
-  };
-
-  const removeExpectedScenario = (index) => {
-    const newScenarios = [...expectedScenarios];
-    newScenarios.splice(index, 1);
-    setExpectedScenarios(newScenarios.length ? newScenarios : [""]);
-    setValue("expected_scenarios", newScenarios.length ? newScenarios : [""]);
-  };
-
-  const validateDates = (scheduledStart, scheduledEnd) => {
-    if (!scheduledStart || isNaN(new Date(scheduledStart))) {
-      return "Valid start date is required";
-    }
-
-    if (!scheduledEnd || isNaN(new Date(scheduledEnd))) {
-      return "Valid end date is required";
-    }
-
-    // Check if model dates are within project boundaries
-    if (currentProject?.scheduled_start) {
-      const projectStart = new Date(currentProject.scheduled_start);
-      const modelStart = new Date(scheduledStart);
-      if (modelStart < projectStart) {
-        setError("scheduled_start", {
-          message: `Start date must be after project start date (${projectStart.toLocaleDateString()})`
-        });
-        return false;
-      }
-    }
-
-    if (currentProject?.scheduled_end) {
-      const projectEnd = new Date(currentProject.scheduled_end);
-      const modelEnd = new Date(scheduledEnd);
-      if (modelEnd > projectEnd) {
-        setError("scheduled_end", {
-          message: `End date must be before project end date (${projectEnd.toLocaleDateString()})`
-        });
-        return false;
-      }
-    }
-
-    if (new Date(scheduledStart) > new Date(scheduledEnd)) {
-      setError("scheduled_end", { message: "End date must be after start date" });
-      return false;
-    }
-
-    clearErrors(["scheduled_start", "scheduled_end"]);
-    return true;
-  };
-
-  const handleNextStep = async (e) => {
-    if (e && e.preventDefault) e.preventDefault(); // Prevent accidental form submit
-    let fieldsToValidate = [];
-    switch (currentStep) {
-      case 1:
-        fieldsToValidate = ['name', 'type', 'scheduled_start', 'scheduled_end'];
-        break;
-      case 4:
-        fieldsToValidate = ['modeling_team'];
-        break;
-      default:
-        break;
-    }
-
-    const isValid = await trigger(fieldsToValidate);
-    const datesAreValid = currentStep === 1 ? validateDates(watch('scheduled_start'), watch('scheduled_end')) : true;
-
-    if (isValid && datesAreValid) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrevStep = () => {
-    setCurrentStep(prev => prev - 1);
-  };
-
-  // Update scenarioMappings state when form changes
-  useEffect(() => {
-    setScenarioMappings(watch("scenario_mappings"));
-  }, [watch("scenario_mappings")]);
 
   // Save form data to store when it changes (debounced)
   const saveFormData = () => {
     const currentData = watch();
     updateFormData({
       ...currentData,
-      assumptions,
-      expected_scenarios: expectedScenarios,
+      expectedScenarios,
       requirements,
-      scenario_mappings: scenarioMappings, // <-- persist scenario mappings
+      assumptions,
+      modelingTeam,
+      scenarioMappings,
       projectName,
       projectRunName
     });
   };
 
+  // Update local state when form requirements and assumptions change
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name && name.startsWith('requirements')) {
+        setRequirements(value.requirements || {});
+      }
+      if (name && name.startsWith('assumptions')) {
+        setAssumptions(value.assumptions || []);
+      }
+      if (name === 'modelingTeam') {
+        setModelingTeam(value.modelingTeam || "");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
   // Debounce save function
   useEffect(() => {
-    const timer = setTimeout(saveFormData, 1000); // Save after 1 second of inactivity
+    const timer = setTimeout(() => {
+      const currentData = watch();
+      updateFormData({
+        ...currentData,
+        expectedScenarios: currentData.expectedScenarios || [],
+        requirements: currentData.requirements || {},
+        assumptions: currentData.assumptions || [],
+        modelingTeam: currentData.modelingTeam || "",
+        scenarioMappings: currentData.scenarioMappings || {},
+        projectName,
+        projectRunName
+      });
+    }, 1000); // Save after 1 second of inactivity
     return () => clearTimeout(timer);
-  }, [
-    watch(),
-    assumptions,
-    expectedScenarios,
-    requirements,
-    scenarioMappings, // <-- add scenarioMappings to dependency array
-    projectName,
-    projectRunName
-  ]);
+  }, [watch, updateFormData, projectName, projectRunName]);
 
   const onSubmit = async (data) => {
     clearErrors();
@@ -775,25 +193,25 @@ const CreateModelPage = () => {
     // Clean and format data for API
     const formData = { ...data };
 
-    // Clean assumptions
-    formData.assumptions = assumptions.filter(assumption => assumption.trim() !== "");
+    // Clean assumptions - now comes directly from form data
+    formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
 
     // Clean expected scenarios
-    formData.expected_scenarios = expectedScenarios.filter(scenario => scenario.trim() !== "");
+    formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
 
     // Clean scenario mappings
     const cleanedMappings = [];
-    Object.entries(data.scenario_mappings || {}).forEach(([id, mappingData]) => {
-      if (mappingData.model_scenario?.trim()) {
+    Object.entries(data.scenarioMappings || {}).forEach(([id, mappingData]) => {
+      if (mappingData.modelScenario?.trim()) {
         cleanedMappings.push({
-          model_scenario: mappingData.model_scenario.trim(),
-          project_scenarios: mappingData.project_scenarios || [],
+          model_scenario: mappingData.modelScenario.trim(),
+          project_scenarios: mappingData.projectScenarios || [],
           description: mappingData.description?.filter(desc => desc.trim() !== "") || [],
           other: mappingData.other || {}
         });
       }
     });
-    formData.scenario_mappings = cleanedMappings;
+    formData.scenarioMappings = cleanedMappings;
 
     // Clean requirements - convert internal structure to API expected format
     const cleanedRequirements = {};
@@ -818,22 +236,22 @@ const CreateModelPage = () => {
     formData.requirements = cleanedRequirements;
 
     // Validate dates
-    const dateValidation = validateDates(formData.scheduled_start, formData.scheduled_end);
+    const dateValidation = validateDates(formData.scheduledStart, formData.scheduledEnd);
     if (dateValidation !== true) {
-      setError("scheduled_start", { message: dateValidation });
-      setError("scheduled_end", { message: dateValidation });
+      setError("scheduledStart", { message: dateValidation });
+      setError("scheduledEnd", { message: dateValidation });
       return;
     }
 
     // Convert date strings to ISO datetime format for API
-    if (formData.scheduled_start) {
-      const startDate = new Date(formData.scheduled_start + 'T00:00:00.000Z');
-      formData.scheduled_start = startDate.toISOString();
+    if (formData.scheduledStart) {
+      const startDate = new Date(formData.scheduledStart + 'T00:00:00.000Z');
+      formData.scheduledStart = startDate.toISOString();
     }
 
-    if (formData.scheduled_end) {
-      const endDate = new Date(formData.scheduled_end + 'T23:59:59.999Z');
-      formData.scheduled_end = endDate.toISOString();
+    if (formData.scheduledEnd) {
+      const endDate = new Date(formData.scheduledEnd + 'T23:59:59.999Z');
+      formData.scheduledEnd = endDate.toISOString();
     }
 
     // Format final payload
@@ -847,15 +265,15 @@ const CreateModelPage = () => {
 
     const cleanedFormData = {
       name: formData.name.trim(),
-      display_name: formData.display_name?.trim() || null,
+      display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
-      modeling_team: formData.modeling_team.trim(),
+      modeling_team: formData.modelingTeam?.name || formData.modelingTeam,
       assumptions: formData.assumptions,
-      scheduled_start: formData.scheduled_start,
-      scheduled_end: formData.scheduled_end,
-      expected_scenarios: formData.expected_scenarios,
-      scenario_mappings: formData.scenario_mappings,
+      scheduled_start: formData.scheduledStart,
+      scheduled_end: formData.scheduledEnd,
+      expected_scenarios: formData.expectedScenarios,
+      scenario_mappings: formData.scenarioMappings,
       requirements: formData.requirements,
       other: formData.other || {}
     };
@@ -871,19 +289,18 @@ const CreateModelPage = () => {
       clearFormData();
 
       // Reset local state and form to initial values
-      setAssumptions([""]);
       setRequirements({});
       reset({
         name: "",
-        display_name: "",
+        displayName: "",
         type: "",
         description: "",
-        modeling_team: "",
+        modelingTeam: "",
         assumptions: [""],
-        scheduled_start: "",
-        scheduled_end: "",
-        expected_scenarios: [""],
-        scenario_mappings: {},
+        scheduledStart: "",
+        scheduledEnd: "",
+        expectedScenarios: [""],
+        scenarioMappings: {},
         requirements: {},
         other: {}
       });
@@ -917,6 +334,103 @@ const CreateModelPage = () => {
         });
       }
     }
+  };
+
+  // Load project data
+  const {
+    data: currentProject,
+    isLoading: isLoadingProject,
+  } = useGetProjectQuery(projectName);
+
+  // Load project run data
+  const {
+    data: currentProjectRun,
+    isLoading: isLoadingProjectRun,
+  } = useGetProjectRunQuery(projectName, projectRunName);
+
+  // Create model mutation
+  const createModelMutation = useCreateModelMutation();
+
+  // Extract scenarios from project run or project
+  useEffect(() => {
+    let scenarios = [];
+    if (currentProjectRun?.scenarios) {
+      scenarios = currentProjectRun.scenarios;
+    }
+    if (scenarios.length === 0 && currentProject?.scenarios) {
+      scenarios = currentProject.scenarios.map(scenario =>
+        typeof scenario === 'string' ? scenario : scenario.name
+      );
+    }
+    setProjectScenarios(scenarios);
+    setValue("expectedScenarios", storedFormData.expectedScenarios || []);
+  }, [currentProject, currentProjectRun, setValue, storedFormData.expectedScenarios]);
+
+  const validateDates = (scheduledStart, scheduledEnd) => {
+    if (!scheduledStart || isNaN(new Date(scheduledStart))) {
+      return "Valid start date is required";
+    }
+
+    if (!scheduledEnd || isNaN(new Date(scheduledEnd))) {
+      return "Valid end date is required";
+    }
+
+    // Check if model dates are within project boundaries
+    if (currentProject?.scheduled_start) {
+      const projectStart = new Date(currentProject.scheduled_start);
+      const modelStart = new Date(scheduledStart);
+      if (modelStart < projectStart) {
+        setError("scheduledStart", {
+          message: `Start date must be after project start date (${projectStart.toLocaleDateString()})`
+        });
+        return false;
+      }
+    }
+
+    if (currentProject?.scheduled_end) {
+      const projectEnd = new Date(currentProject.scheduled_end);
+      const modelEnd = new Date(scheduledEnd);
+      if (modelEnd > projectEnd) {
+        setError("scheduledEnd", {
+          message: `End date must be before project end date (${projectEnd.toLocaleDateString()})`
+        });
+        return false;
+      }
+    }
+
+    if (new Date(scheduledStart) > new Date(scheduledEnd)) {
+      setError("scheduledEnd", { message: "End date must be after start date" });
+      return false;
+    }
+
+    clearErrors(["scheduledStart", "scheduledEnd"]);
+    return true;
+  };
+
+  const handleNextStep = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    let fieldsToValidate = [];
+    switch (currentStep) {
+      case 1:
+        fieldsToValidate = ['name', 'type', 'scheduledStart', 'scheduledEnd'];
+        break;
+      case 5:
+        fieldsToValidate = ['modelingTeam'];
+        break;
+      default:
+        break;
+    }
+
+    const isValid = await trigger(fieldsToValidate);
+    const datesAreValid = currentStep === 1 ? validateDates(watch('scheduledStart'), watch('scheduledEnd')) : true;
+
+    if (isValid && datesAreValid) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep(prev => prev - 1);
   };
 
   // Show loading state
@@ -1012,155 +526,27 @@ const CreateModelPage = () => {
                   <div className="form-container">
                     {currentStep === 1 && (
                       <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label required-field">Model Name</Form.Label>
-                          <Form.Control
-                            type="text"
-                            className="form-control-lg form-primary-input"
-                            placeholder="Enter model name"
-                            isInvalid={!!errors.name}
-                            {...register("name", { required: "Model name is required" })}
-                          />
-                          <Form.Control.Feedback type="invalid" className="text-start">
-                            {errors.name?.message}
-                          </Form.Control.Feedback>
-                        </div>
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Display Name</Form.Label>
-                          <Form.Control
-                            type="text"
-                            className="form-control-lg form-primary-input"
-                            placeholder="Enter display name (optional)"
-                            {...register("display_name")}
-                          />
-                        </div>
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label required-field">Type</Form.Label>
-                          <Form.Control
-                            type="text"
-                            className="form-control-lg form-primary-input"
-                            placeholder="e.g., Capacity Expansion"
-                            isInvalid={!!errors.type}
-                            {...register("type", { required: "Model type is required" })}
-                          />
-                          <Form.Control.Feedback type="invalid" className="text-start">
-                            {errors.type?.message}
-                          </Form.Control.Feedback>
-                        </div>
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Description</Form.Label>
-                          <Form.Control
-                            as="textarea"
-                            rows={3}
-                            className="form-control-lg form-primary-input"
-                            placeholder="Enter a brief description for the model"
-                            {...register("description")}
-                          />
-                        </div>
-                        <Row>
-                          <Col md={6} className="form-field-group">
-                            <Form.Label className="form-field-label required-field">
-                              <span className="form-field-text">Scheduled Start</span>
-                            </Form.Label>
-                            {currentProjectRun?.scheduled_start && (
-                              <Form.Text className="text-muted d-block text-start">
-                                Date must be after{" "}
-                                {new Date(currentProjectRun.scheduled_start).toLocaleDateString()}
-                              </Form.Text>
-                            )}
-                            <Form.Control
-                              id="scheduled_start"
-                              type="date"
-                              className="form-control-lg form-date-input"
-                              isInvalid={!!errors.scheduled_start}
-                              placeholder="mm/dd/yyyy"
-                              {...register("scheduled_start", {
-                                required: "Start date is required"
-                              })}
-                            />
-                            {errors.scheduled_start && (
-                              <Form.Control.Feedback type="invalid">
-                                {errors.scheduled_start.message}
-                              </Form.Control.Feedback>
-                            )}
-                          </Col>
-
-                          <Col md={6} className="form-field-group">
-                            <Form.Label className="form-field-label required-field">
-                              <span className="form-field-text">Scheduled End</span>
-                            </Form.Label>
-                            {currentProjectRun?.scheduled_end && (
-                              <Form.Text className="text-muted d-block text-start">
-                                Date must be before{" "}
-                                {new Date(currentProjectRun.scheduled_end).toLocaleDateString()}
-                              </Form.Text>
-                            )}
-                            <Form.Control
-                              id="scheduled_end"
-                              type="date"
-                              className="form-control-lg form-date-input"
-                              isInvalid={!!errors.scheduled_end}
-                              placeholder="mm/dd/yyyy"
-                              {...register("scheduled_end", {
-                                required: "End date is required"
-                              })}
-                            />
-                            {errors.scheduled_end && (
-                              <Form.Control.Feedback type="invalid">
-                                {errors.scheduled_end.message}
-                              </Form.Control.Feedback>
-                            )}
-                          </Col>
-                        </Row>
-                      </div>
-                    )}
-
-                    {currentStep === 2 && (
-                      <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Expected Scenarios</Form.Label>
-                          <div>
-                            {expectedScenarios.map((scenario, index) => (
-                              <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                                <Form.Control
-                                  className="form-control-lg form-primary-input"
-                                  placeholder="Enter expected scenario"
-                                  value={scenario}
-                                  onChange={(e) => {
-                                    const newScenarios = [...expectedScenarios];
-                                    newScenarios[index] = e.target.value;
-                                    setExpectedScenarios(newScenarios);
-                                    setValue("expected_scenarios", newScenarios);
-                                  }}
-                                />
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  type="button"
-                                  onClick={() => removeExpectedScenario(index)}
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            <Button
-                              variant="outline-primary"
-                              type="button"
-                              onClick={addExpectedScenario}
-                              className="d-flex align-items-center gap-2"
-                              style={{ padding: "0.5rem 1rem" }}
-                            >
-                              <Plus size={16} />
-                              Expected Scenario
-                            </Button>
-                          </div>
-                        </div>
-                        <ScenarioMappingsSection
+                        <BasicInfoSection
                           control={control}
                           register={register}
                           errors={errors}
                           watch={watch}
                           setValue={setValue}
+                          storedData={storedFormData}
+                          projectRun={currentProjectRun}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <div className="step-panel">
+                        <ExpectedScenariosSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
                           projectScenarios={projectScenarios}
                         />
                       </div>
@@ -1174,268 +560,50 @@ const CreateModelPage = () => {
                           errors={errors}
                           watch={watch}
                           setValue={setValue}
-                          storedRequirements={storedFormData.requirements}
+                          storedData={storedFormData}
                         />
                       </div>
                     )}
 
                     {currentStep === 4 && (
                       <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label">Assumptions</Form.Label>
-                          <div>
-                            {assumptions.map((assumption, index) => (
-                              <div key={index} className="d-flex mb-2 align-items-center gap-2">
-                                <Form.Control
-                                  className="form-control-lg form-primary-input"
-                                  placeholder="Enter assumption"
-                                  value={assumption}
-                                  onChange={(e) => {
-                                    const newAssumptions = [...assumptions];
-                                    newAssumptions[index] = e.target.value;
-                                    setAssumptions(newAssumptions);
-                                    setValue("assumptions", newAssumptions);
-                                  }}
-                                />
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  type="button"
-                                  onClick={() => removeAssumption(index)}
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            <Button
-                              variant="outline-primary"
-                              type="button"
-                              onClick={addAssumption}
-                              className="d-flex align-items-center gap-2"
-                              style={{ padding: "0.5rem 1rem" }}
-                            >
-                              <Plus size={16} />
-                              Assumption
-                            </Button>
-                          </div>
-                        </div>
+                        <AssumptionsSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                          projectRun={currentProjectRun}
+                        />
                       </div>
                     )}
 
                     {currentStep === 5 && (
                       <div className="step-panel">
-                        <div className="mb-4">
-                          <Form.Label className="form-field-label required-field">Modeling Team</Form.Label>
-                          <div className="d-flex align-items-start gap-2">
-                            <div className="flex-grow-1">
-                              <Form.Select
-                                className="form-control-lg form-primary-input"
-                                isInvalid={!!errors.modeling_team}
-                                {...register("modeling_team", { required: "Modeling team is required" })}
-                              >
-                                <option value="">Select a team</option>
-                                {teams.map((team) => (
-                                  <option key={team.name} value={team.name}>
-                                    {team.name}
-                                  </option>
-                                ))}
-                              </Form.Select>
-                              <Form.Control.Feedback type="invalid" className="text-start">
-                                {errors.modeling_team?.message}
-                              </Form.Control.Feedback>
-                            </div>
-                            <Button
-                              variant="outline-primary"
-                              type="button"
-                              onClick={() => navigate('/create-team')}
-                              className="d-flex align-items-center justify-content-center"
-                              style={{
-                                minWidth: '48px',
-                                height: '48px',
-                                padding: '0'
-                              }}
-                              title="Create a new team"
-                            >
-                              <Plus size={20} />
-                            </Button>
-                          </div>
-                        </div>
+                        <ModelingTeamSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                          projectName={projectName}
+                        />
                       </div>
                     )}
 
                     {currentStep === 6 && (
                       <div className="step-panel">
-                        {/* Basic Information Section */}
-                        <div className="review-section mb-4">
-                          <div className="review-content">
-                            <Row>
-                              <Col md={6}>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Model Name</div>
-                                  <div className="review-value">{allData.name || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Display Name</div>
-                                  <div className="review-value">{allData.display_name || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Type</div>
-                                  <div className="review-value">{allData.type || 'Not specified'}</div>
-                                </div>
-                              </Col>
-                              <Col md={6}>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Scheduled Start</div>
-                                  <div className="review-value">{allData.scheduled_start || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Scheduled End</div>
-                                  <div className="review-value">{allData.scheduled_end || 'Not specified'}</div>
-                                </div>
-                                <div className="review-item mb-3">
-                                  <div className="review-label">Description</div>
-                                  <div className="review-value">{allData.description || 'Not specified'}</div>
-                                </div>
-                              </Col>
-                            </Row>
-                          </div>
-                        </div>
-
-                        {/* Scenarios Section */}
-                        <div className="review-section mb-4">
-                          <div className="review-content">
-                            <div className="review-item">
-                              <div className="review-label">Expected Scenarios</div>
-                              {expectedScenarios.filter(s => s.trim()).length > 0 ? (
-                                <ul className="review-list-items mt-2 ps-3">
-                                  {expectedScenarios.filter(s => s.trim()).map((scenario, i) => (
-                                    <li key={i}>{scenario}</li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <div className="review-value text-muted">No scenarios specified</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Requirements Section */}
-                        <div className="review-section mb-4">
-                          <div className="review-content">
-                            <div className="review-item">
-                              <div className="review-label">Requirements</div>
-                              {allData.requirements &&
-                                Object.values(allData.requirements)
-                                  .filter((value) => {
-                                    // Hide any requirements with empty name or empty value
-                                    if (
-                                      value &&
-                                      typeof value === "object" &&
-                                      ("name" in value || "type" in value || "value" in value)
-                                    ) {
-                                      if (!value.name || value.name.trim() === "") return false;
-                                    }
-                                    if (
-                                      value === "" ||
-                                      (typeof value === "object" && Object.keys(value).length === 0)
-                                    ) {
-                                      return false;
-                                    }
-                                    return true;
-                                  }).length > 0 ? (
-                                <div className="table-responsive rounded">
-                                  <table className="table table-borderless table-sm mb-0">
-                                    <thead>
-                                      <tr>
-                                        <th>Name</th>
-                                        <th>Value</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {Object.values(allData.requirements)
-                                        .filter((value) => {
-                                          if (
-                                            value &&
-                                            typeof value === "object" &&
-                                            ("name" in value || "type" in value || "value" in value)
-                                          ) {
-                                            if (!value.name || value.name.trim() === "") return false;
-                                          }
-                                          if (
-                                            value === "" ||
-                                            (typeof value === "object" && Object.keys(value).length === 0)
-                                          ) {
-                                            return false;
-                                          }
-                                          return true;
-                                        })
-                                        .map((value, idx) => (
-                                          <tr key={idx}>
-                                            <td>{value.name}</td>
-                                            <td>
-                                              {value.type === "object"
-                                                ? (
-                                                    <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-                                                      {JSON.stringify(value.value, null, 2)}
-                                                    </pre>
-                                                  )
-                                                : value.value}
-                                            </td>
-                                          </tr>
-                                        ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              ) : (
-                                <div className="review-value text-muted">No requirements specified</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Assumptions Section */}
-                        <div className="review-section mb-4">
-                          <div className="review-content">
-                            <div className="review-item">
-                              <div className="review-label">Assumptions</div>
-                              {assumptions.filter(a => a.trim()).length > 0 ? (
-                                <ul className="review-list-items mt-2 ps-3">
-                                  {assumptions.filter(a => a.trim()).map((assumption, i) => (
-                                    <li key={i}>{assumption}</li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <div className="review-value text-muted">No assumptions specified</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Modeling Team Section */}
-                        <div className="review-section">
-                          <div className="review-content">
-                            <div className="review-item">
-                              <div className="review-label">Modeling Team</div>
-                              <div className="review-value">
-                                {(() => {
-                                  const team = allData.modeling_team;
-                                  if (!team) return 'Not selected';
-                                  if (typeof team === "string") return team;
-                                  if (typeof team === "object" && team !== null) {
-                                    // Render team name if present, else prettified JSON string
-                                    if (team.name) return team.name;
-                                    return (
-                                      <pre style={{ margin: 0, display: "inline", whiteSpace: "pre-wrap" }}>
-                                        {JSON.stringify(team, null, 2)}
-                                      </pre>
-                                    );
-                                  }
-                                  return String(team);
-                                })()}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <FinalReviewSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          projectRun={currentProjectRun}
+                          storedData={storedFormData}
+                        />
                       </div>
                     )}
                   </div>

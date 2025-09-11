@@ -78,12 +78,14 @@ const queryClient = new QueryClient();
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true); // Add loading state
   const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
   useEffect(() => {
     const checkAuth = async () => {
       const authStatus = await checkAuthStatus();
       setIsAuthenticated(authStatus);
+      setLoading(false); // Set loading to false after auth check
     };
 
     checkAuth();
@@ -92,6 +94,15 @@ function App() {
 
     return () => clearInterval(interval);
   }, [checkAuthStatus]);
+
+  if (loading) {
+    // Show a loading spinner or placeholder while checking authentication
+    return (
+      <div className="loading-container">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

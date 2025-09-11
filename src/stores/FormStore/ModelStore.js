@@ -8,15 +8,15 @@ export const useCreateModelFormStore = create(
         projectName: '',
         projectRunName: '',
         name: '',
-        display_name: '',
+        displayName: '',
         type: '',
         description: '',
-        modeling_team: '',
+        modelingTeam: '',
         assumptions: [''],
-        scheduled_start: '',
-        scheduled_end: '',
-        expected_scenarios: [''],
-        scenario_mappings: {},
+        scheduledStart: '',
+        scheduledEnd: '',
+        expectedScenarios: [''],
+        scenarioMappings: {},
         requirements: {}, // <-- add requirements here
         other: {}
       },
@@ -37,15 +37,15 @@ export const useCreateModelFormStore = create(
           projectName: '',
           projectRunName: '',
           name: '',
-          display_name: '',
+          displayName: '',
           type: '',
           description: '',
-          modeling_team: '',
+          modelingTeam: '',
           assumptions: [''],
-          scheduled_start: '',
-          scheduled_end: '',
-          expected_scenarios: [''],
-          scenario_mappings: {},
+          scheduledStart: '',
+          scheduledEnd: '',
+          expectedScenarios: [''],
+          scenarioMappings: {},
           requirements: {}, // <-- add requirements here
           other: {}
         }
@@ -57,11 +57,11 @@ export const useCreateModelFormStore = create(
       // Check if form has data
       hasFormData: () => {
         const data = get().formData;
-        return !!(data.name || data.type || data.description || data.modeling_team ||
-                 data.scheduled_start || data.scheduled_end ||
+        return !!(data.name || data.type || data.description || data.modelingTeam ||
+                 data.scheduledStart || data.scheduledEnd ||
                  (data.assumptions && data.assumptions.some(a => a.trim())) ||
-                 (data.expected_scenarios && data.expected_scenarios.some(s => s.trim())) ||
-                 (data.scenario_mappings && Object.keys(data.scenario_mappings).length > 0) ||
+                 (data.expectedScenarios && data.expectedScenarios.some(s => s.trim())) ||
+                 (data.scenarioMappings && Object.keys(data.scenarioMappings).length > 0) ||
                  (data.requirements && Object.keys(data.requirements).length > 0)); // <-- check requirements
       }
     }),
@@ -80,15 +80,15 @@ export const useUpdateModelFormStore = create(
         projectName: '',
         projectRunName: '',
         name: '',
-        display_name: '',
+        displayName: '',
         type: '',
         description: '',
-        modeling_team: '',
+        modelingTeam: '',
         assumptions: [''],
-        scheduled_start: '',
-        scheduled_end: '',
-        expected_scenarios: [''],
-        scenario_mappings: {},
+        scheduledStart: '',
+        scheduledEnd: '',
+        expectedScenarios: [''],
+        scenarioMappings: {},
         requirements: {}, // <-- add requirements here
         other: {}
       },
@@ -110,15 +110,15 @@ export const useUpdateModelFormStore = create(
           projectName: '',
           projectRunName: '',
           name: '',
-          display_name: '',
+          displayName: '',
           type: '',
           description: '',
-          modeling_team: '',
+          modelingTeam: '',
           assumptions: [''],
-          scheduled_start: '',
-          scheduled_end: '',
-          expected_scenarios: [''],
-          scenario_mappings: {},
+          scheduledStart: '',
+          scheduledEnd: '',
+          expectedScenarios: [''],
+          scenarioMappings: {},
           requirements: {}, // <-- add requirements here
           other: {}
         }
@@ -130,11 +130,11 @@ export const useUpdateModelFormStore = create(
       // Check if form has data
       hasFormData: () => {
         const data = get().formData;
-        return !!(data.name || data.type || data.description || data.modeling_team ||
-                 data.scheduled_start || data.scheduled_end ||
+        return !!(data.name || data.type || data.description || data.modelingTeam ||
+                 data.scheduledStart || data.scheduledEnd ||
                  (data.assumptions && data.assumptions.some(a => a.trim())) ||
-                 (data.expected_scenarios && data.expected_scenarios.some(s => s.trim())) ||
-                 (data.scenario_mappings && Object.keys(data.scenario_mappings).length > 0) ||
+                 (data.expectedScenarios && data.expectedScenarios.some(s => s.trim())) ||
+                 (data.scenarioMappings && Object.keys(data.scenarioMappings).length > 0) ||
                  (data.requirements && Object.keys(data.requirements).length > 0)); // <-- check requirements
       }
     }),

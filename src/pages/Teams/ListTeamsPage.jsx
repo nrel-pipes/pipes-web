@@ -124,7 +124,7 @@ const ListTeamsPage = () => {
           <ContentHeader
             title="Teams"
             cornerMark={teams.length}
-            headerButton={<TeamCreationButton isDisabled={projectName === "pipes101"} />}
+            headerButton={<TeamCreationButton isDisabled={projectName === "pipes101"} projectName={projectName} />}
           />
         </Row>
 

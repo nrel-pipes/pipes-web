@@ -2,12 +2,12 @@ import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 
-const TeamCreationButton = ({ isDisabled = false }) => {
+const TeamCreationButton = ({ isDisabled = false, projectName }) => {
   const navigate = useNavigate();
 
   const handleCreateTeam = () => {
     if (isDisabled) return;
-    navigate("/create-team");
+    navigate(`/team/new?P=${encodeURIComponent(projectName)}`);
   };
 
   return (

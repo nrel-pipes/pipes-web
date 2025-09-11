@@ -69,8 +69,8 @@ const CreateModelStartPage = () => {
             </div>
           </div>
         </section>
-        <Row className="mt-4">
-          <Col className="text-end">
+        <Row className="mt-5">
+          <Col className="text-start">
             <button
               className="create-button btn-primary px-4 py-3"
               style={{
