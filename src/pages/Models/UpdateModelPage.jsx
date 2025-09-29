@@ -111,7 +111,7 @@ const UpdateModelPage = () => {
   const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
-  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenarioMappings || {});
+  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenarioMappings || []);
   const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
 
   // Clear form data if project context changes
@@ -275,6 +275,9 @@ const UpdateModelPage = () => {
       if (name && name.startsWith('expectedScenarios')) {
         setExpectedScenarios(value.expectedScenarios || []);
       }
+      if (name && name.startsWith('scenarioMappings')) {
+        setScenarioMappings(value.scenarioMappings || []);
+      }
     });
     return () => subscription.unsubscribe();
   }, [watch]);
@@ -289,13 +292,13 @@ const UpdateModelPage = () => {
         requirements: currentData.requirements || {},
         assumptions: currentData.assumptions || [],
         modelingTeam: currentData.modelingTeam || "",
-        scenarioMappings: currentData.scenarioMappings || {},
+        scenarioMappings: currentData.scenarioMappings || [],
         projectName,
         projectRunName
       });
     }, 1000); // Save after 1 second of inactivity
     return () => clearTimeout(timer);
-  }, [watch, updateFormData, projectName, projectRunName]);
+  }, [watch, updateFormData, projectName, projectRunName, expectedScenarios, requirements, assumptions, modelingTeam, scenarioMappings]);
 
   const onSubmit = async (data) => {
     clearErrors();
