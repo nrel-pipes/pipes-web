@@ -31,7 +31,7 @@ export default function HandoffsComponent({ projectRun }) {
       ) : (
         <div className="space-y-4">
           {handoffs.map(handoff => (
-            <div key={handoff.name} className="border rounded-lg p-4 bg-white shadow-sm">
+            <div key={handoff.name} className="border rounded p-4 bg-white shadow-sm">
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h4 className="font-medium text-lg">{handoff.name}</h4>
@@ -50,12 +50,16 @@ export default function HandoffsComponent({ projectRun }) {
                   <span className="font-medium"><b>To Model:</b></span> {handoff.to_model}
                 </div>
 
-                <div>
-                  <span className="font-medium"><b>Scheduled Start:</b></span> {formatDate(handoff.scheduled_start)}
-                </div>
-                <div>
-                  <span className="font-medium"><b>Scheduled End:</b></span> {formatDate(handoff.scheduled_end)}
-                </div>
+                {handoff.scheduled_start && (
+                  <div>
+                    <span className="font-medium"><b>Scheduled Start:</b></span> {formatDate(handoff.scheduled_start)}
+                  </div>
+                )}
+                {handoff.scheduled_end && (
+                  <div>
+                    <span className="font-medium"><b>Scheduled End:</b></span> {formatDate(handoff.scheduled_end)}
+                  </div>
+                )}
 
                 {handoff.submission_date && (
                   <div className="col-span-2">
