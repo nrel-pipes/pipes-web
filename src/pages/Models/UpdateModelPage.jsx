@@ -408,8 +408,8 @@ const UpdateModelPage = () => {
       // Clear stored form data on successful submission
       clearFormData();
 
-      // Navigate to models page on success
-      navigate(`/projectrun/${encodeURIComponent(projectRunName)}?P=${encodeURIComponent(projectName)}`);
+      // Navigate to model detail page on success
+      navigate(`/model/${encodeURIComponent(modelName)}?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to update model");
