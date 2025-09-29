@@ -184,16 +184,16 @@ const UpdateModelPage = () => {
         return date.toISOString().split('T')[0];
       };
 
-      // Format scenario mappings for form
-      const formattedMappings = {};
+      // Format scenario mappings for form - convert to array format
+      const formattedMappings = [];
       if (existingModel.scenario_mappings && Array.isArray(existingModel.scenario_mappings)) {
-        existingModel.scenario_mappings.forEach((mapping, index) => {
-          formattedMappings[`mapping_${index}`] = {
+        existingModel.scenario_mappings.forEach((mapping) => {
+          formattedMappings.push({
             modelScenario: mapping.model_scenario || "",
-            projectScenarios: mapping.project_scenarios || [],
-            description: mapping.description || [],
+            projectScenarios: mapping.project_scenarios || [""],
+            description: mapping.description || [""],
             other: mapping.other || {}
-          };
+          });
         });
       }
 
@@ -314,16 +314,22 @@ const UpdateModelPage = () => {
 
     // Clean scenario mappings
     const cleanedMappings = [];
-    Object.entries(data.scenarioMappings || {}).forEach(([id, mappingData]) => {
-      if (mappingData.modelScenario?.trim()) {
-        cleanedMappings.push({
-          model_scenario: mappingData.modelScenario.trim(),
-          project_scenarios: mappingData.projectScenarios || [],
-          description: mappingData.description?.filter(desc => desc.trim() !== "") || [],
-          other: mappingData.other || {}
-        });
-      }
-    });
+    if (Array.isArray(data.scenarioMappings)) {
+      data.scenarioMappings.forEach((mappingData) => {
+        if (mappingData.modelScenario?.trim()) {
+          cleanedMappings.push({
+            model_scenario: mappingData.modelScenario.trim(),
+            project_scenarios: Array.isArray(mappingData.projectScenarios) ?
+              mappingData.projectScenarios.filter(scenario => scenario && scenario.trim() !== "") :
+              [mappingData.projectScenarios].filter(scenario => scenario && scenario.trim() !== ""),
+            description: Array.isArray(mappingData.description) ?
+              mappingData.description.filter(desc => desc && desc.trim() !== "") :
+              [mappingData.description].filter(desc => desc && desc.trim() !== ""),
+            other: mappingData.other || {}
+          });
+        }
+      });
+    }
     formData.scenarioMappings = cleanedMappings;
 
     // Clean requirements - convert internal structure to API expected format
