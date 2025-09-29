@@ -223,9 +223,6 @@ const UpdateModelPage = () => {
         requirements: formattedRequirements,
         other: existingModel.other || {}
       };
-      console.log("Existing model", existingModel);
-      console.log("Existing model scenarios", existingModel.expected_scenarios);
-      console.log("Existing model modeling team", existingModel.modeling_team);
 
       // Update form values
       Object.entries(formData).forEach(([key, value]) => {
@@ -334,13 +331,19 @@ const UpdateModelPage = () => {
     Object.entries(data.requirements || {}).forEach(([id, reqData]) => {
       const key = reqData.name?.trim();
       if (key) {
-        if (reqData.type === "string" && reqData.value.trim() !== "") {
-          cleanedRequirements[key] = reqData.value;
+        if (reqData.type === "string") {
+          // Ensure reqData.value is a string and not empty after trimming
+          const stringValue = typeof reqData.value === 'string' ? reqData.value : String(reqData.value || '');
+          if (stringValue.trim() !== "") {
+            cleanedRequirements[key] = stringValue.trim();
+          }
         } else if (reqData.type === "object") {
           const cleanedObject = {};
           Object.entries(reqData.value || {}).forEach(([field, val]) => {
-            if (val && val.trim() !== "") {
-              cleanedObject[field] = val;
+            // Ensure val is a string before calling trim
+            const stringVal = typeof val === 'string' ? val : String(val || '');
+            if (stringVal.trim() !== "") {
+              cleanedObject[field] = stringVal.trim();
             }
           });
           if (Object.keys(cleanedObject).length > 0) {
@@ -572,7 +575,7 @@ const UpdateModelPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mCreate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mName: modelName, toUpdate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Update Model"/>

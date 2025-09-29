@@ -62,7 +62,7 @@ const ListModelsPage = () => {
   }, [navigate, checkAuthStatus]);
 
   const handleCreateModelClick = () => {
-    navigate("/model/startnew");
+    navigate("/model/startnew?P=" + encodeURIComponent(projectName) + "&p=" + encodeURIComponent(projectRunName));
   };
 
   const handleViewModelClick = (projectRunName, modelName) => {

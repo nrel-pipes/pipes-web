@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   useEdgesState,
@@ -18,6 +18,20 @@ import useUIStore from "../../../stores/UIStore";
 import { DecoratedNode } from "../../Components/graph/DecoratedNode";
 import { createEdgesOverview, createNodesOverview } from "./RunUtils";
 
+// Define nodeTypes outside component to prevent recreation on every render
+const nodeTypes = {
+  custom: DecoratedNode,
+};
+
+// Define default edge types to prevent recreation
+const edgeTypes = {};
+
+// Define other static props
+const defaultEdgeOptions = {
+  type: 'default',
+};
+
+const fitViewOptions = { padding: 10.0 };
 
 const GraphViewComponent = ({projectName, projectRunName, selectedModel, setSelectedModel}) => {
   const getModelColor = useUIStore(state => state.getModelColor);
@@ -100,12 +114,6 @@ const GraphViewComponent = ({projectName, projectRunName, selectedModel, setSele
     }
   }, [selectedModel, nodes, setNodes, setSelectedModel]);
 
-  const nodeTypes = useMemo(() => {
-    return {
-      custom: DecoratedNode,
-    };
-  }, []);
-
   useEffect(() => {
     if (!isLoadingModels && !isLoadingModelRuns && !isLoadingHandoffs) {
       let prModels = [];
@@ -166,11 +174,13 @@ const GraphViewComponent = ({projectName, projectRunName, selectedModel, setSele
           elementsSelectable={true}
           attributionPosition="bottom-right"
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           className="projectrun-flowview"
           onSelectionChange={onSelect}
           elevateEdgesOnSelect={true}
-          fitView={{ padding: 10.0}}
+          fitView={fitViewOptions}
           nodesConnectable={false}
+          defaultEdgeOptions={defaultEdgeOptions}
         >
         </ReactFlow>
       </ReactFlowProvider>

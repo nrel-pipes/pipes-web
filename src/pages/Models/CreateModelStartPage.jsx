@@ -41,8 +41,11 @@ const CreateModelStartPage = () => {
   }, [navigate, checkAuthStatus]);
 
   const handleContinue = () => {
+    if (isDisabled) return;
     navigate(`/model/new?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
+
+  const isDisabled = !projectRunName || !projectName || projectRunName === 'null' || projectName === 'null';
 
   return (
     <>
@@ -74,14 +77,15 @@ const CreateModelStartPage = () => {
             <button
               className="create-button btn-primary px-4 py-3"
               style={{
-                backgroundColor: '#0079c2',
-                borderColor: '#0079c2',
+                backgroundColor: isDisabled ? '#6c757d' : '#0079c2',
+                borderColor: isDisabled ? '#6c757d' : '#0079c2',
                 fontSize: '1rem',
                 fontWeight: 'bold',
                 borderRadius: '6px',
-                cursor: 'pointer',
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
               }}
               onClick={handleContinue}
+              disabled={isDisabled}
             >
               Continue
             </button>
