@@ -111,7 +111,7 @@ const UpdateModelPage = () => {
   const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
-  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenarioMappings || {});
+  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenarioMappings || []);
   const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
 
   // Clear form data if project context changes
@@ -184,16 +184,16 @@ const UpdateModelPage = () => {
         return date.toISOString().split('T')[0];
       };
 
-      // Format scenario mappings for form
-      const formattedMappings = {};
+      // Format scenario mappings for form - convert to array format
+      const formattedMappings = [];
       if (existingModel.scenario_mappings && Array.isArray(existingModel.scenario_mappings)) {
-        existingModel.scenario_mappings.forEach((mapping, index) => {
-          formattedMappings[`mapping_${index}`] = {
+        existingModel.scenario_mappings.forEach((mapping) => {
+          formattedMappings.push({
             modelScenario: mapping.model_scenario || "",
-            projectScenarios: mapping.project_scenarios || [],
-            description: mapping.description || [],
+            projectScenarios: mapping.project_scenarios || [""],
+            description: mapping.description || [""],
             other: mapping.other || {}
-          };
+          });
         });
       }
 
@@ -275,6 +275,9 @@ const UpdateModelPage = () => {
       if (name && name.startsWith('expectedScenarios')) {
         setExpectedScenarios(value.expectedScenarios || []);
       }
+      if (name && name.startsWith('scenarioMappings')) {
+        setScenarioMappings(value.scenarioMappings || []);
+      }
     });
     return () => subscription.unsubscribe();
   }, [watch]);
@@ -289,13 +292,13 @@ const UpdateModelPage = () => {
         requirements: currentData.requirements || {},
         assumptions: currentData.assumptions || [],
         modelingTeam: currentData.modelingTeam || "",
-        scenarioMappings: currentData.scenarioMappings || {},
+        scenarioMappings: currentData.scenarioMappings || [],
         projectName,
         projectRunName
       });
     }, 1000); // Save after 1 second of inactivity
     return () => clearTimeout(timer);
-  }, [watch, updateFormData, projectName, projectRunName]);
+  }, [watch, updateFormData, projectName, projectRunName, expectedScenarios, requirements, assumptions, modelingTeam, scenarioMappings]);
 
   const onSubmit = async (data) => {
     clearErrors();
@@ -314,16 +317,22 @@ const UpdateModelPage = () => {
 
     // Clean scenario mappings
     const cleanedMappings = [];
-    Object.entries(data.scenarioMappings || {}).forEach(([id, mappingData]) => {
-      if (mappingData.modelScenario?.trim()) {
-        cleanedMappings.push({
-          model_scenario: mappingData.modelScenario.trim(),
-          project_scenarios: mappingData.projectScenarios || [],
-          description: mappingData.description?.filter(desc => desc.trim() !== "") || [],
-          other: mappingData.other || {}
-        });
-      }
-    });
+    if (Array.isArray(data.scenarioMappings)) {
+      data.scenarioMappings.forEach((mappingData) => {
+        if (mappingData.modelScenario?.trim()) {
+          cleanedMappings.push({
+            model_scenario: mappingData.modelScenario.trim(),
+            project_scenarios: Array.isArray(mappingData.projectScenarios) ?
+              mappingData.projectScenarios.filter(scenario => scenario && scenario.trim() !== "") :
+              [mappingData.projectScenarios].filter(scenario => scenario && scenario.trim() !== ""),
+            description: Array.isArray(mappingData.description) ?
+              mappingData.description.filter(desc => desc && desc.trim() !== "") :
+              [mappingData.description].filter(desc => desc && desc.trim() !== ""),
+            other: mappingData.other || {}
+          });
+        }
+      });
+    }
     formData.scenarioMappings = cleanedMappings;
 
     // Clean requirements - convert internal structure to API expected format
@@ -408,8 +417,8 @@ const UpdateModelPage = () => {
       // Clear stored form data on successful submission
       clearFormData();
 
-      // Navigate to models page on success
-      navigate(`/projectrun/${encodeURIComponent(projectRunName)}?P=${encodeURIComponent(projectName)}`);
+      // Navigate to model detail page on success
+      navigate(`/model/${encodeURIComponent(modelName)}?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
     } catch (error) {
       setFormError(true);
       setFormErrorMessage("Failed to update model");
