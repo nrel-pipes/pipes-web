@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AxiosInstance from './AxiosInstance';
 
 export const getHandoffs = async ({ projectName, projectRunName = null }) => {
@@ -61,3 +61,61 @@ export const useGetHandoffsQuery = (projectName, projectRunName = null, options 
     ...options
   });
 };
+
+
+// Create handoff API function
+const createHandoff = async ({ projectName, projectRunName, data }) => {
+  try {
+    const params = {
+      project: projectName,
+      projectrun: projectRunName
+    };
+
+    const response = await AxiosInstance.post('/api/handoffs', data, { params });
+    return response.data;
+  } catch (error) {
+    // Enhanced error logging with details
+    if (error.response) {
+      console.error("Server responded with error:", {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+    } else if (error.request) {
+      console.error("No response received:", error.request);
+    } else {
+      console.error("Error setting up request:", error.message);
+    }
+    throw error;
+  }
+};
+
+export const useCreateHandoffMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createHandoff,
+    onSuccess: (data, variables) => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({
+        queryKey: ["handoffs", variables.projectName, variables.projectRunName]
+      });
+
+      // Also invalidate queries without projectRunName to refresh general handoff lists
+      queryClient.invalidateQueries({
+        queryKey: ["handoffs", variables.projectName]
+      });
+
+      // Optionally prefetch the updated data
+      queryClient.prefetchQuery({
+        queryKey: ["handoffs", variables.projectName, variables.projectRunName],
+        queryFn: () => getHandoffs({ projectName: variables.projectName, projectRunName: variables.projectRunName })
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to create handoff:", error);
+    }
+  });
+};
+
+

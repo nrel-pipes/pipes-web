@@ -21,6 +21,11 @@ const ProjectRunContentHeaderButton = ({ projectName, projectRunName, isDisabled
     navigate(`/model/startnew?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
   };
 
+  const handleCreateHandoff = () => {
+    if (isDisabled) return;
+    navigate(`/handoff/new?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
+  };
+
   return (
     <div className="content-header-actions d-flex justify-content-end">
       <button
@@ -36,6 +41,20 @@ const ProjectRunContentHeaderButton = ({ projectName, projectRunName, isDisabled
         onClick={handleCreateModel}
       >
         + Create Model
+      </button>
+      <button
+        className={`btn me-3 ${isDisabled ? 'disabled' : ''}`}
+        style={{
+          backgroundColor: 'rgba(225, 225, 225, 1)',
+          color: 'rgb(71, 148, 218)',
+          fontWeight: 'bold',
+          height: '50px',
+        }}
+        onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
+        onMouseUp={(e) => e.currentTarget.style.color = 'white'}
+        onClick={handleCreateHandoff}
+      >
+        + Add Handoff
       </button>
       <Dropdown>
         <Dropdown.Toggle

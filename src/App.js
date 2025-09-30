@@ -50,6 +50,9 @@ import GetModelPage from "./pages/Models/GetModelPage";
 import ListModelsPage from "./pages/Models/ListModelsPage";
 import UpdateModelPage from "./pages/Models/UpdateModelPage";
 
+// Handoff
+import CreateHandoffPage from "./pages/Handoffs/CreateHandoffPage";
+
 // User
 import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
 import ForgotPasswordPage from "./pages/Account/ForgotPasswordPage";
@@ -199,6 +202,11 @@ function App() {
                 } />
                 <Route path="/model/:modelName/delete" element={
                   isAuthenticated ? <DeleteModelPage /> : <Navigate to="/login" />
+                } />
+
+                {/* Handoff routes */}
+                <Route path="/handoff/new" element={
+                  isAuthenticated ? <CreateHandoffPage /> : <Navigate to="/login" />
                 } />
 
                 {/* User auth routes */}
