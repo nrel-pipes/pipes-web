@@ -22,6 +22,7 @@ function CreateHandoffPage() {
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState('');
   const [errorDetails, setErrorDetails] = useState([]);
+  const [isHovered, setIsHovered] = useState(false);
 
   const { data: modelsData = [], isLoading, error } = useGetModelsQuery(projectName, projectRunName);
   const createHandoffMutation = useCreateHandoffMutation();
@@ -208,7 +209,19 @@ function CreateHandoffPage() {
                 </div>
 
                 <div className="d-flex gap-2 pt-3">
-                  <button type="submit" className="btn btn-primary" disabled={createHandoffMutation.isPending}>
+                  <button
+                    type="submit"
+                    style={{
+                      backgroundColor: isHovered ? "rgb(59, 130, 196)" : "rgb(71, 148, 218)",
+                      fontWeight: "bold",
+                      color: "rgba(255, 255, 255)",
+                      transition: "background-color 0.2s ease"
+                    }}
+                    className="btn btn-primary"
+                    disabled={createHandoffMutation.isPending}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                  >
                     {createHandoffMutation.isPending ? "Creating..." : "Create Handoff"}
                   </button>
                   <button

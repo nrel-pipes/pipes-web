@@ -1,5 +1,5 @@
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
-import { Dropdown } from "react-bootstrap";
+import { Col, Dropdown, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useGetHandoffsQuery } from "../../../hooks/useHandoffQuery";
 
@@ -47,31 +47,35 @@ export default function HandoffListComponent({ projectRun }) {
             <div key={handoff.name} className="border rounded p-4 bg-white shadow-sm">
               <div className="flex justify-between items-start mb-2">
                 <div>
+                  <Row>
+                    <Col className="text-end">
+                      <Dropdown>
+                        <Dropdown.Toggle variant="link" className="p-0 border-0 shadow-none">
+                          <MoreVertical size={16} />
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu className="actions-dropdown-menu">
+                          <Dropdown.Item
+                            onClick={() => handleUpdateHandoff(handoff.name)}
+                            className="d-flex align-items-center dropdown-item-update"
+                          >
+                            <Pencil size={16} className="me-2" />
+                            Update Handoff
+                          </Dropdown.Item>
+                          <hr className="dropdown-divider" />
+                          <Dropdown.Item
+                            onClick={() => handleDeleteHandoff(handoff.name)}
+                            className="d-flex align-items-center dropdown-item-delete"
+                          >
+                            <Trash2 size={16} className="me-2" />
+                            Delete Handoff
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </Col>
+                  </Row>
                   <h4 className="font-medium text-lg">{handoff.name}</h4>
                   <p className="text-sm text-gray-600">{handoff.description}</p>
                 </div>
-                <Dropdown>
-                  <Dropdown.Toggle variant="link" className="p-0 border-0 shadow-none">
-                    <MoreVertical size={16} />
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu className="actions-dropdown-menu">
-                    <Dropdown.Item
-                      onClick={() => handleUpdateHandoff(handoff.name)}
-                      className="d-flex align-items-center dropdown-item-update"
-                    >
-                      <Pencil size={16} className="me-2" />
-                      Update Handoff
-                    </Dropdown.Item>
-                    <hr className="dropdown-divider" />
-                    <Dropdown.Item
-                      onClick={() => handleDeleteHandoff(handoff.name)}
-                      className="d-flex align-items-center dropdown-item-delete"
-                    >
-                      <Trash2 size={16} className="me-2" />
-                      Delete Handoff
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">

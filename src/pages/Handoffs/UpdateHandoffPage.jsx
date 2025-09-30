@@ -23,6 +23,7 @@ function UpdateHandoffPage() {
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState('');
   const [errorDetails, setErrorDetails] = useState([]);
+  const [isHovered, setIsHovered] = useState(false);
 
   const { data: modelsData = [], isLoading: modelsLoading } = useGetModelsQuery(projectName, projectRunName);
   const { data: handoffData, isLoading: handoffLoading, error: handoffError } = useGetHandoffQuery(projectName, projectRunName, handoffName);
@@ -253,7 +254,19 @@ function UpdateHandoffPage() {
                 </div>
 
                 <div className="d-flex gap-2 pt-3">
-                  <button type="submit" className="btn btn-primary" disabled={updateHandoffMutation.isPending}>
+                  <button
+                    type="submit"
+                    style={{
+                      backgroundColor: isHovered ? "rgb(59, 130, 196)" : "rgb(71, 148, 218)",
+                      fontWeight: "bold",
+                      color: "rgba(255, 255, 255)",
+                      transition: "background-color 0.2s ease"
+                    }}
+                    className="btn btn-primary"
+                    disabled={updateHandoffMutation.isPending}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                  >
                     {updateHandoffMutation.isPending ? "Updating..." : "Update Handoff"}
                   </button>
                   <button
