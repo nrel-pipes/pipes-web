@@ -1,6 +1,6 @@
 import { useGetHandoffsQuery } from "../../../hooks/useHandoffQuery";
 
-export default function HandoffsComponent({ projectRun }) {
+export default function HandoffListComponent({ projectRun }) {
   const projectName = projectRun.context.project;
   const projectRunName = projectRun.name;
 
@@ -25,6 +25,7 @@ export default function HandoffsComponent({ projectRun }) {
       <h4 className="text-lg font-semibold mb-4">
         Handoffs
       </h4>
+      <button onClick={() => {}}>+ Add Handoff</button>
 
       {handoffs.length === 0 ? (
         <p className="text-gray-500">No handoffs found for this project run.</p>
