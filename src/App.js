@@ -52,6 +52,8 @@ import UpdateModelPage from "./pages/Models/UpdateModelPage";
 
 // Handoff
 import CreateHandoffPage from "./pages/Handoffs/CreateHandoffPage";
+import DeleteHandoffPage from "./pages/Handoffs/DeleteHandoffPage";
+import UpdateHandoffPage from "./pages/Handoffs/UpdateHandoffPage";
 
 // User
 import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
@@ -207,6 +209,12 @@ function App() {
                 {/* Handoff routes */}
                 <Route path="/handoff/new" element={
                   isAuthenticated ? <CreateHandoffPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/handoff/:handoffName/update" element={
+                  isAuthenticated ? <UpdateHandoffPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/handoff/:handoffName/delete" element={
+                  isAuthenticated ? <DeleteHandoffPage /> : <Navigate to="/login" />
                 } />
 
                 {/* User auth routes */}
