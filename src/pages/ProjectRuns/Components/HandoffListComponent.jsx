@@ -25,7 +25,6 @@ export default function HandoffListComponent({ projectRun }) {
       <h4 className="text-lg font-semibold mb-4">
         Handoffs
       </h4>
-      <button onClick={() => {}}>+ Add Handoff</button>
 
       {handoffs.length === 0 ? (
         <p className="text-gray-500">No handoffs found for this project run.</p>
