@@ -6,6 +6,7 @@ import "./DataViewComponent.css";
 
 // Internal imports
 import useUIStore from "../../../stores/UIStore";
+import HandoffListComponent from "./HandoffListComponent";
 import ScenarioMappingComponent from "./ScenarioMappingComponent";
 
 import { useGetModelsQuery } from "../../../hooks/useModelQuery";
@@ -254,6 +255,9 @@ export default function DataViewComponent({ selected, projectRun, showProjectRun
             </div>
           </div>
         )}
+
+        {/* Handoffs Section */}
+        <HandoffListComponent projectRun={projectRun} />
       </div>
     );
   }

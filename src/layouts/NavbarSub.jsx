@@ -8,13 +8,14 @@ const NavbarSub = ({ navData }) => {
   const {
     pList, pName, pGraph, pSchedule, pmAll,
     pCreate, tList, tName, toUpdate, toDelete,
-    prName, prCreate, mCreate, mList, mName
+    prName, prCreate, mCreate, mList, mName, hCreate, hName
   } = navData || {};
 
   if (
       pList || pName || pGraph || pSchedule  || pmAll || pCreate ||
       prName || prCreate || tList || tName ||
-      mCreate || mList || mName || toUpdate || toDelete
+      mCreate || mList || mName || hCreate || hName ||
+      toUpdate || toDelete
     ) {
     return (
       <div className="navbar-sub">
@@ -105,6 +106,32 @@ const NavbarSub = ({ navData }) => {
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Project Run</Nav.Link>
               </Nav.Item>
+              </>
+            )}
+
+            {hCreate && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Add Handoff</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {hName && (
+              <>
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+                <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Handoff ({hName})</Nav.Link>
+                </Nav.Item>
               </>
             )}
 
