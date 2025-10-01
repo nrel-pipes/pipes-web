@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { faChevronLeft, faChevronRight, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,7 +16,6 @@ import "../PageStyles.css";
 import "./ProjectPipelinePage.css";
 
 import useAuthStore from "../../stores/AuthStore";
-import useDataStore from "../../stores/DataStore";
 
 import ContentHeader from "../Components/ContentHeader";
 import DataViewComponent from "./Components/DataViewComponent";
@@ -45,58 +44,43 @@ const nodeHeight = 45;
 const ProjectPipelinePage = () => {
   const navigate = useNavigate();
   const { checkAuthStatus } = useAuthStore();
-  const { effectivePname } = useDataStore();
-
-  const shouldFetchData = !!effectivePname;
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const projectName = searchParams.get("P");
 
   const {
     data: project,
     isLoading: isLoadingProject,
-  } = useGetProjectQuery(effectivePname, {
-    enabled: shouldFetchData
-  });
+  } = useGetProjectQuery(projectName);
 
   const {
     data: projectRuns = [],
     isLoading: isLoadingProjectRuns
-  } = useGetProjectRunsQuery(effectivePname, {
-    enabled: shouldFetchData
-  });
-
-  const projectDataAvailable = shouldFetchData && !!project;
+  } = useGetProjectRunsQuery(projectName);
 
   const {
     data: models = [],
     isLoading: isLoadingModels
   } = useGetModelsQuery(
-    effectivePname,
-    null,
-    {
-      enabled: projectDataAvailable
-    }
+    projectName,
+    null
   );
 
   const {
     data: modelRuns = [],
     isLoading: isLoadingModelRuns
   } = useGetModelRunsQuery(
-    effectivePname,
+    projectName,
     null,
     null,
-    {
-      enabled: projectDataAvailable
-    }
   );
 
   const {
     data: handoffs = [],
     isLoading: isLoadingHandoffs
   } = useGetHandoffsQuery(
-    effectivePname,
-    null,
-    {
-      enabled: projectDataAvailable
-    }
+    projectName,
+    null
   );
 
   const [datasetQueries, setDatasetQueries] = useState([]);
@@ -159,7 +143,7 @@ const ProjectPipelinePage = () => {
   // TODO: Not effcient, but it works.
   // We need to refactor this to get all datasets in one API call.
   useEffect(() => {
-    if (!projectDataAvailable || !projectRuns.length || !models.length || !modelRuns.length) {
+    if (!project || !projectRuns.length || !models.length || !modelRuns.length) {
       return;
     }
 
@@ -175,9 +159,9 @@ const ProjectPipelinePage = () => {
               const queryKey = `${projectRun.name}-${model.name}-${modelRun.name}`;
 
               queries.push({
-                queryKey: ['datasets', effectivePname, projectRun.name, model.name, modelRun.name],
+                queryKey: ['datasets', projectName, projectRun.name, model.name, modelRun.name],
                 queryFn: () => getDatasets({
-                  projectName: effectivePname,
+                  projectName: projectName,
                   projectRunName: projectRun.name,
                   modelName: model.name,
                   modelRunName: modelRun.name
@@ -187,7 +171,7 @@ const ProjectPipelinePage = () => {
                   // Return empty array instead of throwing to prevent breaking the UI
                   return [];
                 }),
-                enabled: projectDataAvailable,
+                enabled: !!project,
                 onSuccess: (data) => {
                   setDatasetsMap(prev => {
                     const updated = new Map(prev);
@@ -214,7 +198,7 @@ const ProjectPipelinePage = () => {
     });
 
     setDatasetQueries(queries);
-  }, [projectDataAvailable, projectRuns, models, modelRuns, effectivePname]);
+  }, [project, projectRuns, models, modelRuns, projectName]);
 
   const datasetResults = useQueries({ queries: datasetQueries });
 
@@ -296,7 +280,7 @@ const ProjectPipelinePage = () => {
           return;
         }
 
-        if (!effectivePname) {
+        if (!projectName) {
           navigate('/projects');
           return;
         }
@@ -310,7 +294,7 @@ const ProjectPipelinePage = () => {
   }, [
     navigate,
     checkAuthStatus,
-    effectivePname
+    projectName
   ]);
 
   const pipesGraph = useMemo(() => {
@@ -566,7 +550,7 @@ const ProjectPipelinePage = () => {
 
   return (
     <>
-    <NavbarSub navData={{pList: true, pName: effectivePname, pGraph: true}} />
+    <NavbarSub navData={{pList: true, pName: projectName, pGraph: true}} />
     <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Project Pipeline" />
