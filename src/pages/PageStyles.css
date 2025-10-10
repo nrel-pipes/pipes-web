@@ -86,6 +86,11 @@
   color: white !important;
 }
 
+.nrelCard:hover .nrelCardHeader,
+.nrelCardHeader:hover {
+  background-color: #0079C2 !important;
+}
+
 .nrelCardHeader > h3 > a {
   color: white !important;
   text-decoration: none !important;
@@ -96,6 +101,10 @@
 
 .nrelCardHeader > h3 > a:hover {
   text-decoration: underline !important;
+}
+
+.nrelCardHeader a:hover {
+  text-decoration: none;
 }
 
 .custom-submit-button:hover {
