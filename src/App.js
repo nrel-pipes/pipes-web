@@ -50,6 +50,8 @@ import GetModelPage from "./pages/Models/GetModelPage";
 import ListModelsPage from "./pages/Models/ListModelsPage";
 import UpdateModelPage from "./pages/Models/UpdateModelPage";
 
+import ListCatalogModelsPage from "./pages/CatalogModels/ListCatalogModelsPage";
+
 // Handoff
 import CreateHandoffPage from "./pages/Handoffs/CreateHandoffPage";
 import DeleteHandoffPage from "./pages/Handoffs/DeleteHandoffPage";
@@ -77,6 +79,7 @@ import GetTeamPage from "./pages/Teams/GetTeamPage";
 import ListTeamsPage from "./pages/Teams/ListTeamsPage";
 import UpdateTeamPage from "./pages/Teams/UpdateTeamPage";
 
+import { NavigationProvider } from './contexts/NavigationContext';
 import useAuthStore from "./stores/AuthStore";
 
 const queryClient = new QueryClient();
@@ -110,166 +113,173 @@ function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="App">
-        {isAuthenticated ? "" : <SiteBanner />}
-        {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
+    <NavigationProvider>
+      <QueryClientProvider client={queryClient}>
+        <div className="App">
+          {isAuthenticated ? "" : <SiteBanner />}
+          {isAuthenticated ? <SiteNavbarFluid /> : <SiteNavbar />}
 
-        <BrowserRouter>
-          <div className="app-container">
-            {isAuthenticated && <Sidebar />}
-            <div className="Content">
-              <Routes>
-                {/* Home route */}
-                <Route exact path="/" element={<HomePage />} />
-                {/* Project routes*/}
-                <Route
-                  path="/projects"
-                  exact
-                  element={
-                    isAuthenticated ? <ListMyProjectsPage /> : <Navigate to="/login" />
-                  }
-                />
-                <Route
-                  path="/dashboard"
-                  element={
-                    isAuthenticated ? <ProjectDashboardPage /> : <Navigate to="/login" />
-                  }
-                />
-                <Route
-                  path="/schedule"
-                  element={
-                    isAuthenticated ? <ProjectSchedulePage /> : <Navigate to="/login" />
-                  }
-                />
-                <Route
-                  path="/pipeline"
-                  element={
-                    isAuthenticated ? <ProjectPipeline /> : <Navigate to="/login" />
-                  }
-                />
-                <Route path="/project/new" element={
-                  isAuthenticated ? <CreateProjectPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/project/update" element={
-                  isAuthenticated ? <UpdateProjectPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/project/delete" element={
-                  isAuthenticated ? <DeleteProjectPage /> : <Navigate to="/login" />
-                } />
+          <BrowserRouter>
+            <div className="app-container">
+              {isAuthenticated && <Sidebar />}
+              <div className="Content">
+                <Routes>
+                  {/* Home route */}
+                  <Route exact path="/" element={<HomePage />} />
+                  {/* Project routes*/}
+                  <Route
+                    path="/projects"
+                    exact
+                    element={
+                      isAuthenticated ? <ListMyProjectsPage /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      isAuthenticated ? <ProjectDashboardPage /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route
+                    path="/schedule"
+                    element={
+                      isAuthenticated ? <ProjectSchedulePage /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route
+                    path="/pipeline"
+                    element={
+                      isAuthenticated ? <ProjectPipeline /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route path="/project/new" element={
+                    isAuthenticated ? <CreateProjectPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/project/update" element={
+                    isAuthenticated ? <UpdateProjectPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/project/delete" element={
+                    isAuthenticated ? <DeleteProjectPage /> : <Navigate to="/login" />
+                  } />
 
-                {/* Project run route */}
-                <Route path="/projectrun/new" element={
-                  isAuthenticated ? <CreateProjectRunPage /> : <Navigate to="/login" />
-                } />
-                <Route
-                  path="/projectrun/:projectRunName"
-                  element={
-                    isAuthenticated
-                      ? <GetProjectRunPage />
-                      : <Navigate to="/login" />
-                  }
-                />
-                <Route path="/projectrun/:projectRunName/update" element={
-                  isAuthenticated ? <UpdateProjectRunPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/projectrun/:projectRunName/delete" element={
-                  isAuthenticated ? <DeleteProjectRunPage /> : <Navigate to="/login" />
-                } />
+                  {/* Project run route */}
+                  <Route path="/projectrun/new" element={
+                    isAuthenticated ? <CreateProjectRunPage /> : <Navigate to="/login" />
+                  } />
+                  <Route
+                    path="/projectrun/:projectRunName"
+                    element={
+                      isAuthenticated
+                        ? <GetProjectRunPage />
+                        : <Navigate to="/login" />
+                    }
+                  />
+                  <Route path="/projectrun/:projectRunName/update" element={
+                    isAuthenticated ? <UpdateProjectRunPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/projectrun/:projectRunName/delete" element={
+                    isAuthenticated ? <DeleteProjectRunPage /> : <Navigate to="/login" />
+                  } />
 
-                {/* Milestones route */}
-                <Route path="/milestones" element={<ProjectMilestonesPage />} />
+                  {/* Milestones route */}
+                  <Route path="/milestones" element={<ProjectMilestonesPage />} />
 
-                {/* Model route */}
-                <Route
-                  path={`/models`}
-                  element={
-                    isAuthenticated ? <ListModelsPage /> : <Navigate to="/login" />
-                  }
-                />
-                <Route path="/model/startnew" element={
-                  isAuthenticated ? <CreateModelStartPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/model/new" element={
-                  isAuthenticated ? <CreateModelPage /> : <Navigate to="/login" />
-                } />
-                <Route
-                  path="/model/:modelName"
-                  element={
-                    isAuthenticated ? <GetModelPage /> : <Navigate to="/login" />
-                  }
-                />
-                <Route path="/model/:modelName/update" element={
-                  isAuthenticated ? <UpdateModelPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/model/:modelName/delete" element={
-                  isAuthenticated ? <DeleteModelPage /> : <Navigate to="/login" />
-                } />
+                  {/* Model route */}
+                  <Route
+                    path={`/models`}
+                    element={
+                      isAuthenticated ? <ListModelsPage /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route path="/model/startnew" element={
+                    isAuthenticated ? <CreateModelStartPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/model/new" element={
+                    isAuthenticated ? <CreateModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route
+                    path="/model/:modelName"
+                    element={
+                      isAuthenticated ? <GetModelPage /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route path="/model/:modelName/update" element={
+                    isAuthenticated ? <UpdateModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/model/:modelName/delete" element={
+                    isAuthenticated ? <DeleteModelPage /> : <Navigate to="/login" />
+                  } />
 
-                {/* Handoff routes */}
-                <Route path="/handoff/new" element={
-                  isAuthenticated ? <CreateHandoffPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/handoff/:handoffName/update" element={
-                  isAuthenticated ? <UpdateHandoffPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/handoff/:handoffName/delete" element={
-                  isAuthenticated ? <DeleteHandoffPage /> : <Navigate to="/login" />
-                } />
+                  {/* Catalog Models route */}
+                  <Route path="/catalogmodels" element={
+                    isAuthenticated ? <ListCatalogModelsPage /> : <Navigate to="/login" />
+                  } />
 
-                {/* User auth routes */}
-                <Route
-                  path="/login"
-                  element={isAuthenticated ? <Navigate to="/projects" /> : <LoginPage />}
-                />
-                <Route path="/logout" element={<LogoutPage />} />
-                <Route path="/account/tokens" element={<TokensPage />} />
-                <Route path="/account/profile" element={<ProfilePage />} />
-                <Route
-                  path="/new-password-challenge"
-                  element={<NewPasswordChallengePage />}
-                />
-                <Route path="/account/change-password" element={<ChangePasswordPage />} />
-                <Route path="/account/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/account/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+                  {/* Handoff routes */}
+                  <Route path="/handoff/new" element={
+                    isAuthenticated ? <CreateHandoffPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/handoff/:handoffName/update" element={
+                    isAuthenticated ? <UpdateHandoffPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/handoff/:handoffName/delete" element={
+                    isAuthenticated ? <DeleteHandoffPage /> : <Navigate to="/login" />
+                  } />
 
-                {/* Admin routes */}
-                <Route path="/users" element={<UserListPage />} />
-                <Route path="/users/edit/:userEmail" element={
-                  isAuthenticated ? <UserEditPage /> : <Navigate to="/login" />
-                } />
+                  {/* User auth routes */}
+                  <Route
+                    path="/login"
+                    element={isAuthenticated ? <Navigate to="/projects" /> : <LoginPage />}
+                  />
+                  <Route path="/logout" element={<LogoutPage />} />
+                  <Route path="/account/tokens" element={<TokensPage />} />
+                  <Route path="/account/profile" element={<ProfilePage />} />
+                  <Route
+                    path="/new-password-challenge"
+                    element={<NewPasswordChallengePage />}
+                  />
+                  <Route path="/account/change-password" element={<ChangePasswordPage />} />
+                  <Route path="/account/forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="/account/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
 
-                {/* Team routes */}
-                <Route
-                  path="/teams"
-                  element={
-                    isAuthenticated ? <ListTeamsPage /> : <Navigate to="/login" />
-                  }
-                />
-                <Route path="/team/new" element={
-                  isAuthenticated ? <CreateTeamPage /> : <Navigate to="/login" />
-                } />
-                <Route
-                  path="/team/:teamName"
-                  element={
-                    isAuthenticated ? <GetTeamPage /> : <Navigate to="/login" />
-                  }
-                />
-                <Route path="/team/:teamName/update" element={
-                  isAuthenticated ? <UpdateTeamPage /> : <Navigate to="/login" />
-                } />
-                <Route path="/team/:teamName/delete" element={
-                  isAuthenticated ? <DeleteTeamPage /> : <Navigate to="/login" />
-                } />
-              </Routes>
+                  {/* Admin routes */}
+                  <Route path="/users" element={<UserListPage />} />
+                  <Route path="/users/edit/:userEmail" element={
+                    isAuthenticated ? <UserEditPage /> : <Navigate to="/login" />
+                  } />
+
+                  {/* Team routes */}
+                  <Route
+                    path="/teams"
+                    element={
+                      isAuthenticated ? <ListTeamsPage /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route path="/team/new" element={
+                    isAuthenticated ? <CreateTeamPage /> : <Navigate to="/login" />
+                  } />
+                  <Route
+                    path="/team/:teamName"
+                    element={
+                      isAuthenticated ? <GetTeamPage /> : <Navigate to="/login" />
+                    }
+                  />
+                  <Route path="/team/:teamName/update" element={
+                    isAuthenticated ? <UpdateTeamPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/team/:teamName/delete" element={
+                    isAuthenticated ? <DeleteTeamPage /> : <Navigate to="/login" />
+                  } />
+                </Routes>
+              </div>
             </div>
-          </div>
-        </BrowserRouter>
-        {isAuthenticated ? "" : <SiteFooter />}
-      </div>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+          </BrowserRouter>
+          {isAuthenticated ? "" : <SiteFooter />}
+        </div>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </NavigationProvider>
   );
 }
 
