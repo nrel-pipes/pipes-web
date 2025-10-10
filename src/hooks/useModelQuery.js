@@ -21,8 +21,8 @@ export const getModels = async (projectName, projectRunName) => {
 };
 
 // Get model catalog
-export const getModelCatalog = async () => {
-  const response = await AxiosInstance.get("/api/model_catalog");
+export const getCatalogModels = async () => {
+  const response = await AxiosInstance.get("/api/catalogmodels");
   return response.data;
 };
 
@@ -60,7 +60,7 @@ export const useGetModelCatalog = (options = {}) => {
     queryKey: ["modelCatalog"],
     queryFn: async () => {
       try {
-        const result = await getModelCatalog();
+        const result = await getCatalogModels();
         return result;
       } catch (error) {
         console.error("Error fetching model catalog:", error);
