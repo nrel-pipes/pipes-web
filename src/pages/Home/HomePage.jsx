@@ -117,7 +117,7 @@ const HomePage = () => {
               <Card.Text className="mt-3" style={{ fontSize: "16px" }}>
                 Feel free to reach out to the PIPES{" "}
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html"
+                  href="https://nrel-pipes.github.io/pipes-core/contact-us/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -134,7 +134,7 @@ const HomePage = () => {
             <Card.Header className="nrelCardHeader">
               <h3>
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html"
+                  href="https://nrel-pipes.github.io/pipes-core/contact-us/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -144,7 +144,7 @@ const HomePage = () => {
             </Card.Header>
             <Card.Body>
               <Card.Text className='mt-2' style={{ fontSize: '16px'}}>
-                <span style={{fontSize: '1.1em'}}>PIPES Team</span>
+                <span style={{fontSize: '1.1em'}}>PIPES Team email address: </span>
                 <br/>
                 <a href="mailto:pipes@nrel.gov" style={{ textDecoration: 'none'}}>
                   <FontAwesomeIcon icon={faEnvelope} /> pipes@nrel.gov
