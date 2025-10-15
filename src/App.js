@@ -50,7 +50,12 @@ import GetModelPage from "./pages/Models/GetModelPage";
 import ListModelsPage from "./pages/Models/ListModelsPage";
 import UpdateModelPage from "./pages/Models/UpdateModelPage";
 
+// Catalog Model
+import CreateCatalogModelPage from "./pages/CatalogModels/CreateCatalogModelPage";
+import DeleteCatalogModelPage from "./pages/CatalogModels/DeleteCatalogModelPage";
+import GetCatalogModelPage from "./pages/CatalogModels/GetCatalogModelPage";
 import ListCatalogModelsPage from "./pages/CatalogModels/ListCatalogModelsPage";
+import UpdateCatalogModelPage from "./pages/CatalogModels/UpdateCatalogModelPage";
 
 // Handoff
 import CreateHandoffPage from "./pages/Handoffs/CreateHandoffPage";
@@ -213,6 +218,18 @@ function App() {
                   {/* Catalog Models route */}
                   <Route path="/catalogmodels" element={
                     isAuthenticated ? <ListCatalogModelsPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/new" element={
+                    isAuthenticated ? <CreateCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/:modelName" element={
+                    isAuthenticated ? <GetCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/:modelName/update" element={
+                    isAuthenticated ? <UpdateCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/:modelName/delete" element={
+                    isAuthenticated ? <DeleteCatalogModelPage /> : <Navigate to="/login" />
                   } />
 
                   {/* Handoff routes */}
