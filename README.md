@@ -49,4 +49,4 @@ on base branch `develop` and `master`.
 
 2. Deploy the image
 
-Deploy via Jenkins job named `pipes-web` - https://jenkins.stratus.nrel.gov/job/pipes-web/
+Deploy via Jenkins job named `pipes-web` at NREL.
