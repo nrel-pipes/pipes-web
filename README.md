@@ -47,6 +47,6 @@ AWS Codebuild and webhook has been setup on this repo, triggering by
 
 on base branch `develop` and `master`.
 
-2. Deploy the image
+2. Deploy the site
 
 Deploy via Jenkins job named `pipes-web` at NREL.
