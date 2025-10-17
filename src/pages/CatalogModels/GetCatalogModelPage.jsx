@@ -94,6 +94,7 @@ const GetCatalogModelPage = () => {
   }
 
   // --- Data preparation ---
+  const modelingTeam = catalogModel.modeling_team || {};
   const requirements = catalogModel.requirements || {};
   const tags = catalogModel.tags || [];
   const assumptions = catalogModel.assumptions || [];
@@ -281,6 +282,55 @@ const GetCatalogModelPage = () => {
                 </div>
               </div>
             )}
+
+
+            {/* Modeling Team Section */}
+            {modelingTeam.name && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Modeling Team</h4>
+                </div>
+                <div className="model-section-content">
+                  <div className="model-field-row">
+                    <div className="model-field-label">Team Name</div>
+                    <div className="model-field-value">{modelingTeam.name}</div>
+                  </div>
+
+                  {modelingTeam.members && modelingTeam.members.length > 0 && (
+                    <div className="mt-4">
+                      <h6 className="model-subsection-title">Members</h6>
+                      <div className="model-table-container">
+                        <table className="model-table">
+                          <thead>
+                            <tr>
+                              <th className="model-table-header">Name</th>
+                              <th className="model-table-header">Email</th>
+                              <th className="model-table-header">Organization</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {modelingTeam.members.map((member, idx) => (
+                              <tr key={idx}>
+                                <td className="model-table-cell">
+                                  {`${member.first_name || ''} ${member.last_name || ''}`.trim() || '—'}
+                                </td>
+                                <td className="model-table-cell">
+                                  {member.email || '—'}
+                                </td>
+                                <td className="model-table-cell">
+                                  {member.organization || '—'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
           </Col>
         </Row>
       </Container>

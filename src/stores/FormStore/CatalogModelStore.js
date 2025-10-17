@@ -15,6 +15,7 @@ export const useCreateCatalogModelFormStore = create(
         expectedScenarios: [''],
         scenarioMappings: {},
         requirements: {},
+        modelingTeam: { name: '', members: [] },
         other: {}
       },
 
@@ -36,6 +37,7 @@ export const useCreateCatalogModelFormStore = create(
           expectedScenarios: [''],
           scenarioMappings: {},
           requirements: {},
+          modelingTeam: { name: '', members: [] },
           other: {}
         }
       }),
@@ -50,7 +52,8 @@ export const useCreateCatalogModelFormStore = create(
                  (data.assumptions && data.assumptions.some(a => a.trim())) ||
                  (data.expectedScenarios && data.expectedScenarios.some(s => s.trim())) ||
                  (data.scenarioMappings && Object.keys(data.scenarioMappings).length > 0) ||
-                 (data.requirements && Object.keys(data.requirements).length > 0));
+                 (data.requirements && Object.keys(data.requirements).length > 0) ||
+                 (data.modelingTeam && (data.modelingTeam.name || data.modelingTeam.members?.length > 0)));
       }
     }),
     {
@@ -71,6 +74,7 @@ export const useUpdateCatalogModelFormStore = create(
         assumptions: [''],
         expectedScenarios: [''],
         requirements: {},
+        modelingTeam: { name: '', members: [] },
         other: {}
       },
 
@@ -89,6 +93,7 @@ export const useUpdateCatalogModelFormStore = create(
           assumptions: [''],
           expectedScenarios: [''],
           requirements: {},
+          modelingTeam: { name: '', members: [] },
           other: {}
         }
       }),
@@ -102,7 +107,8 @@ export const useUpdateCatalogModelFormStore = create(
         return !!(data.name || data.type || data.description ||
                  (data.assumptions && data.assumptions.some(a => a.trim())) ||
                  (data.expectedScenarios && data.expectedScenarios.some(s => s.trim())) ||
-                 (data.requirements && Object.keys(data.requirements).length > 0));
+                 (data.requirements && Object.keys(data.requirements).length > 0) ||
+                 (data.modelingTeam && (data.modelingTeam.name || data.modelingTeam.members?.length > 0)));
       }
     }),
     {

@@ -1,6 +1,3 @@
-
-
-import Badge from "react-bootstrap/Badge";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
@@ -8,11 +5,6 @@ import Row from "react-bootstrap/Row";
 const FinalReviewSection = ({ control, register, errors, watch, setValue, storedData }) => {
   // Get all current form data for review
   const allData = watch ? watch() : {};
-
-  // Extract project name from storedData for team query
-  const teams = [];
-  // Find the selected team details
-  const accessGroup = teams.find(team => team.name === allData.accessGroup);
 
   return (
     <div className="review">
@@ -212,58 +204,38 @@ const FinalReviewSection = ({ control, register, errors, watch, setValue, stored
       <div className="review-section">
         <div className="review-content">
           <div className="review-item">
-            <div className="review-label">Access Group</div>
-            {accessGroup ? (
+            <div className="review-label">Modeling Team</div>
+            {allData.modelingTeam && allData.modelingTeam.name ? (
               <div className="mt-3" style={{ width: '100%' }}>
                 {/* Team Name */}
                 <div className="mb-3">
-                  <strong style={{ fontSize: '1.1rem' }}>{accessGroup.name}</strong>
-                </div>
-
-                {/* Team Description */}
-                <div className="mb-3">
-                  <div className="review-label" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Description</div>
-                  <div className="review-value">
-                    {accessGroup.description ? (
-                      <p className="mb-0">{accessGroup.description}</p>
-                    ) : (
-                      <span className="text-muted" style={{ fontStyle: 'italic' }}>No description provided</span>
-                    )}
-                  </div>
+                  <strong style={{ fontSize: '1.1rem' }}>{allData.modelingTeam.name}</strong>
                 </div>
 
                 {/* Team Members */}
                 <div style={{ width: '100%' }}>
                   <div className="review-label" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Members</div>
-                  {accessGroup.members && accessGroup.members.length > 0 ? (
+                  {allData.modelingTeam.members && allData.modelingTeam.members.length > 0 ? (
                     <div style={{ width: '100%', overflow: 'auto' }}>
                       <table className="table table-borderless mb-0" style={{ width: '100%', minWidth: '600px' }}>
                         <thead>
                           <tr>
-                            <th style={{ fontSize: '0.85rem', color: '#6c757d', textAlign: 'left', width: '35%' }}>Email</th>
-                            <th style={{ fontSize: '0.85rem', color: '#6c757d', textAlign: 'left', width: '35%' }}>Name</th>
-                            <th style={{ fontSize: '0.85rem', color: '#6c757d', textAlign: 'left', width: '30%' }}>Role</th>
+                            <th style={{ fontSize: '0.85rem', color: '#6c757d', textAlign: 'left', width: '30%' }}>Email</th>
+                            <th style={{ fontSize: '0.85rem', color: '#6c757d', textAlign: 'left', width: '30%' }}>Name</th>
+                            <th style={{ fontSize: '0.85rem', color: '#6c757d', textAlign: 'left', width: '40%' }}>Organization</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {accessGroup.members.map((member, index) => (
+                          {allData.modelingTeam.members.map((member, index) => (
                             <tr key={index}>
                               <td style={{ fontSize: '0.9rem', textAlign: 'left', wordBreak: 'break-word' }}>
-                                {member?.email || 'No email provided'}
+                                {member?.email || 'N/A'}
                               </td>
                               <td style={{ fontSize: '0.9rem', textAlign: 'left' }}>
-                                {member?.first_name || member?.last_name
-                                  ? `${member?.first_name || ''} ${member?.last_name || ''}`.trim()
-                                  : (member?.name || 'No name provided')}
+                                {`${member?.first_name || ''} ${member?.last_name || ''}`.trim() || 'N/A'}
                               </td>
-                              <td style={{ textAlign: 'left' }}>
-                                {member?.role ? (
-                                  <Badge style={{ fontSize: '0.75rem' }}>
-                                    {member.role}
-                                  </Badge>
-                                ) : (
-                                  <span style={{ color: '#6c757d', fontStyle: 'italic', fontSize: '0.85rem' }}>No role assigned</span>
-                                )}
+                              <td style={{ fontSize: '0.9rem', textAlign: 'left' }}>
+                                {member?.organization || 'N/A'}
                               </td>
                             </tr>
                           ))}
@@ -272,14 +244,14 @@ const FinalReviewSection = ({ control, register, errors, watch, setValue, stored
                     </div>
                   ) : (
                     <div className="text-muted" style={{ fontStyle: 'italic' }}>
-                      This team doesn't have any members yet.
+                      No members have been added to this team.
                     </div>
                   )}
                 </div>
               </div>
             ) : (
               <div className="review-value text-muted">
-                {allData.accessGroup ? `Group "${allData.accessGroup}" not found` : 'Not selected'}
+                No modeling team specified.
               </div>
             )}
           </div>

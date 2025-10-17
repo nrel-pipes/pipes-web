@@ -15,6 +15,7 @@ import AssumptionsSection from "./Components/StepFroms/AssumptionsSection";
 import BasicInfoSection from "./Components/StepFroms/BasicInfoSection";
 import ExpectedScenariosSection from "./Components/StepFroms/ExpectedScenariosSection";
 import FinalReviewSection from "./Components/StepFroms/FinalReviewSection";
+import ModelingTeamSection from "./Components/StepFroms/ModelingTeamSection";
 import RequirementsSection from "./Components/StepFroms/RequirementsSection";
 
 import { useGetCatalogModelQuery, useUpdateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
@@ -110,6 +111,7 @@ const UpdateCatalogModelPage = () => {
   const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
+  const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || { name: '', members: [] });
 
   // Initialize react-hook-form with stored data or model data
   const {
@@ -132,6 +134,7 @@ const UpdateCatalogModelPage = () => {
       expectedScenarios: [""],
       assumptions: [""],
       requirements: {},
+      modelingTeam: { name: "", members: [] },
       other: {}
     }
   });
@@ -168,6 +171,7 @@ const UpdateCatalogModelPage = () => {
         expectedScenarios: modelData.expected_scenarios?.length > 0 ? modelData.expected_scenarios : [""],
         assumptions: modelData.assumptions?.length > 0 ? modelData.assumptions : [""],
         requirements: convertedRequirements,
+        modelingTeam: modelData.modeling_team || { name: "", members: [] },
         other: modelData.other || {}
       };
 
@@ -182,6 +186,7 @@ const UpdateCatalogModelPage = () => {
       setExpectedScenarios(dataToUse.expectedScenarios || []);
       setRequirements(dataToUse.requirements || {});
       setAssumptions(dataToUse.assumptions || []);
+      setModelingTeam(dataToUse.modelingTeam || { name: "", members: [] });
 
       setIsModelLoading(false);
     }
@@ -206,6 +211,9 @@ const UpdateCatalogModelPage = () => {
       }
       if (name && name.startsWith('expectedScenarios')) {
         setExpectedScenarios(value.expectedScenarios || []);
+      }
+      if (name && name.startsWith('modelingTeam')) {
+        setModelingTeam(value.modelingTeam || { name: '', members: [] });
       }
     });
     return () => subscription.unsubscribe();
@@ -241,6 +249,16 @@ const UpdateCatalogModelPage = () => {
 
     // Clean and format data for API
     const formData = { ...data };
+
+    // Clean modeling team members - remove any members where all fields are empty
+    if (formData.modelingTeam && Array.isArray(formData.modelingTeam.members)) {
+      formData.modelingTeam.members = formData.modelingTeam.members.filter(member =>
+        member.email?.trim() ||
+        member.first_name?.trim() ||
+        member.last_name?.trim() ||
+        member.organization?.trim()
+      );
+    }
 
     // Clean assumptions - now comes directly from form data
     formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
@@ -284,6 +302,7 @@ const UpdateCatalogModelPage = () => {
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
+      modeling_team: formData.modelingTeam,
       assumptions: formData.assumptions,
       expected_scenarios: formData.expectedScenarios,
       requirements: formData.requirements,
@@ -345,6 +364,9 @@ const UpdateCatalogModelPage = () => {
       case 1:
         fieldsToValidate = ['name', 'type'];
         break;
+      case 5:
+        fieldsToValidate = ['modelingTeam.name'];
+        break;
       default:
         break;
     }
@@ -394,7 +416,7 @@ const UpdateCatalogModelPage = () => {
     }
   };
 
-  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Review"];
+  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Modeling Team", "Review"];
   const totalSteps = steps.length;
 
   // Show loading state
@@ -514,6 +536,19 @@ const UpdateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 5 && (
+                      <div className="step-panel">
+                        <ModelingTeamSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 6 && (
                       <div className="step-panel">
                         <FinalReviewSection
                           control={control}

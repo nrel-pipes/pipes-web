@@ -1,199 +1,103 @@
-import { useEffect, useRef } from "react";
-import Badge from "react-bootstrap/Badge";
-import Button from "react-bootstrap/Button";
-import Card from "react-bootstrap/Card";
-import Form from "react-bootstrap/Form";
-import { useNavigate } from "react-router-dom";
-import { useListTeamsQuery } from "../../../../hooks/useTeamQuery";
+import { Trash } from "lucide-react";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import { useFieldArray } from "react-hook-form";
 
 
-const ModelingTeamSection = ({ control, register, errors, watch, setValue, storedData, projectName }) => {
-  const navigate = useNavigate();
-  const hasInitialized = useRef(false);
-
-  // Fetch teams for the modeling team dropdown
-  const { data: teams = [] } = useListTeamsQuery(projectName, {
-    enabled: !!projectName,
+const ModelingTeamSection = ({ control, register, errors }) => {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "modelingTeam.members",
   });
 
-  // Initialize form field with stored data only once when teams are first loaded
-  useEffect(() => {
-    if (storedData?.modelingTeam && setValue && teams.length > 0 && !hasInitialized.current) {
-      setValue("modelingTeam", storedData.modelingTeam);
-      hasInitialized.current = true;
-    }
-  }, [teams.length, storedData?.modelingTeam, setValue]);
-
-  // Watch the selected team to show details and members
-  const selectedTeamName = watch ? watch("modelingTeam") : "";
-  const selectedTeam = teams.find(team => team.name === selectedTeamName);
-
   return (
-    <div className="form-field-group mb-4">
-      <Form.Label className="form-field-label required-field">Modeling Team</Form.Label>
-      <div className="d-flex align-items-start gap-2">
-        <div className="flex-grow-1">
-          <Form.Select
+    <div className="form-field-group">
+      {/* Team Name */}
+      <Form.Group as={Row} className="mb-4 align-items-center" controlId="modelingTeamName">
+        <Form.Label column sm={2} className="form-field-label required-field">
+          Team Name
+        </Form.Label>
+        <Col sm={10}>
+          <Form.Control
+            type="text"
+            placeholder="Enter the modeling team name"
             className="form-control-lg form-primary-input"
-            isInvalid={!!errors?.modelingTeam}
-            {...register("modelingTeam", { required: "Modeling team is required" })}
-          >
-            <option value="">Select a team</option>
-            {teams.map((team) => (
-              <option key={team.name} value={team.name}>
-                {team.name}
-              </option>
-            ))}
-          </Form.Select>
-          <Form.Control.Feedback type="invalid" className="text-start">
-            {errors?.modelingTeam?.message}
+            {...register("modelingTeam.name", { required: "Team name is required" })}
+            isInvalid={!!errors.modelingTeam?.name}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.modelingTeam?.name?.message}
           </Form.Control.Feedback>
+        </Col>
+      </Form.Group>
+
+      {/* Team Members */}
+      <Form.Label className="form-field-label mb-3">Team Members</Form.Label>
+      {fields.map((item, index) => (
+        <div key={item.id} className="member-entry mb-4 p-3 border rounded">
+          <Row className="g-3">
+            <Col xs={12} md={6}>
+              <Form.Group>
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="member@example.com"
+                  {...register(`modelingTeam.members.${index}.email`)}
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} md={6}>
+              <Form.Group>
+                <Form.Label>Organization</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Member's organization"
+                  {...register(`modelingTeam.members.${index}.organization`)}
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} md={6}>
+              <Form.Group>
+                <Form.Label>First Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="First name"
+                  {...register(`modelingTeam.members.${index}.first_name`)}
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} md={5}>
+              <Form.Group>
+                <Form.Label>Last Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Last name"
+                  {...register(`modelingTeam.members.${index}.last_name`)}
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} md={1} className="d-flex align-items-end">
+              <Button
+                variant="outline-danger"
+                onClick={() => remove(index)}
+                className="w-100"
+                style={{ height: 'calc(1.5em + .75rem + 2px)' }}
+              >
+                <Trash size={16} />
+              </Button>
+            </Col>
+          </Row>
         </div>
-        <Button
-          variant="outline-primary"
-          type="button"
-          onClick={() => window.open(`/team/new?P=${encodeURIComponent(projectName)}`, '_blank')}
-          className="d-flex align-items-center justify-content-center"
-          style={{
-            minWidth: '44px',
-            height: '44px',
-            padding: '0'
-          }}
-          title="Create a new team"
-        >
-          +
-        </Button>
-      </div>
+      ))}
 
-      {/* Team Details Card */}
-      <div className="mt-3">
-        <Card>
-          {/* DESCRIPTION SECTION */}
-          <Card.Body style={{ padding: 0 }}>
-            {selectedTeam ? (
-              <>
-                <div style={{ padding: '1rem 1.5rem', borderBottom: selectedTeam.members && selectedTeam.members.length > 0 ? '1px solid #f1f3f5' : 'none' }}>
-                  <h6 style={{ margin: 0, marginBottom: '.5rem', fontSize: '1rem'}}>Description</h6>
-                  {selectedTeam.description ? (
-                    <p className="mb-0 text-muted">{selectedTeam.description}</p>
-                  ) : (
-                    <p className="mb-0 text-muted" style={{ fontStyle: 'italic' }}>No description provided.</p>
-                  )}
-                </div>
-
-                {/* MEMBERS SECTION */}
-                <div style={{ padding: 0 }}>
-                  <div style={{ padding: '0.75rem 1.5rem', borderBottom: '1px solid #f1f3f5', backgroundColor: '#f8f9fa', textAlign: 'left' }} className="text-start">
-                    <strong style={{ fontSize: '0.95rem' }}>Members</strong>
-                  </div>
-
-                  {selectedTeam.members && selectedTeam.members.length > 0 ? (
-                    <div className="table-responsive">
-                      <table className="table table-hover mb-0" style={{ fontSize: '1rem' }}>
-                        <thead style={{ backgroundColor: '#f8f9fa' }}>
-                          <tr>
-                            <th style={{
-                              padding: '1rem 1.5rem',
-                              fontWeight: '600',
-                              color: '#495057',
-                              border: 'none',
-                              borderBottom: '1px solid #dee2e6',
-                              textAlign: 'left',
-                              width: '30%'
-                            }}>
-                              Email
-                            </th>
-                            <th style={{
-                              padding: '1rem 1.5rem',
-                              fontWeight: '600',
-                              color: '#495057',
-                              border: 'none',
-                              borderBottom: '1px solid #dee2e6',
-                              textAlign: 'left',
-                              width: '45%'
-                            }}>
-                              Name
-                            </th>
-                            <th style={{
-                              padding: '1rem 1.5rem',
-                              fontWeight: '600',
-                              color: '#495057',
-                              border: 'none',
-                              borderBottom: '1px solid #dee2e6',
-                              textAlign: 'left',
-                              width: '25%'
-                            }}>
-                              Role
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedTeam.members.map((member, index) => (
-                            <tr key={index} style={{ borderBottom: '1px solid #f1f3f5' }}>
-                              <td style={{
-                                padding: '1.25rem 1.5rem',
-                                border: 'none',
-                                color: '#6c757d',
-                                textAlign: 'left'
-                              }}>
-                                {member?.email || 'No email provided'}
-                              </td>
-                              <td style={{
-                                padding: '1.25rem 1.5rem',
-                                border: 'none',
-                                color: '#2c3e50',
-                                textAlign: 'left'
-                              }}>
-                                {member?.first_name || member?.last_name
-                                  ? `${member?.first_name || ''} ${member?.last_name || ''}`.trim()
-                                  : (member?.name || 'No name provided')}
-                              </td>
-                              <td style={{
-                                padding: '1.25rem 1.5rem',
-                                border: 'none',
-                                textAlign: 'left'
-                              }}>
-                                {member?.role ? (
-                                  <Badge bg="secondary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
-                                    {member.role}
-                                  </Badge>
-                                ) : (
-                                  <span style={{ color: '#6c757d', fontStyle: 'italic' }}>No role assigned</span>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div style={{
-                      padding: '2.5rem',
-                      textAlign: 'center',
-                      color: '#6c757d',
-                      backgroundColor: '#fff'
-                    }}>
-                      <h5 style={{ marginBottom: '.5rem' }}>No Team Members</h5>
-                      <p className="mb-0">This team doesn't have any members yet.</p>
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div style={{
-                padding: '1.5rem',
-                color: '#6c757d',
-                backgroundColor: '#f8f9fa',
-                textAlign: 'center'
-              }}>
-                <p className="mb-0">Select a team to view description and members.</p>
-              </div>
-            )}
-          </Card.Body>
-        </Card>
-      </div>
+      <Button
+        type="button"
+        variant="outline-primary"
+        onClick={() => append({ email: "", first_name: "", last_name: "", organization: "" })}
+      >
+        + Add Member
+      </Button>
     </div>
   );
-}
+};
 
 export default ModelingTeamSection;

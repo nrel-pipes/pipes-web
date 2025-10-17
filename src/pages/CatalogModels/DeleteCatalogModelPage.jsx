@@ -11,6 +11,7 @@ const DeleteCatalogModelPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const { modelName } = useParams();
 
   const {
@@ -18,7 +19,9 @@ const DeleteCatalogModelPage = () => {
     isLoading,
     isError,
     error
-  } = useGetCatalogModelQuery(modelName);
+  } = useGetCatalogModelQuery(modelName, {
+    enabled: !isDeleting, // Disable query when deleting
+  });
 
   // Delete model mutation
   const deleteCatalogModelMutation = useDeleteCatalogModelMutation();
@@ -26,6 +29,8 @@ const DeleteCatalogModelPage = () => {
   // Handle delete confirmation
   const handleDelete = async () => {
     try {
+      setIsDeleting(true);
+
       // Cancel any ongoing queries for this model before deletion
       await queryClient.cancelQueries({
         queryKey: ["catalogModel", modelName]
@@ -33,11 +38,23 @@ const DeleteCatalogModelPage = () => {
 
       await deleteCatalogModelMutation.mutateAsync(modelName);
 
+      // Remove the query for the deleted model from the cache
+      queryClient.removeQueries({
+        queryKey: ["catalogModel", modelName]
+      });
+
+      // Also invalidate the catalog models list
+      queryClient.invalidateQueries({
+        queryKey: ["catalogModels"]
+      });
+
       // Navigate to models list after successful deletion
       navigate('/catalogmodels', {
-        state: { deleteSuccess: true, deletedModelName: modelName }
+        state: { deleteSuccess: true, deletedModelName: modelName },
+        replace: true // Use replace to prevent going back to delete page
       });
     } catch (err) {
+      setIsDeleting(false);
       setErrorMessage(
         err?.response?.data?.message ||
         err?.message ||
@@ -119,16 +136,16 @@ const DeleteCatalogModelPage = () => {
                   variant="danger"
                   onClick={handleDelete}
                   className="px-4 py-2"
-                  disabled={deleteCatalogModelMutation.isPending}
+                  disabled={deleteCatalogModelMutation.isPending || isDeleting}
                 >
                   <Trash2 size={14} className="me-2" style={{marginTop: '-3px'}}/>
-                  {deleteCatalogModelMutation.isPending ? 'Deleting...' : 'Yes, Delete'}
+                  {deleteCatalogModelMutation.isPending || isDeleting ? 'Deleting...' : 'Yes, Delete'}
                 </Button>
                 <Button
                   variant="outline-secondary"
                   className="px-4 py-2 d-flex align-items-center"
                   onClick={handleCancel}
-                  disabled={deleteCatalogModelMutation.isPending}
+                  disabled={deleteCatalogModelMutation.isPending || isDeleting}
                 >
                   <X size={16} className="me-2" />
                   No, Cancel

@@ -11,7 +11,6 @@ import Row from "react-bootstrap/Row";
 import { useGetCatalogModelsQuery } from '../../hooks/useCatalogModelQuery';
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
-import { getFullName } from '../../utils/userUtils';
 import ContentHeader from '../Components/ContentHeader';
 
 import "../Components/Cards.css";
@@ -50,6 +49,19 @@ const ListCatalogModelsPage = () => {
 
   const handleViewCatalogModelClick = (modelName) => {
     navigate(`/catalogmodel/${modelName}`);
+  };
+
+  // Helper function to get unique organizations from modeling team members
+  const getUniqueOrganizations = (modelingTeam) => {
+    if (!modelingTeam || !modelingTeam.members || modelingTeam.members.length === 0) {
+      return [];
+    }
+
+    const organizations = modelingTeam.members
+      .map(member => member.organization)
+      .filter(org => org && org.trim() !== '');
+
+    return [...new Set(organizations)];
   };
 
   if (isLoading) {
@@ -156,7 +168,7 @@ const ListCatalogModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '22%'
+                          width: '20%'
                         }}>
                           Display Name
                         </th>
@@ -167,7 +179,7 @@ const ListCatalogModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '12%'
+                          width: '10%'
                         }}>
                           Model Type
                         </th>
@@ -178,9 +190,9 @@ const ListCatalogModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'center',
-                          width: '20%'
+                          width: '15%'
                         }}>
-                          Organization
+                          Modeling Team
                         </th>
                         <th scope="col" style={{
                           padding: '1.5rem 1.5rem',
@@ -191,7 +203,7 @@ const ListCatalogModelsPage = () => {
                           textAlign: 'center',
                           width: '15%'
                         }}>
-                          Created By
+                          Organizations
                         </th>
                         <th scope="col" style={{
                           padding: '1.5rem 1.5rem',
@@ -200,7 +212,7 @@ const ListCatalogModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'center',
-                          width: '13%'
+                          width: '10%'
                         }}>
                           Created On
                         </th>
@@ -275,14 +287,20 @@ const ListCatalogModelsPage = () => {
                             border: 'none',
                             textAlign: 'center'
                           }}>
-                            {model.created_by.organization ? model.created_by.organization : 'N/A'}
+                            {model.modeling_team?.name || 'N/A'}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
                             textAlign: 'center'
                           }}>
-                            {getFullName(model.created_by)}
+                            {(() => {
+                              const orgs = getUniqueOrganizations(model.modeling_team);
+                              if (orgs.length === 0) {
+                                return 'N/A';
+                              }
+                              return orgs.join(', ');
+                            })()}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',

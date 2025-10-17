@@ -15,6 +15,7 @@ import AssumptionsSection from "./Components/StepFroms/AssumptionsSection";
 import BasicInfoSection from "./Components/StepFroms/BasicInfoSection";
 import ExpectedScenariosSection from "./Components/StepFroms/ExpectedScenariosSection";
 import FinalReviewSection from "./Components/StepFroms/FinalReviewSection";
+import ModelingTeamSection from "./Components/StepFroms/ModelingTeamSection";
 import RequirementsSection from "./Components/StepFroms/RequirementsSection";
 
 import { useCreateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
@@ -107,6 +108,7 @@ const CreateCatalogModelPage = () => {
   const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
+  const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
 
   // Initialize react-hook-form with stored data or defaults
   const {
@@ -127,6 +129,7 @@ const CreateCatalogModelPage = () => {
       type: storedFormData.type || "",
       description: storedFormData.description || "",
       expectedScenarios: storedFormData.expectedScenarios || [""],
+      modelingTeam: storedFormData.modelingTeam || "",
       assumptions: storedFormData.assumptions || [""],
       requirements: storedFormData.requirements || {},
       other: storedFormData.other || {}
@@ -145,22 +148,36 @@ const CreateCatalogModelPage = () => {
       if (name && name.startsWith('expectedScenarios')) {
         setExpectedScenarios(value.expectedScenarios || []);
       }
+      if (name === 'modelingTeam') {
+        setModelingTeam(value.modelingTeam || "");
+      }
     });
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  // Debounce save function
+  // Debounce save function - watch all form values
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const currentData = watch();
-      updateFormData({
-        ...currentData,
-        expectedScenarios: currentData.expectedScenarios || [],
-        requirements: currentData.requirements || {},
-        assumptions: currentData.assumptions || [],
-      });
-    }, 1000); // Save after 1 second of inactivity
-    return () => clearTimeout(timer);
+    let timer;
+    const subscription = watch((value) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        updateFormData({
+          name: value.name || "",
+          displayName: value.displayName || "",
+          type: value.type || "",
+          description: value.description || "",
+          expectedScenarios: value.expectedScenarios || [],
+          requirements: value.requirements || {},
+          assumptions: value.assumptions || [],
+          modelingTeam: value.modelingTeam || "",
+          other: value.other || {}
+        });
+      }, 1000);
+    });
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, [watch, updateFormData]);
 
   const onSubmit = async (data) => {
@@ -171,6 +188,16 @@ const CreateCatalogModelPage = () => {
 
     // Clean and format data for API
     const formData = { ...data };
+
+    // Clean modeling team members - remove any members where all fields are empty
+    if (formData.modelingTeam && Array.isArray(formData.modelingTeam.members)) {
+      formData.modelingTeam.members = formData.modelingTeam.members.filter(member =>
+        member.email?.trim() ||
+        member.first_name?.trim() ||
+        member.last_name?.trim() ||
+        member.organization?.trim()
+      );
+    }
 
     // Clean assumptions - now comes directly from form data
     formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
@@ -214,6 +241,7 @@ const CreateCatalogModelPage = () => {
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
+      modeling_team: formData.modelingTeam,
       assumptions: formData.assumptions,
       expected_scenarios: formData.expectedScenarios,
       requirements: formData.requirements,
@@ -235,6 +263,7 @@ const CreateCatalogModelPage = () => {
         displayName: "",
         type: "",
         description: "",
+        modelingTeam: { name: "", members: [] },
         assumptions: [""],
         expectedScenarios: [""],
         requirements: {},
@@ -279,8 +308,9 @@ const CreateCatalogModelPage = () => {
   useEffect(() => {
     let scenarios = [];
     setProjectScenarios(scenarios);
-    setValue("expectedScenarios", storedFormData.expectedScenarios || []);
-  }, [setValue, storedFormData.expectedScenarios]);
+    // The setValue call was removed from here as it was causing the refresh issue.
+    // The form is already initialized with storedFormData via defaultValues in useForm.
+  }, []);
 
   const handleNextStep = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -288,6 +318,9 @@ const CreateCatalogModelPage = () => {
     switch (currentStep) {
       case 1:
         fieldsToValidate = ['name', 'type'];
+        break;
+      case 5:
+        fieldsToValidate = ['modelingTeam'];
         break;
       default:
         break;
@@ -338,7 +371,7 @@ const CreateCatalogModelPage = () => {
     }
   };
 
-  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Review"];
+  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Modeling Team", "Review"];
   const totalSteps = steps.length;
 
   return (
@@ -435,6 +468,19 @@ const CreateCatalogModelPage = () => {
 
                     {currentStep === 5 && (
                       <div className="step-panel">
+                        <ModelingTeamSection
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 6 && (
+                      <div className="step-panel">
                         <FinalReviewSection
                           control={control}
                           register={register}
@@ -445,6 +491,7 @@ const CreateCatalogModelPage = () => {
                         />
                       </div>
                     )}
+
                   </div>
 
                   <div className="mt-5 d-flex justify-content-between form-action-buttons">
