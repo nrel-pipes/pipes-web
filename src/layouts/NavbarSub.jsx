@@ -8,14 +8,16 @@ const NavbarSub = ({ navData }) => {
   const {
     pList, pName, pGraph, pSchedule, pmAll,
     pCreate, tList, tName, toUpdate, toDelete,
-    prName, prCreate, mCreate, mList, mName, hCreate, hName
+    prName, prCreate, mCreate, mList, mName, hCreate, hName,
+    cmList, cmName
   } = navData || {};
 
   if (
       pList || pName || pGraph || pSchedule  || pmAll || pCreate ||
       prName || prCreate || tList || tName ||
       mCreate || mList || mName || hCreate || hName ||
-      toUpdate || toDelete
+      toUpdate || toDelete ||
+      cmList || cmName
     ) {
     return (
       <div className="navbar-sub">
@@ -26,6 +28,15 @@ const NavbarSub = ({ navData }) => {
               <>
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <Nav.Link as={Link} to="/projects" className="rounded-box">Projects</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {/* Show catalog models and related */}
+            {cmList && (
+              <>
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="/catalogmodels" className="rounded-box">Catalog Models</Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -71,6 +82,26 @@ const NavbarSub = ({ navData }) => {
                     className="active rounded-box"
                   >
                     Project ({pName})
+                  </Nav.Link>
+                </Nav.Item>
+              </>
+            )}
+
+            {/* Show project name if provided */}
+            {cmName && (
+              <>
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+                <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <Nav.Link
+                    as={Link}
+                    to={`/catalogmodel/${encodeURIComponent(cmName)}`}
+                    className="active rounded-box"
+                  >
+                    Model ({cmName})
                   </Nav.Link>
                 </Nav.Item>
               </>
