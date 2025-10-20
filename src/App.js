@@ -55,6 +55,7 @@ import CreateCatalogModelPage from "./pages/CatalogModels/CreateCatalogModelPage
 import DeleteCatalogModelPage from "./pages/CatalogModels/DeleteCatalogModelPage";
 import GetCatalogModelPage from "./pages/CatalogModels/GetCatalogModelPage";
 import ListCatalogModelsPage from "./pages/CatalogModels/ListCatalogModelsPage";
+import ShareCatalogModelPage from "./pages/CatalogModels/ShareCatalogModelPage";
 import UpdateCatalogModelPage from "./pages/CatalogModels/UpdateCatalogModelPage";
 
 // Handoff
@@ -231,6 +232,10 @@ function App() {
                   <Route path="/catalogmodel/:modelName/delete" element={
                     isAuthenticated ? <DeleteCatalogModelPage /> : <Navigate to="/login" />
                   } />
+                  <Route path="/catalogmodel/:modelName/share" element={
+                    isAuthenticated ? <ShareCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+
 
                   {/* Handoff routes */}
                   <Route path="/handoff/new" element={

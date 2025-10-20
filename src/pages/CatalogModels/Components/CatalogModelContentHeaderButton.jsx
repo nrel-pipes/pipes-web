@@ -1,4 +1,4 @@
-import { Pencil, Settings, Trash2 } from "lucide-react";
+import { Pencil, Settings, Share2, Trash2 } from "lucide-react";
 import { Dropdown } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -9,18 +9,17 @@ const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
 
   const handleUpdateCatalogModel = () => {
     if (isDisabled) return;
-    navigate(`/catalogmodel/${modelName}/update`);
+    navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update`);
   };
 
   const handleDeleteCatalogModel = () => {
     if (isDisabled) return;
-    navigate(`/catalogmodel/${modelName}/delete`);
+    navigate(`/catalogmodel/${encodeURIComponent(modelName)}/delete`);
   };
 
-  const handleBackToCatalogModels = () => {
-    navigate('/catalogmodels?');
+  const handleShareCatalogModel = () => {
+    navigate(`/catalogmodel/${encodeURIComponent(modelName)}/share`);
   };
-
 
   return (
     <div className="content-header-actions d-flex justify-content-end">
@@ -34,9 +33,11 @@ const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
           }}
           onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
           onMouseUp={(e) => e.currentTarget.style.color = 'white'}
-          onClick={handleBackToCatalogModels}
+          onClick={handleShareCatalogModel}
+          disabled={isDisabled}
         >
-          ← Back to Model Catalog
+          <Share2 size={16} className="me-2" style={{ marginTop: '-2px' }} />
+          Share this Model
       </button>
       <Dropdown>
         <Dropdown.Toggle

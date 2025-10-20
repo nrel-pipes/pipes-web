@@ -19,7 +19,7 @@ import "./GetCatalogModelPage.css";
 
 const GetCatalogModelPage = () => {
   const navigate = useNavigate();
-  const { checkAuthStatus } = useAuthStore();
+  const { checkAuthStatus, currentUser } = useAuthStore();
   const { modelName } = useParams();
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
@@ -104,6 +104,10 @@ const GetCatalogModelPage = () => {
     ? catalogModel.description.join("\n")
     : (catalogModel.description || "");
 
+  // Check if current user is the model creator
+  const isModelCreator = currentUser?.email && catalogModel.created_by?.email &&
+                         currentUser.email.toLowerCase() === catalogModel.created_by.email.toLowerCase();
+
   return (
     <>
       <NavbarSub navData={{ cmList: true, cmName: modelName }} />
@@ -111,7 +115,7 @@ const GetCatalogModelPage = () => {
         <Row className="w-100 mx-0">
           <ContentHeader
             title={catalogModel.display_name || catalogModel.name}
-            headerButton={<CatalogModelContentHeaderButton/>}
+            headerButton={<CatalogModelContentHeaderButton isDisabled={!isModelCreator} />}
           />
         </Row>
         <Row className="mt-4">
