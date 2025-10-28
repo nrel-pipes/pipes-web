@@ -28,7 +28,6 @@ Builds the app for production to the `build` folder.
 $ npm run build
 ```
 
-
 ## Release
 
 The release workflow is this:
