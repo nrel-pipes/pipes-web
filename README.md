@@ -34,6 +34,9 @@ The release workflow is this:
 
 - Release via `release` branch.
 - Merge `release` into `develop` and `master` branches.
+- Create semantic tags for release
+- Generate release logs on Github.
+
 
 ## Deployment
 
