@@ -414,7 +414,7 @@ const CreateCatalogModelPage = () => {
                 <Form onSubmit={handleSubmit(onSubmit)} noValidate>
                   <div className="form-container">
                     {currentStep === 1 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <BasicInfoSection
                           control={control}
                           register={register}
@@ -427,7 +427,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 2 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <ExpectedScenariosSection
                           control={control}
                           register={register}
@@ -441,7 +441,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 3 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <RequirementsSection
                           control={control}
                           register={register}
@@ -454,7 +454,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 4 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <AssumptionsSection
                           control={control}
                           register={register}
@@ -467,7 +467,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 5 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <ModelingTeamSection
                           control={control}
                           register={register}
@@ -480,7 +480,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 6 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <FinalReviewSection
                           control={control}
                           register={register}
