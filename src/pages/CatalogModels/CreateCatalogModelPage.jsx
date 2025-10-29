@@ -11,12 +11,12 @@ import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
-import AssumptionsSection from "./Components/StepFroms/AssumptionsSection";
-import BasicInfoSection from "./Components/StepFroms/BasicInfoSection";
-import ExpectedScenariosSection from "./Components/StepFroms/ExpectedScenariosSection";
-import FinalReviewSection from "./Components/StepFroms/FinalReviewSection";
-import ModelingTeamSection from "./Components/StepFroms/ModelingTeamSection";
-import RequirementsSection from "./Components/StepFroms/RequirementsSection";
+import AssumptionsSection from "./StepFroms/AssumptionsSection";
+import BasicInfoSection from "./StepFroms/BasicInfoSection";
+import ExpectedScenariosSection from "./StepFroms/ExpectedScenariosSection";
+import FinalReviewSection from "./StepFroms/FinalReviewSection";
+import ModelingTeamSection from "./StepFroms/ModelingTeamSection";
+import RequirementsSection from "./StepFroms/RequirementsSection";
 
 import { useCreateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
 import { useCreateCatalogModelFormStore } from "../../stores/FormStore/CatalogModelStore";

@@ -242,7 +242,7 @@ const ListCatalogModelsPage = () => {
                                 handleViewCatalogModelClick(model.name);
                               }}
                               style={{
-                                fontWeight: '500',
+                                fontWeight: '700',
                                 padding: '0.5rem 1rem',
                                 borderRadius: 'var(--bs-border-radius)',
                                 fontSize: '0.875rem',
