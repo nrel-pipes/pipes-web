@@ -83,7 +83,7 @@ const ProjectSchedulePage = () => {
 
   if (isLoadingProject || !currentProject) {
     return (
-      <Container className="mainContent">
+      <Container className="mainContentFluid">
         <Row className="mt-5">
           <Col>
             <FontAwesomeIcon icon={faSpinner} spin size="xl" />
@@ -95,7 +95,7 @@ const ProjectSchedulePage = () => {
 
   if (isLoadingModels) {
     return (
-      <Container className="mainContent">
+      <Container className="mainContentFluid">
         <Row className="mt-5">
           <Col>
             <FontAwesomeIcon icon={faSpinner} spin size="xl" />
@@ -108,7 +108,7 @@ const ProjectSchedulePage = () => {
   return (
     <>
     <NavbarSub navData={{pList: true, pName: effectivePname, pSchedule: true}} />
-    <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+    <Container className="mainContentFluid" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Project Schedule" />
       </Row>

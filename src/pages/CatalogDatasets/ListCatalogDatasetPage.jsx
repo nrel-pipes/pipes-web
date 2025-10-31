@@ -2,47 +2,29 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Plus } from "lucide-react";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Badge, Card, Container, Table } from 'react-bootstrap';
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import { useGetModelsQuery } from '../../hooks/useModelQuery';
+import { useGetCatalogDatasetsQuery } from '../../hooks/useCatalogDatasetQuery';
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from '../Components/ContentHeader';
 
 import "../Components/Cards.css";
 import "../PageStyles.css";
+import CatalogDatasetListContentHeaderButton from "./Components/CatalogDatasetListContentHeaderButton";
 
 
-const ListModelsPage = () => {
+const ListCatalogDatasetPage = () => {
   const { checkAuthStatus } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const projectName = searchParams.get("P");
-  const projectRunName = searchParams.get("p");
 
   // All hooks must be called before any conditional logic
-  const { data: modelsData = [], isLoading, error } = useGetModelsQuery(projectName);
-
-  // Sort models by project and project run
-  const models = modelsData.sort((a, b) => {
-    const projectA = a.context?.project || '';
-    const projectB = b.context?.project || '';
-    const projectRunA = a.context?.projectrun || '';
-    const projectRunB = b.context?.projectrun || '';
-
-    // First sort by project
-    if (projectA !== projectB) {
-      return projectA.localeCompare(projectB);
-    }
-
-    // Then sort by project run
-    return projectRunA.localeCompare(projectRunB);
-  });
+  const { data: datasetsData = [], isLoading, error } = useGetCatalogDatasetsQuery();
+  const catalogDatasets = datasetsData;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -61,12 +43,12 @@ const ListModelsPage = () => {
     checkAuth();
   }, [navigate, checkAuthStatus]);
 
-  const handleCreateModelClick = () => {
-    navigate("/model/startnew?P=" + encodeURIComponent(projectName) + "&p=" + encodeURIComponent(projectRunName));
+  const handleCreateCatalogDatasetClick = () => {
+    navigate('/catalogdataset/new');
   };
 
-  const handleViewModelClick = (projectRunName, modelName) => {
-    navigate(`/model/${modelName}?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
+  const handleViewCatalogDatasetClick = (datasetName) => {
+    navigate(`/catalogdataset/${datasetName}`);
   };
 
   if (isLoading) {
@@ -92,7 +74,7 @@ const ListModelsPage = () => {
           <Row className="mt-5">
             <Col>
               <p style={{ color: "red" }}>
-                {error.message || 'Failed to load models'}
+                {error.message || 'Failed to load datasets'}
               </p>
             </Col>
           </Row>
@@ -101,30 +83,30 @@ const ListModelsPage = () => {
     );
   }
 
-  if (!models || models.length === 0) {
+  if (!catalogDatasets || catalogDatasets.length === 0) {
     return (
       <>
         <NavbarSub/>
         <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
           <Row className="w-100 mx-0">
-            <ContentHeader title="Models" cornerMark={models.length}/>
+            <ContentHeader title="Datasets" cornerMark={catalogDatasets.length}/>
           </Row>
           <div className="empty-state-container">
             <div className="empty-state-card">
               <div className="empty-state-icon">
-                <i className="bi bi-cpu-fill"></i>
+                <i className="bi bi-database-fill"></i>
               </div>
-              <h3 className="empty-state-title">No Models Found</h3>
+              <h3 className="empty-state-title">No Datasets Found in Catalog</h3>
               <p className="empty-state-description">
-                You don't have any models yet. Get started by creating your first model!
+                You don't have any datasets yet. Get started by creating your first dataset!
               </p>
               <div className="empty-state-actions">
                 <button
                   className="create-button"
-                  onClick={handleCreateModelClick}
+                  onClick={handleCreateCatalogDatasetClick}
                 >
                   <Plus size={16} className="create-button-icon" />
-                  Create Model
+                  Create Dataset in Catalog
                 </button>
               </div>
             </div>
@@ -136,16 +118,17 @@ const ListModelsPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{pList: true, pName: projectName, mList: true}} />
+      <NavbarSub navData={{cdList: true}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader
-            title="Models"
-            cornerMark={models.length}
+            title="Dataset Catalog"
+            cornerMark={catalogDatasets.length}
+            headerButton={<CatalogDatasetListContentHeaderButton/>}
           />
         </Row>
 
-        {/* Models Table */}
+        {/* Datasets Table */}
         <Row>
           <Col>
             <Card className="border-0 shadow-sm">
@@ -161,7 +144,7 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '25%'
+                          width: '20%'
                         }}>
                           Name
                         </th>
@@ -172,7 +155,7 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '30%'
+                          width: '20%'
                         }}>
                           Display Name
                         </th>
@@ -182,10 +165,21 @@ const ListModelsPage = () => {
                           color: 'var(--bs-gray-700)',
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'left',
-                          width: '15%'
+                          textAlign: 'center',
+                          width: '10%'
                         }}>
-                          Model Type
+                          Version
+                        </th>
+                        <th scope="col" style={{
+                          padding: '1.5rem 1.5rem',
+                          fontWeight: '700',
+                          color: 'var(--bs-gray-700)',
+                          border: 'none',
+                          borderBottom: '1px solid var(--bs-border-color)',
+                          textAlign: 'center',
+                          width: '12%'
+                        }}>
+                          Format
                         </th>
                         <th scope="col" style={{
                           padding: '1.5rem 1.5rem',
@@ -194,30 +188,17 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '15%'
+                          width: '25%'
                         }}>
-                          Project
-                        </th>
-                        <th scope="col" style={{
-                          padding: '1.5rem 1.5rem',
-                          fontWeight: '700',
-                          color: 'var(--bs-gray-700)',
-                          border: 'none',
-                          borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'left',
-                          width: '15%'
-                        }}>
-                          Project Run
+                          Location
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {models.map((model, index) => (
+                      {catalogDatasets.map((dataset, index) => (
                         <tr
                           key={[
-                            model.context?.project || '',
-                            model.context?.projectrun || '',
-                            model.name || index
+                            dataset.name || index
                           ].join(':')}
                           style={{
                             borderBottom: '1px solid var(--bs-border-color)',
@@ -232,18 +213,28 @@ const ListModelsPage = () => {
                             fontWeight: '500'
                           }}>
                             <a
-                              href="#"
                               onClick={(e) => {
-                                e.preventDefault();
-                                handleViewModelClick(model.context.projectrun, model.name);
+                                e.stopPropagation();
+                                handleViewCatalogDatasetClick(dataset.name);
                               }}
                               style={{
-                                textDecoration: 'none',
                                 fontWeight: '700',
-                                color: 'rgb(71, 148, 218)'
+                                padding: '0.5rem 1rem',
+                                borderRadius: 'var(--bs-border-radius)',
+                                fontSize: '0.875rem',
+                                color: '#0079c2',
+                                borderColor: '#0079c2',
+                                cursor: 'pointer',
+                                textDecoration: 'none'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.textDecoration = 'underline';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.textDecoration = 'none';
                               }}
                             >
-                              {model.name || 'Unnamed Model'}
+                              {dataset.name || 'Unnamed Dataset'}
                             </a>
                           </td>
                           <td style={{
@@ -252,36 +243,44 @@ const ListModelsPage = () => {
                             color: 'var(--bs-gray-600)',
                             textAlign: 'left'
                           }}>
-                            {model.display_name || model.name || 'No display name'}
+                            {dataset.display_name || dataset.name || 'No display name'}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
-                            textAlign: 'left'
+                            textAlign: 'center'
                           }}>
-                            <Badge bg="success" style={{
+                            <Badge bg="info" style={{
                               fontSize: '0.8rem',
                               padding: '0.4rem 0.8rem',
                               borderRadius: 'var(--bs-border-radius-pill)'
                             }}>
-                              {model.type || 'Model'}
+                              {dataset.version || 'N/A'}
                             </Badge>
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
-                            color: 'var(--bs-gray-600)',
-                            textAlign: 'left'
+                            textAlign: 'center'
                           }}>
-                            {projectName || 'N/A'}
+                            <Badge bg="secondary" style={{
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.8rem',
+                              borderRadius: 'var(--bs-border-radius-pill)'
+                            }}>
+                              {dataset.data_format || 'N/A'}
+                            </Badge>
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
-                            color: 'var(--bs-gray-600)',
-                            textAlign: 'left'
+                            textAlign: 'left',
+                            maxWidth: '300px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
                           }}>
-                            {model.context.projectrun || 'N/A'}
+                            {dataset.location?.storage_path || 'N/A'}
                           </td>
                         </tr>
                       ))}
@@ -297,4 +296,4 @@ const ListModelsPage = () => {
   );
 };
 
-export default ListModelsPage;
+export default ListCatalogDatasetPage;

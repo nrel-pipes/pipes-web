@@ -300,7 +300,7 @@ const ProjectPipelinePage = () => {
   const pipesGraph = useMemo(() => {
     if (isLoading) {
       return (
-        <Container className="mainContent">
+        <Container className="mainContentFluid">
           <Row className="mt-5">
             <Col>
               <FontAwesomeIcon icon={faSpinner} spin size="xl" />
@@ -312,7 +312,7 @@ const ProjectPipelinePage = () => {
 
     if (!project) {
       return (
-        <Container className="mainContent">
+        <Container className="mainContentFluid">
           <Row className="mt-5">
             <Col>
               <p>Please go to <a href="/projects">projects</a> and select one of your project.</p>
@@ -551,7 +551,7 @@ const ProjectPipelinePage = () => {
   return (
     <>
     <NavbarSub navData={{pList: true, pName: projectName, pGraph: true}} />
-    <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
+    <Container className="mainContentFluid" fluid style={{ padding: '0 20px' }}>
       <Row className="w-100 mx-0">
         <ContentHeader title="Project Pipeline" />
       </Row>

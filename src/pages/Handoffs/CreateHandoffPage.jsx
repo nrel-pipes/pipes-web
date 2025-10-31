@@ -84,7 +84,7 @@ function CreateHandoffPage() {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, hCreate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, toCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Add Handoff" />

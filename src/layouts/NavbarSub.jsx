@@ -7,15 +7,18 @@ import './styles/NavbarSub.css';
 const NavbarSub = ({ navData }) => {
   const {
     pList, pName, pGraph, pSchedule, pmAll,
-    pCreate, tList, tName, toUpdate, toDelete,
-    prName, prCreate, mCreate, mList, mName, hCreate, hName
+    tList, tName,
+    toUpdate, toDelete, toCreate,
+    prName, mList, mName, hName,
+    cmList, cmName, cdList, cdName
   } = navData || {};
 
   if (
-      pList || pName || pGraph || pSchedule  || pmAll || pCreate ||
-      prName || prCreate || tList || tName ||
-      mCreate || mList || mName || hCreate || hName ||
-      toUpdate || toDelete
+      pList || pName || pGraph || pSchedule  || pmAll ||
+      prName || tList || tName ||
+      mList || mName || hName ||
+      toUpdate || toDelete || toCreate ||
+      cmList || cmName || cdList || cdName
     ) {
     return (
       <div className="navbar-sub">
@@ -30,15 +33,20 @@ const NavbarSub = ({ navData }) => {
               </>
             )}
 
-            {pCreate && (
+            {/* Show catalog models and related */}
+            {cmList && (
               <>
-              <FontAwesomeIcon
-                  icon={faChevronRight}
-                  style={{ margin: '0 8px', color: '#6c757d' }}
-                  size="xs"
-                />
               <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Project</Nav.Link>
+                <Nav.Link as={Link} to="/catalogmodels" className="rounded-box">Catalog Models</Nav.Link>
+              </Nav.Item>
+              </>
+            )}
+
+            {/* Show catalog datasets and related */}
+            {cdList && (
+              <>
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as={Link} to="/catalogdatasets" className="rounded-box">Catalog Datasets</Nav.Link>
               </Nav.Item>
               </>
             )}
@@ -76,6 +84,46 @@ const NavbarSub = ({ navData }) => {
               </>
             )}
 
+            {/* Show catalog model name if provided */}
+            {cmName && (
+              <>
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+                <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <Nav.Link
+                    as={Link}
+                    to={`/catalogmodel/${encodeURIComponent(cmName)}`}
+                    className="active rounded-box"
+                  >
+                    Model ({cmName})
+                  </Nav.Link>
+                </Nav.Item>
+              </>
+            )}
+
+            {/* Show catalog dataset name if provided */}
+            {cdName && (
+              <>
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+                <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <Nav.Link
+                    as={Link}
+                    to={`/catalogdataset/${encodeURIComponent(cdName)}`}
+                    className="active rounded-box"
+                  >
+                    Dataset ({cdName})
+                  </Nav.Link>
+                </Nav.Item>
+              </>
+            )}
+
             {/* Show project run name if provided */}
             {prName && (
               <>
@@ -96,32 +144,6 @@ const NavbarSub = ({ navData }) => {
               </>
             )}
 
-            {prCreate && (
-              <>
-              <FontAwesomeIcon
-                  icon={faChevronRight}
-                  style={{ margin: '0 8px', color: '#6c757d' }}
-                  size="xs"
-                />
-              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Project Run</Nav.Link>
-              </Nav.Item>
-              </>
-            )}
-
-            {hCreate && (
-              <>
-              <FontAwesomeIcon
-                  icon={faChevronRight}
-                  style={{ margin: '0 8px', color: '#6c757d' }}
-                  size="xs"
-                />
-              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Add Handoff</Nav.Link>
-              </Nav.Item>
-              </>
-            )}
-
             {hName && (
               <>
                 <FontAwesomeIcon
@@ -132,19 +154,6 @@ const NavbarSub = ({ navData }) => {
                 <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Handoff ({hName})</Nav.Link>
                 </Nav.Item>
-              </>
-            )}
-
-            {mCreate && (
-              <>
-              <FontAwesomeIcon
-                  icon={faChevronRight}
-                  style={{ margin: '0 8px', color: '#6c757d' }}
-                  size="xs"
-                />
-              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create Model</Nav.Link>
-              </Nav.Item>
               </>
             )}
 
@@ -216,6 +225,19 @@ const NavbarSub = ({ navData }) => {
                     Team ({tName})
                   </Nav.Link>
                 </Nav.Item>
+              </>
+            )}
+
+            {toCreate && (
+              <>
+              <FontAwesomeIcon
+                  icon={faChevronRight}
+                  style={{ margin: '0 8px', color: '#6c757d' }}
+                  size="xs"
+                />
+              <Nav.Item style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Nav.Link as="span" className="rounded-box" style={{ cursor: 'pointer' }}>Create</Nav.Link>
+              </Nav.Item>
               </>
             )}
 
