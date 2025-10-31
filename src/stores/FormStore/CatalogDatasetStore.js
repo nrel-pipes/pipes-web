@@ -35,6 +35,7 @@ export const useCreateCatalogDatasetFormStore = create(
       updateFormData: (newData) => set((state) => ({
         formData: { ...state.formData, ...newData }
       })),
+      setFormData: (formData) => set({ formData }), // <-- add this line
 
       // Clear form data
       clearFormData: () => set({
@@ -122,6 +123,7 @@ export const useUpdateCatalogDatasetFormStore = create(
       updateFormData: (newData) => set((state) => ({
         formData: { ...state.formData, ...newData }
       })),
+      setFormData: (formData) => set({ formData }), // <-- add this line
 
       // Clear form data
       clearFormData: () => set({

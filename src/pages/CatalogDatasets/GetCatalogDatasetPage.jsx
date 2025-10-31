@@ -84,7 +84,9 @@ const GetCatalogDatasetPage = () => {
           </Row>
           <div className="alert alert-danger mt-4">
             <h4>Dataset Not Found in Catalog</h4>
-            <p>The dataset you are trying to view could not be found.</p>
+            <p>
+              The dataset you are trying to view could not be found. It may have been renamed or deleted.
+            </p>
             <Button variant="primary" onClick={handleBackToList}>
               Go to Datasets List
             </Button>

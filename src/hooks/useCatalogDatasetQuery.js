@@ -161,15 +161,26 @@ export const useUpdateCatalogDatasetMutation = () => {
         queryKey: ["catalogDatasets"]
       });
 
-      // Invalidate specific catalog dataset query
-      queryClient.invalidateQueries({
-        queryKey: ["catalogDataset", variables.datasetName]
-      });
+      // Handle cache invalidation for renamed datasets
+      const oldName = variables.datasetName;
+      const newName = variables.data.name?.trim();
 
-      // Remove the catalog dataset from cache to force refetch
-      queryClient.removeQueries({
-        queryKey: ["catalogDataset", variables.datasetName]
-      });
+      if (oldName !== newName) {
+        // Remove old cache
+        queryClient.removeQueries({
+          queryKey: ["catalogDataset", oldName]
+        });
+
+        // Invalidate new cache
+        queryClient.invalidateQueries({
+          queryKey: ["catalogDataset", newName]
+        });
+      } else {
+        // Invalidate cache for unchanged name
+        queryClient.invalidateQueries({
+          queryKey: ["catalogDataset", oldName]
+        });
+      }
     },
     onError: (error) => {
       console.error("Failed to update catalog dataset:", error);

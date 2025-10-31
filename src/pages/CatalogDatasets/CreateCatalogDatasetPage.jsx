@@ -60,7 +60,10 @@ const CreateCatalogDatasetPage = () => {
         ...(storedFormData.schema_info ?? {})
       },
       location: {
-        ...(storedFormData.location ?? {})
+        system_type: storedFormData.location?.system_type ?? '',
+        storage_path: storedFormData.location?.storage_path ?? '',
+        access_info: storedFormData.location?.access_info ?? '',
+        extra_note: storedFormData.location?.extra_note ?? '',
       },
       weather_years: storedFormData.weather_years ?? [],
       model_years: storedFormData.model_years ?? [],
@@ -102,7 +105,12 @@ const CreateCatalogDatasetPage = () => {
           hash_value: value.hash_value ?? '',
           data_format: value.data_format ?? '',
           schema_info: value.schema_info ?? {},
-          location: value.location ?? {},
+          location: {
+            system_type: value.location?.system_type ?? '',
+            storage_path: value.location?.storage_path ?? '',
+            access_info: value.location?.access_info ?? '',
+            extra_note: value.location?.extra_note ?? '',
+          },
           weather_years: value.weather_years ?? [],
           model_years: value.model_years ?? [],
           units: value.units ?? [],
@@ -181,7 +189,12 @@ const CreateCatalogDatasetPage = () => {
         hash_value: data.hash_value?.trim() || '',
         data_format: data.data_format?.trim() || null,
         schema_info: data.schema_info || {},
-        location: data.location || {},
+        location: {
+          system_type: data.location?.system_type ?? '',
+          storage_path: data.location?.storage_path ?? '',
+          access_info: data.location?.access_info ?? '',
+          extra_note: data.location?.extra_note ?? '',
+        },
         weather_years: data.weather_years || [],
         model_years: data.model_years || [],
         units: data.units || [],
@@ -209,7 +222,12 @@ const CreateCatalogDatasetPage = () => {
         hash_value: '',
         data_format: '',
         schema_info: {},
-        location: {},
+        location: {
+          system_type: '',
+          storage_path: '',
+          access_info: '',
+          extra_note: '',
+        },
         weather_years: [],
         model_years: [],
         units: [],

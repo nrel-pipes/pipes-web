@@ -280,7 +280,7 @@ const ListCatalogDatasetPage = () => {
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap'
                           }}>
-                            {dataset.location?.path || dataset.location?.url || dataset.resource_url || 'N/A'}
+                            {dataset.location?.storage_path || 'N/A'}
                           </td>
                         </tr>
                       ))}

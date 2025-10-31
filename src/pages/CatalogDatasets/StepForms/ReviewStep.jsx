@@ -54,10 +54,10 @@ const ReviewStep = () => {
       </Section>
 
       <Section title="Location">
-        <Field label="Path" value={formData.location?.path} />
-        <Field label="Storage Type" value={formData.location?.storage_type} />
-        <Field label="Bucket" value={formData.location?.bucket} />
-        <Field label="Region" value={formData.location?.region} />
+        <Field label="System Type" value={formData.location?.system_type} />
+        <Field label="Storage Path" value={formData.location?.storage_path} />
+        <Field label="Access Info" value={formData.location?.access_info} />
+        <Field label="Extra Note" value={formData.location?.extra_note} />
       </Section>
 
       <Section title="Version & Format">

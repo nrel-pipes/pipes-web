@@ -9,7 +9,7 @@ const SourceCodeStep = () => {
   return (
     <Row className="g-3 text-start">
       <Col xs={12}>
-        <h6 className="mb-2">Source Code Information</h6>
+        <h6 className="mb-2">Source Code</h6>
         <p className="text-muted small mb-3">
           Information about the code that produced this dataset
         </p>
@@ -19,11 +19,10 @@ const SourceCodeStep = () => {
         <Controller
           name="source_code.location"
           control={control}
-          rules={{ required: 'Location is required' }}
           render={({ field }) => (
             <Form.Group>
               <Form.Label>
-                Location <span className="text-danger">*</span>
+                Location
               </Form.Label>
               <Form.Control
                 {...field}
@@ -75,16 +74,18 @@ const SourceCodeStep = () => {
         />
       </Col>
 
+      <hr className="my-5" />
+
       <Col xs={12}>
         <Controller
           name="source_code.image"
           control={control}
           render={({ field }) => (
             <Form.Group>
-              <Form.Label>Container Image</Form.Label>
+              <Form.Label>Image</Form.Label>
               <Form.Control {...field} type="text" />
               <Form.Text className="text-muted">
-                The location of container image (e.g., Docker image URL)
+                The location of container image built from the code (e.g., DockerHub image URL, AWS ECR ARN)
               </Form.Text>
             </Form.Group>
           )}
