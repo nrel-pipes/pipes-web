@@ -4,6 +4,7 @@ import {
   FaBars,
   FaCalendarAlt,
   FaCube,
+  FaDatabase,
   FaFlag,
   FaKey,
   FaLayerGroup,
@@ -96,12 +97,12 @@ const Sidebar = () => {
             {expanded && <span className="nav-text">Models</span>}
           </Link>
         </li>
-        {/* <li>
+        <li>
           <Link to="/catalogdatasets" className={isActive("/catalogdatasets")} title="Catalog Datasets">
             <span className="icon"><FaDatabase /></span>
             {expanded && <span className="nav-text">Datasets</span>}
           </Link>
-        </li> */}
+        </li>
       </ul>
     </nav>
   );

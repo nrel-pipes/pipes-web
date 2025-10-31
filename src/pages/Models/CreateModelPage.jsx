@@ -492,7 +492,7 @@ const CreateModelPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mCreate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, toCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Create Model"/>

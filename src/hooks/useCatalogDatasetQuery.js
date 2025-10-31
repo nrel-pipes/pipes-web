@@ -2,21 +2,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AxiosInstance from './AxiosInstance';
 
 
-export const getCatalogModels = async () => {
-  const response = await AxiosInstance.get("/api/catalogmodels");
+export const getCatalogDatasets = async () => {
+  const response = await AxiosInstance.get("/api/catalogdatasets");
   return response.data;
 };
 
 
-export const useGetCatalogModelsQuery = (options = {}) => {
+export const useGetCatalogDatasetsQuery = (options = {}) => {
   return useQuery({
-    queryKey: ["catalogModels"], // Changed from "modelCatalog" to match mutation invalidations
+    queryKey: ["catalogDatasets"],
     queryFn: async () => {
       try {
-        const result = await getCatalogModels();
+        const result = await getCatalogDatasets();
         return result;
       } catch (error) {
-        console.error("Error fetching model catalog:", error);
+        console.error("Error fetching dataset catalog:", error);
         throw error;
       }
     },
@@ -33,31 +33,31 @@ export const useGetCatalogModelsQuery = (options = {}) => {
 };
 
 
-// Get single catalog model
-export const getCatalogModel = async (catalogModelName) => {
+// Get single catalog dataset
+export const getCatalogDataset = async (catalogDatasetName) => {
   try {
     const params = {
-      model_name: catalogModelName
+      dataset_name: catalogDatasetName
     };
 
-    const response = await AxiosInstance.get('/api/catalogmodel/detail', { params });
+    const response = await AxiosInstance.get('/api/catalogdataset/detail', { params });
     return response.data;
   } catch (error) {
-    console.error("Error getting catalog model:", error);
+    console.error("Error getting catalog dataset:", error);
     throw error;
   }
 };
 
-export const useGetCatalogModelQuery = (catalogModelName, options = {}) => {
+export const useGetCatalogDatasetQuery = (catalogDatasetName, options = {}) => {
   return useQuery({
-    queryKey: ["catalogModel", catalogModelName],
+    queryKey: ["catalogDataset", catalogDatasetName],
     queryFn: async () => {
-      if (!catalogModelName) {
-        throw new Error("Catalog model name is required");
+      if (!catalogDatasetName) {
+        throw new Error("Catalog dataset name is required");
       }
-      return await getCatalogModel(catalogModelName);
+      return await getCatalogDataset(catalogDatasetName);
     },
-    enabled: !!catalogModelName,
+    enabled: !!catalogDatasetName,
     retry: (failureCount, error) => {
       // Don't retry 4xx errors
       if (error.response && error.response.status >= 400 && error.response.status < 500) {
@@ -71,16 +71,16 @@ export const useGetCatalogModelQuery = (catalogModelName, options = {}) => {
       if (options.onError) {
         options.onError(error);
       }
-      console.error("Error in catalog model query:", error);
+      console.error("Error in catalog dataset query:", error);
     },
     ...options
   });
 };
 
-// Create catalog model API function
-const createCatalogModel = async (data) => {
+// Create catalog dataset API function
+const createCatalogDataset = async (data) => {
   try {
-    const response = await AxiosInstance.post('/api/catalogmodel/create', data);
+    const response = await AxiosInstance.post('/api/catalogdataset/create', data);
     return response.data;
   } catch (error) {
     // Enhanced error logging with details
@@ -100,38 +100,38 @@ const createCatalogModel = async (data) => {
 };
 
 
-export const useCreateCatalogModelMutation = () => {
+export const useCreateCatalogDatasetMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createCatalogModel,
+    mutationFn: createCatalogDataset,
     onSuccess: (data) => {
-      // Invalidate catalog models list
+      // Invalidate catalog datasets list
       queryClient.invalidateQueries({
-        queryKey: ["catalogModels"]
+        queryKey: ["catalogDatasets"]
       });
 
       // Optionally prefetch the updated data
       queryClient.prefetchQuery({
-        queryKey: ["catalogModels"],
-        queryFn: () => getCatalogModels()
+        queryKey: ["catalogDatasets"],
+        queryFn: () => getCatalogDatasets()
       });
     },
     onError: (error) => {
-      console.error("Failed to create catalog model:", error);
+      console.error("Failed to create catalog dataset:", error);
     }
   });
 };
 
 
-// Update catalog model API function
-const updateCatalogModel = async ({ modelName, data }) => {
+// Update catalog dataset API function
+const updateCatalogDataset = async ({ datasetName, data }) => {
   try {
     const params = {
-      model_name: modelName
+      dataset_name: datasetName
     };
 
-    const response = await AxiosInstance.patch('/api/catalogmodel/update', data, { params });
+    const response = await AxiosInstance.patch('/api/catalogdataset/update', data, { params });
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -150,42 +150,42 @@ const updateCatalogModel = async ({ modelName, data }) => {
 };
 
 
-export const useUpdateCatalogModelMutation = () => {
+export const useUpdateCatalogDatasetMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: updateCatalogModel,
+    mutationFn: updateCatalogDataset,
     onSuccess: (data, variables) => {
-      // Invalidate catalog models list
+      // Invalidate catalog datasets list
       queryClient.invalidateQueries({
-        queryKey: ["catalogModels"]
+        queryKey: ["catalogDatasets"]
       });
 
-      // Invalidate specific catalog model query - use correct variable name
+      // Invalidate specific catalog dataset query
       queryClient.invalidateQueries({
-        queryKey: ["catalogModel", variables.modelName]
+        queryKey: ["catalogDataset", variables.datasetName]
       });
 
-      // Remove the catalog model from cache to force refetch
+      // Remove the catalog dataset from cache to force refetch
       queryClient.removeQueries({
-        queryKey: ["catalogModel", variables.modelName]
+        queryKey: ["catalogDataset", variables.datasetName]
       });
     },
     onError: (error) => {
-      console.error("Failed to update catalog model:", error);
+      console.error("Failed to update catalog dataset:", error);
     }
   });
 };
 
 
-// Delete catalog model API function
-const deleteCatalogModel = async (modelName) => {
+// Delete catalog dataset API function
+const deleteCatalogDataset = async (datasetName) => {
   try {
     const params = {
-      model_name: modelName
+      dataset_name: datasetName
     };
 
-    const response = await AxiosInstance.delete('/api/catalogmodel/delete', { params });
+    const response = await AxiosInstance.delete('/api/catalogdataset/delete', { params });
     return response.data;
   } catch (error) {
     // Enhanced error logging with details
@@ -205,29 +205,29 @@ const deleteCatalogModel = async (modelName) => {
 };
 
 
-export const useDeleteCatalogModelMutation = () => {
+export const useDeleteCatalogDatasetMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteCatalogModel,
-    onSuccess: (data, modelName) => {
-      // Cancel any outgoing queries for the deleted model to prevent refetch
+    mutationFn: deleteCatalogDataset,
+    onSuccess: (data, datasetName) => {
+      // Cancel any outgoing queries for the deleted dataset to prevent refetch
       queryClient.cancelQueries({
-        queryKey: ["catalogModel", modelName]
+        queryKey: ["catalogDataset", datasetName]
       });
 
-      // Remove the deleted catalog model from cache immediately
+      // Remove the deleted catalog dataset from cache immediately
       queryClient.removeQueries({
-        queryKey: ["catalogModel", modelName]
+        queryKey: ["catalogDataset", datasetName]
       });
 
-      // Only invalidate the catalog models list to refresh it
+      // Only invalidate the catalog datasets list to refresh it
       queryClient.invalidateQueries({
-        queryKey: ["catalogModels"]
+        queryKey: ["catalogDatasets"]
       });
     },
     onError: (error) => {
-      console.error("Failed to delete catalog model:", error);
+      console.error("Failed to delete catalog dataset:", error);
     }
   });
 };
