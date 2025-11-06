@@ -8,23 +8,23 @@ import { Badge, Card, Container, Table } from 'react-bootstrap';
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import { useGetCatalogModelsQuery } from '../../hooks/useCatalogModelQuery';
+import { useGetCatalogDatasetsQuery } from '../../hooks/useCatalogDatasetQuery';
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from '../Components/ContentHeader';
 
 import "../Components/Cards.css";
 import "../PageStyles.css";
-import CatalogModelListContentHeaderButton from "./Components/CatalogModelListContentHeaderButton";
+import CatalogDatasetListContentHeaderButton from "./Components/CatalogDatasetListContentHeaderButton";
 
 
-const ListCatalogModelsPage = () => {
+const ListCatalogDatasetPage = () => {
   const { checkAuthStatus } = useAuthStore();
   const navigate = useNavigate();
 
   // All hooks must be called before any conditional logic
-  const { data: modelsData = [], isLoading, error } = useGetCatalogModelsQuery();
-  const catalogModels = modelsData;
+  const { data: datasetsData = [], isLoading, error } = useGetCatalogDatasetsQuery();
+  const catalogDatasets = datasetsData;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,25 +43,12 @@ const ListCatalogModelsPage = () => {
     checkAuth();
   }, [navigate, checkAuthStatus]);
 
-  const handleCreateCatalogModelClick = () => {
-    navigate('/catalogmodel/new');
+  const handleCreateCatalogDatasetClick = () => {
+    navigate('/catalogdataset/new');
   };
 
-  const handleViewCatalogModelClick = (modelName) => {
-    navigate(`/catalogmodel/${modelName}`);
-  };
-
-  // Helper function to get unique organizations from modeling team members
-  const getUniqueOrganizations = (modelingTeam) => {
-    if (!modelingTeam || !modelingTeam.members || modelingTeam.members.length === 0) {
-      return [];
-    }
-
-    const organizations = modelingTeam.members
-      .map(member => member.organization)
-      .filter(org => org && org.trim() !== '');
-
-    return [...new Set(organizations)];
+  const handleViewCatalogDatasetClick = (datasetName) => {
+    navigate(`/catalogdataset/${datasetName}`);
   };
 
   if (isLoading) {
@@ -87,7 +74,7 @@ const ListCatalogModelsPage = () => {
           <Row className="mt-5">
             <Col>
               <p style={{ color: "red" }}>
-                {error.message || 'Failed to load models'}
+                {error.message || 'Failed to load datasets'}
               </p>
             </Col>
           </Row>
@@ -96,30 +83,30 @@ const ListCatalogModelsPage = () => {
     );
   }
 
-  if (!catalogModels || catalogModels.length === 0) {
+  if (!catalogDatasets || catalogDatasets.length === 0) {
     return (
       <>
         <NavbarSub/>
         <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
           <Row className="w-100 mx-0">
-            <ContentHeader title="Models" cornerMark={catalogModels.length}/>
+            <ContentHeader title="Datasets" cornerMark={catalogDatasets.length}/>
           </Row>
           <div className="empty-state-container">
             <div className="empty-state-card">
               <div className="empty-state-icon">
-                <i className="bi bi-cpu-fill"></i>
+                <i className="bi bi-database-fill"></i>
               </div>
-              <h3 className="empty-state-title">No Models Found in Catalog</h3>
+              <h3 className="empty-state-title">No Datasets Found in Catalog</h3>
               <p className="empty-state-description">
-                You don't have any models yet. Get started by creating your first model!
+                You don't have any datasets yet. Get started by creating your first dataset!
               </p>
               <div className="empty-state-actions">
                 <button
                   className="create-button"
-                  onClick={handleCreateCatalogModelClick}
+                  onClick={handleCreateCatalogDatasetClick}
                 >
                   <Plus size={16} className="create-button-icon" />
-                  Create Model in Catalog
+                  Create Dataset in Catalog
                 </button>
               </div>
             </div>
@@ -131,17 +118,17 @@ const ListCatalogModelsPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{cmList: true}} />
+      <NavbarSub navData={{cdList: true}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader
-            title="Model Catalog"
-            cornerMark={catalogModels.length}
-            headerButton={<CatalogModelListContentHeaderButton/>}
+            title="Dataset Catalog"
+            cornerMark={catalogDatasets.length}
+            headerButton={<CatalogDatasetListContentHeaderButton/>}
           />
         </Row>
 
-        {/* Models Table */}
+        {/* Datasets Table */}
         <Row>
           <Col>
             <Card className="border-0 shadow-sm">
@@ -157,7 +144,7 @@ const ListCatalogModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '18%'
+                          width: '20%'
                         }}>
                           Name
                         </th>
@@ -178,51 +165,40 @@ const ListCatalogModelsPage = () => {
                           color: 'var(--bs-gray-700)',
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
+                          textAlign: 'center',
+                          width: '10%'
+                        }}>
+                          Version
+                        </th>
+                        <th scope="col" style={{
+                          padding: '1.5rem 1.5rem',
+                          fontWeight: '700',
+                          color: 'var(--bs-gray-700)',
+                          border: 'none',
+                          borderBottom: '1px solid var(--bs-border-color)',
+                          textAlign: 'center',
+                          width: '12%'
+                        }}>
+                          Format
+                        </th>
+                        <th scope="col" style={{
+                          padding: '1.5rem 1.5rem',
+                          fontWeight: '700',
+                          color: 'var(--bs-gray-700)',
+                          border: 'none',
+                          borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '10%'
+                          width: '25%'
                         }}>
-                          Model Type
-                        </th>
-                        <th scope="col" style={{
-                          padding: '1.5rem 1.5rem',
-                          fontWeight: '700',
-                          color: 'var(--bs-gray-700)',
-                          border: 'none',
-                          borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'center',
-                          width: '15%'
-                        }}>
-                          Modeling Team
-                        </th>
-                        <th scope="col" style={{
-                          padding: '1.5rem 1.5rem',
-                          fontWeight: '700',
-                          color: 'var(--bs-gray-700)',
-                          border: 'none',
-                          borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'center',
-                          width: '15%'
-                        }}>
-                          Organizations
-                        </th>
-                        <th scope="col" style={{
-                          padding: '1.5rem 1.5rem',
-                          fontWeight: '700',
-                          color: 'var(--bs-gray-700)',
-                          border: 'none',
-                          borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'center',
-                          width: '10%'
-                        }}>
-                          Created On
+                          Location
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {catalogModels.map((model, index) => (
+                      {catalogDatasets.map((dataset, index) => (
                         <tr
                           key={[
-                            model.name || index
+                            dataset.name || index
                           ].join(':')}
                           style={{
                             borderBottom: '1px solid var(--bs-border-color)',
@@ -239,7 +215,7 @@ const ListCatalogModelsPage = () => {
                             <a
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleViewCatalogModelClick(model.name);
+                                handleViewCatalogDatasetClick(dataset.name);
                               }}
                               style={{
                                 fontWeight: '700',
@@ -258,7 +234,7 @@ const ListCatalogModelsPage = () => {
                                 e.target.style.textDecoration = 'none';
                               }}
                             >
-                              {model.name || 'Unnamed Model'}
+                              {dataset.name || 'Unnamed Dataset'}
                             </a>
                           </td>
                           <td style={{
@@ -267,19 +243,19 @@ const ListCatalogModelsPage = () => {
                             color: 'var(--bs-gray-600)',
                             textAlign: 'left'
                           }}>
-                            {model.display_name || model.name || 'No display name'}
+                            {dataset.display_name || dataset.name || 'No display name'}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
-                            textAlign: 'left'
+                            textAlign: 'center'
                           }}>
-                            <Badge bg="success" style={{
+                            <Badge bg="info" style={{
                               fontSize: '0.8rem',
                               padding: '0.4rem 0.8rem',
                               borderRadius: 'var(--bs-border-radius-pill)'
                             }}>
-                              {model.type || 'Model'}
+                              {dataset.version || 'N/A'}
                             </Badge>
                           </td>
                           <td style={{
@@ -287,27 +263,24 @@ const ListCatalogModelsPage = () => {
                             border: 'none',
                             textAlign: 'center'
                           }}>
-                            {model.modeling_team?.name || 'N/A'}
+                            <Badge bg="secondary" style={{
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.8rem',
+                              borderRadius: 'var(--bs-border-radius-pill)'
+                            }}>
+                              {dataset.data_format || 'N/A'}
+                            </Badge>
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
-                            textAlign: 'center'
+                            textAlign: 'left',
+                            maxWidth: '300px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
                           }}>
-                            {(() => {
-                              const orgs = getUniqueOrganizations(model.modeling_team);
-                              if (orgs.length === 0) {
-                                return 'N/A';
-                              }
-                              return orgs.join(', ');
-                            })()}
-                          </td>
-                          <td style={{
-                            padding: '1rem 1.5rem',
-                            border: 'none',
-                            textAlign: 'center'
-                          }}>
-                            {model.created_at ? new Date(model.created_at).toLocaleDateString() : 'N/A'}
+                            {dataset.location?.storage_path || 'N/A'}
                           </td>
                         </tr>
                       ))}
@@ -323,4 +296,4 @@ const ListCatalogModelsPage = () => {
   );
 };
 
-export default ListCatalogModelsPage;
+export default ListCatalogDatasetPage;

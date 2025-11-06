@@ -704,7 +704,7 @@ const CreateProjectRunPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, prCreate: true }} />
+      <NavbarSub navData={{ pList: true, pName: projectName, toCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Create Project Run"/>

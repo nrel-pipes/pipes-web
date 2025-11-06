@@ -161,7 +161,7 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '20%'
+                          width: '25%'
                         }}>
                           Name
                         </th>
@@ -172,7 +172,7 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '25%'
+                          width: '30%'
                         }}>
                           Display Name
                         </th>
@@ -209,17 +209,6 @@ const ListModelsPage = () => {
                         }}>
                           Project Run
                         </th>
-                        <th scope="col" style={{
-                          padding: '1.5rem 1.5rem',
-                          fontWeight: '700',
-                          color: 'var(--bs-gray-700)',
-                          border: 'none',
-                          borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'center',
-                          width: '10%'
-                        }}>
-                          Actions
-                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -242,7 +231,20 @@ const ListModelsPage = () => {
                             textAlign: 'left',
                             fontWeight: '500'
                           }}>
-                            {model.name || 'Unnamed Model'}
+                            <a
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleViewModelClick(model.context.projectrun, model.name);
+                              }}
+                              style={{
+                                textDecoration: 'none',
+                                fontWeight: '700',
+                                color: 'rgb(71, 148, 218)'
+                              }}
+                            >
+                              {model.name || 'Unnamed Model'}
+                            </a>
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
@@ -280,38 +282,6 @@ const ListModelsPage = () => {
                             textAlign: 'left'
                           }}>
                             {model.context.projectrun || 'N/A'}
-                          </td>
-                          <td style={{
-                            padding: '1rem 1.5rem',
-                            border: 'none',
-                            textAlign: 'center'
-                          }}>
-                            <button
-                              className="btn btn-sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewModelClick(model.context.projectrun, model.name);
-                              }}
-                              style={{
-                                fontWeight: '500',
-                                padding: '0.5rem 1rem',
-                                borderRadius: 'var(--bs-border-radius)',
-                                fontSize: '0.875rem',
-                                backgroundColor: '#0079c2',
-                                borderColor: '#0079c2',
-                                color: 'white'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = '#005a94';
-                                e.target.style.borderColor = '#005a94';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = '#0079c2';
-                                e.target.style.borderColor = '#0079c2';
-                              }}
-                            >
-                              View Model Details
-                            </button>
                           </td>
                         </tr>
                       ))}

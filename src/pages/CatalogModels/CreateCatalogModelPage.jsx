@@ -11,12 +11,12 @@ import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
-import AssumptionsSection from "./Components/StepFroms/AssumptionsSection";
-import BasicInfoSection from "./Components/StepFroms/BasicInfoSection";
-import ExpectedScenariosSection from "./Components/StepFroms/ExpectedScenariosSection";
-import FinalReviewSection from "./Components/StepFroms/FinalReviewSection";
-import ModelingTeamSection from "./Components/StepFroms/ModelingTeamSection";
-import RequirementsSection from "./Components/StepFroms/RequirementsSection";
+import AssumptionsSection from "./StepFroms/AssumptionsSection";
+import BasicInfoSection from "./StepFroms/BasicInfoSection";
+import ExpectedScenariosSection from "./StepFroms/ExpectedScenariosSection";
+import FinalReviewSection from "./StepFroms/FinalReviewSection";
+import ModelingTeamSection from "./StepFroms/ModelingTeamSection";
+import RequirementsSection from "./StepFroms/RequirementsSection";
 
 import { useCreateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
 import { useCreateCatalogModelFormStore } from "../../stores/FormStore/CatalogModelStore";
@@ -376,7 +376,7 @@ const CreateCatalogModelPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ cmList: true, mCreate: true }} />
+      <NavbarSub navData={{ cmList: true, toCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Create Model"/>
@@ -414,7 +414,7 @@ const CreateCatalogModelPage = () => {
                 <Form onSubmit={handleSubmit(onSubmit)} noValidate>
                   <div className="form-container">
                     {currentStep === 1 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <BasicInfoSection
                           control={control}
                           register={register}
@@ -427,7 +427,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 2 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <ExpectedScenariosSection
                           control={control}
                           register={register}
@@ -441,7 +441,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 3 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <RequirementsSection
                           control={control}
                           register={register}
@@ -454,7 +454,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 4 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <AssumptionsSection
                           control={control}
                           register={register}
@@ -467,7 +467,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 5 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <ModelingTeamSection
                           control={control}
                           register={register}
@@ -480,7 +480,7 @@ const CreateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 6 && (
-                      <div className="step-panel">
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <FinalReviewSection
                           control={control}
                           register={register}

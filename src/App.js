@@ -63,6 +63,14 @@ import CreateHandoffPage from "./pages/Handoffs/CreateHandoffPage";
 import DeleteHandoffPage from "./pages/Handoffs/DeleteHandoffPage";
 import UpdateHandoffPage from "./pages/Handoffs/UpdateHandoffPage";
 
+// Catalog Dataset
+import CreateCatalogDatasetPage from "./pages/CatalogDatasets/CreateCatalogDatasetPage";
+import DeleteCatalogDatasetPage from "./pages/CatalogDatasets/DeleteCatalogDatasetPage";
+import GetCatalogDatasetPage from "./pages/CatalogDatasets/GetCatalogDatasetPage";
+import ListCatalogDatasetPage from "./pages/CatalogDatasets/ListCatalogDatasetPage";
+import ShareCatalogDatasetPage from "./pages/CatalogDatasets/ShareCatalogDatasetPage";
+import UpdateCatalogDatasetPage from "./pages/CatalogDatasets/UpdateCatalogDatasetPage";
+
 // User
 import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
 import ForgotPasswordPage from "./pages/Account/ForgotPasswordPage";
@@ -236,6 +244,25 @@ function App() {
                     isAuthenticated ? <ShareCatalogModelPage /> : <Navigate to="/login" />
                   } />
 
+                  {/* Catalog Dataset routes */}
+                  <Route path="/catalogdatasets" element={
+                    isAuthenticated ? <ListCatalogDatasetPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogdataset/:datasetName" element={
+                    isAuthenticated ? <GetCatalogDatasetPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogdataset/new" element={
+                    isAuthenticated ? <CreateCatalogDatasetPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogdataset/:datasetName/update" element={
+                    isAuthenticated ? <UpdateCatalogDatasetPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogdataset/:datasetName/delete" element={
+                    isAuthenticated ? <DeleteCatalogDatasetPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogdataset/:datasetName/share" element={
+                    isAuthenticated ? <ShareCatalogDatasetPage /> : <Navigate to="/login" />
+                  } />
 
                   {/* Handoff routes */}
                   <Route path="/handoff/new" element={
