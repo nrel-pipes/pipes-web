@@ -71,12 +71,15 @@ const CreateCatalogDatasetPage = () => {
       temporal_info: {
         start_date: storedFormData.temporal_info?.start_date ?? '',
         end_date: storedFormData.temporal_info?.end_date ?? '',
+        resolution: storedFormData.temporal_info?.resolution ?? '',
       },
       spatial_info: {
-        ...(storedFormData.spatial_info ?? {})
+        extent: storedFormData.spatial_info?.extent ?? '',
+        resolution: storedFormData.spatial_info?.resolution ?? '',
+        coordinate_system: storedFormData.spatial_info?.coordinate_system ?? '',
       },
-      scenarios: storedFormData.scenarios ?? [],
-      sensitivities: storedFormData.sensitivities ?? [],
+      scenarios: storedFormData.scenarios?.length > 0 ? storedFormData.scenarios : [''],
+      sensitivities: storedFormData.sensitivities?.length > 0 ? storedFormData.sensitivities : [''],
       source_code: {
         location: storedFormData.source_code?.location ?? '',
         branch: storedFormData.source_code?.branch ?? '',
@@ -117,8 +120,13 @@ const CreateCatalogDatasetPage = () => {
           temporal_info: {
             start_date: value.temporal_info?.start_date ?? '',
             end_date: value.temporal_info?.end_date ?? '',
+            resolution: value.temporal_info?.resolution ?? '',
           },
-          spatial_info: value.spatial_info ?? {},
+          spatial_info: {
+            extent: value.spatial_info?.extent ?? '',
+            resolution: value.spatial_info?.resolution ?? '',
+            coordinate_system: value.spatial_info?.coordinate_system ?? '',
+          },
           scenarios: value.scenarios ?? [],
           sensitivities: value.sensitivities ?? [],
           source_code: {
@@ -200,8 +208,8 @@ const CreateCatalogDatasetPage = () => {
         units: data.units || [],
         temporal_info: data.temporal_info || {},
         spatial_info: data.spatial_info || {},
-        scenarios: data.scenarios || [],
-        sensitivities: data.sensitivities || [],
+        scenarios: (data.scenarios || []).filter(s => s && s.trim()),
+        sensitivities: (data.sensitivities || []).filter(s => s && s.trim()),
         source_code: data.source_code || {},
         relevant_links: data.relevant_links || [],
         resource_url: data.resource_url?.trim() || '',
@@ -233,8 +241,8 @@ const CreateCatalogDatasetPage = () => {
         units: [],
         temporal_info: {},
         spatial_info: {},
-        scenarios: [],
-        sensitivities: [],
+        scenarios: [''],
+        sensitivities: [''],
         source_code: {
           location: '',
           branch: '',

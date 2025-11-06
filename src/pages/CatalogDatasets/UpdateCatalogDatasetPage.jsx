@@ -84,10 +84,15 @@ const UpdateCatalogDatasetPage = () => {
         temporal_info: {
           start_date: existingDataset.temporal_info?.start_date ?? '',
           end_date: existingDataset.temporal_info?.end_date ?? '',
+          resolution: existingDataset.temporal_info?.resolution ?? '',
         },
-        spatial_info: existingDataset.spatial_info ?? {},
-        scenarios: existingDataset.scenarios ?? [],
-        sensitivities: existingDataset.sensitivities ?? [],
+        spatial_info: {
+          extent: existingDataset.spatial_info?.extent ?? '',
+          resolution: existingDataset.spatial_info?.resolution ?? '',
+          coordinate_system: existingDataset.spatial_info?.coordinate_system ?? '',
+        },
+        scenarios: existingDataset.scenarios?.length > 0 ? existingDataset.scenarios : [''],
+        sensitivities: existingDataset.sensitivities?.length > 0 ? existingDataset.sensitivities : [''],
         source_code: {
           location: existingDataset.source_code?.location ?? '',
           branch: existingDataset.source_code?.branch ?? '',

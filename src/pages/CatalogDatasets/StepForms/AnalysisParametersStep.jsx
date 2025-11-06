@@ -1,13 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 
 const AnalysisParametersStep = () => {
-  const { control, watch, setValue, formState: { errors } } = useFormContext();
+  const { control, watch, setValue, formState: { errors }, register } = useFormContext();
   const [weatherYearsInput, setWeatherYearsInput] = useState('');
   const [modelYearsInput, setModelYearsInput] = useState('');
+
+  const { fields: scenarioFields, append: appendScenario, remove: removeScenario } = useFieldArray({
+    control,
+    name: "scenarios"
+  });
+
+  const { fields: sensitivityFields, append: appendSensitivity, remove: removeSensitivity } = useFieldArray({
+    control,
+    name: "sensitivities"
+  });
+
+  // Ensure at least one empty field exists on mount
+  useEffect(() => {
+    if (scenarioFields.length === 0) {
+      appendScenario("");
+    }
+    if (sensitivityFields.length === 0) {
+      appendSensitivity("");
+    }
+  }, []);
 
   const parseYears = (value) => {
     const normalizedValue = value.replace(/\s+/g, ',');
@@ -19,6 +40,22 @@ const AnalysisParametersStep = () => {
   const handleArrayInput = (fieldName, value) => {
     const items = value.split(',').map(item => item.trim()).filter(item => item);
     setValue(fieldName, items);
+  };
+
+  const addScenario = () => {
+    appendScenario("");
+  };
+
+  const removeScenarioAt = (index) => {
+    removeScenario(index);
+  };
+
+  const addSensitivity = () => {
+    appendSensitivity("");
+  };
+
+  const removeSensitivityAt = (index) => {
+    removeSensitivity(index);
   };
 
   return (
@@ -214,45 +251,91 @@ const AnalysisParametersStep = () => {
       </Col>
 
       <Col xs={12}>
-        <Controller
-          name="scenarios"
-          control={control}
-          render={({ field }) => (
-            <Form.Group>
-              <Form.Label>Scenarios</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={watch('scenarios')?.join(', ') || ''}
-                onChange={(e) => handleArrayInput('scenarios', e.target.value)}
-              />
-              <Form.Text className="text-muted">
-                Enter scenario names separated by commas (e.g., baseline, high-growth, low-carbon)
-              </Form.Text>
-            </Form.Group>
-          )}
-        />
+        <Form.Group>
+          <Form.Label>Scenarios</Form.Label>
+          <Form.Text className="text-muted d-block mb-3">
+            Add scenario names (e.g., baseline, high-growth, low-carbon)
+          </Form.Text>
+
+          {scenarioFields.map((field, index) => (
+            <div key={field.id} className="mb-3">
+              <div className="d-flex align-items-start">
+                <Form.Control
+                  type="text"
+                  className="me-2"
+                  placeholder={`Scenario ${index + 1}`}
+                  {...register(`scenarios.${index}`)}
+                  isInvalid={!!errors.scenarios?.[index]}
+                />
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => removeScenarioAt(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+              {errors.scenarios?.[index] && (
+                <Form.Control.Feedback type="invalid" className="d-block">
+                  {errors.scenarios[index]?.message}
+                </Form.Control.Feedback>
+              )}
+            </div>
+          ))}
+
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={addScenario}
+            className="mt-2"
+          >
+            + Add Scenario
+          </Button>
+        </Form.Group>
       </Col>
 
       <Col xs={12}>
-        <Controller
-          name="sensitivities"
-          control={control}
-          render={({ field }) => (
-            <Form.Group>
-              <Form.Label>Sensitivities</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={watch('sensitivities')?.join(', ') || ''}
-                onChange={(e) => handleArrayInput('sensitivities', e.target.value)}
-              />
-              <Form.Text className="text-muted">
-                Enter sensitivities separated by commas (e.g., temperature, precipitation, policy)
-              </Form.Text>
-            </Form.Group>
-          )}
-        />
+        <Form.Group>
+          <Form.Label>Sensitivities</Form.Label>
+          <Form.Text className="text-muted d-block mb-3">
+            Add sensitivities (e.g., temperature, precipitation, policy)
+          </Form.Text>
+
+          {sensitivityFields.map((field, index) => (
+            <div key={field.id} className="mb-3">
+              <div className="d-flex align-items-start">
+                <Form.Control
+                  type="text"
+                  className="me-2"
+                  placeholder={`Sensitivity ${index + 1}`}
+                  {...register(`sensitivities.${index}`)}
+                  isInvalid={!!errors.sensitivities?.[index]}
+                />
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => removeSensitivityAt(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+              {errors.sensitivities?.[index] && (
+                <Form.Control.Feedback type="invalid" className="d-block">
+                  {errors.sensitivities[index]?.message}
+                </Form.Control.Feedback>
+              )}
+            </div>
+          ))}
+
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={addSensitivity}
+            className="mt-2"
+          >
+            + Add Sensitivity
+          </Button>
+        </Form.Group>
       </Col>
     </Row>
   );
