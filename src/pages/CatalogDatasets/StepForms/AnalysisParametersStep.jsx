@@ -1,4 +1,4 @@
-import Badge from 'react-bootstrap/Badge';
+import { useState } from 'react';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
@@ -6,12 +6,14 @@ import { Controller, useFormContext } from 'react-hook-form';
 
 const AnalysisParametersStep = () => {
   const { control, watch, setValue, formState: { errors } } = useFormContext();
+  const [weatherYearsInput, setWeatherYearsInput] = useState('');
+  const [modelYearsInput, setModelYearsInput] = useState('');
 
-  const handleYearInput = (fieldName, value) => {
-    const years = value.split(',')
+  const parseYears = (value) => {
+    const normalizedValue = value.replace(/\s+/g, ',');
+    return normalizedValue.split(',')
       .map(item => parseInt(item.trim()))
       .filter(item => !isNaN(item));
-    setValue(fieldName, years);
   };
 
   const handleArrayInput = (fieldName, value) => {
@@ -29,23 +31,31 @@ const AnalysisParametersStep = () => {
         <Controller
           name="weather_years"
           control={control}
-          render={({ field }) => (
-            <Form.Group>
-              <Form.Label>Weather Years</Form.Label>
-              <Form.Control
-                type="text"
-                onChange={(e) => handleYearInput('weather_years', e.target.value)}
-              />
-              <Form.Text className="text-muted">
-                Enter years separated by commas (e.g., 2020, 2021, 2022)
-              </Form.Text>
-              <div className="mt-2 d-flex flex-wrap gap-1">
-                {watch('weather_years')?.map((year, index) => (
-                  <Badge key={index} bg="secondary">{year}</Badge>
-                ))}
-              </div>
-            </Form.Group>
-          )}
+          render={({ field }) => {
+            const currentYears = watch('weather_years');
+            const displayValue = weatherYearsInput || (currentYears?.join(', ') || '');
+
+            return (
+              <Form.Group>
+                <Form.Label>Weather Years</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={displayValue}
+                  onChange={(e) => {
+                    setWeatherYearsInput(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    const years = parseYears(e.target.value);
+                    setValue('weather_years', years);
+                    setWeatherYearsInput('');
+                  }}
+                />
+                <Form.Text className="text-muted">
+                  Enter years separated by commas or spaces (e.g., 2020, 2021, 2022)
+                </Form.Text>
+              </Form.Group>
+            );
+          }}
         />
       </Col>
 
@@ -53,23 +63,31 @@ const AnalysisParametersStep = () => {
         <Controller
           name="model_years"
           control={control}
-          render={({ field }) => (
-            <Form.Group>
-              <Form.Label>Model Years</Form.Label>
-              <Form.Control
-                type="text"
-                onChange={(e) => handleYearInput('model_years', e.target.value)}
-              />
-              <Form.Text className="text-muted">
-                Enter years separated by commas (e.g., 2020, 2021, 2022)
-              </Form.Text>
-              <div className="mt-2 d-flex flex-wrap gap-1">
-                {watch('model_years')?.map((year, index) => (
-                  <Badge key={index} bg="secondary">{year}</Badge>
-                ))}
-              </div>
-            </Form.Group>
-          )}
+          render={({ field }) => {
+            const currentYears = watch('model_years');
+            const displayValue = modelYearsInput || (currentYears?.join(', ') || '');
+
+            return (
+              <Form.Group>
+                <Form.Label>Model Years</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={displayValue}
+                  onChange={(e) => {
+                    setModelYearsInput(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    const years = parseYears(e.target.value);
+                    setValue('model_years', years);
+                    setModelYearsInput('');
+                  }}
+                />
+                <Form.Text className="text-muted">
+                  Enter years separated by commas or spaces (e.g., 2020, 2021, 2022)
+                </Form.Text>
+              </Form.Group>
+            );
+          }}
         />
       </Col>
 
@@ -205,16 +223,12 @@ const AnalysisParametersStep = () => {
               <Form.Control
                 as="textarea"
                 rows={3}
+                value={watch('scenarios')?.join(', ') || ''}
                 onChange={(e) => handleArrayInput('scenarios', e.target.value)}
               />
               <Form.Text className="text-muted">
                 Enter scenario names separated by commas (e.g., baseline, high-growth, low-carbon)
               </Form.Text>
-              <div className="mt-2 d-flex flex-wrap gap-1">
-                {watch('scenarios')?.map((scenario, index) => (
-                  <Badge key={index} bg="primary">{scenario}</Badge>
-                ))}
-              </div>
             </Form.Group>
           )}
         />
@@ -230,16 +244,12 @@ const AnalysisParametersStep = () => {
               <Form.Control
                 as="textarea"
                 rows={3}
+                value={watch('sensitivities')?.join(', ') || ''}
                 onChange={(e) => handleArrayInput('sensitivities', e.target.value)}
               />
               <Form.Text className="text-muted">
                 Enter sensitivities separated by commas (e.g., temperature, precipitation, policy)
               </Form.Text>
-              <div className="mt-2 d-flex flex-wrap gap-1">
-                {watch('sensitivities')?.map((sensitivity, index) => (
-                  <Badge key={index} bg="info">{sensitivity}</Badge>
-                ))}
-              </div>
             </Form.Group>
           )}
         />

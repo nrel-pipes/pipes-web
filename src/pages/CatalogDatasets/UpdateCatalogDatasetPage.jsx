@@ -304,9 +304,8 @@ const UpdateCatalogDatasetPage = () => {
                     <li key={index} className="nav-item">
                       <button
                         type="button"
-                        onClick={() => index < activeStep && setActiveStep(index)}
-                        className={`nav-link ${index === activeStep ? 'active' : ''} ${index < activeStep ? 'completed' : ''} ${index < activeStep ? 'clickable' : 'disabled'}`}
-                        disabled={index > activeStep}
+                        onClick={() => setActiveStep(index)}
+                        className={`nav-link ${index === activeStep ? 'active' : ''} ${index < activeStep ? 'completed' : ''} clickable`}
                       >
                         {step}
                       </button>

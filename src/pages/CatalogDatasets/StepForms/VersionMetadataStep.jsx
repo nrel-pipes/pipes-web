@@ -1,4 +1,3 @@
-import Badge from 'react-bootstrap/Badge';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
@@ -127,16 +126,12 @@ const VersionMetadataStep = () => {
               <Form.Label>Units</Form.Label>
               <Form.Control
                 type="text"
+                value={watch('units')?.join(', ') || ''}
                 onChange={(e) => handleArrayInput('units', e.target.value)}
               />
               <Form.Text className="text-muted">
                 Enter units separated by commas (e.g., kg, m/s, °C)
               </Form.Text>
-              <div className="mt-2 d-flex flex-wrap gap-1">
-                {watch('units')?.map((unit, index) => (
-                  <Badge key={index} bg="secondary">{unit}</Badge>
-                ))}
-              </div>
             </Form.Group>
           )}
         />
@@ -152,6 +147,7 @@ const VersionMetadataStep = () => {
               <Form.Control
                 as="textarea"
                 rows={3}
+                value={watch('relevant_links')?.join('\n') || ''}
                 onChange={(e) => {
                   const links = e.target.value.split(/[,\n]/).map(link => link.trim()).filter(link => link);
                   setValue('relevant_links', links);
@@ -160,11 +156,6 @@ const VersionMetadataStep = () => {
               <Form.Text className="text-muted">
                 Enter URLs separated by commas or new lines
               </Form.Text>
-              <div className="mt-2 d-flex flex-wrap gap-1">
-                {watch('relevant_links')?.map((link, index) => (
-                  <Badge key={index} bg="secondary">{link}</Badge>
-                ))}
-              </div>
             </Form.Group>
           )}
         />

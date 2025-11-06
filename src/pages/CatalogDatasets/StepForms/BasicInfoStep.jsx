@@ -164,8 +164,8 @@ const BasicInfoStep = () => {
                 rows={2}
                 value={field.value ?? ''}
               />
-              <Form.Text className="text-warning">
-                Please do not input sensitive information here, such as credentials, secret keys, etc.
+              <Form.Text className="text-muted">
+                Please DO NOT input sensitive information here, such as credentials, secret keys, etc.
               </Form.Text>
             </Form.Group>
           )}
