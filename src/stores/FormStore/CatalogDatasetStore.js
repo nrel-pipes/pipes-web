@@ -1,6 +1,31 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// Helper function to deep merge objects
+const deepMerge = (target, source) => {
+  const output = { ...target };
+
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach(key => {
+      if (isObject(source[key])) {
+        if (!(key in target)) {
+          output[key] = source[key];
+        } else {
+          output[key] = deepMerge(target[key], source[key]);
+        }
+      } else {
+        output[key] = source[key];
+      }
+    });
+  }
+
+  return output;
+};
+
+const isObject = (item) => {
+  return item && typeof item === 'object' && !Array.isArray(item);
+};
+
 export const useCreateCatalogDatasetFormStore = create(
   persist(
     (set, get) => ({
@@ -13,14 +38,27 @@ export const useCreateCatalogDatasetFormStore = create(
         hash_value: '',
         data_format: '',
         schema_info: {},
-        location: {},
+        location: {
+          system_type: '',
+          storage_path: '',
+          access_info: '',
+          extra_note: '',
+        },
         weather_years: [],
         model_years: [],
         units: [],
-        temporal_info: {},
-        spatial_info: {},
-        scenarios: [],
-        sensitivities: [],
+        temporal_info: {
+          start_date: '',
+          end_date: '',
+          resolution: '',
+        },
+        spatial_info: {
+          extent: '',
+          resolution: '',
+          coordinate_system: '',
+        },
+        scenarios: [''],
+        sensitivities: [''],
         source_code: {
           location: '',
           branch: '',
@@ -31,11 +69,11 @@ export const useCreateCatalogDatasetFormStore = create(
         resource_url: '',
       },
 
-      // Update form data
+      // Update form data with deep merge
       updateFormData: (newData) => set((state) => ({
-        formData: { ...state.formData, ...newData }
+        formData: deepMerge(state.formData, newData)
       })),
-      setFormData: (formData) => set({ formData }), // <-- add this line
+      setFormData: (formData) => set({ formData }),
 
       // Clear form data
       clearFormData: () => set({
@@ -48,14 +86,27 @@ export const useCreateCatalogDatasetFormStore = create(
           hash_value: '',
           data_format: '',
           schema_info: {},
-          location: {},
+          location: {
+            system_type: '',
+            storage_path: '',
+            access_info: '',
+            extra_note: '',
+          },
           weather_years: [],
           model_years: [],
           units: [],
-          temporal_info: {},
-          spatial_info: {},
-          scenarios: [],
-          sensitivities: [],
+          temporal_info: {
+            start_date: '',
+            end_date: '',
+            resolution: '',
+          },
+          spatial_info: {
+            extent: '',
+            resolution: '',
+            coordinate_system: '',
+          },
+          scenarios: [''],
+          sensitivities: [''],
           source_code: {
             location: '',
             branch: '',
@@ -84,7 +135,7 @@ export const useCreateCatalogDatasetFormStore = create(
     }),
     {
       name: 'create-catalog-dataset-form-storage',
-      version: 1,
+      version: 2,
     }
   )
 );
@@ -101,14 +152,27 @@ export const useUpdateCatalogDatasetFormStore = create(
         hash_value: '',
         data_format: '',
         schema_info: {},
-        location: {},
+        location: {
+          system_type: '',
+          storage_path: '',
+          access_info: '',
+          extra_note: '',
+        },
         weather_years: [],
         model_years: [],
         units: [],
-        temporal_info: {},
-        spatial_info: {},
-        scenarios: [],
-        sensitivities: [],
+        temporal_info: {
+          start_date: '',
+          end_date: '',
+          resolution: '',
+        },
+        spatial_info: {
+          extent: '',
+          resolution: '',
+          coordinate_system: '',
+        },
+        scenarios: [''],
+        sensitivities: [''],
         source_code: {
           location: '',
           branch: '',
@@ -119,11 +183,11 @@ export const useUpdateCatalogDatasetFormStore = create(
         resource_url: '',
       },
 
-      // Update form data
+      // Update form data with deep merge
       updateFormData: (newData) => set((state) => ({
-        formData: { ...state.formData, ...newData }
+        formData: deepMerge(state.formData, newData)
       })),
-      setFormData: (formData) => set({ formData }), // <-- add this line
+      setFormData: (formData) => set({ formData }),
 
       // Clear form data
       clearFormData: () => set({
@@ -136,14 +200,27 @@ export const useUpdateCatalogDatasetFormStore = create(
           hash_value: '',
           data_format: '',
           schema_info: {},
-          location: {},
+          location: {
+            system_type: '',
+            storage_path: '',
+            access_info: '',
+            extra_note: '',
+          },
           weather_years: [],
           model_years: [],
           units: [],
-          temporal_info: {},
-          spatial_info: {},
-          scenarios: [],
-          sensitivities: [],
+          temporal_info: {
+            start_date: '',
+            end_date: '',
+            resolution: '',
+          },
+          spatial_info: {
+            extent: '',
+            resolution: '',
+            coordinate_system: '',
+          },
+          scenarios: [''],
+          sensitivities: [''],
           source_code: {
             location: '',
             branch: '',
@@ -172,7 +249,7 @@ export const useUpdateCatalogDatasetFormStore = create(
     }),
     {
       name: 'update-catalog-dataset-form-storage',
-      version: 1,
+      version: 2,
     }
   )
 );
