@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -6,7 +7,6 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
@@ -18,14 +18,11 @@ import FinalReviewSection from "./Components/StepFroms/FinalReviewSection";
 import ModelingTeamSection from "./Components/StepFroms/ModelingTeamSection";
 import RequirementsSection from "./Components/StepFroms/RequirementsSection";
 
-import { useCreateModelMutation } from "../../hooks/useModelQuery";
-import { useGetProjectQuery } from "../../hooks/useProjectQuery";
-import { useGetProjectRunQuery } from "../../hooks/useProjectRunQuery";
-import { useCreateModelFormStore } from "../../stores/FormStore/ModelStore";
-
+import { useCreateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
+import { useCreateCatalogModelFormStore } from "../../stores/FormStore/CatalogModelStore";
 import "../FormStyles.css";
 import "../PageStyles.css";
-import "./CreateModelPage.css";
+import "./CreateCatalogModelPage.css";
 
 
 const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, steps }) => {
@@ -67,14 +64,14 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, st
 };
 
 
-const CreateModelPage = () => {
+
+const CreateCatalogModelPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const projectName = searchParams.get("P");
-  const projectRunName = searchParams.get("p");
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  const { formData, handleInputChange } = useCreateCatalogModelFormStore();
+
   const { checkAuthStatus } = useAuthStore();
 
   useEffect(() => {
@@ -101,8 +98,7 @@ const CreateModelPage = () => {
     formData: storedFormData,
     updateFormData,
     clearFormData,
-    setProjectContext
-  } = useCreateModelFormStore();
+  } = useCreateCatalogModelFormStore();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formError, setFormError] = useState(false);
@@ -112,19 +108,7 @@ const CreateModelPage = () => {
   const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
-  const [scenarioMappings, setScenarioMappings] = useState(storedFormData.scenarioMappings || {});
   const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
-
-  // Clear form data if project context changes
-  useEffect(() => {
-    if (projectName && projectRunName) {
-      if (storedFormData.projectName && storedFormData.projectRunName &&
-          (storedFormData.projectName !== projectName || storedFormData.projectRunName !== projectRunName)) {
-        clearFormData();
-      }
-      setProjectContext(projectName, projectRunName);
-    }
-  }, [projectName, projectRunName, storedFormData.projectName, storedFormData.projectRunName, clearFormData, setProjectContext]);
 
   // Initialize react-hook-form with stored data or defaults
   const {
@@ -144,12 +128,9 @@ const CreateModelPage = () => {
       displayName: storedFormData.displayName || "",
       type: storedFormData.type || "",
       description: storedFormData.description || "",
-      scheduledStart: storedFormData.scheduledStart || "",
-      scheduledEnd: storedFormData.scheduledEnd || "",
       expectedScenarios: storedFormData.expectedScenarios || [""],
       modelingTeam: storedFormData.modelingTeam || "",
       assumptions: storedFormData.assumptions || [""],
-      scenarioMappings: storedFormData.scenarioMappings || {},
       requirements: storedFormData.requirements || {},
       other: storedFormData.other || {}
     }
@@ -164,6 +145,9 @@ const CreateModelPage = () => {
       if (name && name.startsWith('assumptions')) {
         setAssumptions(value.assumptions || []);
       }
+      if (name && name.startsWith('expectedScenarios')) {
+        setExpectedScenarios(value.expectedScenarios || []);
+      }
       if (name === 'modelingTeam') {
         setModelingTeam(value.modelingTeam || "");
       }
@@ -171,23 +155,30 @@ const CreateModelPage = () => {
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  // Debounce save function
+  // Debounce save function - watch all form values
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const currentData = watch();
-      updateFormData({
-        ...currentData,
-        expectedScenarios: currentData.expectedScenarios || [],
-        requirements: currentData.requirements || {},
-        assumptions: currentData.assumptions || [],
-        modelingTeam: currentData.modelingTeam || "",
-        scenarioMappings: currentData.scenarioMappings || {},
-        projectName,
-        projectRunName
-      });
-    }, 1000); // Save after 1 second of inactivity
-    return () => clearTimeout(timer);
-  }, [watch, updateFormData, projectName, projectRunName]);
+    let timer;
+    const subscription = watch((value) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        updateFormData({
+          name: value.name || "",
+          displayName: value.displayName || "",
+          type: value.type || "",
+          description: value.description || "",
+          expectedScenarios: value.expectedScenarios || [],
+          requirements: value.requirements || {},
+          assumptions: value.assumptions || [],
+          modelingTeam: value.modelingTeam || "",
+          other: value.other || {}
+        });
+      }, 1000);
+    });
+    return () => {
+      clearTimeout(timer);
+      subscription.unsubscribe();
+    };
+  }, [watch, updateFormData]);
 
   const onSubmit = async (data) => {
     clearErrors();
@@ -198,25 +189,21 @@ const CreateModelPage = () => {
     // Clean and format data for API
     const formData = { ...data };
 
+    // Clean modeling team members - remove any members where all fields are empty
+    if (formData.modelingTeam && Array.isArray(formData.modelingTeam.members)) {
+      formData.modelingTeam.members = formData.modelingTeam.members.filter(member =>
+        member.email?.trim() ||
+        member.first_name?.trim() ||
+        member.last_name?.trim() ||
+        member.organization?.trim()
+      );
+    }
+
     // Clean assumptions - now comes directly from form data
     formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
 
     // Clean expected scenarios
     formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
-
-    // Clean scenario mappings
-    const cleanedMappings = [];
-    Object.entries(data.scenarioMappings || {}).forEach(([id, mappingData]) => {
-      if (mappingData.modelScenario?.trim()) {
-        cleanedMappings.push({
-          model_scenario: mappingData.modelScenario.trim(),
-          project_scenarios: mappingData.projectScenarios || [],
-          description: mappingData.description?.filter(desc => desc.trim() !== "") || [],
-          other: mappingData.other || {}
-        });
-      }
-    });
-    formData.scenarioMappings = cleanedMappings;
 
     // Clean requirements - convert internal structure to API expected format
     const cleanedRequirements = {};
@@ -240,25 +227,6 @@ const CreateModelPage = () => {
     });
     formData.requirements = cleanedRequirements;
 
-    // Validate dates
-    const dateValidation = validateDates(formData.scheduledStart, formData.scheduledEnd);
-    if (dateValidation !== true) {
-      setError("scheduledStart", { message: dateValidation });
-      setError("scheduledEnd", { message: dateValidation });
-      return;
-    }
-
-    // Convert date strings to ISO datetime format for API
-    if (formData.scheduledStart) {
-      const startDate = new Date(formData.scheduledStart + 'T00:00:00.000Z');
-      formData.scheduledStart = startDate.toISOString();
-    }
-
-    if (formData.scheduledEnd) {
-      const endDate = new Date(formData.scheduledEnd + 'T23:59:59.999Z');
-      formData.scheduledEnd = endDate.toISOString();
-    }
-
     // Format final payload
     let descriptionValue = formData.description;
     if (Array.isArray(descriptionValue)) {
@@ -273,22 +241,17 @@ const CreateModelPage = () => {
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
-      modeling_team: formData.modelingTeam?.name || formData.modelingTeam,
+      modeling_team: formData.modelingTeam,
       assumptions: formData.assumptions,
-      scheduled_start: formData.scheduledStart,
-      scheduled_end: formData.scheduledEnd,
       expected_scenarios: formData.expectedScenarios,
-      scenario_mappings: formData.scenarioMappings,
       requirements: formData.requirements,
       other: formData.other || {}
     };
 
     try {
-      await createModelMutation.mutateAsync({
-        projectName: projectName,
-        projectRunName: projectRunName,
-        data: cleanedFormData
-      });
+      await createCatalogModelMutation.mutateAsync(
+        cleanedFormData
+      );
 
       // Clear stored form data on successful submission
       clearFormData();
@@ -300,22 +263,19 @@ const CreateModelPage = () => {
         displayName: "",
         type: "",
         description: "",
-        modelingTeam: "",
+        modelingTeam: { name: "", members: [] },
         assumptions: [""],
-        scheduledStart: "",
-        scheduledEnd: "",
         expectedScenarios: [""],
-        scenarioMappings: {},
         requirements: {},
         other: {}
       });
       setCurrentStep(1);
 
       // Navigate to models page on success
-      navigate(`/projectrun/${encodeURIComponent(projectRunName)}?P=${encodeURIComponent(projectName)}`);
+      navigate('/catalogmodels');
     } catch (error) {
       setFormError(true);
-      setFormErrorMessage("Failed to create model");
+      setFormErrorMessage("Failed to create model in catalog.");
 
       if (error.response?.data?.message) {
         setFormErrorMessage(error.response.data.message);
@@ -341,83 +301,23 @@ const CreateModelPage = () => {
     }
   };
 
-  // Load project data
-  const {
-    data: currentProject,
-    isLoading: isLoadingProject,
-  } = useGetProjectQuery(projectName);
-
-  // Load project run data
-  const {
-    data: currentProjectRun,
-    isLoading: isLoadingProjectRun,
-  } = useGetProjectRunQuery(projectName, projectRunName);
-
   // Create model mutation
-  const createModelMutation = useCreateModelMutation();
+  const createCatalogModelMutation = useCreateCatalogModelMutation();
 
   // Extract scenarios from project run or project
   useEffect(() => {
     let scenarios = [];
-    if (currentProjectRun?.scenarios) {
-      scenarios = currentProjectRun.scenarios;
-    }
-    if (scenarios.length === 0 && currentProject?.scenarios) {
-      scenarios = currentProject.scenarios.map(scenario =>
-        typeof scenario === 'string' ? scenario : scenario.name
-      );
-    }
     setProjectScenarios(scenarios);
-    setValue("expectedScenarios", storedFormData.expectedScenarios || []);
-  }, [currentProject, currentProjectRun, setValue, storedFormData.expectedScenarios]);
-
-  const validateDates = (scheduledStart, scheduledEnd) => {
-    if (!scheduledStart || isNaN(new Date(scheduledStart))) {
-      return "Valid start date is required";
-    }
-
-    if (!scheduledEnd || isNaN(new Date(scheduledEnd))) {
-      return "Valid end date is required";
-    }
-
-    // Check if model dates are within project boundaries
-    if (currentProject?.scheduled_start) {
-      const projectStart = new Date(currentProject.scheduled_start);
-      const modelStart = new Date(scheduledStart);
-      if (modelStart < projectStart) {
-        setError("scheduledStart", {
-          message: `Start date must be after project start date (${projectStart.toLocaleDateString()})`
-        });
-        return false;
-      }
-    }
-
-    if (currentProject?.scheduled_end) {
-      const projectEnd = new Date(currentProject.scheduled_end);
-      const modelEnd = new Date(scheduledEnd);
-      if (modelEnd > projectEnd) {
-        setError("scheduledEnd", {
-          message: `End date must be before project end date (${projectEnd.toLocaleDateString()})`
-        });
-        return false;
-      }
-    }
-
-    if (new Date(scheduledStart) > new Date(scheduledEnd)) {
-      setError("scheduledEnd", { message: "End date must be after start date" });
-      return false;
-    }
-
-    clearErrors(["scheduledStart", "scheduledEnd"]);
-    return true;
-  };
+    // The setValue call was removed from here as it was causing the refresh issue.
+    // The form is already initialized with storedFormData via defaultValues in useForm.
+  }, []);
 
   const handleNextStep = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     let fieldsToValidate = [];
     switch (currentStep) {
       case 1:
-        fieldsToValidate = ['name', 'type', 'scheduledStart', 'scheduledEnd'];
+        fieldsToValidate = ['name', 'type'];
         break;
       case 5:
         fieldsToValidate = ['modelingTeam'];
@@ -427,9 +327,7 @@ const CreateModelPage = () => {
     }
 
     const isValid = await trigger(fieldsToValidate);
-    const datesAreValid = currentStep === 1 ? validateDates(watch('scheduledStart'), watch('scheduledEnd')) : true;
-
-    if (isValid && datesAreValid) {
+    if (isValid) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -437,20 +335,6 @@ const CreateModelPage = () => {
   const handlePrevStep = () => {
     setCurrentStep(prev => prev - 1);
   };
-
-  // Show loading state
-  if (isLoadingProject || isLoadingProjectRun) {
-    return (
-      <Container className="mt-5 text-center">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Loading project data...</p>
-      </Container>
-    );
-  }
-
-  const allData = watch();
 
   const canNavigateToStep = (stepNumber) => {
     // Can always go back to previous steps or stay on current step
@@ -492,7 +376,7 @@ const CreateModelPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, mCreate: true }} />
+      <NavbarSub navData={{ cmList: true, mCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Create Model"/>
@@ -538,7 +422,6 @@ const CreateModelPage = () => {
                           watch={watch}
                           setValue={setValue}
                           storedData={storedFormData}
-                          projectRun={currentProjectRun}
                         />
                       </div>
                     )}
@@ -579,7 +462,6 @@ const CreateModelPage = () => {
                           watch={watch}
                           setValue={setValue}
                           storedData={storedFormData}
-                          projectRun={currentProjectRun}
                         />
                       </div>
                     )}
@@ -593,7 +475,6 @@ const CreateModelPage = () => {
                           watch={watch}
                           setValue={setValue}
                           storedData={storedFormData}
-                          projectName={projectName}
                         />
                       </div>
                     )}
@@ -606,11 +487,11 @@ const CreateModelPage = () => {
                           errors={errors}
                           watch={watch}
                           setValue={setValue}
-                          projectRun={currentProjectRun}
                           storedData={storedFormData}
                         />
                       </div>
                     )}
+
                   </div>
 
                   <div className="mt-5 d-flex justify-content-between form-action-buttons">
@@ -659,4 +540,4 @@ const CreateModelPage = () => {
   );
 };
 
-export default CreateModelPage;
+export default CreateCatalogModelPage;
