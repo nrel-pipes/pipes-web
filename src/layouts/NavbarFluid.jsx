@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
+import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Image from "react-bootstrap/Image";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
+import Row from "react-bootstrap/Row";
+import { FaBook, FaBriefcase, FaHome, FaSignOutAlt, FaUser } from 'react-icons/fa';
 
+import { useNavigation } from '../contexts/NavigationContext';
 import useAuthStore from '../stores/AuthStore';
 import "./styles/NavbarTop.css";
 
@@ -11,6 +15,7 @@ const SiteNavbarFluid = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+  const { setActiveSection } = useNavigation();
 
   // Check authentication status when component mounts
   useEffect(() => {
@@ -22,31 +27,68 @@ const SiteNavbarFluid = () => {
     verifyAuth();
   }, [checkAuthStatus]);
 
+  const handleNavClick = (section, e) => {
+    e.preventDefault();
+    setActiveSection(section);
+    // Navigate programmatically after setting context
+    window.location.href = e.currentTarget.getAttribute('href');
+  };
+
   return (
-    <Navbar expand="lg" className="navbar-instance">
-      <Container className="navbar-menu-container d-flex" fluid>
-        {/* Left side - PIPES logo and text */}
-        <Navbar.Brand href="/" style={{width: isAuthenticated ? 'auto' : '120px'}}>
-          <div className="d-flex align-items-center">
+    <>
+      <Container fluid className="banner" style={{ height: "100px" }}>
+      <Row>
+        <Col className="d-flex justify-content-between align-items-center" xs={6} style={{ height: "100px" }}>
+          <a href="/" className="d-flex align-items-center" style={{ textDecoration: "none" }}>
             <Image
+              className="rounded"
               src="/images/NREL-PIPES-Logo-IconAcronym-FullColor.png"
               alt="PIPES"
-              style={{ width: "80%", maxWidth: "96px" }}
+              style={{ maxHeight: "100px" }}
+              fluid
             />
-            {/* Always show the text regardless of authentication */}
-            <span className="pipes-full-name ms-2">
+            <span className="pipes-full-name ms-2" style={{ fontSize: '1.75rem', color: '#000' }}>
               - Pipeline for Integrated Projects in Energy Systems
             </span>
-          </div>
-        </Navbar.Brand>
+          </a>
+        </Col>
+        <Col className="d-flex justify-content-end" xs={6} style={{ height: "100px" }}>
+          <Image
+            className="banner-nrel-image"
+            src="/images/nrel-logo@2x-01.png"
+            alt="NREL"
+            style={{ maxHeight: "100px" }}
+            fluid
+          />
+        </Col>
+      </Row>
+    </Container>
 
-        {/* Right side - NREL logo fixed to the right */}
-        <div className="nrel-logo-container">
-          {isAuthenticated ? (
-            <Image src="/images/nrel-logo@2x-01.png" alt="NREL" className="fluid-image"/>
-          ) : (
-            <Nav.Link href="/login" className="login-link">Login</Nav.Link>
-          )}
+    <Navbar expand="lg" className="navbar-instance">
+      <Container fluid className="navbar-menu-container">
+        <div className="d-flex w-100 align-items-center">
+          {/* Left side - Navigation links */}
+          <Nav style={{ fontSize: "0.875rem" }}>
+            <Nav.Link href="/" onClick={(e) => handleNavClick('home', e)}>
+              <FaHome className="me-1" /> Home
+            </Nav.Link>
+            <Nav.Link href="/catalogmodels" onClick={(e) => handleNavClick('catalog', e)}>
+              <FaBook className="me-1" /> Catalog
+            </Nav.Link>
+            <Nav.Link href="/projects" onClick={(e) => handleNavClick('workspace', e)}>
+              <FaBriefcase className="me-1" /> Workspace
+            </Nav.Link>
+          </Nav>
+
+          {/* Right side - Account links */}
+          <Nav className="ms-auto" style={{ fontSize: "0.875rem" }}>
+            <Nav.Link href="/account/profile" onClick={(e) => handleNavClick('account', e)}>
+              <FaUser className="me-1" /> Account
+            </Nav.Link>
+            <Nav.Link href="/logout" onClick={(e) => handleNavClick('logout', e)}>
+              <FaSignOutAlt className="me-1" /> Logout
+            </Nav.Link>
+          </Nav>
         </div>
 
         {/* Toggle button for any additional content */}
@@ -59,6 +101,7 @@ const SiteNavbarFluid = () => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
+    </>
   );
 }
 

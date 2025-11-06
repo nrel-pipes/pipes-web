@@ -1508,7 +1508,7 @@ const CreateProjectPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{ pList: true, pCreate: true }} />
+      <NavbarSub navData={{ pList: true, toCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader title="Create Project"/>

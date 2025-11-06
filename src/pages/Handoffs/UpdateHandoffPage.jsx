@@ -108,7 +108,7 @@ function UpdateHandoffPage() {
   if (handoffLoading || modelsLoading) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, hCreate: true }} />
+        <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, toCreate: true }} />
         <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
           <div className="text-center py-5">Loading handoff data...</div>
         </Container>
@@ -119,7 +119,7 @@ function UpdateHandoffPage() {
   if (handoffError) {
     return (
       <>
-        <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, hCreate: true }} />
+        <NavbarSub navData={{ pList: true, pName: projectName, prName: projectRunName, toCreate: true }} />
         <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
           <div className="alert alert-danger">Error loading handoff: {handoffError.message}</div>
         </Container>

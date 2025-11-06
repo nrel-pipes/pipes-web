@@ -2,47 +2,29 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Plus } from "lucide-react";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Badge, Card, Container, Table } from 'react-bootstrap';
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import { useGetModelsQuery } from '../../hooks/useModelQuery';
+import { useGetCatalogModelsQuery } from '../../hooks/useCatalogModelQuery';
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from '../Components/ContentHeader';
 
 import "../Components/Cards.css";
 import "../PageStyles.css";
+import CatalogModelListContentHeaderButton from "./Components/CatalogModelListContentHeaderButton";
 
 
-const ListModelsPage = () => {
+const ListCatalogModelsPage = () => {
   const { checkAuthStatus } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const projectName = searchParams.get("P");
-  const projectRunName = searchParams.get("p");
 
   // All hooks must be called before any conditional logic
-  const { data: modelsData = [], isLoading, error } = useGetModelsQuery(projectName);
-
-  // Sort models by project and project run
-  const models = modelsData.sort((a, b) => {
-    const projectA = a.context?.project || '';
-    const projectB = b.context?.project || '';
-    const projectRunA = a.context?.projectrun || '';
-    const projectRunB = b.context?.projectrun || '';
-
-    // First sort by project
-    if (projectA !== projectB) {
-      return projectA.localeCompare(projectB);
-    }
-
-    // Then sort by project run
-    return projectRunA.localeCompare(projectRunB);
-  });
+  const { data: modelsData = [], isLoading, error } = useGetCatalogModelsQuery();
+  const catalogModels = modelsData;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -61,12 +43,25 @@ const ListModelsPage = () => {
     checkAuth();
   }, [navigate, checkAuthStatus]);
 
-  const handleCreateModelClick = () => {
-    navigate("/model/startnew?P=" + encodeURIComponent(projectName) + "&p=" + encodeURIComponent(projectRunName));
+  const handleCreateCatalogModelClick = () => {
+    navigate('/catalogmodel/new');
   };
 
-  const handleViewModelClick = (projectRunName, modelName) => {
-    navigate(`/model/${modelName}?P=${encodeURIComponent(projectName)}&p=${encodeURIComponent(projectRunName)}`);
+  const handleViewCatalogModelClick = (modelName) => {
+    navigate(`/catalogmodel/${modelName}`);
+  };
+
+  // Helper function to get unique organizations from modeling team members
+  const getUniqueOrganizations = (modelingTeam) => {
+    if (!modelingTeam || !modelingTeam.members || modelingTeam.members.length === 0) {
+      return [];
+    }
+
+    const organizations = modelingTeam.members
+      .map(member => member.organization)
+      .filter(org => org && org.trim() !== '');
+
+    return [...new Set(organizations)];
   };
 
   if (isLoading) {
@@ -101,30 +96,30 @@ const ListModelsPage = () => {
     );
   }
 
-  if (!models || models.length === 0) {
+  if (!catalogModels || catalogModels.length === 0) {
     return (
       <>
         <NavbarSub/>
         <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
           <Row className="w-100 mx-0">
-            <ContentHeader title="Models" cornerMark={models.length}/>
+            <ContentHeader title="Models" cornerMark={catalogModels.length}/>
           </Row>
           <div className="empty-state-container">
             <div className="empty-state-card">
               <div className="empty-state-icon">
                 <i className="bi bi-cpu-fill"></i>
               </div>
-              <h3 className="empty-state-title">No Models Found</h3>
+              <h3 className="empty-state-title">No Models Found in Catalog</h3>
               <p className="empty-state-description">
                 You don't have any models yet. Get started by creating your first model!
               </p>
               <div className="empty-state-actions">
                 <button
                   className="create-button"
-                  onClick={handleCreateModelClick}
+                  onClick={handleCreateCatalogModelClick}
                 >
                   <Plus size={16} className="create-button-icon" />
-                  Create Model
+                  Create Model in Catalog
                 </button>
               </div>
             </div>
@@ -136,12 +131,13 @@ const ListModelsPage = () => {
 
   return (
     <>
-      <NavbarSub navData={{pList: true, pName: projectName, mList: true}} />
+      <NavbarSub navData={{cmList: true}} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
           <ContentHeader
-            title="Models"
-            cornerMark={models.length}
+            title="Model Catalog"
+            cornerMark={catalogModels.length}
+            headerButton={<CatalogModelListContentHeaderButton/>}
           />
         </Row>
 
@@ -161,7 +157,7 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '25%'
+                          width: '18%'
                         }}>
                           Name
                         </th>
@@ -172,7 +168,7 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '30%'
+                          width: '20%'
                         }}>
                           Display Name
                         </th>
@@ -183,7 +179,7 @@ const ListModelsPage = () => {
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
                           textAlign: 'left',
-                          width: '15%'
+                          width: '10%'
                         }}>
                           Model Type
                         </th>
@@ -193,10 +189,10 @@ const ListModelsPage = () => {
                           color: 'var(--bs-gray-700)',
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'left',
+                          textAlign: 'center',
                           width: '15%'
                         }}>
-                          Project
+                          Modeling Team
                         </th>
                         <th scope="col" style={{
                           padding: '1.5rem 1.5rem',
@@ -204,19 +200,28 @@ const ListModelsPage = () => {
                           color: 'var(--bs-gray-700)',
                           border: 'none',
                           borderBottom: '1px solid var(--bs-border-color)',
-                          textAlign: 'left',
+                          textAlign: 'center',
                           width: '15%'
                         }}>
-                          Project Run
+                          Organizations
+                        </th>
+                        <th scope="col" style={{
+                          padding: '1.5rem 1.5rem',
+                          fontWeight: '700',
+                          color: 'var(--bs-gray-700)',
+                          border: 'none',
+                          borderBottom: '1px solid var(--bs-border-color)',
+                          textAlign: 'center',
+                          width: '10%'
+                        }}>
+                          Created On
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {models.map((model, index) => (
+                      {catalogModels.map((model, index) => (
                         <tr
                           key={[
-                            model.context?.project || '',
-                            model.context?.projectrun || '',
                             model.name || index
                           ].join(':')}
                           style={{
@@ -232,15 +237,25 @@ const ListModelsPage = () => {
                             fontWeight: '500'
                           }}>
                             <a
-                              href="#"
                               onClick={(e) => {
-                                e.preventDefault();
-                                handleViewModelClick(model.context.projectrun, model.name);
+                                e.stopPropagation();
+                                handleViewCatalogModelClick(model.name);
                               }}
                               style={{
-                                textDecoration: 'none',
                                 fontWeight: '700',
-                                color: 'rgb(71, 148, 218)'
+                                padding: '0.5rem 1rem',
+                                borderRadius: 'var(--bs-border-radius)',
+                                fontSize: '0.875rem',
+                                color: '#0079c2',
+                                borderColor: '#0079c2',
+                                cursor: 'pointer',
+                                textDecoration: 'none'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.textDecoration = 'underline';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.textDecoration = 'none';
                               }}
                             >
                               {model.name || 'Unnamed Model'}
@@ -270,18 +285,29 @@ const ListModelsPage = () => {
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
-                            color: 'var(--bs-gray-600)',
-                            textAlign: 'left'
+                            textAlign: 'center'
                           }}>
-                            {projectName || 'N/A'}
+                            {model.modeling_team?.name || 'N/A'}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
                             border: 'none',
-                            color: 'var(--bs-gray-600)',
-                            textAlign: 'left'
+                            textAlign: 'center'
                           }}>
-                            {model.context.projectrun || 'N/A'}
+                            {(() => {
+                              const orgs = getUniqueOrganizations(model.modeling_team);
+                              if (orgs.length === 0) {
+                                return 'N/A';
+                              }
+                              return orgs.join(', ');
+                            })()}
+                          </td>
+                          <td style={{
+                            padding: '1rem 1.5rem',
+                            border: 'none',
+                            textAlign: 'center'
+                          }}>
+                            {model.created_at ? new Date(model.created_at).toLocaleDateString() : 'N/A'}
                           </td>
                         </tr>
                       ))}
@@ -297,4 +323,4 @@ const ListModelsPage = () => {
   );
 };
 
-export default ListModelsPage;
+export default ListCatalogModelsPage;
