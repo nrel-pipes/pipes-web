@@ -25,13 +25,13 @@
   max-height: 100px;
 }
 
-.banner-nrel-container {
+.banner-container {
   text-align: right;
   display: flex;
   align-items: center;
 }
 
-.banner-nrel-image {
+.banner-image {
   margin-right: -20px;
 }
 

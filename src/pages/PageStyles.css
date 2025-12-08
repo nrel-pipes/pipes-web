@@ -45,7 +45,7 @@
   color: white;
 }
 
-/* Keep this for NREL styles */
+/* Keep this for NLR styles */
 .imageCol {
   display: flex;
   justify-content: center;
@@ -81,27 +81,27 @@
   width: 100%;
 }
 
-.nrelCard {
+.pipesCard {
   min-height: 200px;
   border: 1px solid #0079c2;
   color: '#fff';
   border-radius: 0px !important;
 }
 
-.nrelCard .nrelCardHeader,
-.nrelCardHeader {
+.pipesCard .pipesCardHeader,
+.pipesCardHeader {
   background-color: #0079C2 !important;
   border-radius: 0px !important;
   text-align: start !important;
   color: white !important;
 }
 
-.nrelCard:hover .nrelCardHeader,
-.nrelCardHeader:hover {
+.pipesCard:hover .pipesCardHeader,
+.pipesCardHeader:hover {
   background-color: #0079C2 !important;
 }
 
-.nrelCardHeader > h3 > a {
+.pipesCardHeader > h3 > a {
   color: white !important;
   text-decoration: none !important;
   font-size: 1.75rem;
@@ -109,11 +109,11 @@
   line-height: 1.8125rem;
 }
 
-.nrelCardHeader > h3 > a:hover {
+.pipesCardHeader > h3 > a:hover {
   text-decoration: underline !important;
 }
 
-.nrelCardHeader a:hover {
+.pipesCardHeader a:hover {
   text-decoration: none;
 }
 
