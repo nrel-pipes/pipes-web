@@ -42,7 +42,7 @@ const SiteNavbarFluid = () => {
           <a href="/" className="d-flex align-items-center" style={{ textDecoration: "none" }}>
             <Image
               className="rounded"
-              src="/images/NREL-PIPES-Logo-IconAcronym-FullColor.png"
+              src="/images/PIPES-Logo-IconAcronym-FullColor.png"
               alt="PIPES"
               style={{ maxHeight: "100px" }}
               fluid
@@ -54,9 +54,9 @@ const SiteNavbarFluid = () => {
         </Col>
         <Col className="d-flex justify-content-end" xs={6} style={{ height: "100px" }}>
           <Image
-            className="banner-nrel-image"
-            src="/images/nrel-logo@2x-01.png"
-            alt="NREL"
+            className="banner-image"
+            src="/images/nlr.webp"
+            alt="NLR"
             style={{ maxHeight: "100px" }}
             fluid
           />

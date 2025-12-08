@@ -52,4 +52,4 @@ on base branch `develop` and `master`.
 
 2. Deploy the site
 
-Deploy via Jenkins job named `pipes-web` at NREL.
+Deploy via Jenkins job named `pipes-web` at NLR.

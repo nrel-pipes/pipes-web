@@ -345,8 +345,8 @@ const useUIStore = create(persist(
       if (colors[name]) {
         return colors[name]
       } else {
-        const nrelColors = ["#3D6321", "#5D9732", "#8CC63F"];
-        const newColor = nrelColors[Math.floor(Math.random() * nrelColors.length)];
+        const defaultColors = ["#3D6321", "#5D9732", "#8CC63F"];
+        const newColor = defaultColors[Math.floor(Math.random() * defaultColors.length)];
         set(state => ({ colors: { ...state.colors, [name]: newColor } }));
         return newColor;
       }
