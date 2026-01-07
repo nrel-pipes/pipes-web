@@ -20,7 +20,7 @@ const HomePage = () => {
           <h4 className="my-5">
             Pipeline for Integrated Projects in Energy Systems (PIPES) is a
             project management, data management, and a workflow management layer
-            developed by NREL for integrated modeling teams.
+            developed by NLR for integrated modeling teams.
           </h4>
         </Col>
       </Row>
@@ -28,7 +28,7 @@ const HomePage = () => {
         <Col lg={7} className="text-center">
           <Image
             className="rounded"
-            src="/images/NREL-PIPES-v2.png"
+            src="/images/PIPES-v2.png"
             alt="PIPES"
             style={{ width: "75%" }}
             fluid
@@ -73,8 +73,8 @@ const HomePage = () => {
       </Row>
       <Row className="my-5 text-start">
         <Col md={4} className="my-3">
-          <Card className="nrelCard mt-1">
-            <Card.Header className="nrelCardHeader">
+          <Card className="pipesCard mt-1">
+            <Card.Header className="pipesCardHeader">
               <h3>
                 <a
                   href="https://nrel-pipes.github.io/pipes-core/"
@@ -101,8 +101,8 @@ const HomePage = () => {
           </Card>
         </Col>
         <Col md={4} className="my-3">
-          <Card className="nrelCard mt-1">
-            <Card.Header className="nrelCardHeader">
+          <Card className="pipesCard mt-1">
+            <Card.Header className="pipesCardHeader">
               <h3>
                 <a
                   href="https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html"
@@ -130,8 +130,8 @@ const HomePage = () => {
           </Card>
         </Col>
         <Col md={4} className="my-3">
-          <Card className="nrelCard mt-1">
-            <Card.Header className="nrelCardHeader">
+          <Card className="pipesCard mt-1">
+            <Card.Header className="pipesCardHeader">
               <h3>
                 <a
                   href="https://nrel-pipes.github.io/pipes-core/contact-us/"
