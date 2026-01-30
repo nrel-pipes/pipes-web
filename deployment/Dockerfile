@@ -38,9 +38,9 @@ WORKDIR /var/www/html
 # Copy everything from project root into html container's working dir
 COPY --from=build --chown=wodby:wodby /app/build web/
 
-# Update & upgrade gotmp to prevent vulnerabilities if nrel-split-nginx base image is not up to date.
+# Update & upgrade all system packages to prevent vulnerabilities if nrel-split-nginx base image is not up to date.
 # https://github.com/wodby/gotpl/releases/
-# RUN apk update && apk upgrade
+RUN apk update && apk upgrade --no-cache
 # RUN gotpl_url="https://github.com/wodby/gotpl/releases/latest/download/gotpl-linux-amd64.tar.gz"; \
 # wget -O- "${gotpl_url}" | tar xz --no-same-owner -C /usr/local/bin;
 
