@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Badge, Card, Container, Table } from 'react-bootstrap';
+import { Badge, Card, Container, Table, Dropdown } from 'react-bootstrap';
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
@@ -44,7 +44,11 @@ const ListCatalogModelsPage = () => {
   }, [navigate, checkAuthStatus]);
 
   const handleCreateCatalogModelClick = () => {
-    navigate('/catalogmodel/new');
+    navigate('/catalogmodel/new-Default');
+  };
+
+  const handleCreateCatalogModelClickIFAC = () => {
+    navigate('/catalogmodel/new-IFAC');
   };
 
   const handleViewCatalogModelClick = (modelName) => {
@@ -114,13 +118,33 @@ const ListCatalogModelsPage = () => {
                 You don't have any models yet. Get started by creating your first model!
               </p>
               <div className="empty-state-actions">
-                <button
-                  className="create-button"
-                  onClick={handleCreateCatalogModelClick}
-                >
-                  <Plus size={16} className="create-button-icon" />
-                  Create Model in Catalog
-                </button>
+                <Dropdown>
+                  <Dropdown.Toggle
+                    variant="primary"
+                    className={`px-4 py-3 actions-dropdown-toggle`}
+                  >
+                    <Plus size={16} className="update-button-icon me-1 actions-dropdown-icon" />
+                    Actions
+                  </Dropdown.Toggle>
+
+                  <Dropdown.Menu className="actions-dropdown-menu">
+                    <Dropdown.Item
+                      onClick={handleCreateCatalogModelClick}
+                      className="d-flex align-items-center dropdown-item-create"
+                    >
+                      <Plus size={16} className="me-2" />
+                      Create Default Model Catalog Entry
+                    </Dropdown.Item>
+                    <hr className="dropdown-divider" />
+                    <Dropdown.Item
+                      onClick={handleCreateCatalogModelClickIFAC}
+                      className="d-flex align-items-center dropdown-item-create"
+                    >
+                      <Plus size={16} className="me-2" />
+                      Create IFAC Tool Catalog Entry
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
               </div>
             </div>
           </div>
@@ -137,7 +161,35 @@ const ListCatalogModelsPage = () => {
           <ContentHeader
             title="Model Catalog"
             cornerMark={catalogModels.length}
-            headerButton={<CatalogModelListContentHeaderButton/>}
+            headerButton={
+              <Dropdown>
+                  <Dropdown.Toggle
+                    variant="primary"
+                    className={`px-4 py-3 actions-dropdown-toggle`}
+                  >
+                    <Plus size={16} className="update-button-icon me-1 actions-dropdown-icon" />
+                    Actions
+                  </Dropdown.Toggle>
+
+                  <Dropdown.Menu className="actions-dropdown-menu">
+                    <Dropdown.Item
+                      onClick={handleCreateCatalogModelClick}
+                      className="d-flex align-items-center dropdown-item-create"
+                    >
+                      <Plus size={16} className="me-2" />
+                      Create Default Model Catalog Entry
+                    </Dropdown.Item>
+                    <hr className="dropdown-divider" />
+                    <Dropdown.Item
+                      onClick={handleCreateCatalogModelClickIFAC}
+                      className="d-flex align-items-center dropdown-item-create"
+                    >
+                      <Plus size={16} className="me-2" />
+                      Create IFAC Tool Catalog Entry
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+            }
           />
         </Row>
 
@@ -182,6 +234,17 @@ const ListCatalogModelsPage = () => {
                           width: '10%'
                         }}>
                           Model Type
+                        </th>
+                        <th scope="col" style={{
+                          padding: '1.5rem 1.5rem',
+                          fontWeight: '700',
+                          color: 'var(--bs-gray-700)',
+                          border: 'none',
+                          borderBottom: '1px solid var(--bs-border-color)',
+                          textAlign: 'center',
+                          width: '15%'
+                        }}>
+                          Schema
                         </th>
                         <th scope="col" style={{
                           padding: '1.5rem 1.5rem',
@@ -287,7 +350,7 @@ const ListCatalogModelsPage = () => {
                             border: 'none',
                             textAlign: 'center'
                           }}>
-                            {model.modeling_team?.name || 'N/A'}
+                            {model.catalog_schema || 'N/A'}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
@@ -295,11 +358,42 @@ const ListCatalogModelsPage = () => {
                             textAlign: 'center'
                           }}>
                             {(() => {
-                              const orgs = getUniqueOrganizations(model.modeling_team);
-                              if (orgs.length === 0) {
-                                return 'N/A';
+                              switch (model.catalog_schema) {
+                                case 'IFAC Tool Specsheet v1.0':
+                                  if (model.teams.length === 0) {
+                                    return 'N/A';
+                                  }
+                                  return model.teams.map(team => team.contact).join(', ');
+
+                                default:
+                                  if (model.modeling_team) {
+                                    return model.modeling_team.name
+                                  }
+                                  return 'N/A';
                               }
-                              return orgs.join(', ');
+                            })()}
+                            
+                          </td>
+                          <td style={{
+                            padding: '1rem 1.5rem',
+                            border: 'none',
+                            textAlign: 'center'
+                          }}>
+                            {(() => {
+                              switch (model.catalog_schema) {
+                                case 'IFAC Tool Specsheet v1.0':
+                                  if (model.teams.length === 0) {
+                                    return 'N/A';
+                                  }
+                                  return model.teams.map(team => team.lab).join(', ');
+
+                                default:
+                                  const orgs = getUniqueOrganizations(model.modeling_team);
+                                  if (orgs.length === 0) {
+                                    return 'N/A';
+                                  }
+                                  return orgs.join(', ');
+                              }
                             })()}
                           </td>
                           <td style={{

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -11,15 +11,21 @@ import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
-import AssumptionsSection from "./StepFroms/AssumptionsSection";
-import BasicInfoSection from "./StepFroms/BasicInfoSection";
-import ExpectedScenariosSection from "./StepFroms/ExpectedScenariosSection";
-import FinalReviewSection from "./StepFroms/FinalReviewSection";
-import ModelingTeamSection from "./StepFroms/ModelingTeamSection";
-import RequirementsSection from "./StepFroms/RequirementsSection";
+/* IFAC Step Forms */
+import BasicInfoSectionIFAC from "./StepFroms/BasicInfoSectionIFAC";
+import FinalReviewSectionIFAC from "./StepFroms/FinalReviewSectionIFAC";
+import RequirementsSectionIFAC from "./StepFroms/RequirementsSectionIFAC";
+import InputsSectionIFAC from "./StepFroms/InputsSectionIFAC";
+import MaturitySectionIFAC from "./StepFroms/MaturitySectionIFAC";
+import OutputsSectionIFAC from "./StepFroms/OutputsSectionIFAC";
+import TeamsSectionIFAC from "./StepFroms/TeamsSectionIFAC";
 
-import { useGetCatalogModelQuery, useUpdateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
-import { useUpdateCatalogModelFormStore, useUpdateCatalogModelFormStoreIFAC } from "../../stores/FormStore/CatalogModelStore";
+/* General Step Forms */
+import ListComponent from "./Components/ListComponent";
+import NameDescListComponent from "./Components/NameDescListComponent";
+
+import { useCreateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
+import { useCreateCatalogModelFormStoreIFAC } from "../../stores/FormStore/CatalogModelStore";
 import "../FormStyles.css";
 import "../PageStyles.css";
 import "./CreateCatalogModelPage.css";
@@ -65,17 +71,18 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, st
 
 
 
-const UpdateCatalogModelPage = () => {
+const CreateCatalogModelPage = () => {
   const navigate = useNavigate();
-  const { modelName } = useParams();
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [isModelLoading, setIsModelLoading] = useState(true);
+
+  const { formData, handleInputChange } = useCreateCatalogModelFormStoreIFAC();
 
   const { checkAuthStatus } = useAuthStore();
 
-  // Fetch existing model data
-  const { data: modelData, isLoading: isModelDataLoading, error: modelError } = useGetCatalogModelQuery(modelName);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const schema = searchParams.get("S");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -101,19 +108,19 @@ const UpdateCatalogModelPage = () => {
     formData: storedFormData,
     updateFormData,
     clearFormData,
-  } = useUpdateCatalogModelFormStore();
+  } = useCreateCatalogModelFormStoreIFAC();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
   const [projectScenarios, setProjectScenarios] = useState([]);
-  const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
+  const [expected_scenarios, setExpectedScenarios] = useState(storedFormData.expected_scenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
-  const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || { name: '', members: [] });
+  const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
 
-  // Initialize react-hook-form with stored data or model data
+  // Initialize react-hook-form with stored data or defaults
   const {
     register,
     control,
@@ -124,81 +131,31 @@ const UpdateCatalogModelPage = () => {
     setError,
     clearErrors,
     trigger,
-    reset
+    reset // <-- add reset from useForm
   } = useForm({
     defaultValues: {
-      name: "",
-      displayName: "",
-      type: "",
-      description: "",
-      expectedScenarios: [""],
-      assumptions: [""],
-      requirements: {},
-      modelingTeam: { name: "", members: [] },
-      other: {}
+      name: storedFormData.name || "",
+      displayName: storedFormData.displayName || "",
+      type: storedFormData.type || "",
+      description: storedFormData.description || "",
+      source: storedFormData.source || "",
+      version: storedFormData.version || "",
+      branch: storedFormData.branch || "",
+      documentation: storedFormData.documentation || "",
+      training: storedFormData.training || "",
+      maturity: storedFormData.maturity || {},
+      features: storedFormData.features || [""],
+      use_cases: storedFormData.use_cases || [""],
+      tags: storedFormData.tags || [""],
+      expected_scenarios: storedFormData.expected_scenarios || [""],
+      inputs: storedFormData.inputs || [],
+      requirements: storedFormData.requirements || {},
+      outputs: storedFormData.outputs || [],
+      assumptions: storedFormData.assumptions || [""],
+      teams: storedFormData.teams || [],
+      other: storedFormData.other || {}
     }
   });
-
-  // Load model data into form when available
-  useEffect(() => {
-    if (modelData && !isModelDataLoading) {
-      // Convert API requirements format to form internal structure
-      const convertedRequirements = {};
-      if (modelData.requirements && typeof modelData.requirements === 'object') {
-        Object.entries(modelData.requirements).forEach(([key, value], index) => {
-          const reqId = `req_${index}`;
-          if (typeof value === 'string') {
-            convertedRequirements[reqId] = {
-              name: key,
-              type: 'string',
-              value: value
-            };
-          } else if (typeof value === 'object' && value !== null) {
-            convertedRequirements[reqId] = {
-              name: key,
-              type: 'object',
-              value: value
-            };
-          }
-        });
-      }
-
-      const formDefaults = {
-        name: modelData.name || "",
-        displayName: modelData.display_name || "",
-        type: modelData.type || "",
-        description: modelData.description || "",
-        expectedScenarios: modelData.expected_scenarios?.length > 0 ? modelData.expected_scenarios : [""],
-        assumptions: modelData.assumptions?.length > 0 ? modelData.assumptions : [""],
-        requirements: convertedRequirements,
-        modelingTeam: modelData.modeling_team || { name: "", members: [] },
-        other: modelData.other || {}
-      };
-
-      // Check if we have stored data for this specific model
-      const hasStoredData = storedFormData.name === modelData.name;
-      const dataToUse = hasStoredData ? storedFormData : formDefaults;
-
-      // Update form with data
-      reset(dataToUse);
-
-      // Update local state
-      setExpectedScenarios(dataToUse.expectedScenarios || []);
-      setRequirements(dataToUse.requirements || {});
-      setAssumptions(dataToUse.assumptions || []);
-      setModelingTeam(dataToUse.modelingTeam || { name: "", members: [] });
-
-      setIsModelLoading(false);
-    }
-  }, [modelData, isModelDataLoading, reset]);
-
-  // Handle model loading error
-  useEffect(() => {
-    if (modelError) {
-      console.error("Error loading model:", modelError);
-      navigate("/catalogmodels");
-    }
-  }, [modelError, navigate]);
 
   // Update local state when form requirements and assumptions change
   useEffect(() => {
@@ -209,34 +166,48 @@ const UpdateCatalogModelPage = () => {
       if (name && name.startsWith('assumptions')) {
         setAssumptions(value.assumptions || []);
       }
-      if (name && name.startsWith('expectedScenarios')) {
-        setExpectedScenarios(value.expectedScenarios || []);
+      if (name && name.startsWith('expected_scenarios')) {
+        setExpectedScenarios(value.expected_scenarios || []);
       }
-      if (name && name.startsWith('modelingTeam')) {
-        setModelingTeam(value.modelingTeam || { name: '', members: [] });
+      if (name === 'modelingTeam') {
+        setModelingTeam(value.modelingTeam || "");
       }
     });
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  // Debounce save function - watch all form changes
+  // Debounce save function - watch all form values
   useEffect(() => {
     let timer;
     const subscription = watch((value) => {
-      // Clear previous timer
-      if (timer) {
-        clearTimeout(timer);
-      }
-      // Set new timer
+      clearTimeout(timer);
       timer = setTimeout(() => {
-        updateFormData(value);
+        updateFormData({
+          name: value.name || "",
+          displayName: value.displayName || "",
+          type: value.type || "",
+          description: value.description || "",
+          source: value.source || "",
+          version: value.version || "",
+          branch: value.branch || "",
+          documentation: value.documentation || "",
+          training: value.training || "",
+          maturity: value.maturity || {},
+          features: value.features || [],
+          use_cases: value.use_cases || [],
+          tags: value.tags || [],
+          expectedScenarios: value.expectedScenarios || [],
+          inputs: value.inputs || [],
+          requirements: value.requirements || {},
+          outputs: value.outputs || [],
+          assumptions: value.assumptions || [],
+          teams: value.teams || [],
+          other: value.other || {}
+        });
       }, 1000);
     });
-
     return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
+      clearTimeout(timer);
       subscription.unsubscribe();
     };
   }, [watch, updateFormData]);
@@ -250,43 +221,83 @@ const UpdateCatalogModelPage = () => {
     // Clean and format data for API
     const formData = { ...data };
 
-    // Clean modeling team members - remove any members where all fields are empty
-    if (formData.modelingTeam && Array.isArray(formData.modelingTeam.members)) {
-      formData.modelingTeam.members = formData.modelingTeam.members.filter(member =>
-        member.email?.trim() ||
-        member.first_name?.trim() ||
-        member.last_name?.trim() ||
-        member.organization?.trim()
+    // Clean teams - remove any teams where all fields are empty
+    let cleanedTeams = [];
+    if (formData.teams && formData.teams.length > 0) {
+      formData.teams = formData.teams.filter(team =>
+        team.lab?.trim() ||
+        team.role?.trim() ||
+        team.contact?.trim()
       );
     }
+    cleanedTeams = Object.values(formData.teams);
+    formData.teams = cleanedTeams;
 
     // Clean assumptions - now comes directly from form data
-    formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
-
+    //formData.assumptions = (data.assumptions || []).filter(assumption => assumption && assumption.trim() !== "");
+    const arr_fields = ['assumptions','expected_scenarios','tags','features']
+    for (let i = 0; i < arr_fields.length; i++){
+      formData[arr_fields[i]] = (data[arr_fields[i]] || []).filter(element => element.trim() !== "");
+    }
+    
     // Clean expected scenarios
-    formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
+    //formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
 
-    // Clean requirements - convert internal structure to API expected format
-    const cleanedRequirements = {};
-    Object.entries(data.requirements || {}).forEach(([id, reqData]) => {
-      const key = reqData.name?.trim();
-      if (key) {
-        if (reqData.type === "string" && reqData.value.trim() !== "") {
-          cleanedRequirements[key] = reqData.value;
-        } else if (reqData.type === "object") {
+    // TODO: Maturity
+
+    // TODO: Clean requirements - convert internal structure to API expected format
+    let cleanedRequirements = {};
+    const req_types = ['spatial','temporal','environment'];
+    for (let i = 0; i < req_types.length; i++){
+      if (data.requirements[req_types[i]]){
+        cleanedRequirements[req_types[i]] = {}
+      }
+      Object.entries(data.requirements[req_types[i]] || {}).forEach(([id, reqData]) => {
+        const key = reqData.name?.trim();
+        if (key) {
           const cleanedObject = {};
-          Object.entries(reqData.value || {}).forEach(([field, val]) => {
-            if (val && val.trim() !== "") {
+          Object.entries(reqData || {}).forEach(([field, val]) => {
+            if (Array.isArray(val)){
+              cleanedObject[field] = Object.values(val || []).filter(element => element.trim() !== "");
+            } else if (val.constructor === Object) {
+              let cleanedSubObject = {};
+              cleanedSubObject = Object.entries(val)
+                                          .filter(([k, element]) => (k.trim() !== "" & element.trim() !== ""))
+                                          .reduce((obj, k) => {return {...obj, [k]:val[k]}},{});
+              if (Object.keys(cleanedSubObject).length > 0) {
+                cleanedObject[field] = cleanedSubObject;
+              }
+            } else if (val && val.trim() !== "") {
               cleanedObject[field] = val;
             }
           });
           if (Object.keys(cleanedObject).length > 0) {
-            cleanedRequirements[key] = cleanedObject;
+            cleanedRequirements[req_types[i]][key] = cleanedObject;
           }
         }
-      }
-    });
+      });
+    }
+    
     formData.requirements = cleanedRequirements;
+
+    // Inputs/outputs
+    let cleanedInputs = [];
+    Object.entries(data.inputs || {}).forEach(([id, reqData]) => {
+      if (reqData['type']){
+        cleanedInputs = [...cleanedInputs, reqData[reqData['type']]]
+      }
+    }); 
+
+    formData.inputs = cleanedInputs;
+
+    let cleanedOuputs = [];
+    Object.entries(data.outputs || {}).forEach(([id, outData]) => {
+      if (outData['type']){
+        cleanedOuputs = [...cleanedOuputs, outData[outData['type']]]
+      }
+    }); 
+
+    formData.outputs = cleanedOuputs;
 
     // Format final payload
     let descriptionValue = formData.description;
@@ -298,31 +309,69 @@ const UpdateCatalogModelPage = () => {
     }
 
     const cleanedFormData = {
+      catalog_schema: "IFAC Tool Specsheet v1.0",
       name: formData.name.trim(),
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
-      modeling_team: formData.modelingTeam,
+      use_cases: formData.use_cases,
+      source: formData.source.trim(),
+      version: formData.version.trim(),
+      branch: formData.branch.trim(),
+      documentation: formData.documentation.trim(),
+      training: formData.training.trim(),
+      teams: formData.teams,
       assumptions: formData.assumptions,
-      expected_scenarios: formData.expectedScenarios,
+      features: formData.features,
+      tags: formData.tags,
+      expected_scenarios: formData.expectedScenarios || [],
+      maturity: formData.maturity,
+      inputs: formData.inputs,
       requirements: formData.requirements,
-      other: formData.other || {}
+      outputs: formData.outputs,
+      other: formData.other || {},
+      config: formData.config || {}
     };
 
     try {
-      await updateCatalogModelMutation.mutateAsync({
-        modelName: modelName,
-        data: cleanedFormData
-      });
+      await createCatalogModelMutation.mutateAsync(
+        cleanedFormData
+      );
 
       // Clear stored form data on successful submission
       clearFormData();
+
+      // Reset local state and form to initial values
+      setRequirements({});
+      reset({
+        name: "",
+        displayName: "",
+        type: "",
+        description: "",
+        use_cases: [""],
+        source: "",
+        version: "",
+        branch: "",
+        documentation: "",
+        training: "",
+        maturity: {},
+        teams: [],
+        assumptions: [""],
+        features: [""],
+        tags: [""],
+        expected_scenarios: [""],
+        inputs: [],
+        requirements: {},
+        outputs: [],
+        other: {}
+      });
+      setCurrentStep(1);
 
       // Navigate to models page on success
       navigate('/catalogmodels');
     } catch (error) {
       setFormError(true);
-      setFormErrorMessage("Failed to update model in catalog.");
+      setFormErrorMessage("Failed to create model in catalog.");
 
       if (error.response?.data?.message) {
         setFormErrorMessage(error.response.data.message);
@@ -348,13 +397,15 @@ const UpdateCatalogModelPage = () => {
     }
   };
 
-  // Update model mutation
-  const updateCatalogModelMutation = useUpdateCatalogModelMutation();
+  // Create model mutation
+  const createCatalogModelMutation = useCreateCatalogModelMutation();
 
   // Extract scenarios from project run or project
   useEffect(() => {
     let scenarios = [];
     setProjectScenarios(scenarios);
+    // The setValue call was removed from here as it was causing the refresh issue.
+    // The form is already initialized with storedFormData via defaultValues in useForm.
   }, []);
 
   const handleNextStep = async (e) => {
@@ -365,7 +416,7 @@ const UpdateCatalogModelPage = () => {
         fieldsToValidate = ['name', 'type'];
         break;
       case 5:
-        fieldsToValidate = ['modelingTeam.name'];
+        fieldsToValidate = ['modelingTeam'];
         break;
       default:
         break;
@@ -416,39 +467,15 @@ const UpdateCatalogModelPage = () => {
     }
   };
 
-  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Modeling Team", "Review"];
+  const steps = ["Basic Info", "Scenarios/Assumptions", "Maturity", "Requirements", "Inputs", "Outputs", "Teams", "Review"];
   const totalSteps = steps.length;
-
-  // Show loading state
-  if (isAuthChecking || isModelLoading || isModelDataLoading) {
-    return (
-      <>
-        <NavbarSub navData={{ cmList: true, cmName: modelName, toUpdate: true }} />
-        <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
-          <Row className="w-100 mx-0">
-            <ContentHeader title="Update Model"/>
-          </Row>
-          <Row className="g-0">
-            <Col>
-              <div className="text-center py-5">
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                <p className="mt-2">Loading model data...</p>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-      </>
-    );
-  }
 
   return (
     <>
-      <NavbarSub navData={{ cmList: true, cmName: modelName, toUpdate: true }} />
+      <NavbarSub navData={{ cmList: true, toCreate: true }} />
       <Container className="mainContent" fluid style={{ padding: '0 20px' }}>
         <Row className="w-100 mx-0">
-          <ContentHeader title="Update Model"/>
+          <ContentHeader title="Create Model"/>
         </Row>
 
         <Row className="g-0">
@@ -483,8 +510,30 @@ const UpdateCatalogModelPage = () => {
                 <Form onSubmit={handleSubmit(onSubmit)} noValidate>
                   <div className="form-container">
                     {currentStep === 1 && (
-                      <div className="step-panel">
-                        <BasicInfoSection
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <BasicInfoSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Use Case"
+                          description="List of IFAC Use Cases the tool applies to"
+                          fieldName="use_cases"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Feature"
+                          description="List of tool features"
+                          fieldName="features"
                           control={control}
                           register={register}
                           errors={errors}
@@ -496,22 +545,46 @@ const UpdateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 2 && (
-                      <div className="step-panel">
-                        <ExpectedScenariosSection
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <NameDescListComponent
+                          name="Expected Scenario"
+                          description="List of expected tool scenarios"
+                          fieldName="expected_scenarios"
                           control={control}
                           register={register}
                           errors={errors}
                           watch={watch}
                           setValue={setValue}
                           storedData={storedFormData}
-                          projectScenarios={projectScenarios}
+                        />
+                        <ListComponent
+                          name="Assumption"
+                          description="Add key assumptions for your model"
+                          fieldName="assumptions"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
                         />
                       </div>
                     )}
 
                     {currentStep === 3 && (
-                      <div className="step-panel">
-                        <RequirementsSection
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <MaturitySectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Workflow Integration"
+                          description="List of tools this tool has integrated with."
+                          fieldName="maturity.workflow_integration_list"
                           control={control}
                           register={register}
                           errors={errors}
@@ -523,8 +596,8 @@ const UpdateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 4 && (
-                      <div className="step-panel">
-                        <AssumptionsSection
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <RequirementsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -536,8 +609,8 @@ const UpdateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 5 && (
-                      <div className="step-panel">
-                        <ModelingTeamSection
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <InputsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -549,8 +622,8 @@ const UpdateCatalogModelPage = () => {
                     )}
 
                     {currentStep === 6 && (
-                      <div className="step-panel">
-                        <FinalReviewSection
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <OutputsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -560,6 +633,33 @@ const UpdateCatalogModelPage = () => {
                         />
                       </div>
                     )}
+
+                    {currentStep === 7 && (
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <TeamsSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 8 && (
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <FinalReviewSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
                   </div>
 
                   <div className="mt-5 d-flex justify-content-between form-action-buttons">
@@ -594,7 +694,7 @@ const UpdateCatalogModelPage = () => {
                         disabled={isSubmitting}
                         className="action-button"
                       >
-                        {isSubmitting ? "Updating Model..." : "Update Model"}
+                        {isSubmitting ? "Creating Model..." : "Create Model"}
                       </Button>
                     )}
                   </div>
@@ -608,4 +708,4 @@ const UpdateCatalogModelPage = () => {
   );
 };
 
-export default UpdateCatalogModelPage;
+export default CreateCatalogModelPage;
