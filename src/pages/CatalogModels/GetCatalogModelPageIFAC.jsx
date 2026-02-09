@@ -17,7 +17,7 @@ import CatalogModelContentHeaderButton from "./Components/CatalogModelContentHea
 import "./GetCatalogModelPage.css";
 
 
-function GetCatalogModelPageIFAC({catalogModel},{currentUser}) {
+function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
   
   // --- Data preparation ---
   const modelName = catalogModel.name || "Unnamed Model";
@@ -47,13 +47,12 @@ function GetCatalogModelPageIFAC({catalogModel},{currentUser}) {
         <Row className="w-100 mx-0">
           <ContentHeader
             title={catalogModel.display_name || catalogModel.name}
-            headerButton={<CatalogModelContentHeaderButton isDisabled={!isModelCreator} />}
+            headerButton={<CatalogModelContentHeaderButton isDisabled={!isModelCreator} catalogSchema={catalogModel.catalog_schema} />}
           />
         </Row>
         <Row className="mt-4">
           <Col xs={12}>
             {/* Basic Information Section */}
-            
             <h8 className="model-section-title">Schema: {catalogModel.catalog_schema}</h8>
             <div className="model-section">
               <div className="model-section-header">

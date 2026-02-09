@@ -3,13 +3,17 @@ import { Dropdown } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
 
-const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
+const CatalogModelContentHeaderButton = ({ isDisabled = false, catalogSchema="Default" }) => {
   const navigate = useNavigate();
   const { modelName } = useParams();
 
   const handleUpdateCatalogModel = () => {
     if (isDisabled) return;
-    navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update`);
+    else if (catalogSchema === "IFAC Tool Specsheet v1.0") {
+      navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update-IFAC`);
+    } else {
+      navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update`);
+    }
   };
 
   const handleDeleteCatalogModel = () => {
