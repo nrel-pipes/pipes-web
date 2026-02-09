@@ -57,7 +57,6 @@ const FinalReviewSectionIFAC = ({ control, register, errors, watch, setValue, st
                   )}
                 </div>
               </div>
-              <span>{JSON.stringify(allData)}</span>
             </Col>
           </Row>
         </div>

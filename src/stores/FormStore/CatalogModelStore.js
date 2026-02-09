@@ -132,7 +132,7 @@ export const useCreateCatalogModelFormStoreIFAC = create(
         features: [''],
         use_cases: [''],
         tags: [''],
-        expectedScenarios: [''],
+        expected_scenarios: [''],
         inputs: [],
         requirements: {},
         outputs: [],
@@ -162,7 +162,7 @@ export const useCreateCatalogModelFormStoreIFAC = create(
           features: [''],
           use_cases: [''],
           tags: [''],
-          expectedScenarios: [''],
+          expected_scenarios: [''],
           inputs: [],
           requirements: {},
           outputs: [],
@@ -186,7 +186,7 @@ export const useCreateCatalogModelFormStoreIFAC = create(
       }
     }),
     {
-      name: 'create-catalog-model-form-storage',
+      name: 'create-catalog-model-form-storage-IFAC',
       version: 1,
     }
   )
@@ -210,7 +210,7 @@ export const useUpdateCatalogModelFormStoreIFAC = create(
         features: [''],
         use_cases: [''],
         tags: [''],
-        expectedScenarios: [''],
+        expected_scenarios: [''],
         inputs: [],
         requirements: {},
         outputs: [],
@@ -240,7 +240,7 @@ export const useUpdateCatalogModelFormStoreIFAC = create(
           features: [''],
           use_cases: [''],
           tags: [''],
-          expectedScenarios: [''],
+          expected_scenarios: [''],
           inputs: [],
           requirements: {},
           outputs: [],

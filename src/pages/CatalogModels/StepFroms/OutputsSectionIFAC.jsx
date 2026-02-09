@@ -36,7 +36,7 @@ const OutputsSectionIFAC = ({ control, register, errors, watch, setValue, stored
       accumulator[currentValue['name']] = currentValue;
       return accumulator;
     }, {})
-    : { input_default: OutputsSectionDefaultsIFAC['general_data_description'] };
+    : { output_default: OutputsSectionDefaultsIFAC['general_data_description'] };
 
   const [outputs, setOutputs] = useState(initialOutputs);
   const [inputIds, setOutputIds] = useState(Object.keys(initialOutputs));
@@ -398,7 +398,7 @@ const OutputsSectionIFAC = ({ control, register, errors, watch, setValue, stored
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="extent"
-                  value={outData.spatial_dimensions.extent || ""}
+                  value={outData.spatial_dimensions?.extent || ""}
                   onChange={(e) => updateOutputValuelv2(type, id, "spatial_dimensions", "extent", e.target.value)}
                 />
                 <Form.Label className="small fw-bold">Fidelity</Form.Label>
@@ -406,7 +406,7 @@ const OutputsSectionIFAC = ({ control, register, errors, watch, setValue, stored
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="fidelity"
-                  value={outData.spatial_dimensions.fidelity || ""}
+                  value={outData.spatial_dimensions?.fidelity || ""}
                   onChange={(e) => updateOutputValuelv2(type, id, "spatial_dimensions", "fidelity", e.target.value)}
                 />
                 <ListComponent
@@ -428,7 +428,7 @@ const OutputsSectionIFAC = ({ control, register, errors, watch, setValue, stored
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="extent"
-                  value={outData.temporal_dimensions.extent || ""}
+                  value={outData.temporal_dimensions?.extent || ""}
                   onChange={(e) => updateOutputValuelv2(type, id, "temporal_dimensions", "extent", e.target.value)}
                 />
                 <Form.Label className="small fw-bold">Resolution</Form.Label>
@@ -436,7 +436,7 @@ const OutputsSectionIFAC = ({ control, register, errors, watch, setValue, stored
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="resolution"
-                  value={outData.temporal_dimensions.resolution || ""}
+                  value={outData.temporal_dimensions?.resolution || ""}
                   onChange={(e) => updateOutputValuelv2(type, id, "temporal_dimensions", "resolution", e.target.value)}
                 />
                 <ListComponent

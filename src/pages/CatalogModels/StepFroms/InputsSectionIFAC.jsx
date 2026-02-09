@@ -398,7 +398,7 @@ const InputsSectionIFAC = ({ control, register, errors, watch, setValue, storedD
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="extent"
-                  value={inData.spatial_dimensions.extent || ""}
+                  value={inData.spatial_dimensions?.extent || ""}
                   onChange={(e) => updateInputValuelv2(type, id, "spatial_dimensions", "extent", e.target.value)}
                 />
                 <Form.Label className="small fw-bold">Fidelity</Form.Label>
@@ -406,7 +406,7 @@ const InputsSectionIFAC = ({ control, register, errors, watch, setValue, storedD
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="fidelity"
-                  value={inData.spatial_dimensions.fidelity || ""}
+                  value={inData.spatial_dimensions?.fidelity || ""}
                   onChange={(e) => updateInputValuelv2(type, id, "spatial_dimensions", "fidelity", e.target.value)}
                 />
                 <ListComponent
@@ -428,7 +428,7 @@ const InputsSectionIFAC = ({ control, register, errors, watch, setValue, storedD
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="extent"
-                  value={inData.temporal_dimensions.extent || ""}
+                  value={inData.temporal_dimensions?.extent || ""}
                   onChange={(e) => updateInputValuelv2(type, id, "temporal_dimensions", "extent", e.target.value)}
                 />
                 <Form.Label className="small fw-bold">Resolution</Form.Label>
@@ -436,7 +436,7 @@ const InputsSectionIFAC = ({ control, register, errors, watch, setValue, storedD
                   type="text"
                   className="form-control-lg form-primary-input"
                   placeholder="resolution"
-                  value={inData.temporal_dimensions.resolution || ""}
+                  value={inData.temporal_dimensions?.resolution || ""}
                   onChange={(e) => updateInputValuelv2(type, id, "temporal_dimensions", "resolution", e.target.value)}
                 />
                 <ListComponent
