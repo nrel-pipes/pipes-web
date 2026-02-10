@@ -19,6 +19,7 @@ import InputsSectionIFAC from "./StepFroms/InputsSectionIFAC";
 import MaturitySectionIFAC from "./StepFroms/MaturitySectionIFAC";
 import OutputsSectionIFAC from "./StepFroms/OutputsSectionIFAC";
 import TeamsSectionIFAC from "./StepFroms/TeamsSectionIFAC";
+import ConfigSectionIFAC from "./StepFroms/ConfigSectionIFAC";
 
 /* General Step Forms */
 import ListComponent from "./Components/ListComponent";
@@ -128,6 +129,7 @@ const UpdateCatalogModelPageIFAC = () => {
   const [outputs, setOutputs] = useState(storedFormData.outputs || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
   const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || { name: '', members: [] });
+  const [config, setConfig] = useState(storedFormData.config || {});
 
   // Initialize react-hook-form with stored data or model data
   const {
@@ -151,7 +153,9 @@ const UpdateCatalogModelPageIFAC = () => {
       version: storedFormData.version || "",
       branch: storedFormData.branch || "",
       documentation: storedFormData.documentation || "",
-      training: storedFormData.training || "",
+      publications: storedFormData.publications || [],
+      training: storedFormData.training || [],
+      programming_languages: storedFormData.programming_languages || [],
       maturity: storedFormData.maturity || {},
       features: storedFormData.features || [""],
       use_cases: storedFormData.use_cases || [""],
@@ -178,11 +182,9 @@ const UpdateCatalogModelPageIFAC = () => {
           if (modelData.requirements[req_types[i]]){
             convertedRequirements[req_types[i]] = {}
           }
-          Object.entries(modelData.requirements[req_types[i]]).forEach(([key, value], index) => {
-            convertedRequirements[req_types[i]][key] = {
-              name: key,
-              ...value
-            };
+          Object.values(modelData.requirements[req_types[i]]).forEach((value) => {
+            const key = value['name'];
+            convertedRequirements[req_types[i]][key] = value;
           });
         }
       }
@@ -211,6 +213,36 @@ const UpdateCatalogModelPageIFAC = () => {
         });
       }
 
+      const overwrite_data = {};
+      const dict_fields = ['config.model_options']
+      // Convert dict of keyvalue pairs to array for form fields
+      // This should convert form data no matter how deep in a nested structure it is, as long as the field name is provided in the dict_fields array in dot notation (e.g. 'config.model_options')
+      // overwrite_data is used to store the converted data as well as to avoid directly mutating modelData which could cause issues with react state management
+      for (let i = 0; i < dict_fields.length; i++){
+        let cleanedArr = [];
+        const keys = dict_fields[i].split('.');
+        const baseKey = keys.shift();
+        if (overwrite_data[baseKey] === undefined){
+          overwrite_data[baseKey] = structuredClone(modelData[baseKey]|| {});
+        }
+        if (keys.length > 0) {}
+          const targetKey = keys.pop();
+        let currentData = modelData[baseKey] || {};
+        let currentFormData = overwrite_data[baseKey];
+        for (const key of keys) {
+          currentData = currentData[key] || [];
+          if (typeof currentFormData[key] !== 'object' || currentFormData[key] === null) {
+            currentFormData[key] = {};
+          }
+          currentFormData = currentFormData[key];
+        }
+        Object.entries(currentData[targetKey]).forEach(([key, value]) => {
+          cleanedArr.push({'key': key, 'value': value});
+        });
+        currentFormData[targetKey] = cleanedArr;
+      }
+
+
       const formDefaults = {
         name: modelData.name || "",
         displayName: modelData.display_name || "",
@@ -220,7 +252,9 @@ const UpdateCatalogModelPageIFAC = () => {
         version: modelData.version || "",
         branch: modelData.branch || "",
         documentation: modelData.documentation || "",
-        training: modelData.training || "",
+        publications: modelData.publications || [],
+        training: modelData.training || [],
+        programming_languages: modelData.programming_languages || [],
         maturity: modelData.maturity || {},
         features: modelData.features || [""],
         use_cases: modelData.use_cases || [""],
@@ -232,7 +266,8 @@ const UpdateCatalogModelPageIFAC = () => {
         requirements: convertedRequirements,
         teams: modelData.teams || [],
         config: modelData.config || {},
-        other: modelData.other || {}
+        other: modelData.other || {},
+        ...overwrite_data
       };
 
       // Check if we have stored data for this specific model
@@ -323,41 +358,59 @@ const UpdateCatalogModelPageIFAC = () => {
       );
     }
 
-    // Clean assumptions - now comes directly from form data
-    formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
+    
+    const dict_fields = ['config.model_options']
+    // Convert array of key-value pairs to dict
+    for (let i = 0; i < dict_fields.length; i++){
+      let cleanedDict = {};
+      const keys = dict_fields[i].split('.');
+      const targetKey = keys.pop();
+      let currentData = data;
+      let currentFormData = formData;
+      for (const key of keys) {
+        currentData = currentData[key] || [];
+        if (typeof currentFormData[key] !== 'object' || currentFormData[key] === null) {
+          currentFormData[key] = {};
+        }
+        currentFormData = currentFormData[key];
+      }
+      Object.values(currentData[targetKey]).forEach((element) => {
+        if (element["key"].trim() !== "" && element["value"].trim() !== "") {
+          cleanedDict[element["key"]] = element["value"];
+        }
+      });
+      currentFormData[targetKey] = cleanedDict;
+    }
 
     // Clean expected scenarios
-    formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
+    //formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
 
-    // Clean requirements - convert internal structure to API expected format
+    // TODO: Clean requirements - convert internal structure to API expected format
     let cleanedRequirements = {};
     const req_types = ['spatial','temporal','environment'];
     for (let i = 0; i < req_types.length; i++){
       if (data.requirements[req_types[i]]){
-        cleanedRequirements[req_types[i]] = {}
+        cleanedRequirements[req_types[i]] = [];
       }
       Object.entries(data.requirements[req_types[i]] || {}).forEach(([id, reqData]) => {
-        const key = reqData.name?.trim();
-        if (key) {
-          const cleanedObject = {};
-          Object.entries(reqData || {}).forEach(([field, val]) => {
-            if (Array.isArray(val)){
-              cleanedObject[field] = Object.values(val || []).filter(element => element.trim() !== "");
-            } else if (val.constructor === Object) {
-              let cleanedSubObject = {};
-              cleanedSubObject = Object.entries(val)
-                                          .filter(([k, element]) => (k.trim() !== "" & element.trim() !== ""))
-                                          .reduce((obj, k) => {return {...obj, [k]:val[k]}},{});
-              if (Object.keys(cleanedSubObject).length > 0) {
-                cleanedObject[field] = cleanedSubObject;
-              }
-            } else if (val && val.trim() !== "") {
-              cleanedObject[field] = val;
+        const cleanedObject = {};
+        Object.entries(reqData || {}).forEach(([field, val]) => {
+          if (Array.isArray(val)){
+            cleanedObject[field] = Object.values(val || []).filter(element => element.trim() !== "");
+          } else if (val.constructor === Object) {
+            let cleanedSubObject = {};
+            cleanedSubObject = Object.entries(val)
+                                        .filter(([k, element]) => (k.trim() !== "" & element.trim() !== ""))
+                                        .reduce((obj, k) => {return {...obj, [k]:val[k]}},{});
+            if (Object.keys(cleanedSubObject).length > 0) {
+              cleanedObject[field] = cleanedSubObject;
             }
-          });
-          if (Object.keys(cleanedObject).length > 0) {
-            cleanedRequirements[req_types[i]][key] = cleanedObject;
+          } else if (val && val.trim() !== "") {
+            cleanedObject[field] = val;
           }
+        });
+        if (Object.keys(cleanedObject).length > 0) {
+          cleanedRequirements[req_types[i]].push(cleanedObject);
         }
       });
     }
@@ -393,7 +446,8 @@ const UpdateCatalogModelPageIFAC = () => {
     }
 
     const cleanedFormData = {
-      catalog_schema: "IFAC Tool Specsheet v1.0",
+      catalog_schema: "IFAC",
+      schema_version: "1.0",
       name: formData.name.trim(),
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
@@ -403,7 +457,9 @@ const UpdateCatalogModelPageIFAC = () => {
       version: formData.version.trim(),
       branch: formData.branch.trim(),
       documentation: formData.documentation.trim(),
-      training: formData.training.trim(),
+      publications: formData.publications,
+      training: formData.training,
+      programming_languages: formData.programming_languages,
       teams: formData.teams,
       assumptions: formData.assumptions,
       features: formData.features,
@@ -524,7 +580,7 @@ const UpdateCatalogModelPageIFAC = () => {
     }
   };
 
-  const steps = ["Basic Info", "Scenarios/Assumptions", "Maturity", "Requirements", "Inputs", "Outputs", "Teams", "Review"];
+  const steps = ["Basic Info", "Scenarios/Assumptions", "Maturity", "Config", "Requirements", "Inputs", "Outputs", "Teams", "Review"];
   const totalSteps = steps.length;
 
   // Show loading state
@@ -612,6 +668,28 @@ const UpdateCatalogModelPageIFAC = () => {
                           storedData={storedFormData}
                         />
                         <ListComponent
+                          name="Publication"
+                          description="List of publications released on the tool"
+                          fieldName="publications"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Training Link"
+                          description="List of links to training materials for the tool"
+                          fieldName="training"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
                           name="Feature"
                           description="List of tool features"
                           fieldName="features"
@@ -622,6 +700,20 @@ const UpdateCatalogModelPageIFAC = () => {
                           setValue={setValue}
                           storedData={storedFormData}
                         />
+                        <ListComponent
+                          name="Programming Language"
+                          description="Languages the tool is written in (e.g. 'Python', 'Julia')."
+                          fieldName="programming_languages"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <pre className="model-code-block-large">
+                          {JSON.stringify(storedFormData, null, 2)}
+                        </pre>
                       </div>
                     )}
 
@@ -678,7 +770,7 @@ const UpdateCatalogModelPageIFAC = () => {
 
                     {currentStep === 4 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <RequirementsSectionIFAC
+                        <ConfigSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -691,7 +783,7 @@ const UpdateCatalogModelPageIFAC = () => {
 
                     {currentStep === 5 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <InputsSectionIFAC
+                        <RequirementsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -704,7 +796,7 @@ const UpdateCatalogModelPageIFAC = () => {
 
                     {currentStep === 6 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <OutputsSectionIFAC
+                        <InputsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -717,7 +809,7 @@ const UpdateCatalogModelPageIFAC = () => {
 
                     {currentStep === 7 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <TeamsSectionIFAC
+                        <OutputsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -729,6 +821,19 @@ const UpdateCatalogModelPageIFAC = () => {
                     )}
 
                     {currentStep === 8 && (
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <TeamsSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 9 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <FinalReviewSectionIFAC
                           control={control}

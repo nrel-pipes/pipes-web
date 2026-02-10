@@ -95,9 +95,9 @@ const TeamsSectionIFAC = ({ control, register, errors, watch, setValue, storedDa
                     <Form.Control
                       type="text"
                       className="form-control-lg form-primary-input"
-                      placeholder="Lab"
-                      value={teamData.lab || ""}
-                      onChange={(e) => updateTeamValue(id, "lab", e.target.value)}
+                      placeholder="Organization"
+                      value={teamData.organization || ""}
+                      onChange={(e) => updateTeamValue(id, "organization", e.target.value)}
                     />
                     <Button
                       variant="outline-danger"

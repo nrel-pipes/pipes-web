@@ -29,6 +29,9 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
   const use_cases = catalogModel.use_cases || [];
   const assumptions = catalogModel.assumptions || [];
   const features = catalogModel.features || [];
+  const publications = catalogModel.publications || [];
+  const trainings = catalogModel.trainings || [];
+  const programming_languages = catalogModel.programming_languages || [];
   const workflow_integration_list = catalogModel.maturity.workflow_integration_list || [];
   const scenarioMappings = catalogModel.scenario_mappings || [];
   const expectedScenarios = catalogModel.expected_scenarios || [];
@@ -53,7 +56,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
         <Row className="mt-4">
           <Col xs={12}>
             {/* Basic Information Section */}
-            <h8 className="model-section-title">Schema: {catalogModel.catalog_schema}</h8>
+            <h8 className="model-section-title">Schema: {catalogModel.catalog_schema} version {catalogModel.schema_version}</h8>
             <div className="model-section">
               <div className="model-section-header">
                 <h4 className="model-section-title">Basic Information</h4>
@@ -122,11 +125,57 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                   <div className="model-field-value">{catalogModel.documentation || "—"}</div>
                 </div>
                 <div className="model-field-row">
-                  <div className="model-field-label">Training Link</div>
-                  <div className="model-field-value">{catalogModel.training || "—"}</div>
+                  <div className="model-field-label">Website Link</div>
+                  <div className="model-field-value">{catalogModel.website || "—"}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">DOI</div>
+                  <div className="model-field-value">{catalogModel.doi || "—"}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">License Type</div>
+                  <div className="model-field-value">{catalogModel.license_type || "—"}</div>
+                </div>
+                <div className="model-field-row">
+                  <div className="model-field-label">Software Type</div>
+                  <div className="model-field-value">{catalogModel.software_type || "—"}</div>
                 </div>
               </div>
             </div>
+            {/* Trainings Section */}
+            {trainings.length > 0 && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Features</h4>
+                </div>
+                <div className="model-section-content">
+                  <ul className="model-list">
+                    {trainings.map((training, idx) => (
+                      <li key={idx} className="model-list-item-spaced">
+                        {training}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            {/* Publications Section */}
+            {publications.length > 0 && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Features</h4>
+                </div>
+                <div className="model-section-content">
+                  <ul className="model-list">
+                    {publications.map((publication, idx) => (
+                      <li key={idx} className="model-list-item-spaced">
+                        {publication}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
             {/* Features Section */}
             {features.length > 0 && (
               <div className="model-section">
@@ -138,6 +187,23 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                     {features.map((feature, idx) => (
                       <li key={idx} className="model-list-item-spaced">
                         {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            {/* Programming Languages Section */}
+            {programming_languages.length > 0 && (
+              <div className="model-section">
+                <div className="model-section-header">
+                  <h4 className="model-section-title">Programming Languages</h4>
+                </div>
+                <div className="model-section-content">
+                  <ul className="model-list">
+                    {programming_languages.map((language, idx) => (
+                      <li key={idx} className="model-list-item-spaced">
+                        {language}
                       </li>
                     ))}
                   </ul>
@@ -332,6 +398,18 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
               </div>
             )}
 
+            {/* Config Section */}
+            <div className="model-section">
+              <div className="model-section-header">
+                <h4 className="model-section-title">Config</h4>
+              </div>
+              <div className="model-section-content">
+                <pre className="model-code-block-large">
+                  {JSON.stringify(catalogModel.config, null, 2)}
+                </pre>
+              </div>
+            </div>
+
             {/* Modeling Team Section */}
             {toolTeams.length > 0 && (
               <div className="model-section">
@@ -344,7 +422,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                         <table className="model-table">
                           <thead>
                             <tr>
-                              <th className="model-table-header">Labe</th>
+                              <th className="model-table-header">Lab</th>
                               <th className="model-table-header">Role</th>
                               <th className="model-table-header">Contact</th>
                             </tr>

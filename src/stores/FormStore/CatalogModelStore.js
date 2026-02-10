@@ -1,3 +1,4 @@
+import { config } from '@fortawesome/fontawesome-svg-core';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -137,6 +138,7 @@ export const useCreateCatalogModelFormStoreIFAC = create(
         requirements: {},
         outputs: [],
         teams: [],
+        config: {},
         other: {}
       },
 
@@ -167,6 +169,7 @@ export const useCreateCatalogModelFormStoreIFAC = create(
           requirements: {},
           outputs: [],
           teams: [],
+          config: {},
           other: {}
         }
       }),
@@ -215,6 +218,7 @@ export const useUpdateCatalogModelFormStoreIFAC = create(
         requirements: {},
         outputs: [],
         teams: [],
+        config: {},
         other: {}
       },
 
@@ -245,6 +249,7 @@ export const useUpdateCatalogModelFormStoreIFAC = create(
           requirements: {},
           outputs: [],
           teams: [],
+          config: {},
           other: {}
         }
       }),

@@ -19,6 +19,7 @@ import InputsSectionIFAC from "./StepFroms/InputsSectionIFAC";
 import MaturitySectionIFAC from "./StepFroms/MaturitySectionIFAC";
 import OutputsSectionIFAC from "./StepFroms/OutputsSectionIFAC";
 import TeamsSectionIFAC from "./StepFroms/TeamsSectionIFAC";
+import ConfigSectionIFAC from "./StepFroms/ConfigSectionIFAC";
 
 /* General Step Forms */
 import ListComponent from "./Components/ListComponent";
@@ -141,7 +142,9 @@ const CreateCatalogModelPageIFAC = () => {
       version: storedFormData.version || "",
       branch: storedFormData.branch || "",
       documentation: storedFormData.documentation || "",
-      training: storedFormData.training || "",
+      publications: storedFormData.publications || [],
+      training: storedFormData.training || [],
+      programming_languages: storedFormData.programming_languages || [],
       maturity: storedFormData.maturity || {},
       features: storedFormData.features || [""],
       use_cases: storedFormData.use_cases || [""],
@@ -192,6 +195,8 @@ const CreateCatalogModelPageIFAC = () => {
           branch: value.branch || "",
           documentation: value.documentation || "",
           training: value.training || "",
+          publications: value.publications || [],
+          programming_languages: value.programming_languages || [],
           maturity: value.maturity || {},
           features: value.features || [],
           use_cases: value.use_cases || [],
@@ -239,7 +244,30 @@ const CreateCatalogModelPageIFAC = () => {
     for (let i = 0; i < arr_fields.length; i++){
       formData[arr_fields[i]] = (data[arr_fields[i]] || []).filter(element => element.trim() !== "");
     }
-    
+
+    const dict_fields = ['config.model_options']
+    // Convert array of key-value pairs to dict
+    for (let i = 0; i < dict_fields.length; i++){
+      let cleanedDict = {};
+      const keys = dict_fields[i].split('.');
+      const targetKey = keys.pop();
+      let currentData = data;
+      let currentFormData = formData;
+      for (const key of keys) {
+        currentData = currentData[key] || [];
+        if (typeof currentFormData[key] !== 'object' || currentFormData[key] === null) {
+          currentFormData[key] = {};
+        }
+        currentFormData = currentFormData[key];
+      }
+      Object.values(currentData[targetKey]).forEach((element) => {
+        if (element["key"].trim() !== "" && element["value"].trim() !== "") {
+          cleanedDict[element["key"]] = element["value"];
+        }
+      });
+      currentFormData[targetKey] = cleanedDict;
+    }
+
     // Clean expected scenarios
     //formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
 
@@ -250,30 +278,27 @@ const CreateCatalogModelPageIFAC = () => {
     const req_types = ['spatial','temporal','environment'];
     for (let i = 0; i < req_types.length; i++){
       if (data.requirements[req_types[i]]){
-        cleanedRequirements[req_types[i]] = {}
+        cleanedRequirements[req_types[i]] = [];
       }
       Object.entries(data.requirements[req_types[i]] || {}).forEach(([id, reqData]) => {
-        const key = reqData.name?.trim();
-        if (key) {
-          const cleanedObject = {};
-          Object.entries(reqData || {}).forEach(([field, val]) => {
-            if (Array.isArray(val)){
-              cleanedObject[field] = Object.values(val || []).filter(element => element.trim() !== "");
-            } else if (val.constructor === Object) {
-              let cleanedSubObject = {};
-              cleanedSubObject = Object.entries(val)
-                                          .filter(([k, element]) => (k.trim() !== "" & element.trim() !== ""))
-                                          .reduce((obj, k) => {return {...obj, [k]:val[k]}},{});
-              if (Object.keys(cleanedSubObject).length > 0) {
-                cleanedObject[field] = cleanedSubObject;
-              }
-            } else if (val && val.trim() !== "") {
-              cleanedObject[field] = val;
+        const cleanedObject = {};
+        Object.entries(reqData || {}).forEach(([field, val]) => {
+          if (Array.isArray(val)){
+            cleanedObject[field] = Object.values(val || []).filter(element => element.trim() !== "");
+          } else if (val.constructor === Object) {
+            let cleanedSubObject = {};
+            cleanedSubObject = Object.entries(val)
+                                        .filter(([k, element]) => (k.trim() !== "" & element.trim() !== ""))
+                                        .reduce((obj, k) => {return {...obj, [k]:val[k]}},{});
+            if (Object.keys(cleanedSubObject).length > 0) {
+              cleanedObject[field] = cleanedSubObject;
             }
-          });
-          if (Object.keys(cleanedObject).length > 0) {
-            cleanedRequirements[req_types[i]][key] = cleanedObject;
+          } else if (val && val.trim() !== "") {
+            cleanedObject[field] = val;
           }
+        });
+        if (Object.keys(cleanedObject).length > 0) {
+          cleanedRequirements[req_types[i]].push(cleanedObject);
         }
       });
     }
@@ -309,7 +334,8 @@ const CreateCatalogModelPageIFAC = () => {
     }
 
     const cleanedFormData = {
-      catalog_schema: "IFAC Tool Specsheet v1.0",
+      catalog_schema: "IFAC",
+      schema_version: "1.0",
       name: formData.name.trim(),
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
@@ -319,7 +345,9 @@ const CreateCatalogModelPageIFAC = () => {
       version: formData.version.trim(),
       branch: formData.branch.trim(),
       documentation: formData.documentation.trim(),
-      training: formData.training.trim(),
+      publications: formData.publications || [],
+      training: formData.training || [],
+      programming_languages: formData.programming_languages || [],
       teams: formData.teams,
       assumptions: formData.assumptions,
       features: formData.features,
@@ -467,7 +495,7 @@ const CreateCatalogModelPageIFAC = () => {
     }
   };
 
-  const steps = ["Basic Info", "Scenarios/Assumptions", "Maturity", "Requirements", "Inputs", "Outputs", "Teams", "Review"];
+  const steps = ["Basic Info", "Scenarios/Assumptions", "Maturity", "Config", "Requirements", "Inputs", "Outputs", "Teams", "Review"];
   const totalSteps = steps.length;
 
   return (
@@ -523,6 +551,17 @@ const CreateCatalogModelPageIFAC = () => {
                           name="Use Case"
                           description="List of IFAC Use Cases the tool applies to"
                           fieldName="use_cases"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Training Link"
+                          description="List of links to training materials for the tool"
+                          fieldName="training"
                           control={control}
                           register={register}
                           errors={errors}
@@ -592,12 +631,34 @@ const CreateCatalogModelPageIFAC = () => {
                           setValue={setValue}
                           storedData={storedFormData}
                         />
+                        <ListComponent
+                          name="Programming Language"
+                          description="Languages the tool is written in (e.g. 'Python', 'Julia')."
+                          fieldName="programming_languages"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Publication"
+                          description="List of publications released on the tool"
+                          fieldName="publications"
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
                       </div>
                     )}
 
                     {currentStep === 4 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <RequirementsSectionIFAC
+                        <ConfigSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -610,7 +671,7 @@ const CreateCatalogModelPageIFAC = () => {
 
                     {currentStep === 5 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <InputsSectionIFAC
+                        <RequirementsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -623,7 +684,7 @@ const CreateCatalogModelPageIFAC = () => {
 
                     {currentStep === 6 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <OutputsSectionIFAC
+                        <InputsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -636,7 +697,7 @@ const CreateCatalogModelPageIFAC = () => {
 
                     {currentStep === 7 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <TeamsSectionIFAC
+                        <OutputsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -648,6 +709,19 @@ const CreateCatalogModelPageIFAC = () => {
                     )}
 
                     {currentStep === 8 && (
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <TeamsSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 9 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
                         <FinalReviewSectionIFAC
                           control={control}

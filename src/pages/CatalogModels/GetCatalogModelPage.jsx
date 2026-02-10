@@ -19,7 +19,7 @@ import GetCatalogModelPageIFAC from "./GetCatalogModelPageIFAC";
 import GetCatalogModelPageDefault from "./GetCatalogModelPageDefault";
 
 const SCHEMAS = {
-    "IFAC Tool Specsheet v1.0": GetCatalogModelPageIFAC,
+    "IFAC": GetCatalogModelPageIFAC,
     "Default": GetCatalogModelPageDefault,
 };
 

@@ -91,12 +91,39 @@ const BasicInfoSectionIFAC = ({ control, register, errors, watch, setValue, stor
         />
       </div>
       <div className="mb-4">
-        <Form.Label className="form-field-label">Training</Form.Label>
+        <Form.Label className="form-field-label">Website</Form.Label>
         <Form.Control
           type="text"
           className="form-control-lg form-primary-input"
-          placeholder="Link to tool training material"
-          {...register("training")}
+          placeholder="Link to tool website"
+          {...register("website")}
+        />
+      </div>
+      <div className="mb-4">
+        <Form.Label className="form-field-label">DOI</Form.Label>
+        <Form.Control
+          type="text"
+          className="form-control-lg form-primary-input"
+          placeholder="Software DOI (e.g. 'https://doi.org/10.11578/dc.20210101')"
+          {...register("doi")}
+        />
+      </div>
+      <div className="mb-4">
+        <Form.Label className="form-field-label">Software Type</Form.Label>
+        <Form.Control
+          type="text"
+          className="form-control-lg form-primary-input"
+          placeholder="DOE Code software type (e.g. 'Open Source, Publicly Available Repository (OS-PAR), Open Source, No Publicly Available Repository (OS-NPAR), Closed Source (CS))."
+          {...register("software_type")}
+        />
+      </div>
+      <div className="mb-4">
+        <Form.Label className="form-field-label">License Type</Form.Label>
+        <Form.Control
+          type="text"
+          className="form-control-lg form-primary-input"
+          placeholder="SPDX license identifier (e.g. 'BSD-3-Clause', 'Apache-2.0')"
+          {...register("license_type")}
         />
       </div>
     </div>

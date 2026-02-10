@@ -9,7 +9,7 @@ const CatalogModelContentHeaderButton = ({ isDisabled = false, catalogSchema="De
 
   const handleUpdateCatalogModel = () => {
     if (isDisabled) return;
-    else if (catalogSchema === "IFAC Tool Specsheet v1.0") {
+    else if (catalogSchema === "IFAC") {
       navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update-IFAC`);
     } else {
       navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update`);
