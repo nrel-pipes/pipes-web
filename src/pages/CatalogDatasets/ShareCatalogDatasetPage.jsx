@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { Share2, UserPlus, X } from "lucide-react";
-import { Alert, Button, Container, Form } from "react-bootstrap";
+import { Share2, Users } from "lucide-react";
+import { Alert, Badge, Button, Container, Form } from "react-bootstrap";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
+import { useListAccessGroupsQuery } from "../../hooks/useAccessGroupQuery";
 import { useGetCatalogDatasetQuery, useUpdateCatalogDatasetMutation } from "../../hooks/useCatalogDatasetQuery";
 import "../PageStyles.css";
 
@@ -18,8 +19,7 @@ const ShareCatalogDatasetPage = () => {
   const { datasetName } = useParams();
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [emailInput, setEmailInput] = useState("");
-  const [sharedEmails, setSharedEmails] = useState([]);
+  const [selectedAccessGroupNames, setSelectedAccessGroupNames] = useState([]);
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -27,6 +27,9 @@ const ShareCatalogDatasetPage = () => {
 
   // Fetch existing dataset data
   const { data: datasetData, isLoading: isDatasetDataLoading, error: datasetError } = useGetCatalogDatasetQuery(datasetName);
+
+  // Fetch all access groups
+  const { data: accessGroups = [], isLoading: isAccessGroupsLoading } = useListAccessGroupsQuery();
 
   // Update dataset mutation
   const updateCatalogDatasetMutation = useUpdateCatalogDatasetMutation();
@@ -50,10 +53,20 @@ const ShareCatalogDatasetPage = () => {
     checkAuth();
   }, [navigate, checkAuthStatus]);
 
-  // Load existing shared users when dataset data is available
+  // Load existing access groups when dataset data is available
   useEffect(() => {
     if (datasetData && datasetData.access_group) {
-      setSharedEmails(datasetData.access_group || []);
+      // Handle different formats (string, array, object)
+      if (typeof datasetData.access_group === 'string') {
+        setSelectedAccessGroupNames([datasetData.access_group]);
+      } else if (Array.isArray(datasetData.access_group)) {
+        const groupNames = datasetData.access_group.map(item =>
+          typeof item === 'string' ? item : item.name
+        ).filter(Boolean);
+        setSelectedAccessGroupNames(groupNames);
+      } else if (typeof datasetData.access_group === 'object' && datasetData.access_group.name) {
+        setSelectedAccessGroupNames([datasetData.access_group.name]);
+      }
     }
   }, [datasetData]);
 
@@ -78,36 +91,19 @@ const ShareCatalogDatasetPage = () => {
     }
   }, [datasetError, navigate]);
 
-  const handleAddEmail = () => {
-    setFormError("");
-    setSuccessMessage("");
+  // Get selected access groups details
+  const selectedAccessGroups = accessGroups.filter(ag =>
+    selectedAccessGroupNames.includes(ag.name)
+  );
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailInput.trim()) {
-      setFormError("Please enter an email address");
-      return;
-    }
-    if (!emailRegex.test(emailInput.trim())) {
-      setFormError("Please enter a valid email address");
-      return;
-    }
-
-    const trimmedEmail = emailInput.trim().toLowerCase();
-
-    // Check if email already exists
-    if (sharedEmails.includes(trimmedEmail)) {
-      setFormError("This email has already been added");
-      return;
-    }
-
-    // Add email to the list
-    setSharedEmails([...sharedEmails, trimmedEmail]);
-    setEmailInput("");
-  };
-
-  const handleRemoveEmail = (emailToRemove) => {
-    setSharedEmails(sharedEmails.filter(email => email !== emailToRemove));
+  const handleAccessGroupToggle = (groupName) => {
+    setSelectedAccessGroupNames(prev => {
+      if (prev.includes(groupName)) {
+        return prev.filter(name => name !== groupName);
+      } else {
+        return [...prev, groupName];
+      }
+    });
     setFormError("");
     setSuccessMessage("");
   };
@@ -117,34 +113,15 @@ const ShareCatalogDatasetPage = () => {
     setFormError("");
     setSuccessMessage("");
 
-    if (sharedEmails.length === 0) {
-      setFormError("Please add at least one email address to share with");
+    if (selectedAccessGroupNames.length === 0) {
+      setFormError("Please select at least one access group to share with");
       return;
     }
 
     try {
-      // Prepare the update payload with all dataset attributes plus updated access_group
+      // Prepare the update payload - send access_group as array
       const updateData = {
-        name: datasetData.name,
-        display_name: datasetData.display_name,
-        description: datasetData.description,
-        version: datasetData.version,
-        previous_version: datasetData.previous_version || null,
-        hash_value: datasetData.hash_value || '',
-        data_format: datasetData.data_format || null,
-        schema_info: datasetData.schema_info || {},
-        location: datasetData.location || {},
-        weather_years: datasetData.weather_years || [],
-        model_years: datasetData.model_years || [],
-        units: datasetData.units || [],
-        temporal_info: datasetData.temporal_info || {},
-        spatial_info: datasetData.spatial_info || {},
-        scenarios: datasetData.scenarios || [],
-        sensitivities: datasetData.sensitivities || [],
-        source_code: datasetData.source_code || {},
-        relevant_links: datasetData.relevant_links || [],
-        resource_url: datasetData.resource_url || '',
-        access_group: sharedEmails
+        access_group: selectedAccessGroupNames
       };
 
       await updateCatalogDatasetMutation.mutateAsync({
@@ -172,7 +149,7 @@ const ShareCatalogDatasetPage = () => {
   };
 
   // Show loading state
-  if (isAuthChecking || isDatasetDataLoading) {
+  if (isAuthChecking || isDatasetDataLoading || isAccessGroupsLoading) {
     return (
       <>
         <NavbarSub navData={{ cdList: true, cdName: datasetName }} />
@@ -186,7 +163,7 @@ const ShareCatalogDatasetPage = () => {
                 <div className="spinner-border" role="status">
                   <span className="visually-hidden">Loading...</span>
                 </div>
-                <p className="mt-2">Loading dataset data...</p>
+                <p className="mt-2">Loading...</p>
               </div>
             </Col>
           </Row>
@@ -205,16 +182,15 @@ const ShareCatalogDatasetPage = () => {
 
         <Row className="g-0 mt-4">
           <Col>
-            <div className="card shadow-sm">
+            <div className="card shadow-sm" style={{ cursor: 'default' }}>
               <div className="card-body p-4">
                 <div className="d-flex align-items-center mb-4">
                   <Share2 size={24} className="me-2 text-primary" />
-                  <h5 className="mb-0">Share with other PIPES Users</h5>
+                  <h5 className="mb-0">Share with Access Group</h5>
                 </div>
 
                 <p className="text-muted mb-4">
-                  Add email addresses of users you want to share this dataset with.
-                  They will be able to view the dataset details.
+                  Select one or more access groups to share this dataset with. All members of the selected groups will be able to view the dataset details.
                 </p>
 
                 {formError && (
@@ -230,55 +206,90 @@ const ShareCatalogDatasetPage = () => {
                 )}
 
                 <Form onSubmit={handleSubmit}>
-                  {/* Email Input */}
+                  {/* Access Group Selection */}
                   <Form.Group className="mb-4">
-                    <Form.Label style={{ display: 'block', textAlign: 'left' }}>Email Address</Form.Label>
-                    <div className="d-flex gap-2" style={{ maxWidth: '600px' }}>
-                      <Form.Control
-                        type="email"
-                        placeholder="Enter user email address"
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddEmail();
-                          }
-                        }}
-                      />
-                      <Button
-                        variant="outline-primary"
-                        onClick={handleAddEmail}
-                        style={{ minWidth: '100px' }}
-                      >
-                        <UserPlus size={16} className="me-1" />
-                        Add
-                      </Button>
+                    <Form.Label style={{ display: 'block', textAlign: 'left', fontWeight: '600', marginBottom: '12px' }}>
+                      Select Access Groups ({selectedAccessGroupNames.length} selected)
+                    </Form.Label>
+                    <div className="border rounded p-3" style={{ maxHeight: '300px', maxWidth: '600px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
+                      {accessGroups.length === 0 ? (
+                        <p className="text-muted mb-0">No access groups available</p>
+                      ) : (
+                        accessGroups.map((group) => (
+                          <Form.Check
+                            key={group.name}
+                            type="checkbox"
+                            id={`group-${group.name}`}
+                            label={
+                              <div>
+                                <strong>{group.name}</strong>
+                                {group.description && (
+                                  <span className="text-muted small d-block">{group.description}</span>
+                                )}
+                              </div>
+                            }
+                            checked={selectedAccessGroupNames.includes(group.name)}
+                            onChange={() => handleAccessGroupToggle(group.name)}
+                            className="mb-3"
+                            style={{ textAlign: 'left' }}
+                          />
+                        ))
+                      )}
                     </div>
                   </Form.Group>
 
-                  {/* Shared Users List */}
-                  {sharedEmails.length > 0 && (
+                  {/* Selected Access Groups Members */}
+                  {selectedAccessGroups.length > 0 && (
                     <div className="mb-4">
-                      <h6 className="mb-3">Shared with ({sharedEmails.length})</h6>
-                      <div className="border rounded p-3" style={{ maxHeight: '300px', maxWidth: '600px', overflowY: 'auto' }}>
-                        {sharedEmails.map((email, index) => (
-                          <div
-                            key={index}
-                            className="d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded"
-                          >
-                            <span>{email}</span>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              className="text-danger p-0"
-                              onClick={() => handleRemoveEmail(email)}
-                            >
-                              <X size={18} />
-                            </Button>
-                          </div>
-                        ))}
+                      <div className="d-flex align-items-center mb-3">
+                        <Users size={20} className="me-2 text-primary" />
+                        <h6 className="mb-0">
+                          Members in Selected Groups
+                        </h6>
                       </div>
+
+                      {selectedAccessGroups.map((group, groupIndex) => (
+                        <div key={group.name} className="mb-4" style={{ textAlign: 'left' }}>
+                          <div className="mb-2" style={{ textAlign: 'left' }}>
+                            <Badge bg="primary" className="me-2">{group.name}</Badge>
+                            <span className="text-muted small">
+                              {group.members?.length || 0} {(group.members?.length || 0) === 1 ? 'member' : 'members'}
+                            </span>
+                          </div>
+
+                          {group.description && (
+                            <p className="text-muted small mb-2" style={{ textAlign: 'left' }}>
+                              {group.description}
+                            </p>
+                          )}
+
+                          {group.members && group.members.length > 0 ? (
+                            <div className="ms-3">
+                              {group.members.map((member, index) => (
+                                <div key={index} className="mb-2 pb-2" style={{ borderBottom: index < group.members.length - 1 ? '1px solid #e9ecef' : 'none', textAlign: 'left' }}>
+                                  <div className="d-flex align-items-center" style={{ textAlign: 'left' }}>
+                                    <strong style={{ fontSize: '0.9rem' }}>
+                                      {member.first_name || member.last_name
+                                        ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
+                                        : 'No name provided'}
+                                    </strong>
+                                    {member.organization && (
+                                      <Badge bg="secondary" className="ms-2" style={{ fontSize: '0.7rem' }}>
+                                        {member.organization}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="text-muted small" style={{ textAlign: 'left' }}>{member.email || 'No email'}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-muted small ms-3">
+                              This access group has no members yet.
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
 
@@ -294,8 +305,8 @@ const ShareCatalogDatasetPage = () => {
                     <Button
                       variant="primary"
                       type="submit"
-                      disabled={updateCatalogDatasetMutation.isPending || sharedEmails.length === 0}
-                      style={{ backgroundColor: "#0079c2", borderColor: "#0079c2" }}
+                      disabled={updateCatalogDatasetMutation.isPending || selectedAccessGroupNames.length === 0}
+                      style={{ backgroundColor: "#0079c2", borderColor: "#0079c2", cursor: 'pointer' }}
                     >
                       {updateCatalogDatasetMutation.isPending ? 'Sharing...' : 'Share Dataset'}
                     </Button>
