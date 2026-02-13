@@ -350,7 +350,7 @@ const ListCatalogModelsPage = () => {
                             border: 'none',
                             textAlign: 'center'
                           }}>
-                            {model.catalog_schema || 'N/A'}
+                            {model.catalog_schema || 'N/A'} {model.schema_version || ''}
                           </td>
                           <td style={{
                             padding: '1rem 1.5rem',
@@ -359,7 +359,7 @@ const ListCatalogModelsPage = () => {
                           }}>
                             {(() => {
                               switch (model.catalog_schema) {
-                                case 'IFAC Tool Specsheet v1.0':
+                                case 'IFAC':
                                   if (model.teams.length === 0) {
                                     return 'N/A';
                                   }
@@ -381,11 +381,11 @@ const ListCatalogModelsPage = () => {
                           }}>
                             {(() => {
                               switch (model.catalog_schema) {
-                                case 'IFAC Tool Specsheet v1.0':
+                                case 'IFAC':
                                   if (model.teams.length === 0) {
                                     return 'N/A';
                                   }
-                                  return model.teams.map(team => team.lab).join(', ');
+                                  return model.teams.map(team => team.organization).join(', ');
 
                                 default:
                                   const orgs = getUniqueOrganizations(model.modeling_team);

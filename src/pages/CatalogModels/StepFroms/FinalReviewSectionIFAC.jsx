@@ -93,12 +93,34 @@ const FinalReviewSectionIFAC = ({ control, register, errors, watch, setValue, st
             <div className="review-label">Expected Scenarios</div>
 
             {/* Expected Scenarios List */}
-            {allData.expectedScenarios && allData.expectedScenarios.filter(s => s && s.trim()).length > 0 ? (
-              <ul className="review-list-items mt-2 ps-3">
-                {allData.expectedScenarios.filter(s => s && s.trim()).map((scenario, i) => (
-                  <li key={i}>{scenario}</li>
-                ))}
-              </ul>
+            {allData.expected_scenarios && allData.expected_scenarios.filter(s => s && s['name'].trim()).length > 0 ? (
+              <div className="review-item mt-4">
+              <div className="review-label">Scenario Mappings</div>
+              <div className="table-responsive">
+                <table className="table table-borderless table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '30%', textAlign: 'left', fontSize: '0.85rem', color: '#6c757d' }}>Name</th>
+                      <th style={{ width: '35%', textAlign: 'left', fontSize: '0.85rem', color: '#6c757d' }}>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allData.expected_scenarios.filter(s => s && s['name'].trim()).map((scenario, i) => (
+                      <tr>
+                          <td style={{ textAlign: 'left', verticalAlign: 'top', paddingBottom: '1rem' }}>
+                            {scenario.name}
+                          </td>
+                          <td style={{ textAlign: 'left', verticalAlign: 'top', paddingBottom: '1rem' }}>
+                            <div style={{ textAlign: 'left' }}>
+                                {scenario.description || "No description provided"}
+                              </div>
+                          </td>
+                        </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              </div>
             ) : (
               <div className="review-value text-muted">No scenarios specified</div>
             )}

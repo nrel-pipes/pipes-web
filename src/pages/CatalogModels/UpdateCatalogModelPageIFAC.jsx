@@ -279,7 +279,7 @@ const UpdateCatalogModelPageIFAC = () => {
       reset(dataToUse);
       
       // Update local state
-      setExpectedScenarios(dataToUse.expectedScenarios || []);
+      setExpectedScenarios(dataToUse.expected_scenarios || []);
       setRequirements(dataToUse.requirements || {});
       setInputs(dataToUse.inputs || {});
       setOutputs(dataToUse.outputs || {});
@@ -307,8 +307,8 @@ const UpdateCatalogModelPageIFAC = () => {
       if (name && name.startsWith('assumptions')) {
         setAssumptions(value.assumptions || []);
       }
-      if (name && name.startsWith('expectedScenarios')) {
-        setExpectedScenarios(value.expectedScenarios || []);
+      if (name && name.startsWith('expected_scenarios')) {
+        setExpectedScenarios(value.expected_scenarios || []);
       }
       if (name && name.startsWith('modelingTeam')) {
         setModelingTeam(value.modelingTeam || { name: '', members: [] });
@@ -348,16 +348,17 @@ const UpdateCatalogModelPageIFAC = () => {
     // Clean and format data for API
     const formData = { ...data };
 
-    // Clean modeling team members - remove any members where all fields are empty
-    if (formData.modelingTeam && Array.isArray(formData.modelingTeam.members)) {
-      formData.modelingTeam.members = formData.modelingTeam.members.filter(member =>
-        member.email?.trim() ||
-        member.first_name?.trim() ||
-        member.last_name?.trim() ||
-        member.organization?.trim()
-      );
+    // Clean any other array fields by removing empty or whitespace-only entries
+    const arr_fields = ['assumptions','tags','features']
+    for (let i = 0; i < arr_fields.length; i++){
+      formData[arr_fields[i]] = (data[arr_fields[i]] || []).filter(element => element.trim() !== "");
     }
 
+    // Clean list of name-desc fields (e.g. expected_scenarios) by removing entries with empty name
+    const name_desc_fields = ['expected_scenarios']
+    for (let i = 0; i < name_desc_fields.length; i++){
+      formData[name_desc_fields[i]] = (data[name_desc_fields[i]] || []).filter(element => element['name'].trim() !== "");
+    }
     
     const dict_fields = ['config.model_options']
     // Convert array of key-value pairs to dict
@@ -382,10 +383,8 @@ const UpdateCatalogModelPageIFAC = () => {
       currentFormData[targetKey] = cleanedDict;
     }
 
-    // Clean expected scenarios
-    //formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
-
-    // TODO: Clean requirements - convert internal structure to API expected format
+    
+    // Clean requirements - convert internal structure to API expected format
     let cleanedRequirements = {};
     const req_types = ['spatial','temporal','environment'];
     for (let i = 0; i < req_types.length; i++){
@@ -464,7 +463,7 @@ const UpdateCatalogModelPageIFAC = () => {
       assumptions: formData.assumptions,
       features: formData.features,
       tags: formData.tags,
-      expected_scenarios: formData.expectedScenarios || [],
+      expected_scenarios: formData.expected_scenarios || [],
       maturity: formData.maturity,
       inputs: formData.inputs,
       requirements: formData.requirements,

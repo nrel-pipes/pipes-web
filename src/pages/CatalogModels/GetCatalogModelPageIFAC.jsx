@@ -431,7 +431,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                             {toolTeams.map((team, idx) => (
                               <tr key={idx}>
                                 <td className="model-table-cell">
-                                  {team.lab || '—'}
+                                  {team.organization || '—'}
                                 </td>
                                 <td className="model-table-cell">
                                   {team.role || '—'}

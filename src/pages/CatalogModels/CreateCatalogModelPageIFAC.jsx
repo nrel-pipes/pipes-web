@@ -201,7 +201,7 @@ const CreateCatalogModelPageIFAC = () => {
           features: value.features || [],
           use_cases: value.use_cases || [],
           tags: value.tags || [],
-          expectedScenarios: value.expectedScenarios || [],
+          expected_scenarios: value.expected_scenarios || [],
           inputs: value.inputs || {},
           requirements: value.requirements || {},
           outputs: value.outputs || {},
@@ -238,11 +238,16 @@ const CreateCatalogModelPageIFAC = () => {
     cleanedTeams = Object.values(formData.teams);
     formData.teams = cleanedTeams;
 
-    // Clean assumptions - now comes directly from form data
-    //formData.assumptions = (data.assumptions || []).filter(assumption => assumption && assumption.trim() !== "");
-    const arr_fields = ['assumptions','expected_scenarios','tags','features']
+    // Clean any other array fields by removing empty or whitespace-only entries
+    const arr_fields = ['assumptions','tags','features']
     for (let i = 0; i < arr_fields.length; i++){
       formData[arr_fields[i]] = (data[arr_fields[i]] || []).filter(element => element.trim() !== "");
+    }
+
+    // Clean list of name-desc fields (e.g. expected_scenarios) by removing entries with empty name
+    const name_desc_fields = ['expected_scenarios']
+    for (let i = 0; i < name_desc_fields.length; i++){
+      formData[name_desc_fields[i]] = (data[name_desc_fields[i]] || []).filter(element => element['name'].trim() !== "");
     }
 
     const dict_fields = ['config.model_options']
@@ -268,12 +273,8 @@ const CreateCatalogModelPageIFAC = () => {
       currentFormData[targetKey] = cleanedDict;
     }
 
-    // Clean expected scenarios
-    //formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
-
-    // TODO: Maturity
-
-    // TODO: Clean requirements - convert internal structure to API expected format
+    
+    // Clean requirements - convert internal structure to API expected format
     let cleanedRequirements = {};
     const req_types = ['spatial','temporal','environment'];
     for (let i = 0; i < req_types.length; i++){
@@ -352,7 +353,7 @@ const CreateCatalogModelPageIFAC = () => {
       assumptions: formData.assumptions,
       features: formData.features,
       tags: formData.tags,
-      expected_scenarios: formData.expectedScenarios || [],
+      expected_scenarios: formData.expected_scenarios || [],
       maturity: formData.maturity,
       inputs: formData.inputs,
       requirements: formData.requirements,
