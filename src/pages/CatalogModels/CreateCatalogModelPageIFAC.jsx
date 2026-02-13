@@ -149,7 +149,7 @@ const CreateCatalogModelPageIFAC = () => {
       features: storedFormData.features || [""],
       use_cases: storedFormData.use_cases || [""],
       tags: storedFormData.tags || [""],
-      expected_scenarios: storedFormData.expected_scenarios || [""],
+      expected_scenarios: storedFormData.expected_scenarios || [],
       inputs: storedFormData.inputs || [],
       requirements: storedFormData.requirements || {},
       outputs: storedFormData.outputs || [],
@@ -247,9 +247,10 @@ const CreateCatalogModelPageIFAC = () => {
     // Clean list of name-desc fields (e.g. expected_scenarios) by removing entries with empty name
     const name_desc_fields = ['expected_scenarios']
     for (let i = 0; i < name_desc_fields.length; i++){
+      alert(JSON.stringify(data[name_desc_fields[i]]));
       formData[name_desc_fields[i]] = (data[name_desc_fields[i]] || []).filter(element => element['name'].trim() !== "");
     }
-
+      
     const dict_fields = ['config.model_options']
     // Convert array of key-value pairs to dict
     for (let i = 0; i < dict_fields.length; i++){

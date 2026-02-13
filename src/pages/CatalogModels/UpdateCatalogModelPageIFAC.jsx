@@ -182,7 +182,7 @@ const UpdateCatalogModelPageIFAC = () => {
           if (modelData.requirements[req_types[i]]){
             convertedRequirements[req_types[i]] = {}
           }
-          Object.values(modelData.requirements[req_types[i]]).forEach((value) => {
+          Object.values(modelData.requirements[req_types[i]] || []).forEach((value) => {
             const key = value['name'];
             convertedRequirements[req_types[i]][key] = value;
           });
