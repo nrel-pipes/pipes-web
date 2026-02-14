@@ -3,7 +3,7 @@ import Form from "react-bootstrap/Form";
 import { useFieldArray, useWatch } from "react-hook-form";
 
 
-const ListComponent = ({name, description, fieldName, control, register, errors, watch, setValue, storedData }) => {
+const ListComponent = ({name, description, fieldName, required, control, register, errors, watch, setValue, storedData }) => {
   const { fields: featureFields, append: appendElement, remove: removeElement } = useFieldArray({
     control,
     name: fieldName
@@ -21,7 +21,7 @@ const ListComponent = ({name, description, fieldName, control, register, errors,
   return (
     <div className="form-field-group">
       <div className="mb-4">
-        <Form.Label className="form-field-label">{name}s</Form.Label>
+        <Form.Label className={`form-field-label ${required?'required-field':''}`}>{name}s</Form.Label>
         <Form.Text className="text-muted d-block mb-2">
           {description}
         </Form.Text>

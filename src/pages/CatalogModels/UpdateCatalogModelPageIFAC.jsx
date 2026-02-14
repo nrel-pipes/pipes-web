@@ -659,6 +659,7 @@ const UpdateCatalogModelPageIFAC = () => {
                           name="Use Case"
                           description="List of IFAC Use Cases the tool applies to"
                           fieldName="use_cases"
+                          required={true}
                           control={control}
                           register={register}
                           errors={errors}
@@ -670,6 +671,7 @@ const UpdateCatalogModelPageIFAC = () => {
                           name="Publication"
                           description="List of publications released on the tool"
                           fieldName="publications"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}
@@ -681,6 +683,7 @@ const UpdateCatalogModelPageIFAC = () => {
                           name="Training Link"
                           description="List of links to training materials for the tool"
                           fieldName="training"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}
@@ -692,6 +695,7 @@ const UpdateCatalogModelPageIFAC = () => {
                           name="Feature"
                           description="List of tool features"
                           fieldName="features"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}
@@ -703,6 +707,7 @@ const UpdateCatalogModelPageIFAC = () => {
                           name="Programming Language"
                           description="Languages the tool is written in (e.g. 'Python', 'Julia')."
                           fieldName="programming_languages"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}
@@ -710,9 +715,9 @@ const UpdateCatalogModelPageIFAC = () => {
                           setValue={setValue}
                           storedData={storedFormData}
                         />
-                        <pre className="model-code-block-large">
+                        {/*<pre className="model-code-block-large">
                           {JSON.stringify(storedFormData, null, 2)}
-                        </pre>
+                        </pre>*/}
                       </div>
                     )}
 
@@ -733,6 +738,7 @@ const UpdateCatalogModelPageIFAC = () => {
                           name="Assumption"
                           description="Add key assumptions for your model"
                           fieldName="assumptions"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}
@@ -757,6 +763,7 @@ const UpdateCatalogModelPageIFAC = () => {
                           name="Workflow Integration"
                           description="List of tools this tool has integrated with."
                           fieldName="maturity.workflow_integration_list"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}

@@ -9,13 +9,13 @@ const BasicInfoSectionIFAC = ({ control, register, errors, watch, setValue, stor
       </Form.Label>
 
       <div className="mb-4">
-        <Form.Label className="form-field-label required-field">Model Name</Form.Label>
+        <Form.Label className="form-field-label required-field">Tool Name</Form.Label>
         <Form.Control
           type="text"
           className="form-control-lg form-primary-input"
           placeholder="Enter tool name"
           isInvalid={!!errors.name}
-          {...register("name", { required: "Model name is required" })}
+          {...register("name", { required: "Tool name is required" })}
         />
         <Form.Control.Feedback type="invalid" className="text-start">
           {errors.name?.message}
@@ -23,13 +23,17 @@ const BasicInfoSectionIFAC = ({ control, register, errors, watch, setValue, stor
       </div>
 
       <div className="mb-4">
-        <Form.Label className="form-field-label">Display Name</Form.Label>
+        <Form.Label className="form-field-label required-field">Display Name</Form.Label>
         <Form.Control
           type="text"
           className="form-control-lg form-primary-input"
           placeholder="Enter display name (optional)"
-          {...register("displayName")}
+          isInvalid={!!errors.display_name}
+          {...register("displayName", { required: "Tool display name is required" })}
         />
+        <Form.Control.Feedback type="invalid" className="text-start">
+          {errors.display_name?.message}
+        </Form.Control.Feedback>
       </div>
       <div className="mb-4">
         <Form.Label className="form-field-label required-field">Type</Form.Label>
@@ -38,10 +42,23 @@ const BasicInfoSectionIFAC = ({ control, register, errors, watch, setValue, stor
           className="form-control-lg form-primary-input"
           placeholder="e.g., Capacity Expansion"
           isInvalid={!!errors.type}
-          {...register("type", { required: "Model type is required" })}
+          {...register("type", { required: "Tool type is required" })}
         />
         <Form.Control.Feedback type="invalid" className="text-start">
           {errors.type?.message}
+        </Form.Control.Feedback>
+      </div>
+      <div className="mb-4">
+        <Form.Label className="form-field-label required-field">Primary Organization</Form.Label>
+        <Form.Control
+          type="text"
+          className="form-control-lg form-primary-input"
+          placeholder="Primary steward organization for this tool (e.g. NLR, ANL)"
+          isInvalid={!!errors.prime_organization}
+          {...register("prime_organization", { required: "Primary organization is required" })}
+        />
+        <Form.Control.Feedback type="invalid" className="text-start">
+          {errors.prime_organization?.message}
         </Form.Control.Feedback>
       </div>
       <div className="mb-4">

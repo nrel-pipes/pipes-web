@@ -235,7 +235,7 @@ const RequirementsSectionIFAC = ({ control, register, errors, watch, setValue, s
             if (!reqData) return null;
             return (
               <div key={key} className="mb-4 border p-3 rounded">
-                <Form.Label className="small fw-bold">Requirement Name</Form.Label>
+                <Form.Label className="small fw-bold required-field">Requirement Name</Form.Label>
                 <Form.Control
                         type="text"
                         className="form-control-lg form-primary-input"
@@ -243,7 +243,7 @@ const RequirementsSectionIFAC = ({ control, register, errors, watch, setValue, s
                         value={reqData.name || ""}
                         onChange={(e) => updateRequirementName("spatial", key, e.target.value)}
                 />
-                <Form.Label className="small fw-bold">Extent</Form.Label>
+                <Form.Label className="small fw-bold required-field">Extent</Form.Label>
                 <Form.Control
                         type="text"
                         className="form-control-lg form-primary-input"
@@ -251,7 +251,7 @@ const RequirementsSectionIFAC = ({ control, register, errors, watch, setValue, s
                         value={reqData.extent || ""}
                         onChange={(e) => updateRequirementValue("spatial", key, "extent", e.target.value)}
                 />
-                <Form.Label className="small fw-bold">Fidelity</Form.Label>
+                <Form.Label className="small fw-bold required-field">Fidelity</Form.Label>
                 <Form.Control
                         type="text"
                         className="form-control-lg form-primary-input"
@@ -310,7 +310,7 @@ const RequirementsSectionIFAC = ({ control, register, errors, watch, setValue, s
             if (!reqData) return null;
             return (
               <div key={key} className="mb-4 border p-3 rounded">
-                <Form.Label className="small fw-bold">Requirement Name</Form.Label>
+                <Form.Label className="small fw-bold required-field">Requirement Name</Form.Label>
                 <Form.Control
                         type="text"
                         className="form-control-lg form-primary-input"
@@ -318,7 +318,7 @@ const RequirementsSectionIFAC = ({ control, register, errors, watch, setValue, s
                         value={reqData.name || ""}
                         onChange={(e) => updateRequirementName("temporal", key, e.target.value)}
                 />
-                <Form.Label className="small fw-bold">Extent</Form.Label>
+                <Form.Label className="small fw-bold required-field">Extent</Form.Label>
                 <Form.Control
                         type="text"
                         className="form-control-lg form-primary-input"
@@ -326,7 +326,7 @@ const RequirementsSectionIFAC = ({ control, register, errors, watch, setValue, s
                         value={reqData.extent || ""}
                         onChange={(e) => updateRequirementValue("temporal", key, "extent", e.target.value)}
                 />
-                <Form.Label className="small fw-bold">Resolution</Form.Label>
+                <Form.Label className="small fw-bold required-field">Resolution</Form.Label>
                 <Form.Control
                         type="text"
                         className="form-control-lg form-primary-input"
@@ -394,14 +394,19 @@ const RequirementsSectionIFAC = ({ control, register, errors, watch, setValue, s
             if (!reqData) return null;
             return (
               <div key={key} className="mb-4 border p-3 rounded">
-                <Form.Label className="small fw-bold">Requirement Name</Form.Label>
+                <Form.Label className="small fw-bold required-field">Requirement Name</Form.Label>
                 <Form.Control
                         type="text"
                         className="form-control-lg form-primary-input"
                         placeholder="Requirement"
                         value={reqData.name || ""}
                         onChange={(e) => updateRequirementName("environment", key, e.target.value)}
+                        isInvalid={!!errors.requirement_name}
+                        {...register("requirement_name", { required: "Requirement name is required" })}
                 />
+                <Form.Control.Feedback type="invalid" className="text-start">
+                  {errors.requirement_name?.message}
+                </Form.Control.Feedback>
                 <Form.Label className="small fw-bold">Platform</Form.Label>
                 <Form.Control
                         type="text"
