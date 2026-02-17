@@ -115,6 +115,10 @@ const GetCatalogDatasetPage = () => {
   const isDatasetCreator = currentUser?.email && catalogDataset.created_by?.email &&
                          currentUser.email.toLowerCase() === catalogDataset.created_by.email.toLowerCase();
 
+  const isAccessGroupMember = currentUser?.email &&
+        catalogDataset.access_group?.some(group => group.members?.some(member => member.email.toLowerCase() === currentUser.email.toLowerCase()));
+
+
   return (
     <>
       <NavbarSub navData={{ cdList: true, cdName: datasetName }} />
@@ -122,7 +126,7 @@ const GetCatalogDatasetPage = () => {
         <Row className="w-100 mx-0">
           <ContentHeader
             title={catalogDataset.display_name || catalogDataset.name}
-            headerButton={<CatalogDatasetContentHeaderButton isDisabled={!isDatasetCreator} />}
+            headerButton={<CatalogDatasetContentHeaderButton disableDelete={!isDatasetCreator} disableUpdate={!(isAccessGroupMember || isDatasetCreator)}  />}
           />
         </Row>
         <Row className="mt-4">

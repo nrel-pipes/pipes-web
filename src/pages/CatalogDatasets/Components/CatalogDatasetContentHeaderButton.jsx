@@ -3,17 +3,17 @@ import { Dropdown } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
 
-const CatalogDatasetContentHeaderButton = ({ isDisabled = false }) => {
+const CatalogDatasetContentHeaderButton = ({ disableUpdate = false, disableDelete = false }) => {
   const navigate = useNavigate();
   const { datasetName } = useParams();
 
   const handleUpdateCatalogDataset = () => {
-    if (isDisabled) return;
+    if (disableUpdate) return;
     navigate(`/catalogdataset/${encodeURIComponent(datasetName)}/update`);
   };
 
   const handleDeleteCatalogDataset = () => {
-    if (isDisabled) return;
+    if (disableDelete) return;
     navigate(`/catalogdataset/${encodeURIComponent(datasetName)}/delete`);
   };
 
@@ -34,7 +34,7 @@ const CatalogDatasetContentHeaderButton = ({ isDisabled = false }) => {
           onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
           onMouseUp={(e) => e.currentTarget.style.color = 'white'}
           onClick={handleShareCatalogDataset}
-          disabled={isDisabled}
+          disabled={disableDelete}
         >
           <Share2 size={16} className="me-2" style={{ marginTop: '-2px' }} />
           Share this Dataset
@@ -42,8 +42,8 @@ const CatalogDatasetContentHeaderButton = ({ isDisabled = false }) => {
       <Dropdown>
         <Dropdown.Toggle
           variant="primary"
-          className={`px-4 py-3 actions-dropdown-toggle ${isDisabled ? 'disabled' : ''}`}
-          disabled={isDisabled}
+          className={`px-4 py-3 actions-dropdown-toggle ${disableUpdate ? 'disabled' : ''}`}
+          disabled={disableUpdate}
         >
           <Settings size={16} className="update-button-icon me-1 actions-dropdown-icon" />
           Actions
@@ -53,7 +53,7 @@ const CatalogDatasetContentHeaderButton = ({ isDisabled = false }) => {
           <Dropdown.Item
             onClick={handleUpdateCatalogDataset}
             className="d-flex align-items-center dropdown-item-update"
-            disabled={isDisabled}
+            disabled={disableUpdate}
           >
             <Pencil size={16} className="me-2" />
             Update Dataset
@@ -62,7 +62,7 @@ const CatalogDatasetContentHeaderButton = ({ isDisabled = false }) => {
           <Dropdown.Item
             onClick={handleDeleteCatalogDataset}
             className="d-flex align-items-center dropdown-item-delete"
-            disabled={isDisabled}
+            disabled={disableDelete}
           >
             <Trash2 size={16} className="me-2" />
             Delete Dataset
