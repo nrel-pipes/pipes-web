@@ -35,6 +35,9 @@ function GetCatalogModelPageDefault({catalogModel, currentUser}){
   // Check if current user is the model creator
   const isModelCreator = currentUser?.email && catalogModel.created_by?.email &&
                          currentUser.email.toLowerCase() === catalogModel.created_by.email.toLowerCase();
+  
+  const isAccessGroupMember = currentUser?.email &&
+        catalogModel.access_groups?.some(group => group.members?.some(member => member.email.toLowerCase() === currentUser.email.toLowerCase()));
 
   return (
     <>
@@ -43,7 +46,7 @@ function GetCatalogModelPageDefault({catalogModel, currentUser}){
         <Row className="w-100 mx-0">
           <ContentHeader
             title={catalogModel.display_name || catalogModel.name}
-            headerButton={<CatalogModelContentHeaderButton isDisabled={!isModelCreator} />}
+            headerButton={<CatalogModelContentHeaderButton disableDelete={!isModelCreator} disableUpdate={!(isAccessGroupMember || isModelCreator)} catalogSchema={catalogModel.catalog_schema} />}
           />
         </Row>
         <Row className="mt-4">

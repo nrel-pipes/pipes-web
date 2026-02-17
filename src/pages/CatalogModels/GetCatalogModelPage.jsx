@@ -13,14 +13,13 @@ import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
 import "../PageStyles.css";
-import CatalogModelContentHeaderButton from "./Components/CatalogModelContentHeaderButton";
 import "./GetCatalogModelPage.css";
 import GetCatalogModelPageIFAC from "./GetCatalogModelPageIFAC";
 import GetCatalogModelPageDefault from "./GetCatalogModelPageDefault";
 
 const SCHEMAS = {
-    "IFAC": GetCatalogModelPageIFAC,
-    "Default": GetCatalogModelPageDefault,
+    "IFAC": {"1.0":GetCatalogModelPageIFAC},
+    "Default": {"1.0":GetCatalogModelPageDefault},
 };
 
 const GetCatalogModelPage = () => {
@@ -100,8 +99,9 @@ const GetCatalogModelPage = () => {
   }
 
   const catalogSchema = catalogModel.catalog_schema || "Default";
+  const schemaVersion = catalogModel.schema_version || "1.0";
   
-  const SchemaComponent = SCHEMAS[catalogSchema] || SCHEMAS["Default"];
+  const SchemaComponent = SCHEMAS[catalogSchema][schemaVersion] || SCHEMAS["Default"]["1.0"];
   return (
     <SchemaComponent
       catalogModel={catalogModel}

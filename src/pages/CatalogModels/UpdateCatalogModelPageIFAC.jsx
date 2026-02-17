@@ -202,8 +202,8 @@ const UpdateCatalogModelPageIFAC = () => {
       }
 
       const convertedOutputs = {};
-      if (modelData.inputs && Array.isArray(modelData.inputs)) {
-        Object.entries(modelData.inputs).forEach((value) => {
+      if (modelData.outputs && Array.isArray(modelData.outputs)) {
+        Object.entries(modelData.outputs).forEach((value) => {
           const outId = `output_${value[0]}`;
           const out_type = Object.keys(value[1])[0];
           convertedOutputs[outId] = {
