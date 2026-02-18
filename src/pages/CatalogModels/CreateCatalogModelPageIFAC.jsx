@@ -247,7 +247,6 @@ const CreateCatalogModelPageIFAC = () => {
     // Clean list of name-desc fields (e.g. expected_scenarios) by removing entries with empty name
     const name_desc_fields = ['expected_scenarios']
     for (let i = 0; i < name_desc_fields.length; i++){
-      alert(JSON.stringify(data[name_desc_fields[i]]));
       formData[name_desc_fields[i]] = (data[name_desc_fields[i]] || []).filter(element => element['name'].trim() !== "");
     }
       
@@ -389,7 +388,7 @@ const CreateCatalogModelPageIFAC = () => {
         assumptions: [""],
         features: [""],
         tags: [""],
-        expected_scenarios: [""],
+        expected_scenarios: [],
         inputs: [],
         requirements: {},
         outputs: [],
