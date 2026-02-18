@@ -133,7 +133,7 @@ export const useCreateCatalogModelFormStoreIFAC = create(
         features: [''],
         use_cases: [''],
         tags: [''],
-        expected_scenarios: [''],
+        expected_scenarios: [],
         inputs: [],
         requirements: {},
         outputs: [],
@@ -164,7 +164,7 @@ export const useCreateCatalogModelFormStoreIFAC = create(
           features: [''],
           use_cases: [''],
           tags: [''],
-          expected_scenarios: [''],
+          expected_scenarios: [],
           inputs: [],
           requirements: {},
           outputs: [],
@@ -213,7 +213,7 @@ export const useUpdateCatalogModelFormStoreIFAC = create(
         features: [''],
         use_cases: [''],
         tags: [''],
-        expected_scenarios: [''],
+        expected_scenarios: [],
         inputs: [],
         requirements: {},
         outputs: [],
@@ -244,7 +244,7 @@ export const useUpdateCatalogModelFormStoreIFAC = create(
           features: [''],
           use_cases: [''],
           tags: [''],
-          expected_scenarios: [''],
+          expected_scenarios: [],
           inputs: [],
           requirements: {},
           outputs: [],
@@ -263,7 +263,7 @@ export const useUpdateCatalogModelFormStoreIFAC = create(
         return !!(data.name || data.type || data.description ||
                  (data.assumptions && data.assumptions.some(a => a.trim())) ||
                  (data.features && data.features.some(a => a.trim())) ||
-                 (data.expectedScenarios && data.expectedScenarios.some(s => s.trim())) ||
+                 (data.expected_scenarios && data.expected_scenarios.some(s => s['name'].trim())) ||
                  (data.inputs && (data.inputs.length > 0)) ||
                  (data.requirements && Object.keys(data.requirements).length > 0) ||
                  (data.outputs && (data.outputs.length > 0)) ||
