@@ -5,6 +5,7 @@ import { Badge, Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
+import Form from "react-bootstrap/Form";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useGetCatalogModelQuery } from "../../hooks/useCatalogModelQuery";
@@ -219,56 +220,179 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
               <div className="model-section-header">
                 <h4 className="model-section-title">Tool Maturity Parameters</h4>
               </div>
+              
               <div className="model-section-content">
                 <div className="model-field-row">
-                  <div className="model-field-label">Software License</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.software_license) || "—"}</div>
-                  <div className="model-field-label">Publication History</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.publication_history) || "—"}</div>
+                  <Col>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Software License</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.software_license || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Publication History</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.publication_history || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Documented External Validation</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.external_validation_documented || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Application</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.application || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">External Validation Via Usage</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.external_validation_via_usage || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Input/Output Interoperability</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.input_output_interoperability || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Public Data Accessability</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.data_accessability_public || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Proprietary Data Accessability</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.data_accessability_proprietary || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Secure for Sensitive Data Handling</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.secure_for_sensitive_data_handling || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Secure for Independent Usage</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.secure_independent_usage || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Usable via GUI</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" 
+                          disabled checked={catalogModel.maturity.usability_via_GUI || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Usable via CLI</div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.usability_via_CLI || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col>
+                      <div className="model-field-col-compact">
+                      <div className="model-field-label">Accessible for External Users</div></div>
+                      </Col>
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-col-compact">
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.accessible_for_external_users || false}/>
+                      </div></div>
+                      </Col>
+                    </Row>
+                    <Row className="model-field-row-compact">
+                      <Col className="model-field-col-compact">
+                      <div className="model-field-label">Support Available</div>
+                      </Col>
+                      <Col>
+                      <div className="model-field-value">
+                        <input class="form-check-input" type="checkbox" disabled 
+                          checked={catalogModel.maturity.support_available || false}/>
+                      </div>
+                      </Col>
+                    </Row>
+                  </Col>
                 </div>
                 <div className="model-field-row">
-                  <div className="model-field-label">External Validation Documented</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.external_validation_documented) || "—"}</div>
-                  <div className="model-field-label">Application</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.application) || "—"}</div>
-                </div>
-                <div className="model-field-row">
-                  <div className="model-field-label">External Validation Via Usage</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.external_validation_via_usage) || "—"}</div>
-                  <div className="model-field-label">Input Output Interoperability</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.input_output_interoperability) || "—"}</div>
-                </div>
-                <div className="model-field-row">
-                  <div className="model-field-label">Data Accessability Public</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.data_accessability_public) || "—"}</div>
-                  <div className="model-field-label">Data Accessability Proprietary</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.data_accessability_proprietary) || "—"}</div>
-                </div>
-                <div className="model-field-row">
-                  <div className="model-field-label">Secure for Sensitive Data Handling</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.secure_for_sensitive_data_handling) || "—"}</div>
-                  <div className="model-field-label">Secure for Independent Usage</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.secure_independent_usage) || "—"}</div>
-                </div>
-                <div className="model-field-row">
-                  <div className="model-field-label">Usabile via GUI</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.usability_via_GUI) || "—"}</div>
-                  <div className="model-field-label">Useable via CLI</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.usability_via_CLI) || "—"}</div>
-                </div>
-                <div className="model-field-row">
-                  <div className="model-field-label">Accessible for External Users</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.accessible_for_external_users) || "—"}</div>
-                  <div className="model-field-label">Support Available</div>
-                  <div className="model-field-value">{String(catalogModel.maturity.support_available) || "—"}</div>
-                </div>
-                <div className="model-field-label">Workflow Integration List</div>
-                <div className="model-field-value">
-                  {workflow_integration_list.map((integration, idx) => (
-                    <Badge key={idx} bg="secondary" className="model-tag-badge">
-                          {integration}
-                    </Badge>
-                  ))}
+                  <div className="model-field-label">Workflow Integration List</div>
+                  <div className="model-field-value">
+                    {workflow_integration_list.map((integration, idx) => (
+                      <Badge key={idx} bg="secondary" className="model-tag-badge">
+                            {integration}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

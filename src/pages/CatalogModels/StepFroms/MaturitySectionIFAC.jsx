@@ -33,7 +33,7 @@ const MaturitySectionIFAC = ({ control, register, errors, watch, setValue, store
             </td>  
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">External Validation Documented</Form.Label>
+                <Form.Label className="form-field-label required-field">Documented External Validation</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}
@@ -65,7 +65,7 @@ const MaturitySectionIFAC = ({ control, register, errors, watch, setValue, store
             </td>
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">Input Output Interoperability</Form.Label>
+                <Form.Label className="form-field-label required-field">Input/Output Interoperability</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}
@@ -75,7 +75,7 @@ const MaturitySectionIFAC = ({ control, register, errors, watch, setValue, store
             </td>
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">Data Accessability Public</Form.Label>
+                <Form.Label className="form-field-label required-field">Public Data Accessability</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}
@@ -85,7 +85,7 @@ const MaturitySectionIFAC = ({ control, register, errors, watch, setValue, store
             </td>
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">Data Accessability Proprietary</Form.Label>
+                <Form.Label className="form-field-label required-field">Proprietary Data Accessability</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}
@@ -117,7 +117,7 @@ const MaturitySectionIFAC = ({ control, register, errors, watch, setValue, store
             </td>
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">Usabile via GUI</Form.Label>
+                <Form.Label className="form-field-label required-field">Usable via GUI</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}
@@ -127,7 +127,7 @@ const MaturitySectionIFAC = ({ control, register, errors, watch, setValue, store
             </td>
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">Useable via CLI</Form.Label>
+                <Form.Label className="form-field-label required-field">Usable via CLI</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}

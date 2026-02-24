@@ -42,6 +42,7 @@
 .model-field-row:last-child {
   border-bottom: none;
   margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .model-field-label {

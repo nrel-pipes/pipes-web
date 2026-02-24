@@ -351,7 +351,7 @@ const UpdateCatalogModelPageIFAC = () => {
     // Clean any other array fields by removing empty or whitespace-only entries
     const arr_fields = ['assumptions','tags','features']
     for (let i = 0; i < arr_fields.length; i++){
-      formData[arr_fields[i]] = (data[arr_fields[i]] || []).filter(element => element.trim() !== "");
+      formData[arr_fields[i]] = (data[arr_fields[i]] || []).filter(element => typeof element == 'number' || element.trim() !== "");
     }
 
     // Clean list of name-desc fields (e.g. expected_scenarios) by removing entries with empty name
@@ -395,11 +395,11 @@ const UpdateCatalogModelPageIFAC = () => {
         const cleanedObject = {};
         Object.entries(reqData || {}).forEach(([field, val]) => {
           if (Array.isArray(val)){
-            cleanedObject[field] = Object.values(val || []).filter(element => element.trim() !== "");
+            cleanedObject[field] = Object.values(val || []).filter(element => typeof element == 'number' || element.trim() !== "");
           } else if (val.constructor === Object) {
             let cleanedSubObject = {};
             cleanedSubObject = Object.entries(val)
-                                        .filter(([k, element]) => (k.trim() !== "" & element.trim() !== ""))
+                                        .filter(([k, element]) => (k.trim() !== "" && (typeof element == 'number' || element.trim() !== "")))
                                         .reduce((obj, k) => {return {...obj, [k]:val[k]}},{});
             if (Object.keys(cleanedSubObject).length > 0) {
               cleanedObject[field] = cleanedSubObject;
