@@ -75,21 +75,21 @@ const MaturitySectionIFAC = ({ control, register, errors, watch, setValue, store
             </td>
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">Public Data Accessability</Form.Label>
+                <Form.Label className="form-field-label required-field">Public Data Accessibility</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}
-                  {...register("maturity.data_accessability_public")}
+                  {...register("maturity.data_accessibility_public")}
                 />
               </div>
             </td>
             <td>
               <div className="mb-4">
-                <Form.Label className="form-field-label required-field">Proprietary Data Accessability</Form.Label>
+                <Form.Label className="form-field-label required-field">Proprietary Data Accessibility</Form.Label>
                 <Form.Check
                   type="switch"
                   isInvalid={!!errors.name}
-                  {...register("maturity.data_accessability_proprietary")}
+                  {...register("maturity.data_accessibility_proprietary")}
                 />
               </div>
             </td>

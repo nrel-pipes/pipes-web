@@ -482,7 +482,7 @@ const OutputsSectionIFAC = ({ control, register, errors, watch, setValue, stored
                 className="d-flex align-items-center dropdown-item-create"
               >
                 <Plus size={16} className="me-2" />
-                Create General Output Data Discription
+                Create General Output Data Description
               </Dropdown.Item>
               {/*<hr className="dropdown-divider" />
               <Dropdown.Item

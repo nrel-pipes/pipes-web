@@ -462,7 +462,6 @@ const InputsSectionIFAC = ({ control, register, errors, watch, setValue, storedD
                   storedData={""}
                 />
               </div>
-              {/*TODO: Add schema/spatial/temporal blocks (refactor spatial/temporal/environmental out of requirements into separate jsx*/}
             </div>
           );
         })}
@@ -482,7 +481,7 @@ const InputsSectionIFAC = ({ control, register, errors, watch, setValue, storedD
                 className="d-flex align-items-center dropdown-item-create"
               >
                 <Plus size={16} className="me-2" />
-                Create General Input Data Discription
+                Create General Input Data Description
               </Dropdown.Item>
               <hr className="dropdown-divider" />
               <Dropdown.Item

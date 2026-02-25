@@ -292,12 +292,12 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                     </Row>
                     <Row className="model-field-row-compact">
                       <Col className="model-field-col-compact">
-                      <div className="model-field-label">Public Data Accessability</div>
+                      <div className="model-field-label">Public Data Accessibility</div>
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
                         <input class="form-check-input" type="checkbox" disabled 
-                          checked={catalogModel.maturity.data_accessability_public || false}/>
+                          checked={catalogModel.maturity.data_accessibility_public || false}/>
                       </div>
                       </Col>
                     </Row>
@@ -305,12 +305,12 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                   <Col>
                     <Row className="model-field-row-compact">
                       <Col className="model-field-col-compact">
-                      <div className="model-field-label">Proprietary Data Accessability</div>
+                      <div className="model-field-label">Proprietary Data Accessibility</div>
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
                         <input class="form-check-input" type="checkbox" disabled 
-                          checked={catalogModel.maturity.data_accessability_proprietary || false}/>
+                          checked={catalogModel.maturity.data_accessibility_proprietary || false}/>
                       </div>
                       </Col>
                     </Row>
