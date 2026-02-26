@@ -52,11 +52,13 @@ import UpdateModelPage from "./pages/Models/UpdateModelPage";
 
 // Catalog Model
 import CreateCatalogModelPage from "./pages/CatalogModels/CreateCatalogModelPage";
+import CreateCatalogModelPageIFAC from "./pages/CatalogModels/CreateCatalogModelPageIFAC";
 import DeleteCatalogModelPage from "./pages/CatalogModels/DeleteCatalogModelPage";
 import GetCatalogModelPage from "./pages/CatalogModels/GetCatalogModelPage";
 import ListCatalogModelsPage from "./pages/CatalogModels/ListCatalogModelsPage";
 import ShareCatalogModelPage from "./pages/CatalogModels/ShareCatalogModelPage";
 import UpdateCatalogModelPage from "./pages/CatalogModels/UpdateCatalogModelPage";
+import UpdateCatalogModelPageIFAC from "./pages/CatalogModels/UpdateCatalogModelPageIFAC";
 
 // Handoff
 import CreateHandoffPage from "./pages/Handoffs/CreateHandoffPage";
@@ -70,6 +72,13 @@ import GetCatalogDatasetPage from "./pages/CatalogDatasets/GetCatalogDatasetPage
 import ListCatalogDatasetPage from "./pages/CatalogDatasets/ListCatalogDatasetPage";
 import ShareCatalogDatasetPage from "./pages/CatalogDatasets/ShareCatalogDatasetPage";
 import UpdateCatalogDatasetPage from "./pages/CatalogDatasets/UpdateCatalogDatasetPage";
+
+// Access Groups
+import CreateAccessGroupPage from "./pages/AccessGroups/CreateAccessGroupPage";
+import DeleteAccessGroupPage from "./pages/AccessGroups/DeleteAccessGroupPage";
+import GetAccessGroupPage from "./pages/AccessGroups/GetAccessGroupPage";
+import ListAccessGroupsPage from "./pages/AccessGroups/ListAccessGroupsPage";
+import UpdateAccessGroupPage from "./pages/AccessGroups/UpdateAccessGroupPage";
 
 // User
 import ChangePasswordPage from "./pages/Account/ChangePasswordPage";
@@ -228,14 +237,20 @@ function App() {
                   <Route path="/catalogmodels" element={
                     isAuthenticated ? <ListCatalogModelsPage /> : <Navigate to="/login" />
                   } />
-                  <Route path="/catalogmodel/new" element={
+                  <Route path="/catalogmodel/new-Default" element={
                     isAuthenticated ? <CreateCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/new-IFAC" element={
+                    isAuthenticated ? <CreateCatalogModelPageIFAC /> : <Navigate to="/login" />
                   } />
                   <Route path="/catalogmodel/:modelName" element={
                     isAuthenticated ? <GetCatalogModelPage /> : <Navigate to="/login" />
                   } />
                   <Route path="/catalogmodel/:modelName/update" element={
                     isAuthenticated ? <UpdateCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/:modelName/update-IFAC" element={
+                    isAuthenticated ? <UpdateCatalogModelPageIFAC /> : <Navigate to="/login" />
                   } />
                   <Route path="/catalogmodel/:modelName/delete" element={
                     isAuthenticated ? <DeleteCatalogModelPage /> : <Navigate to="/login" />
@@ -262,6 +277,23 @@ function App() {
                   } />
                   <Route path="/catalogdataset/:datasetName/share" element={
                     isAuthenticated ? <ShareCatalogDatasetPage /> : <Navigate to="/login" />
+                  } />
+
+                  {/* Access Groups routes */}
+                  <Route path="/accessgroups" element={
+                    isAuthenticated ? <ListAccessGroupsPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/accessgroup/new" element={
+                    isAuthenticated ? <CreateAccessGroupPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/accessgroup/:accessGroupName" element={
+                    isAuthenticated ? <GetAccessGroupPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/accessgroup/:accessGroupName/update" element={
+                    isAuthenticated ? <UpdateAccessGroupPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/accessgroup/:accessGroupName/delete" element={
+                    isAuthenticated ? <DeleteAccessGroupPage /> : <Navigate to="/login" />
                   } />
 
                   {/* Handoff routes */}

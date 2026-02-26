@@ -1,5 +1,5 @@
 import Form from "react-bootstrap/Form";
-
+import SCHEMAS from "../GetCatalogModelPage";
 
 const BasicInfoSection = ({ control, register, errors, watch, setValue, storedData}) => {
   return (

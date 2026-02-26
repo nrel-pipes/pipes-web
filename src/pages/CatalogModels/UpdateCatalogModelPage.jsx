@@ -306,6 +306,8 @@ const UpdateCatalogModelPage = () => {
       assumptions: formData.assumptions,
       expected_scenarios: formData.expectedScenarios,
       requirements: formData.requirements,
+      catalog_schema: modelData?.catalog_schema || "Default",
+      schema_version: modelData?.schema_version || "1.0",
       other: formData.other || {}
     };
 
