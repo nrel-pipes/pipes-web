@@ -52,11 +52,13 @@ import UpdateModelPage from "./pages/Models/UpdateModelPage";
 
 // Catalog Model
 import CreateCatalogModelPage from "./pages/CatalogModels/CreateCatalogModelPage";
+import CreateCatalogModelPageIFAC from "./pages/CatalogModels/CreateCatalogModelPageIFAC";
 import DeleteCatalogModelPage from "./pages/CatalogModels/DeleteCatalogModelPage";
 import GetCatalogModelPage from "./pages/CatalogModels/GetCatalogModelPage";
 import ListCatalogModelsPage from "./pages/CatalogModels/ListCatalogModelsPage";
 import ShareCatalogModelPage from "./pages/CatalogModels/ShareCatalogModelPage";
 import UpdateCatalogModelPage from "./pages/CatalogModels/UpdateCatalogModelPage";
+import UpdateCatalogModelPageIFAC from "./pages/CatalogModels/UpdateCatalogModelPageIFAC";
 
 // Handoff
 import CreateHandoffPage from "./pages/Handoffs/CreateHandoffPage";
@@ -235,14 +237,20 @@ function App() {
                   <Route path="/catalogmodels" element={
                     isAuthenticated ? <ListCatalogModelsPage /> : <Navigate to="/login" />
                   } />
-                  <Route path="/catalogmodel/new" element={
+                  <Route path="/catalogmodel/new-Default" element={
                     isAuthenticated ? <CreateCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/new-IFAC" element={
+                    isAuthenticated ? <CreateCatalogModelPageIFAC /> : <Navigate to="/login" />
                   } />
                   <Route path="/catalogmodel/:modelName" element={
                     isAuthenticated ? <GetCatalogModelPage /> : <Navigate to="/login" />
                   } />
                   <Route path="/catalogmodel/:modelName/update" element={
                     isAuthenticated ? <UpdateCatalogModelPage /> : <Navigate to="/login" />
+                  } />
+                  <Route path="/catalogmodel/:modelName/update-IFAC" element={
+                    isAuthenticated ? <UpdateCatalogModelPageIFAC /> : <Navigate to="/login" />
                   } />
                   <Route path="/catalogmodel/:modelName/delete" element={
                     isAuthenticated ? <DeleteCatalogModelPage /> : <Navigate to="/login" />
