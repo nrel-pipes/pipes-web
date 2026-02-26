@@ -1,16 +1,8 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
 import { Badge, Container } from "react-bootstrap";
-import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import Form from "react-bootstrap/Form";
-import { useNavigate, useParams } from "react-router-dom";
 
-import { useGetCatalogModelQuery } from "../../hooks/useCatalogModelQuery";
 import NavbarSub from "../../layouts/NavbarSub";
-import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
 import "../PageStyles.css";
@@ -19,7 +11,7 @@ import "./GetCatalogModelPage.css";
 
 
 function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
-  
+
   // --- Data preparation ---
   const modelName = catalogModel.name || "Unnamed Model";
   const toolTeams = catalogModel.teams || [];
@@ -43,7 +35,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
   // Check if current user is the model creator
   const isModelCreator = currentUser?.email && catalogModel.created_by?.email &&
                          currentUser.email.toLowerCase() === catalogModel.created_by.email.toLowerCase();
-  
+
   const isAccessGroupMember = currentUser?.email &&
         catalogModel.access_group?.some(group => group.members?.some(member => member.email.toLowerCase() === currentUser.email.toLowerCase()));
 
@@ -220,7 +212,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
               <div className="model-section-header">
                 <h4 className="model-section-title">Tool Maturity Parameters</h4>
               </div>
-              
+
               <div className="model-section-content">
                 <div className="model-field-row">
                   <Col>
@@ -230,7 +222,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.software_license || false}/>
                       </div>
                       </Col>
@@ -241,7 +233,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.publication_history || false}/>
                       </div>
                       </Col>
@@ -252,7 +244,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.external_validation_documented || false}/>
                       </div>
                       </Col>
@@ -263,7 +255,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.application || false}/>
                       </div>
                       </Col>
@@ -274,7 +266,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.external_validation_via_usage || false}/>
                       </div>
                       </Col>
@@ -285,7 +277,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.input_output_interoperability || false}/>
                       </div>
                       </Col>
@@ -296,7 +288,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.data_accessibility_public || false}/>
                       </div>
                       </Col>
@@ -309,7 +301,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.data_accessibility_proprietary || false}/>
                       </div>
                       </Col>
@@ -320,7 +312,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.secure_for_sensitive_data_handling || false}/>
                       </div>
                       </Col>
@@ -331,7 +323,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.secure_independent_usage || false}/>
                       </div>
                       </Col>
@@ -342,7 +334,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" 
+                        <input className="form-check-input" type="checkbox"
                           disabled checked={catalogModel.maturity.usability_via_GUI || false}/>
                       </div>
                       </Col>
@@ -353,7 +345,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.usability_via_CLI || false}/>
                       </div>
                       </Col>
@@ -366,7 +358,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       <Col className="model-field-col-compact">
                       <div className="model-field-col-compact">
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.accessible_for_external_users || false}/>
                       </div></div>
                       </Col>
@@ -377,7 +369,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                       </Col>
                       <Col>
                       <div className="model-field-value">
-                        <input class="form-check-input" type="checkbox" disabled 
+                        <input className="form-check-input" type="checkbox" disabled
                           checked={catalogModel.maturity.support_available || false}/>
                       </div>
                       </Col>
@@ -544,7 +536,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                   <h4 className="model-section-title">Tool Teams</h4>
                 </div>
                 <div className="model-section-content">
-                  
+
                       <div className="model-table-container">
                         <table className="model-table">
                           <thead>
@@ -575,7 +567,7 @@ function GetCatalogModelPageIFAC({catalogModel,currentUser}) {
                 </div>
               )}
 
-              
+
 
           </Col>
         </Row>

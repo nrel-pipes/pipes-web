@@ -13,28 +13,21 @@ import ContentHeader from "../Components/ContentHeader";
 
 /* IFAC Step Forms */
 import BasicInfoSectionIFAC from "./StepFroms/BasicInfoSectionIFAC";
+import ConfigSectionIFAC from "./StepFroms/ConfigSectionIFAC";
 import FinalReviewSectionIFAC from "./StepFroms/FinalReviewSectionIFAC";
-import RequirementsSectionIFAC from "./StepFroms/RequirementsSectionIFAC";
 import InputsSectionIFAC from "./StepFroms/InputsSectionIFAC";
 import MaturitySectionIFAC from "./StepFroms/MaturitySectionIFAC";
 import OutputsSectionIFAC from "./StepFroms/OutputsSectionIFAC";
+import RequirementsSectionIFAC from "./StepFroms/RequirementsSectionIFAC";
 import TeamsSectionIFAC from "./StepFroms/TeamsSectionIFAC";
-import ConfigSectionIFAC from "./StepFroms/ConfigSectionIFAC";
 
 /* General Step Forms */
 import ListComponent from "./Components/ListComponent";
 import NameDescListComponent from "./Components/NameDescListComponent";
 
 
-import AssumptionsSection from "./StepFroms/AssumptionsSection";
-import BasicInfoSection from "./StepFroms/BasicInfoSection";
-import ExpectedScenariosSection from "./StepFroms/ExpectedScenariosSection";
-import FinalReviewSection from "./StepFroms/FinalReviewSection";
-import ModelingTeamSection from "./StepFroms/ModelingTeamSection";
-import RequirementsSection from "./StepFroms/RequirementsSection";
-
 import { useGetCatalogModelQuery, useUpdateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
-import { useUpdateCatalogModelFormStore, useUpdateCatalogModelFormStoreIFAC } from "../../stores/FormStore/CatalogModelStore";
+import { useUpdateCatalogModelFormStoreIFAC } from "../../stores/FormStore/CatalogModelStore";
 import "../FormStyles.css";
 import "../PageStyles.css";
 import "./CreateCatalogModelPage.css";
@@ -277,7 +270,7 @@ const UpdateCatalogModelPageIFAC = () => {
 
       // Update form with data
       reset(dataToUse);
-      
+
       // Update local state
       setExpectedScenarios(dataToUse.expected_scenarios || []);
       setRequirements(dataToUse.requirements || {});
@@ -359,7 +352,7 @@ const UpdateCatalogModelPageIFAC = () => {
     for (let i = 0; i < name_desc_fields.length; i++){
       formData[name_desc_fields[i]] = (data[name_desc_fields[i]] || []).filter(element => element['name'].trim() !== "");
     }
-    
+
     const dict_fields = ['config.model_options']
     // Convert array of key-value pairs to dict
     for (let i = 0; i < dict_fields.length; i++){
@@ -383,7 +376,7 @@ const UpdateCatalogModelPageIFAC = () => {
       currentFormData[targetKey] = cleanedDict;
     }
 
-    
+
     // Clean requirements - convert internal structure to API expected format
     let cleanedRequirements = {};
     const req_types = ['spatial','temporal','environment'];
@@ -413,7 +406,7 @@ const UpdateCatalogModelPageIFAC = () => {
         }
       });
     }
-    
+
     formData.requirements = cleanedRequirements;
 
     // Inputs/outputs
@@ -422,7 +415,7 @@ const UpdateCatalogModelPageIFAC = () => {
       if (reqData['type']){
         cleanedInputs = [...cleanedInputs, reqData[reqData['type']]]
       }
-    }); 
+    });
 
     formData.inputs = cleanedInputs;
 
@@ -431,7 +424,7 @@ const UpdateCatalogModelPageIFAC = () => {
       if (outData['type']){
         cleanedOuputs = [...cleanedOuputs, outData[outData['type']]]
       }
-    }); 
+    });
 
     formData.outputs = cleanedOuputs;
 
@@ -445,8 +438,8 @@ const UpdateCatalogModelPageIFAC = () => {
     }
 
     const cleanedFormData = {
-      catalog_schema: "IFAC",
-      schema_version: "1.0",
+      catalog_schema: modelData?.catalog_schema || "IFAC",
+      schema_version: modelData?.schema_version || "1.0",
       name: formData.name.trim(),
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
