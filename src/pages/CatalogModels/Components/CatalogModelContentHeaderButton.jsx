@@ -3,21 +3,26 @@ import { Dropdown } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
 
-const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
+const CatalogModelContentHeaderButton = ({ disableUpdate = false, disableDelete = false, catalogSchema="Default" }) => {
   const navigate = useNavigate();
   const { modelName } = useParams();
 
   const handleUpdateCatalogModel = () => {
-    if (isDisabled) return;
-    navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update`);
+    if (disableUpdate) return;
+    else if (catalogSchema === "IFAC") {
+      navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update-IFAC`);
+    } else {
+      navigate(`/catalogmodel/${encodeURIComponent(modelName)}/update`);
+    }
   };
 
   const handleDeleteCatalogModel = () => {
-    if (isDisabled) return;
+    if (disableDelete) return;
     navigate(`/catalogmodel/${encodeURIComponent(modelName)}/delete`);
   };
 
   const handleShareCatalogModel = () => {
+    if (disableDelete) return;
     navigate(`/catalogmodel/${encodeURIComponent(modelName)}/share`);
   };
 
@@ -34,7 +39,7 @@ const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
           onMouseDown={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
           onMouseUp={(e) => e.currentTarget.style.color = 'white'}
           onClick={handleShareCatalogModel}
-          disabled={isDisabled}
+          disabled={disableDelete}
         >
           <Share2 size={16} className="me-2" style={{ marginTop: '-2px' }} />
           Share this Model
@@ -42,8 +47,8 @@ const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
       <Dropdown>
         <Dropdown.Toggle
           variant="primary"
-          className={`px-4 py-3 actions-dropdown-toggle ${isDisabled ? 'disabled' : ''}`}
-          disabled={isDisabled}
+          className={`px-4 py-3 actions-dropdown-toggle ${(disableUpdate && disableDelete) ? 'disabled' : ''}`}
+          disabled={(disableUpdate && disableDelete)}
         >
           <Settings size={16} className="update-button-icon me-1 actions-dropdown-icon" />
           Actions
@@ -53,7 +58,7 @@ const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
           <Dropdown.Item
             onClick={handleUpdateCatalogModel}
             className="d-flex align-items-center dropdown-item-update"
-            disabled={isDisabled}
+            disabled={disableUpdate}
           >
             <Pencil size={16} className="me-2" />
             Update Model
@@ -62,7 +67,7 @@ const CatalogModelContentHeaderButton = ({ isDisabled = false }) => {
           <Dropdown.Item
             onClick={handleDeleteCatalogModel}
             className="d-flex align-items-center dropdown-item-delete"
-            disabled={isDisabled}
+            disabled={disableDelete}
           >
             <Trash2 size={16} className="me-2" />
             Delete Model

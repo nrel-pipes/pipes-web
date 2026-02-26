@@ -6,7 +6,7 @@ const CatalogModelListContentHeaderButton = ({ isDisabled = false }) => {
   const { modelName } = useParams();
 
   const handleCatalogModelCreate = () => {
-    navigate('/catalogmodel/new');
+    navigate('/catalogmodel/new-Default');
   };
 
 

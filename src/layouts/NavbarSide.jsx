@@ -10,6 +10,7 @@ import {
   FaLayerGroup,
   FaLock,
   FaProjectDiagram,
+  FaShieldAlt,
   FaSignOutAlt,
   FaTachometerAlt,
   FaUser,
@@ -101,6 +102,15 @@ const Sidebar = () => {
           <Link to="/catalogdatasets" className={isActive("/catalogdatasets")} title="Catalog Datasets">
             <span className="icon"><FaDatabase /></span>
             {expanded && <span className="nav-text">Datasets</span>}
+          </Link>
+        </li>
+
+        <li className="separator"></li>
+
+        <li>
+          <Link to="/accessgroups" className={isActive("/accessgroups")} title="Access Groups">
+            <span className="icon"><FaShieldAlt /></span>
+            {expanded && <span className="nav-text">Access Groups</span>}
           </Link>
         </li>
       </ul>

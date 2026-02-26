@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -11,15 +11,22 @@ import NavbarSub from "../../layouts/NavbarSub";
 import useAuthStore from "../../stores/AuthStore";
 import ContentHeader from "../Components/ContentHeader";
 
-import AssumptionsSection from "./StepFroms/AssumptionsSection";
-import BasicInfoSection from "./StepFroms/BasicInfoSection";
-import ExpectedScenariosSection from "./StepFroms/ExpectedScenariosSection";
-import FinalReviewSection from "./StepFroms/FinalReviewSection";
-import ModelingTeamSection from "./StepFroms/ModelingTeamSection";
-import RequirementsSection from "./StepFroms/RequirementsSection";
+/* IFAC Step Forms */
+import BasicInfoSectionIFAC from "./StepFroms/BasicInfoSectionIFAC";
+import FinalReviewSectionIFAC from "./StepFroms/FinalReviewSectionIFAC";
+import RequirementsSectionIFAC from "./StepFroms/RequirementsSectionIFAC";
+import InputsSectionIFAC from "./StepFroms/InputsSectionIFAC";
+import MaturitySectionIFAC from "./StepFroms/MaturitySectionIFAC";
+import OutputsSectionIFAC from "./StepFroms/OutputsSectionIFAC";
+import TeamsSectionIFAC from "./StepFroms/TeamsSectionIFAC";
+import ConfigSectionIFAC from "./StepFroms/ConfigSectionIFAC";
+
+/* General Step Forms */
+import ListComponent from "./Components/ListComponent";
+import NameDescListComponent from "./Components/NameDescListComponent";
 
 import { useCreateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
-import { useCreateCatalogModelFormStore } from "../../stores/FormStore/CatalogModelStore";
+import { useCreateCatalogModelFormStoreIFAC } from "../../stores/FormStore/CatalogModelStore";
 import "../FormStyles.css";
 import "../PageStyles.css";
 import "./CreateCatalogModelPage.css";
@@ -65,14 +72,18 @@ const StepIndicator = ({ currentStep, totalSteps, onStepClick, canNavigateTo, st
 
 
 
-const CreateCatalogModelPage = () => {
+const CreateCatalogModelPageIFAC = () => {
   const navigate = useNavigate();
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  const { formData, handleInputChange } = useCreateCatalogModelFormStore();
+  const { formData, handleInputChange } = useCreateCatalogModelFormStoreIFAC();
 
   const { checkAuthStatus } = useAuthStore();
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const schema = searchParams.get("S");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -98,14 +109,13 @@ const CreateCatalogModelPage = () => {
     formData: storedFormData,
     updateFormData,
     clearFormData,
-  } = useCreateCatalogModelFormStore();
+  } = useCreateCatalogModelFormStoreIFAC();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formError, setFormError] = useState(false);
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
-  const [projectScenarios, setProjectScenarios] = useState([]);
-  const [expectedScenarios, setExpectedScenarios] = useState(storedFormData.expectedScenarios || []);
+  const [expected_scenarios, setExpectedScenarios] = useState(storedFormData.expected_scenarios || []);
   const [requirements, setRequirements] = useState(storedFormData.requirements || {});
   const [assumptions, setAssumptions] = useState(storedFormData.assumptions || []);
   const [modelingTeam, setModelingTeam] = useState(storedFormData.modelingTeam || "");
@@ -128,10 +138,24 @@ const CreateCatalogModelPage = () => {
       displayName: storedFormData.displayName || "",
       type: storedFormData.type || "",
       description: storedFormData.description || "",
-      expectedScenarios: storedFormData.expectedScenarios || [""],
-      modelingTeam: storedFormData.modelingTeam || "",
-      assumptions: storedFormData.assumptions || [""],
+      source: storedFormData.source || "",
+      version: storedFormData.version || "",
+      branch: storedFormData.branch || "",
+      documentation: storedFormData.documentation || "",
+      publications: storedFormData.publications || [],
+      training: storedFormData.training || [],
+      programming_languages: storedFormData.programming_languages || [],
+      maturity: storedFormData.maturity || {},
+      features: storedFormData.features || [""],
+      use_cases: storedFormData.use_cases || [""],
+      tags: storedFormData.tags || [""],
+      expected_scenarios: storedFormData.expected_scenarios || [],
+      inputs: storedFormData.inputs || [],
       requirements: storedFormData.requirements || {},
+      outputs: storedFormData.outputs || [],
+      assumptions: storedFormData.assumptions || [""],
+      teams: storedFormData.teams || [],
+      config: storedFormData.config || {},
       other: storedFormData.other || {}
     }
   });
@@ -145,8 +169,8 @@ const CreateCatalogModelPage = () => {
       if (name && name.startsWith('assumptions')) {
         setAssumptions(value.assumptions || []);
       }
-      if (name && name.startsWith('expectedScenarios')) {
-        setExpectedScenarios(value.expectedScenarios || []);
+      if (name && name.startsWith('expected_scenarios')) {
+        setExpectedScenarios(value.expected_scenarios || []);
       }
       if (name === 'modelingTeam') {
         setModelingTeam(value.modelingTeam || "");
@@ -166,10 +190,23 @@ const CreateCatalogModelPage = () => {
           displayName: value.displayName || "",
           type: value.type || "",
           description: value.description || "",
-          expectedScenarios: value.expectedScenarios || [],
+          source: value.source || "",
+          version: value.version || "",
+          branch: value.branch || "",
+          documentation: value.documentation || "",
+          training: value.training || "",
+          publications: value.publications || [],
+          programming_languages: value.programming_languages || [],
+          maturity: value.maturity || {},
+          features: value.features || [],
+          use_cases: value.use_cases || [],
+          tags: value.tags || [],
+          expected_scenarios: value.expected_scenarios || [],
+          inputs: value.inputs || {},
           requirements: value.requirements || {},
+          outputs: value.outputs || {},
           assumptions: value.assumptions || [],
-          modelingTeam: value.modelingTeam || "",
+          teams: value.teams || [],
           other: value.other || {}
         });
       }, 1000);
@@ -189,43 +226,104 @@ const CreateCatalogModelPage = () => {
     // Clean and format data for API
     const formData = { ...data };
 
-    // Clean modeling team members - remove any members where all fields are empty
-    if (formData.modelingTeam && Array.isArray(formData.modelingTeam.members)) {
-      formData.modelingTeam.members = formData.modelingTeam.members.filter(member =>
-        member.email?.trim() ||
-        member.first_name?.trim() ||
-        member.last_name?.trim() ||
-        member.organization?.trim()
+    // Clean teams - remove any teams where all fields are empty
+    let cleanedTeams = [];
+    if (formData.teams && formData.teams.length > 0) {
+      formData.teams = formData.teams.filter(team =>
+        team.lab?.trim() ||
+        team.role?.trim() ||
+        team.contact?.trim()
       );
     }
+    cleanedTeams = Object.values(formData.teams);
+    formData.teams = cleanedTeams;
 
-    // Clean assumptions - now comes directly from form data
-    formData.assumptions = (data.assumptions || []).filter(assumption => assumption.trim() !== "");
+    // Clean any other array fields by removing empty or whitespace-only entries
+    const arr_fields = ['assumptions','tags','features']
+    for (let i = 0; i < arr_fields.length; i++){
+      formData[arr_fields[i]] = (data[arr_fields[i]] || []).filter(element => typeof element == 'number' || element.trim() !== "");
+    }
 
-    // Clean expected scenarios
-    formData.expectedScenarios = (data.expectedScenarios || []).filter(scenario => scenario && scenario.trim() !== "");
-
-    // Clean requirements - convert internal structure to API expected format
-    const cleanedRequirements = {};
-    Object.entries(data.requirements || {}).forEach(([id, reqData]) => {
-      const key = reqData.name?.trim();
-      if (key) {
-        if (reqData.type === "string" && reqData.value.trim() !== "") {
-          cleanedRequirements[key] = reqData.value;
-        } else if (reqData.type === "object") {
-          const cleanedObject = {};
-          Object.entries(reqData.value || {}).forEach(([field, val]) => {
-            if (val && val.trim() !== "") {
-              cleanedObject[field] = val;
-            }
-          });
-          if (Object.keys(cleanedObject).length > 0) {
-            cleanedRequirements[key] = cleanedObject;
-          }
+    // Clean list of name-desc fields (e.g. expected_scenarios) by removing entries with empty name
+    const name_desc_fields = ['expected_scenarios']
+    for (let i = 0; i < name_desc_fields.length; i++){
+      formData[name_desc_fields[i]] = (data[name_desc_fields[i]] || []).filter(element => element['name'].trim() !== "");
+    }
+      
+    const dict_fields = ['config.model_options']
+    // Convert array of key-value pairs to dict
+    for (let i = 0; i < dict_fields.length; i++){
+      let cleanedDict = {};
+      const keys = dict_fields[i].split('.');
+      const targetKey = keys.pop();
+      let currentData = data;
+      let currentFormData = formData;
+      for (const key of keys) {
+        currentData = currentData[key] || [];
+        if (typeof currentFormData[key] !== 'object' || currentFormData[key] === null) {
+          currentFormData[key] = {};
         }
+        currentFormData = currentFormData[key];
       }
-    });
+      Object.values(currentData[targetKey]).forEach((element) => {
+        if (element["key"].trim() !== "" && element["value"].trim() !== "") {
+          cleanedDict[element["key"]] = element["value"];
+        }
+      });
+      currentFormData[targetKey] = cleanedDict;
+    }
+
+    
+    // Clean requirements - convert internal structure to API expected format
+    let cleanedRequirements = {};
+    const req_types = ['spatial','temporal','environment'];
+    for (let i = 0; i < req_types.length; i++){
+      if (data.requirements[req_types[i]]){
+        cleanedRequirements[req_types[i]] = [];
+      }
+      Object.entries(data.requirements[req_types[i]] || {}).forEach(([id, reqData]) => {
+        const cleanedObject = {};
+        Object.entries(reqData || {}).forEach(([field, val]) => {
+          if (Array.isArray(val)){
+            cleanedObject[field] = Object.values(val || []).filter(element => typeof element == 'number' || element.trim() !== "");
+          } else if (val.constructor === Object) {
+            let cleanedSubObject = {};
+            cleanedSubObject = Object.entries(val)
+                                        .filter(([k, element]) => (k.trim() !== "" && (typeof element == 'number' || element.trim() !== "")))
+                                        .reduce((obj, k) => {return {...obj, [k]:val[k]}},{});
+            if (Object.keys(cleanedSubObject).length > 0) {
+              cleanedObject[field] = cleanedSubObject;
+            }
+          } else if (val && val.trim() !== "") {
+            cleanedObject[field] = val;
+          }
+        });
+        if (Object.keys(cleanedObject).length > 0) {
+          cleanedRequirements[req_types[i]].push(cleanedObject);
+        }
+      });
+    }
+    
     formData.requirements = cleanedRequirements;
+
+    // Inputs/outputs
+    let cleanedInputs = [];
+    Object.entries(data.inputs || {}).forEach(([id, reqData]) => {
+      if (reqData['type']){
+        cleanedInputs = [...cleanedInputs, reqData[reqData['type']]]
+      }
+    }); 
+
+    formData.inputs = cleanedInputs;
+
+    let cleanedOuputs = [];
+    Object.entries(data.outputs || {}).forEach(([id, outData]) => {
+      if (outData['type']){
+        cleanedOuputs = [...cleanedOuputs, outData[outData['type']]]
+      }
+    }); 
+
+    formData.outputs = cleanedOuputs;
 
     // Format final payload
     let descriptionValue = formData.description;
@@ -237,16 +335,31 @@ const CreateCatalogModelPage = () => {
     }
 
     const cleanedFormData = {
-      catalog_schema: "Default",
+      catalog_schema: "IFAC",
+      schema_version: "1.0",
       name: formData.name.trim(),
       display_name: formData.displayName?.trim() || null,
       type: formData.type.trim(),
       description: descriptionValue,
-      modeling_team: formData.modelingTeam,
+      use_cases: formData.use_cases,
+      source: formData.source.trim(),
+      version: formData.version.trim(),
+      branch: formData.branch.trim(),
+      documentation: formData.documentation.trim(),
+      publications: formData.publications || [],
+      training: formData.training || [],
+      programming_languages: formData.programming_languages || [],
+      teams: formData.teams,
       assumptions: formData.assumptions,
-      expected_scenarios: formData.expectedScenarios,
+      features: formData.features,
+      tags: formData.tags,
+      expected_scenarios: formData.expected_scenarios || [],
+      maturity: formData.maturity,
+      inputs: formData.inputs,
       requirements: formData.requirements,
-      other: formData.other || {}
+      outputs: formData.outputs,
+      other: formData.other || {},
+      config: formData.config || {}
     };
 
     try {
@@ -264,10 +377,21 @@ const CreateCatalogModelPage = () => {
         displayName: "",
         type: "",
         description: "",
-        modelingTeam: { name: "", members: [] },
+        use_cases: [""],
+        source: "",
+        version: "",
+        branch: "",
+        documentation: "",
+        training: "",
+        maturity: {},
+        teams: [],
         assumptions: [""],
-        expectedScenarios: [""],
+        features: [""],
+        tags: [""],
+        expected_scenarios: [],
+        inputs: [],
         requirements: {},
+        outputs: [],
         other: {}
       });
       setCurrentStep(1);
@@ -306,12 +430,12 @@ const CreateCatalogModelPage = () => {
   const createCatalogModelMutation = useCreateCatalogModelMutation();
 
   // Extract scenarios from project run or project
-  useEffect(() => {
-    let scenarios = [];
-    setProjectScenarios(scenarios);
+  //useEffect(() => {
+    //let scenarios = [];
+    //setProjectScenarios(scenarios);
     // The setValue call was removed from here as it was causing the refresh issue.
     // The form is already initialized with storedFormData via defaultValues in useForm.
-  }, []);
+  //}, []);
 
   const handleNextStep = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -372,7 +496,7 @@ const CreateCatalogModelPage = () => {
     }
   };
 
-  const steps = ["Basic Info", "Scenarios", "Requirements", "Assumptions", "Modeling Team", "Review"];
+  const steps = ["Basic Info", "Scenarios/Assumptions", "Maturity", "Config", "Requirements", "Inputs", "Outputs", "Teams", "Review"];
   const totalSteps = steps.length;
 
   return (
@@ -416,7 +540,43 @@ const CreateCatalogModelPage = () => {
                   <div className="form-container">
                     {currentStep === 1 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <BasicInfoSection
+                        <BasicInfoSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Use Case"
+                          description="List of IFAC Use Cases the tool applies to"
+                          fieldName="use_cases"
+                          required={false}
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Training Link"
+                          description="List of links to training materials for the tool"
+                          fieldName="training"
+                          required={false}
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Feature"
+                          description="List of tool features"
+                          fieldName="features"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}
@@ -429,21 +589,71 @@ const CreateCatalogModelPage = () => {
 
                     {currentStep === 2 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <ExpectedScenariosSection
+                        <NameDescListComponent
+                          name="Expected Scenario"
+                          description="List of expected tool scenarios"
+                          fieldName="expected_scenarios"
                           control={control}
                           register={register}
                           errors={errors}
                           watch={watch}
                           setValue={setValue}
                           storedData={storedFormData}
-                          projectScenarios={projectScenarios}
+                        />
+                        <ListComponent
+                          name="Assumption"
+                          description="Add key assumptions for your model"
+                          fieldName="assumptions"
+                          required={false}
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
                         />
                       </div>
                     )}
 
                     {currentStep === 3 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <RequirementsSection
+                        <MaturitySectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Workflow Integration"
+                          description="List of tools this tool has integrated with."
+                          fieldName="maturity.workflow_integration_list"
+                          required={false}
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Programming Language"
+                          description="Languages the tool is written in (e.g. 'Python', 'Julia')."
+                          fieldName="programming_languages"
+                          required={false}
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                        <ListComponent
+                          name="Publication"
+                          description="List of publications released on the tool"
+                          fieldName="publications"
+                          required={false}
                           control={control}
                           register={register}
                           errors={errors}
@@ -456,7 +666,7 @@ const CreateCatalogModelPage = () => {
 
                     {currentStep === 4 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <AssumptionsSection
+                        <ConfigSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -469,7 +679,7 @@ const CreateCatalogModelPage = () => {
 
                     {currentStep === 5 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <ModelingTeamSection
+                        <RequirementsSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -482,7 +692,46 @@ const CreateCatalogModelPage = () => {
 
                     {currentStep === 6 && (
                       <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
-                        <FinalReviewSection
+                        <InputsSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 7 && (
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <OutputsSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 8 && (
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <TeamsSectionIFAC
+                          control={control}
+                          register={register}
+                          errors={errors}
+                          watch={watch}
+                          setValue={setValue}
+                          storedData={storedFormData}
+                        />
+                      </div>
+                    )}
+
+                    {currentStep === 9 && (
+                      <div className="step-panel" style={{ width: '80%', margin: '0 auto' }}>
+                        <FinalReviewSectionIFAC
                           control={control}
                           register={register}
                           errors={errors}
@@ -541,4 +790,4 @@ const CreateCatalogModelPage = () => {
   );
 };
 
-export default CreateCatalogModelPage;
+export default CreateCatalogModelPageIFAC;
