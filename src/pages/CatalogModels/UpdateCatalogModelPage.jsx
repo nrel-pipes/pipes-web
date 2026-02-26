@@ -19,7 +19,7 @@ import ModelingTeamSection from "./StepFroms/ModelingTeamSection";
 import RequirementsSection from "./StepFroms/RequirementsSection";
 
 import { useGetCatalogModelQuery, useUpdateCatalogModelMutation } from "../../hooks/useCatalogModelQuery";
-import { useUpdateCatalogModelFormStore, useUpdateCatalogModelFormStoreIFAC } from "../../stores/FormStore/CatalogModelStore";
+import { useUpdateCatalogModelFormStore } from "../../stores/FormStore/CatalogModelStore";
 import "../FormStyles.css";
 import "../PageStyles.css";
 import "./CreateCatalogModelPage.css";
@@ -306,6 +306,8 @@ const UpdateCatalogModelPage = () => {
       assumptions: formData.assumptions,
       expected_scenarios: formData.expectedScenarios,
       requirements: formData.requirements,
+      catalog_schema: modelData?.catalog_schema || "Default",
+      schema_version: modelData?.schema_version || "1.0",
       other: formData.other || {}
     };
 
