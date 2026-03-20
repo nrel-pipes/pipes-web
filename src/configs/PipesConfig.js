@@ -5,7 +5,7 @@ const devConfig = {
     UserPoolId: 'us-west-2_RzEL2COOq',
     ClientId: 'clfpli1avt6eil03ovr11qdpi',
   },
-  apiOrigin: 'https://pipes-api-dev.nrel.gov'
+  apiOrigin: 'https://pipes-api-dev.nlr.gov'
 }
 
 const stageConfig = {
@@ -14,7 +14,7 @@ const stageConfig = {
     UserPoolId: 'us-west-2_RzEL2COOq',
     ClientId: 'clfpli1avt6eil03ovr11qdpi',
   },
-  apiOrigin: 'https://pipes-api-stage.nrel.gov'
+  apiOrigin: 'https://pipes-api-stage.nlr.gov'
 }
 
 const prodConfig = {
@@ -23,7 +23,7 @@ const prodConfig = {
     UserPoolId: 'us-west-2_QIFK6524E',
     ClientId: '539o71b6rh0ua124ro8q3bv39s',
   },
-  apiOrigin: 'https://pipes-api.nrel.gov'
+  apiOrigin: 'https://pipes-api.nlr.gov'
 }
 
 const otherConfig = {
