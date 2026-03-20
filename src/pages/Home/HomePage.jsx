@@ -146,8 +146,8 @@ const HomePage = () => {
               <Card.Text className='mt-2' style={{ fontSize: '16px'}}>
                 <span style={{fontSize: '1.1em'}}>PIPES Team email address: </span>
                 <br/>
-                <a href="mailto:pipes@nrel.gov" style={{ textDecoration: 'none'}}>
-                  <FontAwesomeIcon icon={faEnvelope} /> pipes@nrel.gov
+                <a href="mailto:pipes@nlr.gov" style={{ textDecoration: 'none'}}>
+                  <FontAwesomeIcon icon={faEnvelope} /> pipes@nlr.gov
                 </a>
               </Card.Text>
             </Card.Body>
