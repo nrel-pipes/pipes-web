@@ -48,7 +48,7 @@ AWS Codebuild and webhook has been setup on this repo, triggering by
 - pull request update
 - pull request reopen
 
-on base branch `develop` and `master`.
+on base branch `develop`, `stage` and `master`.
 
 2. Deploy the site
 
