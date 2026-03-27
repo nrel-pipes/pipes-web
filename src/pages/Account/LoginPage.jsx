@@ -114,7 +114,7 @@ const LoginPage = () => {
               </div>
               <div className="mt-4 text-center">
                 <Link
-                  to="https://nrel-pipes.github.io/pipes-core/index.html"
+                  to="https://nlr-pipes.github.io/pipes-core/index.html"
                   target="_blank"
                 >
                   Learn more about PIPES?

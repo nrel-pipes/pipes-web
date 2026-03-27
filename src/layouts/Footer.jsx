@@ -15,11 +15,11 @@ function SiteFooter() {
             <div className="row text-start social-and-global-links">
               <div className="col-md-4 col-lg-5">
                 <div className="mt-3">
-                  <a href="https://www.nrel.gov/webmaster.html">Contact Us</a></div>
-                  <div className="mt-3"><a href="http://www.nrel.gov/about/visiting-nrel.html">Visit</a>
+                  <a href="https://www.nlr.gov/webmaster.html">Contact Us</a></div>
+                  <div className="mt-3"><a href="http://www.nlr.gov/about/visiting-nrel.html">Visit</a>
                 </div>
                 <div className="mt-3">
-                  <a href="http://www.nrel.gov/news/subscribe.html">Subscribe</a>
+                  <a href="http://www.nlr.gov/news/subscribe.html">Subscribe</a>
                 </div>
                 <div className="mt-3">
                   <ul className="social-links list-inline mt-4" aria-label="social links">
@@ -37,24 +37,24 @@ function SiteFooter() {
                 <div className="row">
                   <div className="col-sm-6 col-lg-3">
                     <div className="mt-3">
-                      <a href="http://www.nrel.gov/accessibility.html">Accessibility</a>
+                      <a href="http://www.nlr.gov/accessibility.html">Accessibility</a>
                     </div>
                     <div className="mt-3">
-                      <a href="http://www.nrel.gov/disclaimer.html">Disclaimer</a>
+                      <a href="http://www.nlr.gov/disclaimer.html">Disclaimer</a>
                     </div>
                     <div className="mt-3">
-                      <a href="http://www.nrel.gov/security.html">Security and Privacy</a>
+                      <a href="http://www.nlr.gov/security.html">Security and Privacy</a>
                     </div>
                     <div className="mt-3">
-                      <a href="http://www.nrel.gov/webmaster.html">Site Feedback</a>
+                      <a href="http://www.nlr.gov/webmaster.html">Site Feedback</a>
                     </div>
                   </div>
                   <div className="col-sm-6 col-lg-3">
                     <div className="mt-3">
-                      <a href="https://developer.nrel.gov/">Developers</a>
+                      <a href="https://developer.nlr.gov/">Developers</a>
                     </div>
                     <div className="mt-3">
-                      <a href="https://thesource.nrel.gov/">Employees</a>
+                      <a href="https://thesource.nlr.gov/">Employees</a>
                     </div>
                   </div>
                 </div>
