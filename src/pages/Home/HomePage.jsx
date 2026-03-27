@@ -77,7 +77,7 @@ const HomePage = () => {
             <Card.Header className="pipesCardHeader">
               <h3>
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/"
+                  href="https://nlr-pipes.github.io/pipes-core/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -89,7 +89,7 @@ const HomePage = () => {
               <Card.Text className="mt-3" style={{ fontSize: "16px" }}>
                 Checkout our{" "}
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/"
+                  href="https://nlr-pipes.github.io/pipes-core/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -105,7 +105,7 @@ const HomePage = () => {
             <Card.Header className="pipesCardHeader">
               <h3>
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/troubleshooting__faq.html"
+                  href="https://nlr-pipes.github.io/pipes-core/troubleshooting__faq.html"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -117,7 +117,7 @@ const HomePage = () => {
               <Card.Text className="mt-3" style={{ fontSize: "16px" }}>
                 Feel free to reach out to the PIPES{" "}
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/contact-us/"
+                  href="https://nlr-pipes.github.io/pipes-core/contact-us/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -134,7 +134,7 @@ const HomePage = () => {
             <Card.Header className="pipesCardHeader">
               <h3>
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/contact-us/"
+                  href="https://nlr-pipes.github.io/pipes-core/contact-us/"
                   target="_blank"
                   rel="noreferrer"
                 >

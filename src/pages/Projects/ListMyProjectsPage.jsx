@@ -153,7 +153,7 @@ const ListMyProjectsPage = () => {
                   Create Project via UI
                 </button>
                 <a
-                  href="https://nrel-pipes.github.io/pipes-core/reference/workflows/initialize-a-project/"
+                  href="https://nlr-pipes.github.io/pipes-core/reference/workflows/initialize-a-project/"
                   target="_blank"
                   rel="noreferrer"
                   className="learn-more-button"
